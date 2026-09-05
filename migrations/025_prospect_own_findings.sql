@@ -1,0 +1,18 @@
+-- Findings Ary noticed herself, to be spoken in the video alongside the
+-- measured ones.
+--
+-- The checks are good at what they can measure and blind to what a person can
+-- see. A hero video that will not play is obvious to anyone looking at the page
+-- and invisible to every test in the suite, and a video that films straight
+-- past it while discussing the footer is worse than no video: it reads as not
+-- having looked.
+--
+-- JSON array of { text, where }. `text` is spoken verbatim, `where` is one of
+-- top / middle / bottom / contact and only says where to point the camera,
+-- because writing a CSS selector is not a reasonable thing to ask of the person
+-- describing the problem.
+--
+-- Deliberately separate from video_reasons. That column records what the audit
+-- concluded and feeds the email; this one is a human overriding it, and keeping
+-- them apart means neither can be mistaken for the other later.
+ALTER TABLE prospects ADD COLUMN own_findings TEXT;

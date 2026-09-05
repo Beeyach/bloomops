@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visual evidence fixture — action below the fold</title>
+<!--
+  The other half of the pair. The same "Book a call" button exists, and it is
+  pushed well below the first viewport by a tall block of copy.
+//
+  This is the case that keeps the check honest in the other direction. A rule
+  that rejects every visual claim is not enforcement, it is a switch that is
+  off. Here the claim is true, and the model should say the action is NOT
+  visible in the first viewport — which is a different sentence from "there is
+  no booking action", and the difference is the thing outreach copy gets wrong.
+
+  Same as its sibling: no forms, no data, nothing to submit.
+-->
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #fbf7f9;
+    color: #2b1f27;
+  }
+  header { padding: 28px 24px; border-bottom: 1px solid #e7dbe2; }
+  .mark { font-weight: 700; font-size: 18px; }
+  main { max-width: 720px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { font-size: clamp(28px, 5vw, 42px); line-height: 1.15; margin: 0 0 20px; }
+  p { font-size: 17px; line-height: 1.7; color: #4a3a43; margin: 0 0 20px; }
+  .spacer { height: 1400px; }
+  .cta {
+    display: inline-block;
+    background: #d43a65;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 18px 40px;
+    border-radius: 8px;
+  }
+  .note { margin-top: 28px; font-size: 14px; color: #6b5762; }
+</style>
+</head>
+<body>
+  <header><span class="mark">Fixture Counselling</span></header>
+  <main>
+    <h1>About the practice</h1>
+    <p>We have worked with individuals and couples since 2009, from a small
+      room above the bakery on Mill Street. Sessions run fifty minutes.</p>
+    <p>Most people arrive after months of putting it off, which is normal and
+      is nothing to apologise for. The first session is mostly listening.</p>
+    <p>There is no fixed programme. Some people come for six weeks, some for
+      two years, and some come back after a long gap because something changed.</p>
+    <p>Fees are on a sliding scale. Nobody has ever been turned away over
+      money, and that is not going to start now.</p>
+    <div class="spacer" aria-hidden="true"></div>
+    <a class="cta" href="#no-op-fixture">Book a call</a>
+    <p class="note">
+      This page is a test fixture for LeadsThatBloom's visual-evidence checks.
+      It is not a real business and the button does nothing.
+    </p>
+  </main>
+</body>
+</html>

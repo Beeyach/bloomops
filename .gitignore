@@ -1,0 +1,16 @@
+node_modules
+.next
+out
+*.log
+.env*
+data/
+*.db
+*.sqlite
+prospect-pdfs/
+.wrangler/
+.vercel/
+.superpowers/
+
+.upload-secret
+.dev.vars
+backups/

@@ -1,0 +1,8 @@
+{
+  "name": "audit-video",
+  "private": true,
+  "type": "module",
+  "description": "Local tool: records a walkthrough video of a prospect's site. Not part of the app build.",
+  "scripts": { "record": "node record.mjs" },
+  "dependencies": { "playwright": "^1.49.0" }
+}

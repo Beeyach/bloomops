@@ -1,0 +1,15 @@
+{
+  "name": "audit-render",
+  "private": true,
+  "type": "module",
+  "description": "Renders a narrated website-audit video. Runs on Cloud Run, not on the app's Worker.",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs"
+  },
+  "dependencies": {
+    "hono": "^4.6.14",
+    "@hono/node-server": "^1.13.7",
+    "playwright-core": "1.49.0"
+  }
+}

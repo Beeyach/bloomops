@@ -1,0 +1,13 @@
+-- A proper per-prospect activity log.
+--
+-- The info field has been quietly becoming one: PRESCREEN / REPLYSYNC /
+-- VIDTEST / DECLINED lines prepended above Ary's research notes, because
+-- automations had nowhere else to leave a trace. Markers keep working (the
+-- UI renders the ones it recognizes into the same timeline), but new events
+-- get a real home: a JSON array of { ts, tag, text }, appended via
+-- window.bloom.addLog and read via getLog.
+--
+-- TEXT holding a JSON array, like email_sequence and video_reasons — D1 has
+-- no native JSON type. Nullable; every existing row stays null until its
+-- first entry, which costs nothing.
+ALTER TABLE prospects ADD COLUMN activity_log TEXT;

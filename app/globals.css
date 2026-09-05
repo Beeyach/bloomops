@@ -1,0 +1,2242 @@
+/* KaTeX's own stylesheet. Must precede Tailwind's layers so utilities can
+   still override it, and it carries the maths fonts equations need to render
+   on a public page where none of our JS runs. */
+@import 'katex/dist/katex.min.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Layout canvases ────────────────────────────────────────────────────
+   Page width is a per-purpose decision, not one number. Every view picks
+   the canvas that matches its job; all canvases center themselves so big
+   monitors read as composed, not half-rendered.
+   - canvas-data: tables/dashboards — use almost everything, cap ultrawide
+   - canvas-work: operational pages with cards — roomy but bounded
+   - canvas-read: forms and reading — comfortable line lengths            */
+@layer components {
+  .canvas-data { @apply w-full max-w-[1760px] mx-auto; }
+  .canvas-work { @apply w-full max-w-[1160px] mx-auto; }
+  .canvas-read { @apply w-full max-w-[880px] mx-auto; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Theme system (Amendment A1). Every color in the app resolves through
+   these variables. html[data-theme] is set pre-paint by an inline script
+   in app/layout.jsx (default: dark). :root carries dark as a fallback so
+   the first paint is never unstyled.
+   ─────────────────────────────────────────────────────────────────────── */
+
+:root, html[data-theme="dark"] {
+  /* Dark, Chapter 9: neutral ink.
+     The espresso-plum version this replaces was chosen in the design-studio
+     rounds and lived through five chapters; the verdict on the real screens
+     was that it had become a purple-brown haze. So dark is no longer "the
+     light palette at night" — it is its own thing: charcoal surfaces, warm
+     off-white text, neutral borders, no aurora, no glow. Rose survives as a
+     restrained accent, exactly as it does in light mode.
+     The plum palette is in git history. */
+  --bg: #11141A;
+  --panel: #191D24;
+  --surface: #161A20;
+  --card-hover: #242932;
+  /* Warm off-white, so charcoal does not read as blue-grey. */
+  --ink: #F5F2ED;
+  /* Secondary text carries most of the actual reading, so it stays high:
+     10.7:1 on canvas, 9.8:1 on a panel. */
+  --ink-2: #C8C5BF;
+  --ink-3: #9F9C97;
+  --bright: #FFFEFA;
+  /* Disabled controls, stated rather than faded. Stacking opacity on small
+     text measured as low as 1.5:1; these are solid and readable (4.68:1). */
+  --disabled-bg: #262B33;
+  --disabled-ink: #9A9791;
+  --disabled-line: rgba(232, 236, 242, 0.22);
+  /* Sidebar nav titles: pure white at night (Ary: no dim gray nav). */
+  --nav-ink: #FFFFFF;
+  /* Hairlines are neutral now. A rose cast on every edge is most of what
+     made the whole theme read as one purple wash. */
+  --line: rgba(232, 236, 242, 0.13);
+  --line-strong: rgba(232, 236, 242, 0.30);
+  --rose: #DE7594;
+  --rose-hover: #E88AA5;
+  --rose-deep: #C25877;
+  /* The rose above is an ACCENT: borders, chips, icons, the wordmark. It is
+     light on purpose and it stays.
+     These three are the same rose deepened until white text on top clears
+     WCAG AA (4.5:1), and they are used only where white sits on a rose fill:
+     the primary button and the count badge. At the accent value that pairing
+     measured 3.05:1, and the primary button is the most important target in
+     the app for someone who does not see it easily. Separating the two means
+     the palette is unchanged and only the thing carrying text got darker. */
+  --rose-btn: #C8365C;
+  --rose-btn-hover: #B72F51;
+  --rose-btn-active: #A22945;
+  --rose-text: #F2A0B6;
+  --rose-tint: rgba(222, 117, 148, 0.13);
+  --hairline: rgba(232, 236, 242, 0.11);
+  --rose-line: rgba(222, 117, 148, 0.36);
+  /* Kept as tokens because .btn-send reads them, but dialled well down:
+     "no global glow" means the accent lights one control, not the room. */
+  --rose-glow: rgba(222, 117, 148, 0.20);
+  --rose-glow-strong: rgba(222, 117, 148, 0.28);
+  /* Panel surface + its rim, both neutral. */
+  --glass: rgba(34, 38, 45, 0.72);
+  --glass-edge: rgba(232, 236, 242, 0.10);
+  /* Sage, amber, red — the same three roles as light mode, lifted for a
+     dark ground. Each clears AA on canvas, panel and raised. */
+  --leaf: #3E9A70;
+  --leaf-text: #7FCFA4;
+  --leaf-text-rgb: 127 207 164;
+  --gold: #C79B45;
+  --gold-text: #E3B665;
+  --poppy: #C9563E;
+  --poppy-text: #EE8F79;
+  /* Destructive action sitting ON the inverted selection pill. The pill is
+     light in this theme, so the danger colour has to be dark to be read.
+     A hardcoded light pink here was invisible against it. */
+  --on-invert-danger: #8E2233;
+  --on-invert-danger-bg: rgba(194, 75, 92, 0.14);
+  --on-invert-danger-border: rgba(142, 34, 51, 0.42);
+  --on-invert-danger-hover-bg: rgba(194, 75, 92, 0.24);
+  --input-bg: #151920;
+  --control-bg: #1D222A;
+  --rose-active: #E88AA5;
+  /* On charcoal a light overlay lightens rather than greys, which is what a
+     hover should do, so this is neutral again. On the old plum it was not:
+     a faint near-white pink over dark plum read as grey and made every
+     hovered button look disabled, which is why it was rose there. */
+  --hover-wash: rgba(232, 236, 242, 0.09);
+  --hover-wash-soft: rgba(232, 236, 242, 0.05);
+  --backdrop-stroke: #DE7594;
+  --bloom-op1: 0;
+  --bloom-op2: 0;
+  --scroll-thumb: rgba(232, 236, 242, 0.16);
+  --scroll-thumb-hover: rgba(232, 236, 242, 0.28);
+  --selection: rgba(222, 117, 148, 0.30);
+  --focus-ring: rgba(242, 160, 182, 0.60);
+  --edit-glow: rgba(222, 117, 148, 0.16);
+  /* Neutral depth. A plum bloom under every panel was the aurora by another
+     name, and it tinted every edge in the app. */
+  --shadow-card: 0 10px 28px -14px rgba(0, 0, 0, 0.60), 0 1px 3px rgba(0, 0, 0, 0.45);
+  --shadow-pill: 0 2px 6px rgba(0, 0, 0, 0.40);
+  --panel-edge: transparent;
+  --panel-sheen: none;
+  /* No aurora. Three coloured radial gradients behind every screen is the
+     "purple-brown haze" in one declaration, and no amount of dimming makes
+     a gradient a neutral ground. Dark mode is a flat charcoal room. */
+  --ambient: none;
+  --muted-rgb: 167 163 157;
+  --mauve-deep-rgb: 242 160 182;
+  color-scheme: dark;
+  /* stage chips */
+  --stg-new-bg: rgba(201,155,192,0.15);
+  --stg-new-border: #C99BC0;
+  --stg-social-media-bg: rgba(200,121,200,0.15);
+  --stg-social-media-border: #C879C8;
+  /* DM series: one hue deepening step by step, so the three read as a
+     sequence rather than three unrelated stages. */
+  --stg-dm-1-bg: rgba(224,163,208,0.13);
+  --stg-dm-1-border: #E0A3D0;
+  --stg-dm-2-bg: rgba(208,122,192,0.14);
+  --stg-dm-2-border: #D07AC0;
+  --stg-dm-3-bg: rgba(184,90,174,0.15);
+  --stg-dm-3-border: #B85AAE;
+  --stg-email-1-bg: rgba(217,192,68,0.13);
+  --stg-email-1-border: #D9C044;
+  --stg-email-2-bg: rgba(227,154,85,0.14);
+  --stg-email-2-border: #E39A55;
+  --stg-email-3-bg: rgba(227,135,163,0.15);
+  --stg-email-3-border: #E387A3;
+  --stg-email-4-bg: rgba(172,139,224,0.15);
+  --stg-email-4-border: #AC8BE0;
+  --stg-email-5-bg: rgba(85,187,169,0.14);
+  --stg-email-5-border: #55BBA9;
+  --stg-instagram-bg: rgba(216,131,188,0.15);
+  --stg-instagram-border: #D883BC;
+  --stg-facebook-bg: rgba(127,165,220,0.15);
+  --stg-facebook-border: #7FA5DC;
+  --stg-linkedin-bg: rgba(108,166,217,0.15);
+  --stg-linkedin-border: #6CA6D9;
+  --stg-contact-form-bg: rgba(111,188,172,0.14);
+  --stg-contact-form-border: #6FBCAC;
+  --stg-rekindled-bg: rgba(223,155,87,0.14);
+  --stg-rekindled-border: #DF9B57;
+  --stg-replied-bg: rgba(150,196,106,0.14);
+  --stg-replied-border: #96C46A;
+  --stg-setup-check-bg: rgba(99,190,146,0.14);
+  --stg-setup-check-border: #63BE92;
+  --stg-interested-bg: rgba(124,196,107,0.14);
+  --stg-interested-border: #7CC46B;
+  --stg-potential-bg: rgba(223,160,95,0.14);
+  --stg-potential-border: #DFA05F;
+  --stg-nudge-bg: rgba(208,186,85,0.13);
+  --stg-nudge-border: #D0BA55;
+  --stg-snoozed-bg: rgba(151,162,214,0.15);
+  --stg-snoozed-border: #97A2D6;
+  --stg-re-warm-bg: rgba(220,160,124,0.14);
+  --stg-re-warm-border: #DCA07C;
+  --stg-booked-bg: rgba(111,196,111,0.14);
+  --stg-booked-border: #6FC46F;
+  --stg-client-bg: rgba(95,189,95,0.16);
+  --stg-client-border: #5FBD5F;
+  --stg-payment-awaiting-bg: rgba(211,184,84,0.13);
+  --stg-payment-awaiting-border: #D3B854;
+  --stg-finished-bg: rgba(167,157,167,0.12);
+  --stg-finished-border: #A79DA7;
+  --stg-not-this-offer-bg: rgba(178,150,168,0.13);
+  --stg-not-this-offer-border: #B296A8;
+  --stg-rejected-bg: rgba(206,130,115,0.13);
+  --stg-rejected-border: #CE8273;
+  --stg-invalid-email-bg: rgba(179,146,137,0.12);
+  --stg-invalid-email-border: #B39289;
+  --stg-lost-bg: rgba(168,156,139,0.12);
+  --stg-lost-border: #A89C8B;
+  /* rating chips */
+  --rt-strong-color: #7CC46B;
+  --rt-strong-bg: rgba(124,196,107,0.15);
+  --rt-client-color: #7FA8CC;
+  --rt-client-bg: rgba(127,168,204,0.15);
+  --rt-skip-color: #A89C8B;
+  --rt-skip-bg: rgba(168,156,139,0.13);
+  --rt-orange-color: #DFA05F;
+  --rt-orange-bg: rgba(223,160,95,0.15);
+  --rt-star-color: #D0BA55;
+  --rt-star-bg: rgba(208,186,85,0.14);
+  --rt-hot-color: #DE7E68;
+  --rt-hot-bg: rgba(222,126,104,0.15);
+  --rt-yellow-color: #D3C063;
+  --rt-yellow-bg: rgba(211,192,99,0.14);
+  /* days-ago column */
+  --age-none: #736E67;
+  --age-fresh: #7CC46B;
+  --age-warm: #D0BA55;
+  --age-stale: #DFA05F;
+  --age-cold: #DE7E68;
+  /* misc */
+  --positive-text: #6BC79A;
+  /* reply types */
+  --reply-interested-color: #7CC46B;
+  --reply-interested-bg: rgba(124,196,107,0.14);
+  --reply-defer-color: #D0BA55;
+  --reply-defer-bg: rgba(208,186,85,0.14);
+  --reply-decline-color: #DE7E68;
+  --reply-decline-bg: rgba(222,126,104,0.14);
+}
+
+html[data-theme="light"] {
+  /* Full Bloom, light -- Chapter 8. Cream paper, white panels, charcoal
+     text, neutral structure. Rose is now an accent rather than the room:
+     it marks the brand, the primary button and the focus ring, and nothing
+     else. The all-rose version of this block is in git history. */
+  --bg: #FAF7F3;
+  --panel: #FFFFFF;
+  --surface: #FFFFFF;
+  --card-hover: #F6F1EB;
+  --ink: #2B2529;
+  /* Secondary text is most of what actually gets READ (subs, businesses,
+     meta), so it earns real contrast: 7.5:1 on cream, 8.0:1 on white. */
+  --ink-2: #574E53;
+  --ink-3: #6E646A;
+  --bright: #1A1518;
+  --disabled-bg: #F1ECE6;
+  --disabled-ink: #6E646A;
+  --disabled-line: rgba(58, 48, 52, 0.22);
+  --nav-ink: var(--ink);
+  --line: rgba(58, 48, 52, 0.13);
+  --line-strong: rgba(58, 48, 52, 0.30);
+  --rose: #B8446A;
+  --rose-hover: #A73C60;
+  --rose-deep: #933451;
+  /* Light theme already clears AA with white on rose (4.5:1), so the button
+     tokens are the accent values. Declared anyway so .btn-bloom reads one
+     name in both themes. */
+  --rose-btn: #C0466E;
+  --rose-btn-hover: #AE3D63;
+  --rose-btn-active: #983453;
+  --rose-text: #B8446A;
+  --rose-tint: rgba(184, 68, 106, 0.09);
+  --hairline: rgba(58, 48, 52, 0.13);
+  --rose-line: rgba(184, 68, 106, 0.32);
+  --rose-glow: rgba(184, 68, 106, 0.20);
+  --rose-glow-strong: rgba(184, 68, 106, 0.30);
+  --glass: rgba(255, 255, 255, 0.92);
+  --glass-edge: rgba(255, 255, 255, 1);
+  /* Three semantic hues that are not the brand, so good, waiting and wrong
+     never have to be read off the accent: sage, amber, red. */
+  --leaf: #4A8360;
+  --leaf-text: #3F7350;
+  --leaf-text-rgb: 63 115 80;
+  --gold: #BE8E24;
+  --gold-text: #84671C;
+  --poppy: #C1443B;
+  --poppy-text: #B23A32;
+  /* Same pill, opposite theme: it is dark here, so the danger colour is light. */
+  --on-invert-danger: #FFC9C9;
+  --on-invert-danger-bg: rgba(240, 154, 154, 0.16);
+  --on-invert-danger-border: rgba(240, 154, 154, 0.5);
+  --on-invert-danger-hover-bg: rgba(240, 154, 154, 0.28);
+  --input-bg: #FFFFFF;
+  --control-bg: #F7F3EE;
+  --rose-active: #B8446A;
+  /* Hover is feedback, not decoration. A 12% rose wash on every row made
+     the whole surface pink on the way past; this is a warm neutral that
+     reads as you-are-here without repainting the page. */
+  --hover-wash: rgba(58, 48, 52, 0.06);
+  --hover-wash-soft: rgba(58, 48, 52, 0.035);
+  --backdrop-stroke: #C34E72;
+  --bloom-op1: 0;
+  --bloom-op2: 0;
+  --scroll-thumb: rgba(58, 48, 52, 0.20);
+  --scroll-thumb-hover: rgba(58, 48, 52, 0.34);
+  --selection: rgba(184, 68, 106, 0.18);
+  --focus-ring: rgba(184, 68, 106, 0.50);
+  --edit-glow: rgba(184, 68, 106, 0.14);
+  /* Neutral shadow. A rose-cast one tinted every panel edge pink, which is
+     most of what made white panels read as mauve. */
+  --shadow-card: 0 8px 24px -12px rgba(48, 38, 42, 0.16), 0 1px 3px rgba(48, 38, 42, 0.08);
+  --shadow-pill: 0 2px 6px rgba(48, 38, 42, 0.10);
+  --panel-edge: transparent;
+  --panel-sheen: none;
+  /* The blush aurora. Painted by body::before. */
+  /* The aurora survives, at a fifth of its old strength. At 0.34 it was
+     painting the canvas; at 0.07 it is a warmth you only notice if you look
+     for it, which is what an ambient wash is supposed to be. */
+  --ambient:
+    radial-gradient(38% 46% at 20% 8%, rgba(228, 148, 176, 0.07), transparent 65%),
+    radial-gradient(36% 46% at 84% 14%, rgba(186, 160, 228, 0.05), transparent 66%),
+    radial-gradient(46% 52% at 55% 100%, rgba(244, 196, 170, 0.06), transparent 68%);
+  --muted-rgb: 110 100 106;
+  --mauve-deep-rgb: 176 58 97;
+  color-scheme: light;
+  /* stage chips */
+  --stg-new-bg: #F4E5E9;
+  --stg-new-border: #8E6A8D;
+  --stg-social-media-bg: #F0DBEE;
+  --stg-social-media-border: #9B4A9B;
+  --stg-dm-1-bg: #F8DEF1;
+  --stg-dm-1-border: #B5479E;
+  --stg-dm-2-bg: #F1CBE9;
+  --stg-dm-2-border: #A03C8D;
+  --stg-dm-3-bg: #E9B8DF;
+  --stg-dm-3-border: #8A2F79;
+  --stg-email-1-bg: #FCEFB0;
+  --stg-email-1-border: #B89400;
+  --stg-email-2-bg: #FBD3AE;
+  --stg-email-2-border: #D9711E;
+  --stg-email-3-bg: #F8C4D2;
+  --stg-email-3-border: #C23B63;
+  --stg-email-4-bg: #DECBF3;
+  --stg-email-4-border: #7B4FBF;
+  --stg-email-5-bg: #BDE6DE;
+  --stg-email-5-border: #1E8C7A;
+  --stg-instagram-bg: #F3D9EC;
+  --stg-instagram-border: #B84A8E;
+  --stg-facebook-bg: #D3E0F5;
+  --stg-facebook-border: #3B5998;
+  --stg-linkedin-bg: #CFE0EE;
+  --stg-linkedin-border: #0A66C2;
+  --stg-contact-form-bg: #D3EAE6;
+  --stg-contact-form-border: #3B8C7E;
+  --stg-rekindled-bg: #FBD0A5;
+  --stg-rekindled-border: #C76A1F;
+  --stg-replied-bg: #D2E7BD;
+  --stg-replied-border: #5B8A3E;
+  --stg-setup-check-bg: #CDE8D6;
+  --stg-setup-check-border: #2E8C63;
+  --stg-interested-bg: #B6DCAB;
+  --stg-interested-border: #3D8030;
+  --stg-potential-bg: #FBCEA3;
+  --stg-potential-border: #B86A2A;
+  --stg-nudge-bg: #F2DF92;
+  --stg-nudge-border: #9C8425;
+  --stg-snoozed-bg: #DCE0F0;
+  --stg-snoozed-border: #6B76A8;
+  --stg-re-warm-bg: #FBE0D2;
+  --stg-re-warm-border: #C77A52;
+  --stg-booked-bg: #A4D7A4;
+  --stg-booked-border: #1F7A1F;
+  --stg-client-bg: #9DCC9D;
+  --stg-client-border: #1A6B1A;
+  --stg-payment-awaiting-bg: #FBE6A8;
+  --stg-payment-awaiting-border: #9C7E0F;
+  --stg-finished-bg: #D9D1D9;
+  --stg-finished-border: #6E6577;
+  --stg-not-this-offer-bg: #E4D6DE;
+  --stg-not-this-offer-border: #7E5F72;
+  --stg-rejected-bg: #EED0CC;
+  --stg-rejected-border: #A34A38;
+  --stg-invalid-email-bg: #E6D6D2;
+  --stg-invalid-email-border: #8A6A62;
+  --stg-lost-bg: #D6CCBD;
+  --stg-lost-border: #7A6E5E;
+  /* rating chips */
+  --rt-strong-color: #3D8030;
+  --rt-strong-bg: #D2E7BD;
+  --rt-client-color: #3A6A8B;
+  --rt-client-bg: #C6D9EA;
+  --rt-skip-color: #7A6E5E;
+  --rt-skip-bg: #D6CCBD;
+  --rt-orange-color: #B86A2A;
+  --rt-orange-bg: #FBCEA3;
+  --rt-star-color: #9C8425;
+  --rt-star-bg: #F2DF92;
+  --rt-hot-color: #B23A28;
+  --rt-hot-bg: #FBC4B7;
+  --rt-yellow-color: #A39024;
+  --rt-yellow-bg: #F4E8A0;
+  /* days-ago column */
+  --age-none: #8A8194;
+  --age-fresh: #3D8030;
+  --age-warm: #9C8425;
+  --age-stale: #B86A2A;
+  --age-cold: #B23A28;
+  /* misc */
+  --positive-text: #3E7554;
+  /* reply types */
+  --reply-interested-color: #3D8030;
+  --reply-interested-bg: #D2E7BD;
+  --reply-defer-color: #9C7E0F;
+  --reply-defer-bg: #FBE6A8;
+  --reply-decline-color: #A34A38;
+  --reply-decline-bg: #EED0CC;
+}
+
+html, body {
+  height: 100%;
+  color: var(--ink);
+  font-feature-settings: 'ss01', 'ss02';
+  /* The variable font at 400 reads thin on dark; 430 is the same voice
+     with more ink. Weight utilities (font-medium etc.) still override. */
+  font-weight: 430;
+}
+
+/* Instrument Serif is a light editorial display face (single weight ~400),
+   so the old 640 boost no longer applies — it would synthesise a fake bold.
+   Matches the mock's .ltb-serif: weight 400, tight tracking, snug leading. */
+.font-serif {
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  line-height: 1.05;
+}
+/* The canvas color lives on html only. The body MUST stay transparent:
+   GlassBackdrop is position:fixed with z-index:-2, which paints below the
+   body's own background — an opaque body blocks the backdrop for the first
+   viewport-height of the page (body is height:100%), which looked like
+   "the background only appears when you scroll down". */
+html { background: var(--bg); }
+body { background: transparent; }
+
+::selection { background: var(--selection); }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Editable cell styling.
+   ─────────────────────────────────────────────────────────────────────── */
+/* Editing a cell: a clear accent border is enough. The 3px halo around
+   it was decoration pretending to be feedback. */
+.cell-input {
+  background: var(--input-bg);
+  outline: none;
+  width: 100%;
+  /* Neutral at rest. This was var(--rose), which put a brand-coloured border
+     on every field in the app — so the accent stopped meaning "this is
+     active" and started meaning "this is an input". Rose is now earned by
+     focus, below. */
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-sm);
+  padding: 5px 8px;
+  font: inherit;
+  color: var(--ink);
+}
+.cell-input:hover { border-color: var(--border-strong); }
+.cell-input:focus { border-color: var(--brand-primary); }
+
+.cell-display {
+  padding: 5px 8px;
+  border-radius: 6px;
+  cursor: text;
+  min-height: 28px;
+  display: block;
+  transition: background-color 120ms ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cell-display:hover {
+  background: var(--card-hover);
+}
+
+/* Generic chip used for the stage selector trigger + filter panel rows. */
+.bw-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: filter 120ms ease, box-shadow 120ms ease;
+}
+html[data-theme="dark"] .bw-chip:hover { filter: brightness(1.15); }
+html[data-theme="light"] .bw-chip:hover { filter: brightness(0.97); }
+.bw-chip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+.bw-chip svg { flex-shrink: 0; }
+
+/* Stage <select>. Chevron color is theme-scoped below. */
+select.status-select {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 3px 22px 3px 10px;
+  font-weight: 500;
+  font-size: 13px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  background-size: 10px 7px;
+}
+html[data-theme="dark"] select.status-select {
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23D6D2CC' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+html[data-theme="light"] select.status-select {
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%233A2A32' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+html[data-theme="dark"] select.status-select:hover { filter: brightness(1.15); }
+html[data-theme="light"] select.status-select:hover { filter: brightness(0.97); }
+select.status-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Stage stripe + active row indicator. The stripe was a 6px bar of
+   saturated color on every single row — 1,700 loud edges shouting at
+   once. It's a 2px hint now: still readable as "this row's stage", no
+   longer the first thing your eye lands on. The stage chip in the row
+   carries the actual identity.
+   ─────────────────────────────────────────────────────────────────────── */
+tbody tr > td:first-child {
+  box-shadow: inset 2px 0 0 0 var(--stage-stripe, transparent);
+}
+
+tr[data-active-row="true"] > td {
+  box-shadow:
+    inset 0 2px 0 0 var(--rose-active),
+    inset 0 -2px 0 0 var(--rose-active);
+  background-color: var(--rose-tint) !important;
+}
+tr[data-active-row="true"] > td:first-child {
+  box-shadow:
+    inset 0 2px 0 0 var(--rose-active),
+    inset 0 -2px 0 0 var(--rose-active),
+    inset 2px 0 0 0 var(--rose-active);
+}
+tr[data-active-row="true"] > td:last-child {
+  box-shadow:
+    inset 0 2px 0 0 var(--rose-active),
+    inset 0 -2px 0 0 var(--rose-active),
+    inset -2px 0 0 0 var(--rose-active);
+}
+
+.num-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Native form control polish.
+   ─────────────────────────────────────────────────────────────────────── */
+/* The native checkbox was 14px: below the WCAG 2.2 target-size floor of 24px,
+   and genuinely fiddly to hit when selecting eight rows in a row. Padding does
+   not grow a native checkbox (browsers ignore it on the default appearance),
+   so this draws its own: a 24px box you can hit, with a 15px mark inside it
+   drawn by a transparent border, which is what keeps table rows the same
+   height they have always been. Higher contrast than the accent-color default
+   as a side effect, which matters here. */
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  margin: -4px;
+  border: 5px solid transparent;
+  background-clip: content-box;
+  background-color: var(--input-bg, transparent);
+  box-shadow: inset 0 0 0 1.5px var(--line-strong);
+  border-radius: 9px;
+  cursor: pointer;
+  display: inline-block;
+  vertical-align: middle;
+  position: relative;
+  transition: background-color 0.12s ease, box-shadow 0.12s ease;
+}
+input[type="checkbox"]:hover:not(:disabled) {
+  box-shadow: inset 0 0 0 1.5px var(--rose);
+}
+input[type="checkbox"]:checked {
+  background-color: var(--rose);
+  box-shadow: inset 0 0 0 1.5px var(--rose);
+}
+/* The tick, drawn rather than relying on a font glyph so it is the same on
+   every platform. Sized to the 14px inner box, not the 24px hit box. */
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Same goal for the icon-only buttons inside table rows (edit, trash): the
+   glyph keeps its size, the target reaches 24px, and the row does not grow.
+   A class rather than a blanket rule, so buttons already big enough are left
+   alone and two adjacent icons cannot swallow each other's clicks. */
+.hit-24 {
+  position: relative;
+}
+.hit-24::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: inherit;
+}
+
+input[type="date"] {
+  font: inherit;
+}
+
+.bw-scroll::-webkit-scrollbar { height: 10px; width: 10px; }
+.bw-scroll::-webkit-scrollbar-track { background: transparent; }
+.bw-scroll::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 999px;
+}
+.bw-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--scroll-thumb-hover);
+}
+
+/* ── Fonts (self-hosted) ─────────────────────────────────────────────── */
+
+@font-face{font-family:'Instrument Serif';src:url('/fonts/instrument-serif.ttf') format('truetype');font-style:normal;font-display:swap}
+@font-face{font-family:'Instrument Serif';src:url('/fonts/instrument-serif-italic.ttf') format('truetype');font-style:italic;font-display:swap}
+@font-face{font-family:'Instrument Sans';src:url('/fonts/instrument-sans-var.ttf') format('truetype-variations');font-weight:100 900;font-display:swap}
+/* IBM Plex Mono — the editorial data/micro-label face from the mock. */
+@font-face{font-family:'IBM Plex Mono';src:url('/fonts/ibm-plex-mono-400.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'IBM Plex Mono';src:url('/fonts/ibm-plex-mono-500.woff2') format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'IBM Plex Mono';src:url('/fonts/ibm-plex-mono-600.woff2') format('woff2');font-weight:600;font-display:swap}
+
+/* ── Glass surfaces (Full Bloom: frosted panels over the aurora) ────── */
+
+.glass-panel{
+  background: var(--glass, var(--surface));
+  border: 1px solid var(--glass-edge, var(--line));
+  border-radius: 10px;
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.glass-control{
+  background: var(--control-bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+/* The one global focus ring. Keyboard only — the focus:outline-none
+   utilities scattered through the JSX suppress the mouse outline, which is
+   intended, and :focus-visible still paints here. Points at the semantic
+   token so the colour has one source of truth. */
+:where(a,button,input,select,textarea,summary,[tabindex]):focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+
+/* Mention chips: "@" links to prospects and pages read as chips, not
+   plain text, and click through to the drawer / page. */
+.rich-editor a[href^="#prospect-"],
+.rich-editor a[href^="#page-"]{
+  color: var(--rose-text);
+  background: var(--rose-tint);
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.rich-editor a[href^="#prospect-"]:hover,
+.rich-editor a[href^="#page-"]:hover{ background: var(--rose-glow); }
+
+/* ── Scan progress ─────────────────────────────────────────────────────
+   Third attempt. It was a bee on a track, then a glittery pink pill that
+   read as candy rather than work. A progress bar's whole job is to say
+   "something is happening and here is how far in you are" — so: full
+   width, thin, a real fill that advances, and a moving sheen that stops
+   the eye asking whether it froze. No sparkles. */
+.scanbar{
+  position:relative;
+  height:6px;
+  border-radius:999px;
+  background:var(--hover-wash);
+  overflow:hidden;
+}
+.scanbar-fill{
+  position:absolute; inset:0 auto 0 0;
+  border-radius:999px;
+  background:var(--rose);
+  transition:width .9s cubic-bezier(.22,.61,.36,1);
+}
+/* The sheen rides the filled part only, so it reads as activity inside
+   the progress rather than a decoration floating over the whole bar. */
+.scanbar-fill::after{
+  content:'';
+  position:absolute; inset:0;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent);
+  background-size:90px 100%;
+  background-repeat:no-repeat;
+  animation:scanbar-sheen 1.4s linear infinite;
+}
+@keyframes scanbar-sheen{
+  0%{ background-position:-90px 0 }
+  100%{ background-position:calc(100% + 90px) 0 }
+}
+/* Scan bar keeps flowing under reduced-motion (in-place, matches the mock). */
+
+/* ── Primary button: the product's own, not anybody's ────────────────
+   Rose-to-deep gradient with an inner highlight, a soft bloom shadow,
+   brighten on hover, a real press on click. Swap-in for the old flat
+   bg-rose primaries via the btn-bloom class. */
+/* Flat accent fill. The gradient-plus-glow version this replaces was the
+   most generated-looking thing in the app — real product buttons are a
+   solid color that gets slightly lighter on hover and slightly darker on
+   press. That's the whole recipe. */
+.btn-bloom{
+  background:var(--rose-btn);
+  color:#fff;
+  /* Full Bloom: the primary action carries real depth — a rose glow under
+     it, a light rim on top, and a small lift on hover. */
+  box-shadow: 0 5px 14px var(--rose-glow), inset 0 1px 0 rgba(255,255,255,0.22);
+  transition:background-color .12s ease, transform .18s ease, box-shadow .18s ease;
+}
+.btn-bloom:hover:not(:disabled){
+  background:var(--rose-btn-hover);
+  transform:translateY(-1px);
+  box-shadow: 0 8px 20px var(--rose-glow-strong), inset 0 1px 0 rgba(255,255,255,0.22);
+}
+.btn-bloom:active:not(:disabled){ background:var(--rose-btn-active); transform:none; }
+.btn-bloom:disabled{ opacity:.38 }
+
+/* ══ The visual system (UI Chapter 7) ══════════════════════════════════
+   Re-derived from measured usage, not taste. The app carried 25 distinct
+   font sizes (325 uses of 12px, 271 of 13px, 98 of 12.5px, down to single
+   uses of 19/23/28/40/42px) and 19 radii. Quarter-pixel steps cannot be
+   perceived, so they were not hierarchy; they were drift.
+
+   Five type roles, four radii. Each role names a job, so a component asks
+   "what is this text for" rather than "what number did the last one use".
+   Both fonts are the ones already shipping; nothing new is introduced. */
+
+:root{
+  /* No new scale is invented here. The repo already defines --fs-* and
+     --r-* further down; this chapter's job was to make components USE
+     them instead of 25 raw pixel sizes and 19 raw radii. The classes
+     below are the bridge, and they read from those existing tokens. */
+}
+
+/* Semantic type classes. Each pins size AND line-height, because the drift
+   this replaces was half leading and half size. */
+/* Text size. Local preference, set on <html> by the boot script and the
+   Settings control. Comfortable is the Chapter 9 default and needs no rule.
+   Compact is deliberately not "small": at -1 it lands on 31/23/18/15/14/13,
+   which is the Chapter 8 scale, and that is the floor. */
+/* Compact is the default and so carries no attribute: the :root value below
+   already IS compact. The other two step up from it. */
+html[data-textsize="comfortable"] { --fs-step: 0px; }  /* 32/24/19/16/15/14 */
+html[data-textsize="large"]       { --fs-step: 2px; }  /* 34/26/21/18/17/16 */
+
+.ui-display{ font-size:var(--fs-page);    line-height:1.2; }
+.ui-heading{ font-size:var(--fs-card);    line-height:1.4;  font-weight:600; }
+/* 430 is the body weight the app ships; UI text at small sizes needs more
+   spine than editorial prose does, so the roles that carry meaning ask for
+   it explicitly rather than relying on colour to feel present. */
+.ui-body{    font-size:var(--fs-body);    line-height:1.55; font-weight:450; }
+.ui-small{   font-size:var(--fs-label);   line-height:1.5;  font-weight:450; }
+/* Meta is the floor. Never used for anything a person must read to act,
+   and never in --ink-3 at small sizes on light (see the token note). */
+.ui-meta{    font-size:var(--fs-meta);    line-height:1.4; letter-spacing:0.01em; }
+
+.r-sm{ border-radius:var(--r-sm) }
+.r-md{ border-radius:var(--r-md) }
+.r-lg{ border-radius:var(--r-lg) }
+.r-pill{ border-radius:var(--r-full) }
+
+/* ── Disabled, stated rather than faded ───────────────────────────────
+   Measured: `disabled:opacity-50` over --ink-2 renders 2.22:1 on the light
+   panel, and over the old --ink-3 as low as 1.69:1. A disabled control
+   still has to be readable, so it gets its own solid tokens. */
+.is-disabled:disabled,
+.ui-control:disabled{
+  background:var(--disabled-bg);
+  color:var(--disabled-ink);
+  box-shadow:inset 0 0 0 1px var(--disabled-line);
+  cursor:not-allowed;
+  opacity:1;
+}
+.ui-control:disabled:hover{ background:var(--disabled-bg); transform:none; }
+
+/* ── Control vocabulary ───────────────────────────────────────────────
+   The global shape of the hierarchy Chapter 5 defines semantically on the
+   approval surface. Chapter 5's own classes (btn-send, btn-approve,
+   btn-approve-2nd, btn-danger-quiet, btn-retry-quiet, switch-pill) sit on
+   top of this and are deliberately NOT redefined here, so the two systems
+   compose instead of fighting. */
+.ui-secondary{
+  background:transparent; color:var(--ink);
+  box-shadow:inset 0 0 0 1px var(--line-strong);
+  border-radius:var(--radius-md);
+  transition:background-color .12s ease, box-shadow .12s ease;
+}
+.ui-secondary:hover:not(:disabled){ background:var(--card-hover); box-shadow:inset 0 0 0 1px var(--rose-line); }
+.ui-secondary:focus-visible{ outline:2px solid var(--rose-text); outline-offset:2px; }
+
+.ui-quiet{
+  background:transparent; color:var(--ink-2);
+  border-radius:var(--radius-md);
+  transition:background-color .12s ease, color .12s ease;
+}
+.ui-quiet:hover:not(:disabled){ background:var(--card-hover); color:var(--ink); }
+.ui-quiet:focus-visible{ outline:2px solid var(--rose-text); outline-offset:2px; }
+
+/* Focus is a system property, not a per-button decision. */
+.btn-bloom:focus-visible{ outline:2px solid var(--rose-text); outline-offset:2px; }
+
+/* ── Approval-surface action vocabulary (UI Chapter 5) ────────────────
+   One consequence level, one look. Scoped to the approval card by usage:
+   btn-bloom itself is untouched and the rest of the app keeps it.
+
+   send        the only action that emails a human. Filled, ringed, alone.
+   approve     agreeing to words. Filled but calm; visibly not the send.
+   approve-2nd the wider consent (whole sequence). Outline; broader in words,
+               quieter in pixels, so scope is read, not guessed.
+   danger-quiet skip/close/discard. Kept out of the forward path's palette.
+   retry-quiet  the one retry style this surface uses.
+   switch-pill  a permission with state, not a command. */
+.btn-send{
+  background:var(--rose-btn); color:#fff;
+  box-shadow: 0 0 0 1.5px var(--rose-btn), 0 0 0 4px var(--rose-tint), 0 6px 16px var(--rose-glow-strong), inset 0 1px 0 rgba(255,255,255,0.22);
+  transition:background-color .12s ease, transform .18s ease, box-shadow .18s ease;
+}
+.btn-send:hover:not(:disabled){ background:var(--rose-btn-hover); transform:translateY(-1px); }
+.btn-send:active:not(:disabled){ background:var(--rose-btn-active); transform:none; }
+/* Disabled stays readable: a solid muted control, never stacked opacity. */
+.btn-send:disabled{ background:var(--control-bg); color:var(--ink-2); box-shadow:inset 0 0 0 1px var(--line-strong); cursor:not-allowed; }
+.btn-send:focus-visible{ outline:2px solid var(--rose-text); outline-offset:2px; }
+
+.btn-approve{
+  background:var(--rose-tint); color:var(--rose-text);
+  box-shadow:inset 0 0 0 1px var(--rose-line);
+  transition:background-color .12s ease;
+}
+.btn-approve:hover:not(:disabled){ background:var(--rose-glow); }
+.btn-approve:disabled{ background:var(--control-bg); color:var(--ink-2); box-shadow:inset 0 0 0 1px var(--line-strong); cursor:not-allowed; }
+.btn-approve:focus-visible{ outline:2px solid var(--rose-text); outline-offset:2px; }
+
+.btn-approve-2nd{
+  background:transparent; color:var(--ink);
+  box-shadow:inset 0 0 0 1px var(--rose-line);
+  transition:background-color .12s ease;
+}
+.btn-approve-2nd:hover:not(:disabled){ background:var(--rose-tint); }
+.btn-approve-2nd:disabled{ color:var(--ink-2); box-shadow:inset 0 0 0 1px var(--line); cursor:not-allowed; }
+.btn-approve-2nd:focus-visible{ outline:2px solid var(--rose-text); outline-offset:2px; }
+
+.btn-danger-quiet{
+  background:transparent; color:var(--poppy-text);
+  box-shadow:inset 0 0 0 1px transparent;
+  transition:background-color .12s ease, box-shadow .12s ease;
+}
+.btn-danger-quiet:hover:not(:disabled){ box-shadow:inset 0 0 0 1px var(--poppy-text); }
+.btn-danger-quiet:disabled{ color:var(--ink-2); cursor:not-allowed; }
+.btn-danger-quiet:focus-visible{ outline:2px solid var(--poppy-text); outline-offset:2px; }
+
+.btn-retry-quiet{
+  background:transparent; color:var(--ink-2);
+  box-shadow:inset 0 0 0 1px var(--line-strong);
+  transition:background-color .12s ease;
+}
+.btn-retry-quiet:hover:not(:disabled){ background:var(--hover-wash-soft, var(--rose-tint)); color:var(--ink); }
+.btn-retry-quiet:focus-visible{ outline:2px solid var(--rose-text); outline-offset:2px; }
+
+/* The permission switch. A pill that is visibly somewhere: left/off is a
+   hollow track, right/on fills rose. State lives in aria-checked. */
+.switch-pill{
+  position:relative; width:40px; height:22px; border-radius:11px; flex:none;
+  background:var(--control-bg);
+  box-shadow:inset 0 0 0 1.5px var(--line-strong);
+  transition:background-color .15s ease, box-shadow .15s ease;
+}
+.switch-pill[aria-checked="true"]{ background:var(--rose-btn); box-shadow:none; }
+.switch-pill .switch-knob{
+  position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%;
+  background:var(--ink-2); transition:transform .15s ease, background-color .15s ease;
+}
+.switch-pill[aria-checked="true"] .switch-knob{ transform:translateX(18px); background:#fff; }
+.switch-pill:disabled{ box-shadow:inset 0 0 0 1.5px var(--line); cursor:not-allowed; }
+.switch-pill:focus-visible{ outline:2px solid var(--rose-text); outline-offset:2px; }
+
+/* ── AI Hive cards ───────────────────────────────────────────────────
+   The lift-and-glow hover and the staggered fly-in are gone: motion that
+   announces itself is the thing that reads as generated. What's left is a
+   quiet surface change on hover and the buzz while a bee actually works
+   — motion that means something. */
+.hive-card{ transition:background-color .12s ease, border-color .12s ease }
+.hive-card:hover{ background:var(--card-hover); border-color:var(--line-strong) }
+.hive-card{ background:var(--panel); border-color:var(--line-strong); box-shadow:var(--shadow-card); }
+/* Was hive-buzz: a +/-5deg rotate at 0.5s, the most cartoonish motion in the
+   app. A working badge now breathes instead of shaking — same "this is alive"
+   signal, none of the wobble. */
+.hive-working{ animation:hive-working 2.4s var(--ease-glide) infinite }
+@keyframes hive-working{
+  0%,100%{ transform:scale(1); opacity:1 }
+  50%{ transform:scale(.965); opacity:.86 }
+}
+
+/* ── Rich text editor (Notion-style pages) ───────────────────────────── */
+
+.rich-editor .ProseMirror {
+  /* Notion-style: a page canvas, not a boxed input. No border, no bg. */
+  min-height: 60vh;
+  padding: 6px 2px 140px;
+  outline: none;
+  color: var(--ink);
+  font-size: 15.5px;
+  line-height: 1.7;
+}
+.rich-editor .ProseMirror img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 10px 0;
+  display: block;
+}
+.rich-editor .ProseMirror img.ProseMirror-selectednode {
+  outline: 2px solid var(--rose-text);
+  outline-offset: 2px;
+}
+.rich-editor .ProseMirror div[data-youtube-video] {
+  margin: 12px 0;
+}
+.rich-editor .ProseMirror div[data-youtube-video] iframe {
+  max-width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
+.rich-editor .ProseMirror h1 { font-weight: 650; letter-spacing: -0.015em; font-size: 28px; color: var(--bright); margin: 18px 0 6px; }
+.rich-editor .ProseMirror h2 { font-weight: 650; letter-spacing: -0.015em; font-size: 22px; color: var(--bright); margin: 16px 0 5px; }
+.rich-editor .ProseMirror h3 { font-size: 17px; font-weight: 600; color: var(--bright); margin: 14px 0 4px; }
+.rich-editor .ProseMirror p { margin: 4px 0; }
+.rich-editor .ProseMirror ul, .rich-editor .ProseMirror ol { padding-left: 22px; margin: 4px 0; }
+.rich-editor .ProseMirror ul { list-style: disc; }
+.rich-editor .ProseMirror ol { list-style: decimal; }
+.rich-editor .ProseMirror blockquote { border-left: 3px solid var(--rose-line); padding-left: 12px; color: var(--ink-2); margin: 8px 0; }
+.rich-editor .ProseMirror code { background: var(--card-hover); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+.rich-editor .ProseMirror pre { background: var(--card-hover); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin: 8px 0; overflow-x: auto; }
+.rich-editor .ProseMirror pre code { background: none; border: none; padding: 0; }
+.rich-editor .ProseMirror hr { border: none; border-top: 1px solid var(--line-strong); margin: 14px 0; }
+.rich-editor .ProseMirror ul[data-type="taskList"] { list-style: none; padding-left: 2px; }
+.rich-editor .ProseMirror ul[data-type="taskList"] li { display: flex; gap: 8px; align-items: flex-start; }
+.rich-editor .ProseMirror ul[data-type="taskList"] li > label { margin-top: 3px; }
+.rich-editor .ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div { color: var(--ink-3); text-decoration: line-through; }
+/* Tables. A wide table scrolls inside its own wrapper so the page body
+   never scrolls sideways. */
+.rich-editor .ProseMirror table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 12px 0;
+  overflow: hidden;
+  font-size: 13.5px;
+}
+.rich-editor .ProseMirror table td,
+.rich-editor .ProseMirror table th {
+  border: 1px solid var(--line-strong);
+  padding: 7px 10px;
+  vertical-align: top;
+  position: relative;
+  min-width: 80px;
+}
+.rich-editor .ProseMirror table th {
+  background: var(--card-hover);
+  color: var(--bright);
+  font-weight: 600;
+  text-align: left;
+}
+.rich-editor .ProseMirror table p { margin: 0; }
+.rich-editor .ProseMirror table .selectedCell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--rose-tint);
+  pointer-events: none;
+}
+.rich-editor .ProseMirror .tableWrapper { overflow-x: auto; }
+.rich-editor .ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--rose-line);
+  pointer-events: none;
+}
+.rich-editor .ProseMirror.resize-cursor { cursor: col-resize; }
+
+.rich-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--ink-3);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+
+/* ── Premium polish layer ─────────────────────────────────────────────── */
+
+/* Ambient light: a faint rose glow bleeding from the top of the canvas. */
+body::before {
+  content: "";
+  position: fixed;
+  /* Oversized so the breathe transform never exposes an edge. */
+  inset: -12%;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--ambient);
+  /* The aurora drifts, very slowly. Transform-only, so it stays on the
+     compositor and costs nothing next to a 5,000-row table. */
+  animation: ambient-breathe 16s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes ambient-breathe {
+  from { transform: translate3d(-1.2%, -0.8%, 0) scale(1.01); }
+  to { transform: translate3d(1.2%, 1%, 0) scale(1.05); }
+}
+/* Reduced motion, honoured properly rather than only on the background.
+   Two rules, because "turn everything off" is the wrong answer: a spinner
+   that stops spinning reads as a hung app, and that is a worse outcome than
+   the motion was.
+   1. Decorative and transitional movement goes: the breathing background, the
+      row and panel entrances, the hovering bee, the press-scale on buttons.
+   2. Anything that reports live progress keeps animating, slowed down and
+      with the travel taken out where it can be, so it still says "working"
+      without sliding across the screen. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  button:active:not(:disabled) { transform: none; }
+
+  /* The exceptions: still moving, just calmer. BloomSpinner and the two
+     BloomProgress forms are the app's only "this is running" signals. */
+  .ltb-bloom-spin,
+  .ltb-bloom-spin *,
+  .ltb-loop,
+  .ltb-loop *,
+  .ltb-track,
+  .ltb-track * {
+    animation-duration: 1.8s !important;
+    animation-iteration-count: infinite !important;
+  }
+}
+
+/* Match the mock's .ltb-serif tracking exactly. */
+.font-serif { letter-spacing: -0.005em; }
+
+/* Every interactive element responds on the same curve; presses feel
+   physical. Transform-only, so no layout shift. */
+button {
+  transition: background-color 0.18s ease, color 0.18s ease,
+    border-color 0.18s ease, box-shadow 0.18s ease, transform 0.1s ease,
+    opacity 0.18s ease;
+}
+button:active:not(:disabled) { transform: scale(0.985); }
+
+/* Primary rose actions: a soft top sheen and a glow when hovered. */
+.bg-rose {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0) 55%);
+}
+.bg-rose:hover { box-shadow: 0 6px 20px -6px rgba(184, 76, 114, 0.55); }
+
+/* Sidebar: the active row gets a rose accent bar. */
+aside .bg-rose-tint { box-shadow: inset 2.5px 0 0 var(--rose-text); }
+
+/* Inputs settle into focus instead of snapping. */
+.cell-input { transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease; }
+
+
+
+/* Hairline scrollbar: invisible until you scroll or hover. */
+/* The scrollbar's SPACE is constant and only its colour appears on hover.
+   The old rules switched the width itself (none → thin, 0 → 7px), so the
+   gutter materialized on hover and shoved the whole layout sideways by a
+   scrollbar's width — the "why does this move when I hover" Ary caught. */
+.slim-scroll { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+.slim-scroll:hover { scrollbar-color: var(--line-strong) transparent; }
+.slim-scroll::-webkit-scrollbar { width: 7px; height: 7px; }
+.slim-scroll::-webkit-scrollbar-track { background: transparent; }
+.slim-scroll::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; }
+.slim-scroll:hover::-webkit-scrollbar-thumb { background: var(--line-strong); }
+
+/* The pet bee's idle bob is gone: motion that never stops is decoration the
+   user has to read past. The bee still reacts on hover, which is motion that
+   answers something. */
+.bee-bob { transition: transform var(--dur-base) var(--ease-glide); }
+.bee-bob:hover { transform: translateY(-3px); }
+
+/* Drag-and-drop drop indicator: a rose bar above the hovered sidebar tab. */
+.ltb-drop-before { box-shadow: inset 0 2px 0 0 var(--rose); }
+
+/* ── Skeleton loading: shimmer placeholders instead of "Loading…" text ── */
+.skeleton {
+  border-radius: 8px;
+  background: var(--hover-wash-soft);
+  position: relative;
+  overflow: hidden;
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--hover-wash), transparent);
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+/* Was a 6px fade-up on everything. Now a masked reveal: the content is
+   uncovered rather than flown in, which reads as the page settling instead of
+   as an animation playing. */
+.rise-in { animation: reveal-settle var(--dur-settle) var(--ease-enter) both; }
+@keyframes reveal-settle {
+  from { opacity: 0; clip-path: inset(0 0 14% 0); transform: translateY(2px); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); transform: none; }
+}
+
+
+/* ── Motion tokens ────────────────────────────────────────────────────
+   The audit found 604 elements sharing one duration and one curve. These
+   exist so a delete confirm and a nav hover stop moving identically. */
+:root{
+  --dur-instant:90ms; --dur-quick:140ms; --dur-base:200ms;
+  --dur-settle:280ms; --dur-slow:460ms; --dur-bloom:900ms;
+  /* Productive motion: state changes, dropdowns, rows, buttons. */
+  --motion-productive:cubic-bezier(0.2, 0, 0.38, 0.9);
+  --motion-enter:cubic-bezier(0, 0, 0.38, 0.9);
+  --motion-exit:cubic-bezier(0.2, 0, 1, 0.9);
+  --ease-glide:cubic-bezier(0.22,0.61,0.36,1);
+  --ease-enter:cubic-bezier(0.16,1,0.3,1);
+  --ease-exit:cubic-bezier(0.55,0,1,0.45);
+  --ease-grow:cubic-bezier(0.34,0.02,0.2,1);
+  --ease-alight:cubic-bezier(0.34,1.28,0.64,1);
+  /* Butterfly: muted brand tones. No glow, no gradient. */
+  --bf-line:var(--rose-text);
+  --bf-body:var(--ink-3);
+  --bf-fill:color-mix(in srgb, var(--rose) 26%, transparent);
+  --bf-fill-soft:color-mix(in srgb, var(--rose) 15%, transparent);
+}
+
+/* ── Butterfly ───────────────────────────────────────────────────────
+   Two wings on slightly different periods so they drift out of phase the
+   way a real one does. Perfect sync is what makes it read as clip art. */
+/* view-box (not fill-box) so transform-origin 16px 16px is the SVG body centre
+   — both wings pivot from the body. With fill-box the origin was measured from
+   each wing's own box and the right wing detached while flapping. Matches the
+   mock's .ltb-wing exactly. */
+.ltb-butterfly .ltb-wing{ transform-box:view-box; transform-origin:16px 16px; }
+.ltb-butterfly.is-flapping .ltb-wing-l{ animation:ltb-flap-l var(--flap,.28s) ease-in-out infinite; }
+.ltb-butterfly.is-flapping .ltb-wing-r{ animation:ltb-flap-r calc(var(--flap,.28s) * 1.13) ease-in-out infinite; }
+@keyframes ltb-flap-l{ 0%,100%{ transform:scaleX(1) } 50%{ transform:scaleX(.34) } }
+@keyframes ltb-flap-r{ 0%,100%{ transform:scaleX(1) } 50%{ transform:scaleX(.38) } }
+
+/* ── BloomProgress ───────────────────────────────────────────────────
+   Three states, three compositions. Indeterminate shares no geometry with
+   determinate on purpose: a track implies a position, and a position implies
+   progress that an indeterminate run does not have. */
+.ltb-bloom{ width:100%; text-align:center; }
+
+/* Indeterminate: a small area with something alive in it. No track, no
+   endpoint, no percentage. */
+.ltb-loop{ display:block; width:140px; height:52px; margin:0 auto; overflow:visible; }
+.ltb-trail line{ stroke:var(--rose); stroke-width:1.6; stroke-linecap:round; }
+
+/* Determinate: a real track, filled to the real number. */
+.ltb-track{ display:block; width:100%; max-width:260px; height:28px; margin:0 auto; overflow:visible; }
+.ltb-track-rest{ stroke:var(--line-strong); stroke-width:2; stroke-linecap:round; }
+.ltb-track-fill{ stroke:var(--rose); stroke-width:2.6; stroke-linecap:round; }
+.ltb-bloom--error .ltb-track-fill{ stroke:var(--poppy-text); }
+
+.ltb-flower-core{ fill:var(--rose); }
+.ltb-petal{ fill:var(--rose); opacity:.8; transform-box:fill-box; transform-origin:center bottom; }
+.ltb-bloom--complete .ltb-petal{ animation:ltb-open var(--dur-slow) var(--motion-enter) both; }
+.ltb-bloom--complete .ltb-petal:nth-child(2){ animation-delay:40ms }
+.ltb-bloom--complete .ltb-petal:nth-child(3){ animation-delay:80ms }
+.ltb-bloom--complete .ltb-petal:nth-child(4){ animation-delay:120ms }
+.ltb-bloom--complete .ltb-petal:nth-child(5){ animation-delay:160ms }
+@keyframes ltb-open{
+  from{ opacity:0; transform:scale(.2) }
+  to{ opacity:.8; transform:scale(1) }
+}
+
+.ltb-bloom-label{ margin-top:2px; font-size:13px; color:var(--ink); }
+.ltb-bloom-count{ color:var(--ink-2); font-variant-numeric:tabular-nums; }
+.ltb-bloom-note{ margin-top:2px; font-size:12px; color:var(--ink-3); }
+
+/* Reduced motion: every state becomes a still picture that still tells the
+   truth. No flight, no flapping, no breathing — breathing is motion. */
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   SEMANTIC TOKEN LAYER (Phase 2)
+
+   The audit found 14 radii, 25 type sizes, 2 shadow levels and zero
+   semantic surface tokens. Nothing here changes a layout — it gives every
+   later phase a scale to defer to instead of picking a locally reasonable
+   value, which is how 12/12.5/13/13.5px happened in the first place.
+
+   Two deliberate visual changes, both accessibility fixes:
+     · --text-muted now meets WCAG AA (was 3.76:1 dark, 3.20:1 light)
+     · a real focus ring, because focus:outline-none appears 40 times in
+       the JSX and the stylesheet had 2 focus-visible rules
+   ══════════════════════════════════════════════════════════════════════ */
+
+:root, html[data-theme="dark"] {
+  /* Full Bloom night: the same espresso-plum family as the legacy tokens
+     above, stepped by value. */
+  --canvas: #11141A;
+  --surface-sunken: #0D1014;   /* queues, table wells, filter groups */
+  --surface-default: #161A20;  /* ordinary page content */
+  --surface-subtle: #191D24;   /* quiet grouping inside content */
+  --surface-raised: #242932;   /* ONE focal surface per page */
+  --surface-overlay: #2A2F39;  /* dialogs, menus, floating toolbars only */
+
+  --border-subtle: rgba(232,236,242,0.06);
+  --border-default: rgba(232,236,242,0.11);
+  --border-strong: rgba(232,236,242,0.28);
+
+  --text-primary: #F5F2ED;
+  --text-secondary: #C8C5BF;
+  --text-muted: #9F9C97;       /* 6.7:1 on canvas, 5.3:1 on the raised surface */
+
+  --brand-primary: #DE7594;
+  --brand-subtle: rgba(222,117,148,0.13);
+
+  --success: #7FCFA4;
+  --warning: #E3B665;
+  --danger: #EE8F79;
+  /* Chapter 9: a fourth semantic, for information that is neither good nor
+     bad. Without it, "here is a fact" had to borrow the accent or a status
+     hue and pick up a meaning it did not have. */
+  --info: #8FB4D4;
+
+  --focus-ring: #F2A0B6;
+
+  --shadow-raised: 0 1px 3px rgba(0,0,0,0.5);
+  --shadow-overlay: 0 16px 40px -12px rgba(0,0,0,0.7);
+}
+
+html[data-theme="light"] {
+  --canvas: #FAF7F3;
+  --surface-sunken: #F2EDE7;
+  --surface-default: #FFFFFF;
+  --surface-subtle: #F7F3EE;
+  --surface-raised: #FFFFFF;
+  --surface-overlay: #FFFFFF;
+
+  --border-subtle: rgba(58,48,52,0.08);
+  --border-default: rgba(58,48,52,0.13);
+  --border-strong: rgba(58,48,52,0.30);
+
+  --text-primary: #2B2529;
+  --text-secondary: #574E53;
+  /* Muted text is drawn on both the cream canvas and white panels, so it is
+     measured against both: 5.32:1 on canvas, 5.68:1 on panel. */
+  --text-muted: #6E646A;
+
+  --brand-primary: #B8446A;
+  --brand-subtle: rgba(184,68,106,0.09);
+
+  --success: #3F7350;
+  --warning: #84671C;
+  --danger: #B23A32;
+  --info: #3A6B96;
+
+  --focus-ring: #B8446A;
+
+  --shadow-raised: 0 1px 3px rgba(48,38,42,0.10);
+  --shadow-overlay: 0 16px 40px -12px rgba(48,38,42,0.22);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   SEMANTIC FAMILIES (Chapter 10)
+
+   Five meanings, five colours, declared once:
+
+     info     something is being told to you   — replies, conversation
+     good     something is done or healthy     — approved, sent, complete
+     wait     something wants you, calmly      — due, waiting, needs a look
+     bad      something is wrong or forbidden  — failed, do-not-contact
+     brand    the brand, and primary actions   — and nothing else
+     neutral  a fact with no judgement
+
+   Each family has an ink (text and icon), a bg (a tint of itself) and a
+   line. Colour is never the only signal — see lib/semantic.mjs, where every
+   concept also carries an icon and a word.
+   ══════════════════════════════════════════════════════════════════════ */
+html[data-theme="light"] {
+  --tone-info-ink: #2F6491;   --tone-info-bg: rgba(47,100,145,0.10);   --tone-info-line: rgba(47,100,145,0.28);
+  --tone-good-ink: #33704A;   --tone-good-bg: rgba(51,112,74,0.10);    --tone-good-line: rgba(51,112,74,0.28);
+  --tone-wait-ink: #7C6011;   --tone-wait-bg: rgba(124,96,17,0.10);    --tone-wait-line: rgba(124,96,17,0.28);
+  --tone-bad-ink:  #A8321C;   --tone-bad-bg:  rgba(168,50,28,0.10);    --tone-bad-line:  rgba(168,50,28,0.28);
+  --tone-brand-ink:#A93C60;   --tone-brand-bg:rgba(169,60,96,0.10);    --tone-brand-line:rgba(169,60,96,0.28);
+  --tone-neutral-ink: #574E53; --tone-neutral-bg: rgba(87,78,83,0.07); --tone-neutral-line: rgba(87,78,83,0.22);
+}
+
+:root, html[data-theme="dark"] {
+  --tone-info-ink: #8FBEE6;   --tone-info-bg: rgba(143,190,230,0.14);  --tone-info-line: rgba(143,190,230,0.30);
+  --tone-good-ink: #79D3A3;   --tone-good-bg: rgba(121,211,163,0.13);  --tone-good-line: rgba(121,211,163,0.30);
+  /* Amber and red were 45 apart in the first draft, which is a waiting pill
+     and a danger pill that look the same at a glance. Amber went yellower
+     and red went redder: 74 apart now, the closest of the five. */
+  --tone-wait-ink: #EFC85F;   --tone-wait-bg: rgba(239,200,95,0.13);   --tone-wait-line: rgba(239,200,95,0.30);
+  --tone-bad-ink:  #F0796B;   --tone-bad-bg:  rgba(240,121,107,0.13);  --tone-bad-line:  rgba(240,121,107,0.30);
+  --tone-brand-ink:#F2A0B6;   --tone-brand-bg:rgba(242,160,182,0.13);  --tone-brand-line:rgba(242,160,182,0.30);
+  --tone-neutral-ink: #C8C5BF; --tone-neutral-bg: rgba(200,197,191,0.09); --tone-neutral-line: rgba(200,197,191,0.22);
+}
+
+/* A status pill. Compact, one line, always icon + word — never colour alone.
+   Deliberately not rounded-full: a stadium pill next to a 6px-radius card is
+   the decorative-SaaS look Ary asked not to have. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--tone-line, var(--tone-neutral-line));
+  background: var(--tone-bg, var(--tone-neutral-bg));
+  color: var(--tone-ink, var(--tone-neutral-ink));
+  font-size: var(--fs-meta);
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+/* The square that carries a concept's icon at the head of a card or row.
+   Flat: the gradient-plus-coloured-shadow treatment of IconTile reads as a
+   product-tour illustration, which is exactly the slop this chapter is
+   trying not to add. */
+.tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border-radius: var(--r-md);
+  border: 1px solid var(--tone-line, var(--tone-neutral-line));
+  background: var(--tone-bg, var(--tone-neutral-bg));
+  color: var(--tone-ink, var(--tone-neutral-ink));
+}
+
+/* A card's left edge, in its family's colour. Two pixels: enough to locate a
+   row in a list at a glance, not enough to tint the card. */
+.edge-tone { box-shadow: inset 3px 0 0 0 var(--tone-ink, transparent); }
+
+/* One compact metadata item: an icon and a value, sharing a baseline. */
+.meta-item { display: inline-flex; align-items: center; gap: 4px; }
+
+/* One radius scale. 6/7/8/9/10px were the same decision made five times. */
+:root {
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --r-full: 999px;
+
+  /* One type scale, by role rather than by pixel.
+     Chapter 8 raised it once. Chapter 9 raises it again: "still too small,
+     even on a big screen". The floor moved from 13px to 14px, so nothing a
+     person reads is smaller than what used to be body text two chapters ago.
+
+     Every value is derived from --fs-step, which is what the Text size
+     preference moves. Comfortable is 0, Large is +1, Compact is -1 — and
+     Compact bottoms out at the Chapter 8 scale, never below it. */
+  /* -1 from the Chapter 9 numbers: Compact is where the app now starts. */
+  --fs-step: -1px;
+  --fs-page: calc(32px + var(--fs-step));
+  --fs-section: calc(24px + var(--fs-step));
+  --fs-card: calc(19px + var(--fs-step));
+  --fs-body: calc(16px + var(--fs-step));
+  --fs-label: calc(15px + var(--fs-step));
+  --fs-meta: calc(14px + var(--fs-step));
+  --fs-table: calc(15px + var(--fs-step));
+}
+
+/* The muted token feeds the existing --ink-3, so every current use of
+   text-ink-3 inherits the accessible value without touching a component. */
+:root, html[data-theme="dark"] { --ink-3: var(--text-muted); }
+html[data-theme="light"] { --ink-3: var(--text-muted); }
+
+/* Focus: there is exactly ONE global rule and it lives above, near the other
+   base styles. The audit claimed focus was stripped 40 times; that was wrong.
+   The focus:outline-none utilities only suppress the MOUSE :focus outline,
+   which is intended — :focus-visible still paints for keyboard users. The
+   only change made here is pointing that existing rule at the semantic
+   --focus-ring token so there is one source of truth for the colour.
+
+   Deliberately NOT setting border-radius in a focus rule: it would reshape
+   every control the moment it was focused. */
+
+/* ══════════════════════════════════════════════════════════════════════
+   LAYOUT TEMPLATES (Phase 3)
+
+   One global max-width was never right: a 600-row table and a settings
+   form want opposite things. Five templates, each chosen per route.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* 1. Data workspace — tables and dashboards. Takes the available width and
+      only caps on ultrawide so a 32-inch display reads as composed. */
+.tpl-data { width: 100%; max-width: 1760px; margin-inline: auto; }
+
+/* 2. Three-pane workbench — queue, viewer, contextual rail. Collapses to
+      viewer-only on narrow screens; the queue moves above it. */
+.tpl-workbench { display: grid; gap: 16px; grid-template-columns: 1fr; align-items: start; }
+@media (min-width: 1100px) {
+  .tpl-workbench { grid-template-columns: 300px minmax(0, 1fr); }
+}
+@media (min-width: 1500px) {
+  .tpl-workbench { grid-template-columns: 320px minmax(0, 1fr) 300px; }
+}
+
+/* 3. Overview grid — auto-fills columns instead of hardcoding a count, so
+      the same rule gives 1 column on a phone and 4 on a wide monitor. The
+      audit found Clients computing a literal "575px 575px": two cards, no
+      matter how much room there was. */
+.tpl-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  width: 100%;
+  /* Capped so the grid tops out at four columns and cards grow instead of
+     multiplying. Uncapped, 1920px produced five thin cards. */
+  max-width: 1400px;
+  margin-inline: auto;
+}
+
+/* 4. Detail workspace — a main column that stays readable next to a rail
+      that follows you down the page. */
+.tpl-detail { display: grid; gap: 20px; grid-template-columns: 1fr; align-items: start; max-width: 1300px; margin-inline: auto; }
+@media (min-width: 1080px) {
+  .tpl-detail { grid-template-columns: minmax(0, 1fr) 320px; }
+  .tpl-detail-rail { position: sticky; top: 16px; }
+}
+
+/* 5. Reading layout — the column stays at a comfortable measure. The space
+      beside it is for a contents rail, not for widening the text. */
+.tpl-read { display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr); max-width: 880px; margin-inline: auto; }
+@media (min-width: 1240px) {
+  .tpl-read { grid-template-columns: minmax(0, 800px) 220px; max-width: 1060px; }
+  .tpl-read-toc { position: sticky; top: 16px; align-self: start; }
+}
+
+/* Client overview card. Sits on the default surface with a hairline; it
+   raises on hover rather than carrying a resting shadow, so elevation
+   still means something on this page. */
+.client-card{
+  display:block;
+  width:100%;
+  /* Same lift as the hive cards: panel over surface, strong border, a real
+     shadow. The surface-on-surface version was the drowned look. */
+  background:var(--panel);
+  border:1px solid var(--line-strong);
+  box-shadow:var(--shadow-card);
+  border-radius:var(--r-lg);
+  padding:14px 15px;
+  transition:background-color var(--dur-quick) var(--motion-productive),
+             border-color var(--dur-quick) var(--motion-productive);
+}
+.client-card:hover{ background:var(--card-hover); border-color:var(--rose-line); }
+.client-card-go{ opacity:0; transition:opacity var(--dur-quick) var(--motion-productive); }
+.client-card:hover .client-card-go, .client-card:focus-visible .client-card-go{ opacity:1; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   PROSPECTS TABLE (Phase 5)
+
+   The table stays a table — dense rows, no cards. What it was missing was
+   state: which row you are on, which are selected, which are overdue, and
+   where the header went when you scrolled.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Sticky header. Needs an opaque background or rows scroll through it — the
+   old translucent wash would have shown data behind the labels. */
+.ltb-table thead th{
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--surface-sunken);
+  backdrop-filter: none;
+}
+
+/* Row states, in ascending strength: hover < selected < active.
+   Each is distinguishable from the others rather than three shades of the
+   same wash. */
+.ltb-table tbody tr{
+  transition: background-color var(--dur-quick) var(--motion-productive);
+}
+.ltb-table tbody tr:hover{ background: var(--hover-wash-soft); }
+.ltb-table tbody tr[data-selected="true"]{ background: var(--brand-subtle); }
+.ltb-table tbody tr[data-selected="true"]:hover{ background: var(--rose-tint); }
+/* Active-row emphasis is NOT redeclared here. An existing rule further up
+   already draws it (top + bottom + leading edge), and the version I added in
+   the table pass overrode it with a single edge — quietly dropping the top
+   and bottom borders. */
+
+/* Numbers line up on the decimal so columns can be compared by eye. */
+.ltb-table td .num-tabular,
+.ltb-table td.num,
+.ltb-table th.num{ font-variant-numeric: tabular-nums; }
+
+/* Row actions stay out of the way until the row is under the cursor or
+   focused, so a dense table is not covered in buttons. */
+.ltb-table tbody tr .row-action{
+  opacity: 0;
+  transition: opacity var(--dur-quick) var(--motion-productive);
+}
+.ltb-table tbody tr:hover .row-action,
+.ltb-table tbody tr:focus-within .row-action{ opacity: 1; }
+
+/* Overflow shadow: a hint that there are more columns to the right. Pinned
+   to the scroll container and drawn only while it can actually scroll. */
+.ltb-table-wrap{
+  position: relative;
+  background:
+    linear-gradient(to right, var(--canvas) 30%, transparent) left / 24px 100% no-repeat,
+    linear-gradient(to left, var(--canvas) 30%, transparent) right / 24px 100% no-repeat,
+    radial-gradient(farthest-side at 0 50%, rgba(0,0,0,.28), transparent) left / 12px 100% no-repeat,
+    radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.28), transparent) right / 12px 100% no-repeat;
+  background-attachment: local, local, scroll, scroll;
+}
+
+
+/* Page container when a contents rail is present. Without this the rail has
+   nowhere to sit — the reading canvas caps at 880px, which is the column
+   width, not the column plus its rail. */
+.tpl-read-page{ width:100%; max-width:1060px; margin-inline:auto; }
+
+/* Frozen identifying columns: the checkbox and the first data column stay put
+   while the rest scrolls sideways, so a row stays identifiable at column 20.
+   Frozen by POSITION, not by column name — the visible column set is
+   user-configurable, so keying off "name" would break the moment it is
+   hidden or reordered. */
+.ltb-table thead th:nth-child(1),
+.ltb-table tbody td:nth-child(1){ position:sticky; left:0; z-index:2; }
+.ltb-table thead th:nth-child(2),
+.ltb-table tbody td:nth-child(2){ position:sticky; left:var(--frozen-x, 44px); z-index:2; }
+
+/* Header corners sit above both the sticky header and the frozen columns. */
+.ltb-table thead th:nth-child(1),
+.ltb-table thead th:nth-child(2){ z-index:5; }
+
+/* Sticky cells must be opaque or rows scroll underneath them — and they still
+   have to show the row state, so each state is restated here. */
+.ltb-table tbody td:nth-child(-n+2){ background:var(--canvas); }
+.ltb-table tbody tr:hover td:nth-child(-n+2){
+  background:color-mix(in srgb, var(--canvas) 96%, #fff);
+}
+.ltb-table tbody tr[data-selected="true"] td:nth-child(-n+2){
+  background:color-mix(in srgb, var(--canvas) 88%, var(--rose));
+}
+/* The active row paints itself with --rose-tint, which is a 9% alpha and is
+   set with !important so it also wins on the frozen cells. Translucent is
+   fine for a cell that scrolls, and wrong for one that does not: the columns
+   sliding underneath showed straight through the pinned name, so the name and
+   the business ran into each other. Same tint, mixed flat against the canvas
+   instead of layered over it, so the row still reads as active and the pinned
+   cells stay solid. */
+.ltb-table tbody tr[data-active-row="true"] td:nth-child(-n+2){
+  background:color-mix(in srgb, var(--canvas) 91%, var(--rose)) !important;
+}
+
+/* A hairline down the frozen block so it reads as pinned rather than as a
+   rendering seam. */
+.ltb-table thead th:nth-child(2),
+.ltb-table tbody td:nth-child(2){ box-shadow:1px 0 0 0 var(--border-default); }
+
+/* ── Public shared page ───────────────────────────────────────────────
+   Its own minimal shell. Reuses the editor's typography so a shared page
+   looks like the page you wrote, but carries none of the app chrome. */
+.pub-shell{ display:grid; gap:32px; grid-template-columns:1fr; max-width:1060px; margin:0 auto; padding:32px 20px 80px; }
+@media (min-width:900px){ .pub-shell{ grid-template-columns:220px minmax(0,1fr); } }
+.pub-shell--solo{ grid-template-columns:minmax(0,1fr); max-width:820px; }
+.pub-nav{ align-self:start; position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; }
+.pub-nav-item{ text-align:left; font-size:13px; color:var(--ink-3); padding:5px 8px; border-radius:var(--r-sm); transition:color var(--dur-quick) var(--motion-productive), background-color var(--dur-quick) var(--motion-productive); }
+.pub-nav-item:hover{ color:var(--ink); background:var(--hover-wash-soft); }
+.pub-nav-item.is-current{ color:var(--rose-text); background:var(--rose-tint); }
+.pub-wrap{ min-width:0; }
+.pub-crumbs{ font-size:12px; color:var(--ink-3); margin-bottom:8px; }
+.pub-crumbs button:hover{ color:var(--ink); }
+.pub-title{ font-family:var(--font-serif,serif); font-size:38px; line-height:1.15; color:var(--bright); margin-bottom:22px; }
+.pub-empty{ text-align:center; padding:96px 20px; }
+.pub-empty h1{ font-size:20px; color:var(--ink); margin-bottom:6px; }
+.pub-empty p{ font-size:14px; color:var(--ink-3); }
+/* Body inherits the editor's rules so tables, lists and images match. */
+.pub-body{ color:var(--ink); font-size:15px; line-height:1.7; }
+.pub-body h1{ font-size:26px; font-weight:650; color:var(--bright); margin:22px 0 8px; }
+.pub-body h2{ font-size:21px; font-weight:650; color:var(--bright); margin:20px 0 6px; }
+.pub-body h3{ font-size:17px; font-weight:600; color:var(--bright); margin:16px 0 4px; }
+.pub-body p{ margin:8px 0; }
+.pub-body ul{ list-style:disc; padding-left:22px; margin:8px 0; }
+.pub-body ol{ list-style:decimal; padding-left:22px; margin:8px 0; }
+
+/* To-do lists on a shared page. The editor styles these (see the taskList
+   rules above), but .pub-body rendered them as a plain <ul>: a disc bullet
+   beside each box, checkbox and text stacked, and no strike-through when done.
+   These mirror the editor so a shared checklist reads the same as the one that
+   was written. */
+.pub-body ul[data-type="taskList"]{ list-style:none; padding-left:2px; }
+.pub-body ul[data-type="taskList"] li{ display:flex; gap:8px; align-items:flex-start; margin:2px 0; }
+.pub-body ul[data-type="taskList"] li > label{ margin-top:3px; flex:none; }
+.pub-body ul[data-type="taskList"] li > div{ margin:0; }
+.pub-body ul[data-type="taskList"] li > div > p{ margin:0; }
+.pub-body ul[data-type="taskList"] li[data-checked="true"] > div{ color:var(--ink-3); text-decoration:line-through; }
+.pub-body a{ color:var(--rose-text); text-decoration:underline; }
+.pub-body img{ max-width:100%; height:auto; border-radius:var(--r-md); }
+.pub-body table{ border-collapse:collapse; width:100%; margin:14px 0; font-size:13.5px; }
+.pub-body th, .pub-body td{ border:1px solid var(--line-strong); padding:7px 10px; vertical-align:top; }
+.pub-body th{ background:var(--card-hover); color:var(--bright); text-align:left; }
+.pub-body blockquote{ border-left:3px solid var(--rose-line); padding-left:12px; color:var(--ink-2); margin:10px 0; }
+
+/* ── Prospects: a scrollbar you can actually see ──────────────────────
+   The shared .bw-scroll thumb is white at 14% — fine as a hairline on a
+   panel you already know scrolls, useless as the only clue that a table
+   continues past the right edge. This one is taller, has a visible track,
+   and a thumb with real contrast. Styling ::-webkit-scrollbar also forces
+   a classic scrollbar on systems that would otherwise use overlay
+   scrollbars that stay hidden until you are already scrolling. */
+.ltb-table-wrap{ scrollbar-width: auto; scrollbar-color: var(--line-strong) var(--surface-sunken); }
+.ltb-table-wrap::-webkit-scrollbar{ height: 14px; }
+.ltb-table-wrap::-webkit-scrollbar-track{
+  background: var(--surface-sunken);
+  border-top: 1px solid var(--border-default);
+}
+.ltb-table-wrap::-webkit-scrollbar-thumb{
+  background: var(--border-strong);
+  border-radius: 999px;
+  border: 3px solid var(--surface-sunken);
+}
+.ltb-table-wrap::-webkit-scrollbar-thumb:hover{ background: var(--ink-3); }
+
+/* Sideways scroll controls. In the flow above the table, not floating over
+   it — a control that covers the rows it moves is in the way of the thing
+   you are trying to read. */
+.ltb-table-shell{ position: relative; }
+.ltb-scroll-controls{
+  display: flex; gap: 6px; justify-content: flex-end;
+}
+.ltb-scroll-btn{
+  width: 32px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--r-full);
+  background: var(--rose);
+  color: #fff;
+  border: none;
+  box-shadow: 0 2px 8px -2px rgba(0,0,0,.45);
+  transition: background-color var(--dur-quick) var(--motion-productive),
+              transform var(--dur-quick) var(--motion-productive);
+}
+.ltb-scroll-btn:hover:not(:disabled){ background: var(--rose-hover); transform: scale(1.06); }
+.ltb-scroll-btn:active:not(:disabled){ background: var(--rose-deep); transform: scale(.96); }
+/* Disabled at the ends rather than removed, so the row keeps its height and
+   the buttons stay where your hand expects them. */
+.ltb-scroll-btn:disabled{
+  background: var(--surface-raised);
+  color: var(--ink-3);
+  box-shadow: none;
+  cursor: default;
+}
+
+/* Highlight mark colour, used by the toolbar's H button. */
+:root{ --highlight-wash: rgba(220,174,94,0.30); }
+html[data-theme="light"]{ --highlight-wash: rgba(220,174,94,0.42); }
+
+/* ── Callout ───────────────────────────────────────────────────────────────
+   A boxed note. The left bar carries the tone so the box itself stays quiet
+   enough to read a paragraph inside. */
+.ltb-callout{
+  margin: 10px 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--brand-primary);
+}
+.ltb-callout[data-tone="warning"]{ border-left-color: var(--warning); }
+.ltb-callout[data-tone="success"]{ border-left-color: var(--success); }
+.ltb-callout > :first-child{ margin-top: 0; }
+.ltb-callout > :last-child{ margin-bottom: 0; }
+
+/* ── Database views ────────────────────────────────────────────────────────
+   A live view of the prospects table inside a page. Rows are fetched by the
+   node view and never stored in the document, so .ltb-dbview-private is what
+   a public /p/<token> page renders — the pipeline never travels with a share
+   link. */
+.ltb-dbview{
+  margin: 14px 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--surface-subtle);
+  overflow: hidden;
+}
+.ltb-dbview.is-selected{ outline: 2px solid var(--rose); outline-offset: 2px; }
+.ltb-dbview-head{
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--ink-3);
+}
+.ltb-dbview-title{ font-size: 13px; font-weight: 600; color: var(--ink); }
+.ltb-dbview-tabs{ display: flex; gap: 2px; }
+/* Source tabs sit left, view tabs right, so the two rows of choices do not
+   read as one undifferentiated strip of buttons. */
+.ltb-dbview-viewtabs{ margin-left: auto; }
+.ltb-dbview-tabs button{
+  padding: 3px 9px; border-radius: 6px;
+  font-size: 12px; font-weight: 500; color: var(--ink-3);
+  transition: background 120ms ease, color 120ms ease;
+}
+.ltb-dbview-tabs button:hover{ background: var(--hover-wash-soft); color: var(--ink); }
+.ltb-dbview-tabs button.is-on{ background: var(--rose-tint); color: var(--rose-text); }
+.ltb-dbview-msg{ padding: 18px 12px; font-size: 13px; color: var(--ink-3); }
+.ltb-dbview-inline{ color: var(--rose-text); text-decoration: underline; }
+
+/* Filter + sort bar. Belongs to the block, so two views of one table can sit
+   on the same page showing different slices. */
+.ltb-dbview-bar{
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.ltb-dbview-bar > .ltb-dbview-filterwrap > button,
+.ltb-dbview-sort{
+  padding: 3px 9px; border-radius: 6px;
+  font-size: 12px; font-weight: 500;
+  color: var(--ink-3);
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  transition: background 120ms ease, color 120ms ease;
+}
+.ltb-dbview-filterwrap{ position: relative; }
+.ltb-dbview-filterwrap > button:hover{ background: var(--hover-wash-soft); color: var(--ink); }
+.ltb-dbview-filterwrap > button.is-on{
+  background: var(--rose-tint); color: var(--rose-text); border-color: transparent;
+}
+.ltb-dbview-filtermenu{
+  position: absolute; left: 0; top: 26px; z-index: 40;
+  min-width: 168px; max-height: 260px; overflow-y: auto;
+  padding: 4px; border-radius: 9px;
+  background: var(--panel);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 10px 28px rgb(0 0 0 / .28);
+}
+.ltb-dbview-filtermenu button{
+  display: flex; align-items: center; gap: 6px;
+  width: 100%; padding: 5px 8px; border-radius: 6px;
+  font-size: 12px; color: var(--ink-2); text-align: left;
+}
+.ltb-dbview-filtermenu button:hover{ background: var(--hover-wash-soft); color: var(--ink); }
+.ltb-dbview-check{ width: 10px; color: var(--rose-text); }
+.ltb-dbview-clear{ color: var(--rose-text) !important; border-top: 1px solid var(--border-subtle); margin-top: 3px; padding-top: 7px !important; border-radius: 0 !important; }
+.ltb-dbview-sort{ cursor: pointer; }
+.ltb-dbview-hidden{ margin-left: auto; font-size: 11px; color: var(--ink-3); }
+.ltb-dbview-private{ padding: 18px 12px; font-size: 13px; color: var(--ink-3); margin: 0; }
+
+.ltb-dbview-board{ display: flex; gap: 10px; padding: 10px; overflow-x: auto; }
+.ltb-dbview-col{
+  flex: 0 0 190px;
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 8px; border-radius: 8px;
+  background: var(--panel);
+  min-height: 90px;
+}
+.ltb-dbview-colhead{
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--ink-3);
+}
+.ltb-dbview-count{ font-weight: 500; }
+.ltb-dbview-card{
+  padding: 7px 9px; border-radius: 7px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  cursor: grab; transition: border-color 120ms ease, opacity 120ms ease;
+}
+.ltb-dbview-card:hover{ border-color: var(--rose); }
+.ltb-dbview-card:active{ cursor: grabbing; }
+.ltb-dbview-card.is-busy{ opacity: .5; }
+.ltb-dbview-cardtitle{ font-size: 13px; color: var(--ink); }
+.ltb-dbview-cardmeta{ font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+.ltb-dbview-empty{
+  padding: 10px 0; text-align: center;
+  font-size: 11px; color: var(--ink-3);
+  border: 1px dashed var(--border-subtle); border-radius: 7px;
+}
+
+/* Calendar. Days are drop targets: dropping a card rewrites next_action_date
+   through the same endpoint the board uses. */
+.ltb-dbview-cal{ padding: 10px; }
+.ltb-dbview-calhead{
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  font-size: 13px; font-weight: 600; color: var(--ink);
+}
+.ltb-dbview-calhead button{
+  width: 22px; height: 22px; border-radius: 6px;
+  color: var(--ink-3); font-size: 15px; line-height: 1;
+  transition: background 120ms ease, color 120ms ease;
+}
+.ltb-dbview-calhead button:hover{ background: var(--hover-wash-soft); color: var(--ink); }
+.ltb-dbview-today{
+  margin-left: auto; width: auto !important; padding: 0 9px;
+  font-size: 11px !important; font-weight: 500;
+  border: 1px solid var(--border-subtle);
+}
+.ltb-dbview-calgrid{ display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+.ltb-dbview-dayname{
+  padding: 2px 4px 4px;
+  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--ink-3);
+}
+.ltb-dbview-day{
+  min-height: 62px; padding: 3px;
+  border-radius: 6px; background: var(--panel);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.ltb-dbview-day.is-outside{ opacity: .4; }
+.ltb-dbview-day.is-today{ outline: 1px solid var(--rose); }
+.ltb-dbview-daynum{ font-size: 10px; color: var(--ink-3); padding-left: 2px; }
+.ltb-dbview-pill{
+  padding: 2px 5px; border-radius: 4px;
+  background: var(--rose-tint); color: var(--rose-text);
+  font-size: 11px; line-height: 1.35;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  cursor: grab;
+}
+.ltb-dbview-pill:active{ cursor: grabbing; }
+.ltb-dbview-pill.is-busy{ opacity: .5; }
+
+/* Gallery. */
+.ltb-dbview-gallery{
+  display: grid; gap: 8px; padding: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+.ltb-dbview-tile{
+  padding: 9px 10px; border-radius: 8px;
+  background: var(--panel); border: 1px solid var(--border-subtle);
+}
+.ltb-dbview-tiletop{ display: flex; align-items: baseline; gap: 6px; }
+.ltb-dbview-tiletop .ltb-dbview-cardtitle{ flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ltb-dbview-rating{ font-size: 12px; }
+
+.ltb-dbview-table{ padding: 4px 10px 10px; overflow-x: auto; }
+.ltb-dbview-table table{ width: 100%; border-collapse: collapse; font-size: 13px; }
+.ltb-dbview-table th{
+  text-align: left; padding: 7px 8px;
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--ink-3); border-bottom: 1px solid var(--border-subtle);
+}
+.ltb-dbview-table td{ padding: 7px 8px; color: var(--ink); border-bottom: 1px solid var(--border-subtle); }
+.ltb-dbview-table tr:last-child td{ border-bottom: 0; }
+.ltb-dbview-more{ padding-top: 8px; font-size: 11px; color: var(--ink-3); }
+
+/* Pages reserve a left gutter for the block handle. The plugin positions it at
+   left:-45px from the block, so without reserved space it lands outside the
+   page container: on most laptop widths the centred container leaves less than
+   45px of margin, and the handle collides with the sidebar or is clipped.
+   Reserving the space is also what Notion does, rather than letting the handle
+   float into whatever happens to be beside the text.
+
+   Only page views get this. canvas-read is shared with settings and forms,
+   which have no handle and should not be indented.
+
+   Keyed to 768px because that is where the sidebar appears. The tight range is
+   768px upward, where the sidebar takes its width and the centred container
+   leaves almost no margin. Below that the sidebar is hidden and the space is
+   better spent on the text. */
+.ltb-page-canvas{ padding-left: 20px; }
+@media (min-width: 768px){
+  .ltb-page-canvas{ padding-left: 56px; }
+}
+
+/* ── Block gutter ──────────────────────────────────────────────────────────
+   The + and grip that follow the hovered block. Positioned by TipTap's drag
+   handle plugin; everything here is just how it looks. Kept at low opacity
+   until the row is hovered so a page at rest reads as a document. */
+/* The plugin's overlay wrapper is pointer-events:none so it cannot block the
+   editor, and everything inside inherits that. Both layers have to opt back
+   in: the element the plugin positions (.ltb-gutter-host) and our own row
+   inside it. Re-enabling only the inner row left the surrounding pixels of
+   the host as pass-through holes, so the pointer reached the page behind,
+   the plugin saw a mouseleave with nothing of its own under the cursor, and
+   hid the handle. It only reappeared on the next mousemove that changed
+   nodes, which reads as a button blinking in and out that cannot be
+   clicked. */
+.ltb-gutter-host{ pointer-events: auto; }
+.ltb-gutter{
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding-right: 6px;
+  pointer-events: auto;
+}
+.ltb-gutter-btn{
+  width: 20px; height: 22px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 5px;
+  color: var(--ink-3);
+  font-size: 14px;
+  line-height: 1;
+  background: transparent;
+  opacity: .45;
+  transition: opacity 120ms ease, background 120ms ease, color 120ms ease;
+}
+.ltb-gutter:hover .ltb-gutter-btn{ opacity: 1; }
+.ltb-gutter-btn:hover{ background: var(--hover-wash-soft); color: var(--ink); }
+.ltb-gutter-grip{ cursor: grab; font-size: 12px; letter-spacing: -1px; }
+.ltb-gutter-grip:active{ cursor: grabbing; }
+
+/* ProseMirror's drop indicator while dragging a block. */
+.rich-editor .ProseMirror-dropcursor{ border-top: 2px solid var(--rose) !important; }
+
+/* ── Equations ─────────────────────────────────────────────────────────────
+   Only the LaTeX source is stored; KaTeX markup is produced by the node view
+   here and by the public route there, so nothing renderable lives in the
+   document. Overflow scrolls rather than widening the page — a long formula
+   should not push a whole shared page sideways. */
+.ltb-equation{
+  margin: 14px 0;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: var(--surface-subtle);
+  overflow-x: auto;
+}
+.ltb-equation.is-selected{ outline: 2px solid var(--rose); outline-offset: 2px; }
+.ltb-equation-render{ cursor: pointer; text-align: center; }
+.ltb-equation-render:focus-visible{ outline: 2px solid var(--rose); outline-offset: 3px; border-radius: 6px; }
+.ltb-equation.is-broken{ border: 1px solid var(--poppy, #c2410c); }
+.ltb-equation-error{ margin-top: 6px; font-size: 12px; color: var(--poppy-text, #c2410c); text-align: center; }
+.ltb-equation-input{
+  width: 100%;
+  background: var(--input, transparent);
+  border: 1px solid var(--border-subtle);
+  border-radius: 7px;
+  padding: 8px 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  color: var(--ink);
+  resize: vertical;
+}
+.ltb-equation-input:focus{ outline: none; border-color: var(--rose); }
+.ltb-equation-hint{ margin-top: 5px; font-size: 11px; color: var(--ink-3); }
+/* KaTeX draws its own colours; keep it on the page ink rather than black. */
+.ltb-equation .katex{ color: var(--ink); font-size: 1.05em; }
+
+/* ── Columns ───────────────────────────────────────────────────────────────
+   Grid rather than flex so the tracks stay equal regardless of content, and
+   minmax(0,1fr) so a long word or a wide table inside a column cannot push the
+   row wider than the page.
+
+   Stacks below 640px. A shared page opened on a phone should be readable
+   prose, not four unreadable slivers. */
+.ltb-columns{
+  display: grid;
+  grid-template-columns: repeat(var(--ltb-cols, 2), minmax(0, 1fr));
+  gap: 18px;
+  margin: 12px 0;
+  align-items: start;
+}
+.ltb-column{ min-width: 0; }
+.ltb-column > :first-child{ margin-top: 0; }
+.ltb-column > :last-child{ margin-bottom: 0; }
+
+/* The seam is only drawn while editing, so the reader sees a layout rather
+   than a table. */
+.rich-editor .ltb-columns{ gap: 14px; }
+.rich-editor .ltb-column{
+  padding: 2px 6px;
+  border-radius: 8px;
+  outline: 1px dashed transparent;
+  transition: outline-color 120ms ease;
+}
+.rich-editor .ltb-columns:hover .ltb-column{ outline-color: var(--border-subtle); }
+
+@media (max-width: 640px){
+  .ltb-columns{ grid-template-columns: 1fr; gap: 8px; }
+}
+
+/* ── Toggle ────────────────────────────────────────────────────────────────
+   A native <details>, so it stays expandable on a shared page where no JS of
+   ours runs. The marker is drawn on the summary rather than left as the
+   browser default triangle, which differs per platform. */
+.ltb-toggle{ margin: 8px 0; }
+.ltb-toggle-summary{
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 2px 0;
+  color: var(--ink);
+}
+.ltb-toggle-summary::-webkit-details-marker{ display: none; }
+.ltb-toggle-summary::before{
+  content: "";
+  flex: none;
+  width: 0; height: 0;
+  border-left: 5px solid currentColor;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transform: translateY(-1px);
+  transition: transform 140ms ease;
+  opacity: .55;
+}
+.ltb-toggle[open] > .ltb-toggle-summary::before{ transform: rotate(90deg) translateX(-1px); }
+.ltb-toggle-summary:hover::before{ opacity: 1; }
+.ltb-toggle-body{ padding-left: 18px; }
+.ltb-toggle-body > :first-child{ margin-top: 2px; }
+.ltb-toggle-body > :last-child{ margin-bottom: 0; }
+
+/* ── Embeds ────────────────────────────────────────────────────────────────
+   Styled once for both surfaces: the editor's node view and the public page,
+   which receives the same class names from the HTMLRewriter pass.
+
+   The bare .ltb-embed (no frame inside) is what an un-upgraded block looks
+   like — a plain link. That is the deliberate fallback for a provider we do
+   not allow in public, so it has to look intentional rather than broken. */
+.ltb-embed{ margin: 14px 0; }
+.ltb-embed-frame{
+  position: relative;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+}
+.ltb-embed-frame iframe{
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.ltb-embed-caption{
+  display: inline-block;
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--ink-3);
+  text-decoration: none;
+}
+.ltb-embed-caption:hover{ color: var(--rose-text); text-decoration: underline; }
+
+/* Link-card form: X, and anything not allowed to frame on a public page. */
+.ltb-embed--link .ltb-embed-card,
+.ltb-embed > a:only-child{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 13px;
+  border-radius: 10px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  color: var(--ink-2);
+  font-size: 13px;
+  text-decoration: none;
+}
+.ltb-embed--link .ltb-embed-card:hover,
+.ltb-embed > a:only-child:hover{ border-color: var(--rose); color: var(--rose-text); }
+.ltb-embed-provider{
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+.ltb-embed.is-selected .ltb-embed-frame,
+.ltb-embed.is-selected > a{ outline: 2px solid var(--rose); outline-offset: 2px; }
+
+.rich-editor .ProseMirror mark{
+  background: var(--highlight-wash);
+  border-radius: 3px;
+  padding: 0 2px;
+  color: inherit;
+}
+.rich-editor .ProseMirror pre{
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   VISUAL REFRESH — loading & motion  (v2, matches approved mock)
+   Paste at the END of app/globals.css. Visual only. All values resolve
+   through your existing theme tokens, so dark + light both work.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── 1 · Scan progress bar ──────────────────────────────────────────────
+   Overrides the flat fill with a flowing one — a light band travels through
+   the rose. Same element/JS; .scanbar / .scanbar-fill unchanged in markup. */
+.scanbar{ height: 7px; background: var(--hover-wash); }
+.scanbar-fill{
+  /* Fill the whole track. The indeterminate redesign shows activity with a
+     flowing gradient across the full bar, but the fill still inherited
+     inset:0 auto 0 0 from the determinate rule above — right:auto with no
+     width collapsed it to zero, so nothing rendered and the bar looked dead
+     while the flower spun on. Pinning all four sides fills it. */
+  inset: 0;
+  background: linear-gradient(90deg,
+    var(--rose-deep), var(--rose) 30%,
+    color-mix(in srgb, #fff 22%, var(--rose)) 50%,
+    var(--rose) 70%, var(--rose-deep));
+  background-size: 220% 100%;
+  animation: ltb-flow 2.4s linear infinite;
+}
+.scanbar-fill::after{
+  content:''; position:absolute; inset:0; border-radius:999px;
+  background: linear-gradient(180deg, rgba(255,255,255,.24), transparent 55%);
+}
+@keyframes ltb-flow{ 0%{ background-position:0 0 } 100%{ background-position:-220% 0 } }
+
+/* ── 2 · Bloom spinner (NEW, indeterminate "working") ───────────────────
+   SVG-based so it is always symmetric. Petals bloom in a travelling wave
+   while the whole flower slowly turns. Markup snippet in README. */
+.ltb-bloom-spin{ display:block; animation: ltb-rot 7s linear infinite; transform-origin:center; overflow:visible; }
+.ltb-bloom-petal{ fill: var(--rose); opacity:.3; transform-box: fill-box; transform-origin:center; animation: ltb-petal 1.5s ease-in-out infinite; }
+.ltb-bloom-core{ fill: var(--gold); }
+@keyframes ltb-rot{ to{ transform: rotate(360deg) } }
+@keyframes ltb-petal{ 0%,100%{ opacity:.28; transform:scale(.5) } 45%{ opacity:1; transform:scale(1.1) } }
+
+/* ── 3 · Skeleton — softer sweep (overrides .skeleton::after) ──────────── */
+.skeleton::after{
+  background: linear-gradient(90deg, transparent, var(--hover-wash), transparent);
+  animation: skeleton-sweep 1.5s ease-in-out infinite;
+}
+/* Staggered fade-in for skeleton rows AND real rows. Add the class to each
+   <tr>; set style={{animationDelay:`${i*0.05}s`}} per row index. */
+.ltb-skelrow, .ltb-rowin{ animation: ltb-rowin .5s ease both; }
+@keyframes ltb-rowin{ from{ opacity:0 } to{ opacity:1 } }
+
+/* ── 4 · Inline button loading dots (NEW) ───────────────────────────────
+   <span class="ltb-loading-dots"><i></i><i></i><i></i></span> */
+.ltb-loading-dots{ display:inline-flex; gap:3px; align-items:center; }
+.ltb-loading-dots i{ display:inline-block; width:6px; height:6px; border-radius:999px; background:currentColor; opacity:.35; animation: ltb-dot 1s ease-in-out infinite; }
+.ltb-loading-dots i:nth-child(2){ animation-delay:.16s; }
+.ltb-loading-dots i:nth-child(3){ animation-delay:.32s; }
+@keyframes ltb-dot{ 0%,100%{ opacity:.35; transform:scale(.55) } 40%{ opacity:1; transform:scale(1.2) } }
+
+/* ── 5 · Custom Select menu pop (used by components/Select.jsx) ────────── */
+@keyframes ltb-select-pop{ from{ opacity:0; transform:translateY(-4px) } to{ opacity:1; transform:none } }
+
+/* Respect reduced motion: keep indicators alive with opacity only. */
+/* Reduced-motion policy matches the mock (claude design): the small in-place
+   animations — spinner, scan bar, loading dots — keep running. Only the large
+   float/reveal movements stop (see .ltb-bob and the page-enter blocks). A
+   rotating flower and a flowing bar are not the motion the setting guards
+   against; parallax and things flying across the screen are. */
+
+/* ═══════════════════════════════════════════════════════════════════════
+   VISUAL REFRESH — motion vocabulary from the mock (rf-* family)
+   Reusable utilities ported from the Editorial Botanical mock. Visual only,
+   all through existing tokens. These are covered by the reduced-motion block
+   further up, which stops decorative movement and keeps the running-progress
+   indicators alive.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Pulsing ring — radiates outward from an element to say "this one, now".
+   In the mock it marks the live step in a sequence; here it also fits the
+   due badge. Put .ltb-pulse on a positioned element; the ring is a pseudo. */
+.ltb-pulse{ position: relative; }
+.ltb-pulse::after{
+  content:''; position:absolute; inset:-3px; border-radius: inherit;
+  border: 1.5px solid var(--rose-line);
+  animation: ltb-ring 1.6s ease-out infinite; pointer-events:none;
+}
+@keyframes ltb-ring{
+  0%{ opacity:.7; transform: scale(.85); }
+  100%{ opacity:0; transform: scale(1.5); }
+}
+
+/* Gentle float — a slow vertical bob. In the mock it lifts the butterfly so
+   it drifts instead of sitting pinned. */
+.ltb-bob{ animation: ltb-bob 1.9s ease-in-out infinite; }
+@keyframes ltb-bob{ 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-3px); } }
+
+/* Bud open — petals bloom outward in a staggered wave. A completion / arrival
+   flourish; put .ltb-bud-open on a container of .ltb-petal-open children. */
+.ltb-bud-open .ltb-petal-open{ animation: ltb-open .5s cubic-bezier(0,0,0.38,0.9) both; transform-origin:center; }
+.ltb-bud-open .ltb-petal-open:nth-child(2){ animation-delay:.05s; }
+.ltb-bud-open .ltb-petal-open:nth-child(3){ animation-delay:.10s; }
+.ltb-bud-open .ltb-petal-open:nth-child(4){ animation-delay:.15s; }
+.ltb-bud-open .ltb-petal-open:nth-child(5){ animation-delay:.20s; }
+@keyframes ltb-open{ from{ opacity:0; transform: scale(.2); } to{ opacity:.92; transform: scale(1); } }
+
+/* Only the float stops under reduced-motion (it is a translate movement, the
+   kind the setting guards against). The ring pulse and bud-open bloom are
+   in-place and keep running, matching the mock. */
+
+/* ── Scan progress bar (mock .rf-grow) ─────────────────────────────────────
+   Determinate fill with a flowing sheen and a bloom spinning at the leading
+   edge. Used by components/ScanBar.jsx for real N-of-M progress (AI Hive). */
+.ltb-scanprog{ margin: 4px 0; }
+.ltb-scanprog-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+.ltb-scanprog-label{ font-size:13px; color:var(--ink-2); }
+.ltb-scanprog-pct{ font-size:13px; font-weight:600; color:var(--rose-text); }
+.ltb-scanprog-bar{ position:relative; height:8px; border-radius:999px; background:var(--hover-wash); overflow:visible; }
+.ltb-scanprog-track{ position:absolute; inset:0; border-radius:999px; overflow:hidden; }
+.ltb-scanprog-fill{
+  position:absolute; left:0; top:0; bottom:0; border-radius:999px;
+  background:linear-gradient(90deg, var(--rose-deep), var(--rose) 30%,
+    color-mix(in srgb, #fff 22%, var(--rose)) 50%, var(--rose) 70%, var(--rose-deep));
+  background-size:220% 100%;
+  animation:ltb-flow 2.4s linear infinite;
+  transition:width .2s linear;
+}
+.ltb-scanprog-marker{ position:absolute; top:50%; transform:translate(-50%,-50%); transition:left .2s linear; }
+.ltb-scanprog-bloom{ display:block; animation:ltb-rot 5s linear infinite; transform-origin:center; overflow:visible; }
+.ltb-scanprog-sub{ margin-top:8px; font-size:12px; color:var(--ink-3); }
+
+/* Settings redesign: sticky section rail + content column. A named class
+   rather than Tailwind arbitrary values, because grid-template-columns with a
+   comma inside minmax() does not survive the JIT arbitrary-value parser, and
+   the app already does its responsive layout this way (see .ltb-table-wrap). */
+.settings-grid { display: grid; grid-template-columns: 1fr; gap: 28px; }
+.settings-rail { display: none; }
+@media (min-width: 820px) {
+  .settings-grid { grid-template-columns: 190px minmax(0, 1fr); }
+  .settings-rail { display: block; }
+}
