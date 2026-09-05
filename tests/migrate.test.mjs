@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { pendingMigrations, runMigrations, ENSURE_TABLE_SQL } from '../scripts/migrate.mjs';
+import { pendingMigrations, runMigrations, targetArgsFor, ENSURE_TABLE_SQL } from '../scripts/migrate.mjs';
 
 test('pendingMigrations returns unapplied files in name order', () => {
   const files = ['002_library.sql', '001_clients.sql', '003_rubric.sql'];
@@ -120,4 +120,19 @@ test('schemaFromRows builds the catalogue shape ledger-audit classifies against'
   assert.deepEqual([...live.columns.empty], []);
   assert.deepEqual([...live.indexes], ['idx_t_c']);
   assert.match(LIVE_SCHEMA_SQL, /_cf_/, 'D1 internal tables are filtered in SQL');
+});
+
+test('targetArgsFor addresses the DB binding through an environment or an explicit config, never bare --remote', () => {
+  assert.deepEqual(targetArgsFor(['node', 'migrate.mjs', '--local']), ['--local']);
+  assert.deepEqual(targetArgsFor(['node', 'migrate.mjs', '--remote', '--env', 'staging']), ['--remote', '--env', 'staging']);
+  assert.deepEqual(
+    targetArgsFor(['node', 'migrate.mjs', '--remote', '--config', '/tmp/zero.jsonc']),
+    ['--remote', '--config', '/tmp/zero.jsonc']
+  );
+  assert.deepEqual(
+    targetArgsFor(['node', 'migrate.mjs', '--local', '--config', '/tmp/zero.jsonc']),
+    ['--local', '--config', '/tmp/zero.jsonc']
+  );
+  assert.throws(() => targetArgsFor(['node', 'migrate.mjs', '--remote']), /--env staging, --env production, or --config/);
+  assert.throws(() => targetArgsFor(['node', 'migrate.mjs', '--remote', '--env']), /--config/);
 });
