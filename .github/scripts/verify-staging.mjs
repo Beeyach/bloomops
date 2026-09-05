@@ -105,6 +105,7 @@ if (!code) {
   record(`environment is ${expectEnv}`, j.environment === expectEnv, `reported ${j.environment}`);
   record('D1 binding DB resolves', j.d1?.bound === true && j.d1?.ok === true, JSON.stringify(j.d1));
   record('R2 binding FILES resolves', j.r2?.bound === true && j.r2?.ok === true, JSON.stringify(j.r2));
+  record('BloomOps domain schema present', j.domain?.ok === true, JSON.stringify(j.domain));
 }
 
 // 4. Pages read, disposable write, read back, delete.

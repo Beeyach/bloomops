@@ -37,7 +37,7 @@
       "binding": "DB",
       "database_name": "bloomops-dev",
       "database_id": "bloomops-dev-local",
-      "migrations_dir": "migrations"
+      "migrations_dir": "drizzle"
     }
   ],
   "r2_buckets": [
@@ -57,7 +57,7 @@
           "binding": "DB",
           "database_name": "bloomops-staging",
           "database_id": "4bb0c8e9-a08f-43d7-9ad7-68b28c371d23",
-          "migrations_dir": "migrations"
+          "migrations_dir": "drizzle"
         }
       ],
       "r2_buckets": [
@@ -77,7 +77,7 @@
           "binding": "DB",
           "database_name": "bloomops-production",
           "database_id": "REPLACE_WITH_BLOOMOPS_PRODUCTION_D1_ID",
-          "migrations_dir": "migrations"
+          "migrations_dir": "drizzle"
         }
       ],
       "r2_buckets": [

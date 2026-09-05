@@ -6,15 +6,15 @@ Release A: Foundation, Auth, Clients, Services, Onboarding, Client Portal
 
 ## Current Phase
 
-A1 (Infrastructure isolation) is complete. Staging was deployed and verified remotely on 2026-09-05 by the repository's own GitHub Actions workflow. See "Staging Deployment" below.
+A2 (Database foundation) is implemented and verified locally. The BloomOps domain schema exists as Drizzle-generated migrations and is applied to staging by the same GitHub Actions run that deploys it. See "Domain Schema (A2)" below for the staging result.
 
-Completed phase spec: `docs/phases/A1.md`. Next phase spec: `docs/phases/A2.md` (not started).
+Completed phase specs: `docs/phases/A1.md`, `docs/phases/A2.md`. Next phase spec: `docs/phases/A3.md` (not started).
 
 Documentation index: `docs/INDEX.md`
 
 ## Branch State
 
-A0 (PR #2) was not merged into `main` when A1 started, so A1 is a second commit on the same branch, `claude/bloomops-a0-phase-xhae5r`, stacked on the A0 import commit. Each phase is its own commit and can be reviewed or reverted on its own.
+A0 (PR #2) was not merged into `main` when A1 started, so A1 is a second commit on the same branch, `claude/bloomops-a0-phase-xhae5r`, stacked on the A0 import commit. PR #2 was still unmerged when A2 started, so A2 lives on its own branch, `claude/bloomops-a2-database-foundation`, based on the PR #2 head, with its own PR against `main`. Once PR #2 merges, that PR shows A2 alone.
 
 ## Source
 
@@ -35,6 +35,7 @@ BloomOps Git history is fresh. The source commit object does not exist in the Bl
 - Planning documentation structure under `CLAUDE.md` and `docs/`
 - A0: source snapshot imported, planning docs preserved, source SHA recorded, install/test/build verified
 - A1: deployment path migrated to Cloudflare Workers through OpenNext, three isolated environments configured, Leadsthatbloom infrastructure references removed or neutralized, generated output and prospect exports removed from version control, fresh-database bootstrap made reproducible, local runtime verified, `bloomops-staging` deployed from GitHub Actions and verified live
+- A2: BloomOps domain schema for Release A declared with Drizzle, materialised as SQL migrations, applied alongside the inherited schema, proven with invariant tests
 
 ## Deployment Path Decision (A1)
 
@@ -134,6 +135,79 @@ The inherited `schema.sql` already contains the tables and columns that 16 of th
 
 Bootstrap order for any new environment: `db:schema:<env>` then `db:migrate:<env>`.
 
+## Domain Schema (A2)
+
+The BloomOps relational model for Release A lives in `lib/bloomops/schema.mjs` (Drizzle, plain JavaScript) and is materialised by the SQL migrations under `drizzle/`. Runtime access goes through `lib/bloomops/db.mjs`, which wraps the environment's `DB` binding with `drizzle-orm/d1`. No route uses it yet. A2 builds the foundation, A3 onward builds on it.
+
+| Item | Value |
+|---|---|
+| `drizzle-orm` | 0.45.2 (dependency) |
+| `drizzle-kit` | 0.31.10 (devDependency), used for `generate` only, no push, no credentials in `drizzle.config.mjs` |
+| Schema | `lib/bloomops/schema.mjs`, 22 tables |
+| Migrations | `drizzle/0000_bloomops_release_a_foundation.sql` (tables, indexes, constraints), `drizzle/0001_immutability_triggers.sql` (custom SQL), journal in `drizzle/meta/` |
+| Applied by | `wrangler d1 migrations apply DB` per environment, ledger table `d1_migrations`. `wrangler.jsonc` names `drizzle` as every environment's `migrations_dir` |
+| Commands | `db:domain:generate`, `db:domain:migrate:local`, `db:domain:migrate:staging`, `db:domain:migrate:production`, `db:domain:status:local`, `db:domain:status:staging` |
+
+### Tables
+
+Identity and organisation: `workspaces`, `user`, `session`, `account`, `verification`, `workspace_memberships`, `workspace_invitations`, `departments`, `department_memberships`, `member_capabilities`.
+Clients and services: `bloomops_clients` (exported as `clients`, see coexistence), `client_contacts`, `client_assignments`, `service_types`, `service_engagements`, `service_assignments`.
+Templates and onboarding: `templates`, `template_versions`, `onboarding_instances`, `onboarding_items`, `onboarding_item_services`.
+History: `activity_events`.
+
+`onboarding_item_services` is the one table beyond the A2 list. It is the junction that lets a single merged onboarding item (Meta access, say) serve several service engagements, which the Release A merge story requires. No projects, tasks, deliverables, content, approvals, comments, requests, finance, notification, queue, or webhook tables were created.
+
+The four auth tables are Better Auth 1.7.2's core schema for sqlite, generated with its CLI and copied field for field (`user`, `session`, `account`, `verification`, camelCase keys over snake_case columns, integer epoch-millisecond timestamps, cascade from `user`). A nullable `account.issuer` column is included ahead of Better Auth's documented account model. No auth behaviour exists. Better Auth itself is not installed.
+
+### Constraints that carry the invariants
+
+- Every business table has `workspace_id` with a foreign key to `workspaces`. Every child row also carries a composite foreign key `(workspace_id, parent_id)` to the parent's unique `(workspace_id, id)`, so a contact, assignment, engagement, onboarding row, invitation, or activity event can never reference a parent in another workspace. 53 foreign-key clauses in total.
+- `workspace_memberships`: one row per user per workspace, `role` limited by CHECK to owner, admin, project_manager, team_member, client. `member_capabilities` holds dotted keys such as `finance.view` per membership, unique per pair, so finer permissions are data rather than roles.
+- `bloomops_clients`: `relationship_status` and `health` are separate columns with separate CHECK vocabularies. `slug` is unique per workspace.
+- `service_engagements`: many per client, own `status` vocabulary, optional `source_template_version_id`. `service_assignments` is unique per engagement and membership and is distinct from `client_assignments`.
+- `templates` and `template_versions`: one row per template version number, `definition_json` plus `definition_hash` per snapshot, and a trigger that aborts any update of the definition, hash, template, or version number. A used version cannot be deleted (restrict).
+- `onboarding_instances`: at most one open instance per client (partial unique index), so activation can be retried. `onboarding_items`: unique `(instance, logical_key)`, lowercase keys enforced by CHECK, structured status, responsible party, visibility, and position columns. Items and their service links cascade with their instance.
+- `activity_events`: triggers abort UPDATE and DELETE, event types are upper-case constants, indexed by workspace, client, and subject.
+- Domain timestamps are ISO-8601 text with millisecond precision, defaulted by the database. Ids are text, defaulted by the database when absent.
+- No table stores a third-party platform password. Better Auth's `account.password` column exists for its credential provider only and stays unused with magic-link login.
+
+### Coexistence with the inherited Leadsthatbloom schema
+
+Both schemas live in the same D1 database per environment and never share a table.
+
+- The inherited schema keeps its bootstrap: `schema.sql` then `scripts/migrate.mjs` over `migrations/` with the `_migrations` ledger (`db:schema:*`, `db:migrate:*`). Nothing there changed.
+- The domain schema uses wrangler's native migrations over `drizzle/` with the `d1_migrations` ledger (`db:domain:migrate:*`). `wrangler.jsonc` now points `migrations_dir` at `drizzle` for all three environments, which only affects these wrangler commands.
+- The one name collision is `clients`. The inherited prospecting app still reads and writes its own `clients` table from four routes, so the BloomOps client table is created as `bloomops_clients` and exported from the schema as `clients`. Application code only ever sees the export. When the inherited prospecting tables are dropped in a later phase, one Drizzle migration renames `bloomops_clients` to `clients`. No inherited SQL or behaviour was touched.
+- Order does not matter. Applying domain migrations to the inherited dev database worked (37 inherited tables plus 22 plus the ledger), and applying `schema.sql` on top of a domain-first database also worked. The two ledgers never see each other's files.
+- `GET /api/infra` now also reports `domain: { migrations, ok }` from the `d1_migrations` ledger and the presence of the anchor tables, and the staging verifier checks it.
+
+### Local verification (2026-09-05)
+
+| Check | Result |
+|---|---|
+| Schema module loads, `drizzle-kit generate` | 22 tables, 27 unique indexes, 17 indexes, 53 foreign-key clauses, 20 CHECK constraints. Re-running generate reports no changes |
+| Fresh local D1 from zero, `db:domain:migrate:local` | 2 migrations applied, 22 tables, ledger 2. Second run: "No migrations to apply" |
+| Existing dev D1 with the inherited schema | domain migrations applied cleanly on top, 60 tables in total, triggers present |
+| Reverse order | `schema.sql` applied after the domain schema without conflict |
+| `tests/bloomops-schema.test.mjs` | 19 invariant tests against a real SQLite built from the committed migrations |
+| `npm ci` | ok |
+| `npm test` | 2633 pass, 0 fail (2613 before A2, 20 new) |
+| `npm run build`, `npm run cf:build` | exit 0 |
+| Local Worker smoke (`verify-staging.mjs` against `wrangler dev`) | 15 of 15, including "BloomOps domain schema present" |
+| Pages anchors | all eight unchanged, nothing under `components/` changed |
+
+### Staging verification
+
+The Deploy staging workflow now runs `db:domain:migrate:staging` after the inherited migrations and before the deploy, and the live verifier requires `/api/infra` to report the domain schema. The result of the first run on this branch is recorded under "Last Verification" once it completes.
+
+### Deferred to A3 and later
+
+- installing Better Auth, its routes, sessions, magic links, Resend, and any login UX (A3)
+- seeding the four departments, service types, or any workspace (A7 and later, or explicit setup)
+- Pages metadata columns (workspace, client, visibility) on the inherited `pages` table
+- renaming `bloomops_clients` to `clients` after the inherited prospecting tables are dropped
+- any use of `lib/bloomops/db.mjs` from routes
+
 ## Leadsthatbloom Reference Audit (A1)
 
 | Reference | Where it was | What happened |
@@ -214,6 +288,17 @@ Re-running the workflow is safe. Schema and migrations are idempotent, the provi
 - `open-next.config.ts` configures no cache. Every inherited route is dynamic, so nothing is lost today. Revisit when a route needs ISR
 - `compatibility_date` is `2025-05-01`. Wrangler suggests a newer date. Raise it deliberately with a test pass
 - the production D1 id is a placeholder until production is provisioned deliberately
+- two migration systems coexist in one database until the inherited prospecting schema is retired: keep running the inherited bootstrap before the domain migrations on a brand-new database, as the workflow does, even though either order works today
+- the BloomOps client table is physically named `bloomops_clients` until the inherited `clients` table is dropped
+
+## Intentionally Not Done in A2
+
+- no Better Auth install, routes, sessions, magic links, Resend, or login UX
+- no Clients, Onboarding, or Templates UI
+- no seed data beyond test fixtures
+- no changes to inherited tables, SQL, or behaviour, and no rename of the inherited `clients` table
+- no production provisioning or migration
+- no A3 work
 
 ## Intentionally Not Done in A1
 
@@ -230,13 +315,13 @@ For the next phase, read:
 
 1. `CLAUDE.md`
 2. this file
-3. `docs/phases/A2.md` and `docs/DOMAIN_MODEL.md`
+3. `docs/phases/A3.md` and `docs/DOMAIN_MODEL.md`
 
 Read additional canonical planning docs only when the phase file or `docs/INDEX.md` calls for them.
 
 ## Next Planned Phase
 
-A2, Database foundation. Not started.
+A3, Authentication and membership. Not started.
 
 ## Last Verification
 

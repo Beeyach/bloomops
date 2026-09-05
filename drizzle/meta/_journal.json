@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1788613960435,
+      "tag": "0000_bloomops_release_a_foundation",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788613961707,
+      "tag": "0001_immutability_triggers",
+      "breakpoints": true
+    }
+  ]
+}
