@@ -6,15 +6,15 @@ Release A: Foundation, Auth, Clients, Services, Onboarding, Client Portal
 
 ## Current Phase
 
-A2 (Database foundation) is complete. The BloomOps domain schema exists as Drizzle-generated migrations, is proven by invariant tests against a real SQLite, and was applied to the staging database `bloomops-staging` by the same GitHub Actions run that deploys the Worker. See "Domain Schema (A2)" below for the local and staging evidence.
+A3 (Authentication and membership) is implemented and verified locally. BloomOps signs people in with Better Auth magic links sent through Resend, resolves every protected request against an ACTIVE workspace membership, bootstraps the first workspace from explicit inputs, runs the invitation lifecycle, and no longer accepts the inherited access-code login. See "Authentication and Membership (A3)" below for the decisions, the schema comparison, and the evidence. The staging cutover runs from the same GitHub Actions workflow once the repository secrets named there exist; the run result is recorded under "Staging verification (A3)".
 
-Completed phase specs: `docs/phases/A1.md`, `docs/phases/A2.md`. Next phase spec: `docs/phases/A3.md` (not started).
+Completed phase specs: `docs/phases/A1.md`, `docs/phases/A2.md`, `docs/phases/A3.md`. Next phase spec: `docs/phases/A4.md` (not started).
 
 Documentation index: `docs/INDEX.md`
 
 ## Branch State
 
-A0 (PR #2) was not merged into `main` when A1 started, so A1 is a second commit on the same branch, `claude/bloomops-a0-phase-xhae5r`, stacked on the A0 import commit. PR #2 was still unmerged when A2 started, so A2 lives on its own branch, `claude/bloomops-a2-database-foundation`, based on the PR #2 head, with its own PR against `main`. Once PR #2 merges, that PR shows A2 alone.
+PR #2 (A0 and A1) and PR #3 (A2) are merged into `main` (`541da1e`). A3 lives on `claude/a3-auth-membership-xo5r7e`, branched from that merged `main`, with its own PR. Nothing was stacked on the earlier branches.
 
 ## Source
 
@@ -36,6 +36,7 @@ BloomOps Git history is fresh. The source commit object does not exist in the Bl
 - A0: source snapshot imported, planning docs preserved, source SHA recorded, install/test/build verified
 - A1: deployment path migrated to Cloudflare Workers through OpenNext, three isolated environments configured, Leadsthatbloom infrastructure references removed or neutralized, generated output and prospect exports removed from version control, fresh-database bootstrap made reproducible, local runtime verified, `bloomops-staging` deployed from GitHub Actions and verified live
 - A2: BloomOps domain schema for Release A declared with Drizzle, materialised as SQL migrations, applied alongside the inherited schema, proven with invariant tests
+- A3: Better Auth magic-link identity and sessions over the A2 tables, Resend mail behind a small transport, per-request workspace membership enforcement, first-workspace bootstrap, the invitation lifecycle, minimal sign-in and invitation screens, and removal of the inherited access-code login; verified by invariant tests, a full local Worker smoke, and the external verifier
 
 ## Deployment Path Decision (A1)
 
@@ -99,7 +100,7 @@ Configuration lives in `wrangler.jsonc`. Wrangler does not inherit `d1_databases
 
 Development runs entirely on wrangler's local D1 and R2 simulation (`.wrangler/state/`, gitignored). `next dev` reaches the same local bindings through `initOpenNextCloudflareForDev()`.
 
-Secrets are per environment and never in the repository. `.dev.vars.example` documents the two inherited login secrets for local use. Copy it to `.dev.vars` (gitignored).
+Secrets are per environment and never in the repository. `.dev.vars.example` documents the BloomOps auth and mail secrets for local use. Copy it to `.dev.vars` (gitignored). Public per-environment configuration (`BLOOMOPS_APP_URL`, `BLOOMOPS_MAIL_TRANSPORT`) lives in `wrangler.jsonc` vars.
 
 ### Commands
 
@@ -238,6 +239,104 @@ The same script runs locally against wrangler's local D1 with `node .github/scri
 - renaming `bloomops_clients` to `clients` after the inherited prospecting tables are dropped
 - any use of `lib/bloomops/db.mjs` from routes
 
+## Authentication and Membership (A3)
+
+Better Auth owns identity (`user`), sessions (`session` plus a signed cookie), and the one-time magic-link token (`verification`). BloomOps owns everything about what a person may do: workspace membership, role, membership state, client scope, and capabilities, resolved from BloomOps tables on every protected request. A valid identity session never bypasses membership.
+
+| Item | Value |
+|---|---|
+| `better-auth` | 1.7.2 (dependency). Latest release on npm as of 2026-09-05, published 2026-08-26, the same version A2 generated its tables from |
+| Drizzle adapter | `@better-auth/drizzle-adapter` 1.7.2 (direct dependency; the current docs import it from this package, which `better-auth/adapters/drizzle` re-exports). `provider: 'sqlite'` over `drizzle-orm/d1` |
+| Resend | REST API (`POST https://api.resend.com/emails`, bearer key, JSON body) through `lib/bloomops/mail.mjs`. The `resend` npm SDK (6.26.0 at the time) is not installed: the call is one `fetch`, and the SDK carries a React Email peer dependency the Worker has no use for |
+| Auth routes | `app/api/auth/[...all]/route.js` hands GET and POST to `auth.handler`. Endpoints used: `POST /api/auth/sign-in/magic-link`, `GET /api/auth/magic-link/verify`, `GET /api/auth/get-session`, `POST /api/auth/sign-out` |
+| BloomOps routes | `GET /api/bloomops/me`, `GET|POST /api/bloomops/invitations`, `POST /api/bloomops/invitations/:id/resend`, `POST /api/bloomops/invitations/:id/revoke`, `POST /api/bloomops/invitations/accept`, `GET /api/bloomops/members`, `PATCH /api/bloomops/members/:id`, public `GET /api/health` |
+| Screens | `/sign-in` (form, check-your-email state, invalid or expired link state, no-workspace state), `/invite/<token>` (invalid, expired, withdrawn, already used, sign in to accept, wrong address, accept). `components/auth/AuthShell.jsx` frames them with the existing Bloom tokens. A5 owns the real design |
+| Modules | `lib/bloomops/auth-config.mjs` (environment resolution), `auth.mjs` (Better Auth instance), `access.mjs` (per-request identity and membership), `membership.mjs`, `invitations.mjs`, `bootstrap.mjs`, `mail.mjs`, `activity.mjs` |
+
+### Official documentation and API decisions
+
+`better-auth.com` and `resend.com` are blocked by this environment's egress policy. The current documentation was read from the Better Auth repository's own docs source on GitHub (`docs/content/docs/...` on `main`: magic-link plugin, database concepts and hooks, Drizzle adapter, Next.js integration, options reference, session management, hooks) and cross-checked against the installed 1.7.2 package source, which is what actually runs. Resend's request and error shapes were read from the `resend-node` source and the Cloudflare Workers example on GitHub. Decisions taken on that basis:
+
+- magic-link plugin: `expiresIn: 900`, `storeToken: 'hashed'`, sign-up left enabled so an invited person can create their identity on first click. Better Auth 1.7 consumes each token atomically on first verification (`allowedAttempts` is deprecated and ignored)
+- restricting account creation: the documented `databaseHooks.user.create.before` hook throws an `APIError` unless a pending, unexpired invitation exists for the normalised address; the plugin turns that into an error redirect (`error=NOT_INVITED`) and no user or session is created. This is the supported mechanism; there is no second authentication system
+- `hooks.before` on `/sign-in/magic-link` answers 503 for everyone when no mail transport is configured, before any address-dependent logic runs
+- `baseURL` is always set explicitly (Better Auth's reference recommends against request inference); `trustedOrigins` is the app origin plus `BLOOMOPS_TRUSTED_ORIGINS`. Better Auth's `originCheck` limits `callbackURL`, `newUserCallbackURL`, and `errorCallbackURL` to those origins and to safe relative paths, and its CSRF check refuses a cross-site `Origin` on the sign-in request
+- middleware follows the documented pattern of a cookie presence check only (`getSessionCookie` semantics, implemented locally against the fixed cookie names so the middleware imports nothing from Better Auth); every protected route and page performs the full check
+- `emailAndPassword` stays disabled (its default), no social providers, no organization plugin. Telemetry is off explicitly
+
+### A2 auth schema compared with the current Better Auth schema
+
+`auth@1.7.2 generate` (the current CLI; `@better-auth/cli` 1.4.21 is the old package) was run against a Drizzle sqlite config with the magic-link plugin, and its output was compared field for field and index for index with the four A2 tables in `lib/bloomops/schema.mjs` and `drizzle/0000_bloomops_release_a_foundation.sql`. The magic-link plugin adds no tables.
+
+| Table | Match | Difference |
+|---|---|---|
+| `user` | exact: `id`, `name`, `email` (unique `user_email_unique`), `email_verified`, `image`, `created_at`, `updated_at` | none |
+| `session` | exact columns: `id`, `expires_at`, `token` (unique `session_token_unique`), `created_at`, `updated_at`, `ip_address`, `user_agent`, `user_id` (index `session_userId_idx`, cascade from `user`) | A2 gives `updated_at` a database default the CLI omits (a harmless superset; Better Auth always writes the column) |
+| `account` | columns and `account_userId_idx` match | the CLI emits `issuer` as NOT NULL with a compound unique index `account_issuer_accountId_uidx (issuer, account_id)`; A2 has `issuer` nullable and no such index. A2 also gives `updated_at` a default the CLI omits |
+| `verification` | exact: `id`, `identifier` (index `verification_identifier_idx`), `value`, `expires_at`, `created_at`, `updated_at` | none |
+
+Migration `drizzle/0002_a3_auth_membership.sql` adds the compound unique index `account_issuer_accountId_uidx`, which is the smallest safe forward change: no `account` rows exist anywhere (magic-link sign-in creates users and sessions only, never accounts) and Better Auth 1.7 always supplies `issuer` when it does write one. Tightening `issuer` to NOT NULL would be a table rebuild in SQLite for a column no Release A code path writes, so it is deliberately left nullable and noted in the schema comment for the phase that first adds an OAuth or credential provider. The same migration adds `workspace_invitations.invitee_name` (nullable) and the partial unique index `workspace_invitations_pending_uq (workspace_id, email) WHERE status = 'pending'`, so one address can hold at most one usable invitation per workspace. Generated with `drizzle-kit generate --name a3_auth_membership`; a second `generate` reports no changes. Applied locally with `db:domain:migrate:local`; staging receives it from the deploy workflow.
+
+### Magic links, sessions, origins
+
+- a link is `https://<app origin>/api/auth/magic-link/verify?token=<32 characters from Better Auth's CSPRNG>&callbackURL=<path>`; it expires after 15 minutes, is consumed atomically on the first verification, and a second use redirects to `/sign-in?error=INVALID_TOKEN` without a session. Only the SHA-256 of the token is stored (`verification.identifier`); the raw token exists in the email alone, and nothing logs it (the tests capture the console to prove that)
+- `BLOOMOPS_APP_URL` is the only origin links and redirects use in staging and production; it must be https, and a Host header never changes it. In development the request's own loopback origin (`localhost`, `127.0.0.1`, `[::1]`, any port) wins so `next dev` on :3000 and `npm run preview` on :8787 both work, and the loopback siblings are trusted for the Origin check because wrangler answers as `localhost` when a script typed `127.0.0.1`. A non-loopback host in development is ignored
+- sessions live 30 days, extend once every 24 hours of use, and are read from the database on every request (no cookie cache), so sign-out and membership changes take effect immediately. Cookie `bloomops.session_token` (`__Secure-bloomops.session_token` on https), HttpOnly, SameSite=Lax, Path=/, signed with `BLOOMOPS_AUTH_SECRET` (32+ characters, required outside development; the development fallback value is refused if it ever reaches a deployed environment)
+- Better Auth's built-in limiter (memory storage, 5 magic-link requests a minute per IP, active when `NODE_ENV` is production) is in force on the Worker; the local smoke runs into it when repeated within a minute, which is the expected behaviour
+
+### Unknown addresses
+
+`POST /api/auth/sign-in/magic-link` answers `{ "status": true }` for every well-formed address. The `sendMagicLink` callback delivers the email only when the address belongs to an existing `user` row or a pending, unexpired invitation; otherwise nothing is sent and the caller cannot tell. The token row Better Auth writes for an unknown address is never delivered and expires in 15 minutes. Even a delivered link creates no identity unless the invitation is still pending at click time (tested by revoking between delivery and click). The one residual difference is timing: a known address costs one Resend call. A mail failure for a known address is logged with transport, status, and error name only, and the response stays `{ "status": true }`.
+
+### Membership enforcement
+
+`lib/bloomops/access.mjs` is the one place a request becomes a person: `getAccess` reads the Better Auth session from the cookie, then resolves the earliest ACTIVE membership in an ACTIVE workspace for that user. `requireAccess` answers 401 without a session, 403 with a session but no active membership, 403 for a state-changing request whose `Origin` is not a trusted origin, and 403 for `manageMembers` unless the membership is an active Owner or Admin. `requireIdentity` (identity only) exists for exactly one route, invitation acceptance. The inherited `lib/workspace.mjs#getWorkspace`, which all 161 inherited data routes call, now returns the BloomOps workspace slug and a two-value role derived from the membership role (Owner and Admin are `admin`), or null, so the prospecting routes are scoped by membership without being edited. `app/page.jsx` performs the same check before rendering the inherited app. Suspending or removing a membership takes effect on the person's next request while their identity session remains valid; the tests and the Worker smoke both show `get-session` still answering while `/api/bloomops/me`, `/api/pages`, and `/` refuse. The last active Owner cannot be suspended or removed, and nobody can change their own membership.
+
+### First workspace bootstrap
+
+`scripts/bootstrap-workspace.mjs` builds a plan of eight literal SQL statements, each guarded by `NOT EXISTS`, and runs it with `wrangler d1 execute DB --file` (`--local`, or `--remote` with a required `--env`), then reports what the workspace holds with masked addresses. Inputs come from flags or `BLOOMOPS_BOOTSTRAP_WORKSPACE_NAME`, `BLOOMOPS_BOOTSTRAP_WORKSPACE_SLUG` (optional, derived), `BLOOMOPS_BOOTSTRAP_OWNER_EMAIL`, `BLOOMOPS_BOOTSTRAP_OWNER_NAME`, `BLOOMOPS_BOOTSTRAP_ADMIN_EMAIL`, `BLOOMOPS_BOOTSTRAP_ADMIN_NAME`. No address is in the source. Owner and Admin must differ. Rerunning creates nothing and rewrites nothing: an existing identity keeps its name, an existing membership keeps its role and status, and the report says when the database differs from the intent (exit 1) instead of correcting it. Bootstrapped identities start `email_verified = 0`; the first magic-link click proves the mailbox and Better Auth flips it. The staging workflow runs the same script on every deploy from repository secrets; without both addresses it skips with a warning, so nobody can sign in until they are supplied.
+
+### Invitations
+
+`lib/bloomops/invitations.mjs` implements Pending → Accepted | Expired | Revoked over the A2 table: 256-bit base64url token from the CSPRNG, SHA-256 hash stored, seven-day expiry, normalised address, role, optional client (required for the Client role, refused for the others, and the composite foreign key refuses a client from another workspace), optional invitee name, inviter membership. Creating an invitation for an address that already has a pending one rotates that row's token and expiry (the old link stops resolving) instead of adding a second; the partial unique index enforces it at the database as well. Resend rotates a pending invitation or replaces an expired one with a fresh row; revoked and accepted ones are left alone. Acceptance requires a signed-in identity whose normalised address equals the invitation's, creates the membership as `active` with the invited role (or reactivates a removed or suspended row, never a duplicate; the unique `(workspace_id, user_id)` index backs that), stamps `accepted_membership_id`, and is idempotent for the same person retrying. A wrong address, an expired, revoked, or already accepted invitation, and an invitation from another workspace are refused. Every transition writes an `activity_events` row (`INVITATION_SENT`, `INVITATION_RESENT`, `INVITATION_REVOKED`, `INVITATION_EXPIRED`, `INVITATION_ACCEPTED`, `MEMBERSHIP_CREATED` or `MEMBERSHIP_ACTIVATED`, plus `MEMBERSHIP_SUSPENDED`, `MEMBERSHIP_REINSTATED`, `MEMBERSHIP_REMOVED` for state changes), carrying the client id where the invitation had one. Client authorization rules themselves are A4.
+
+### Mail
+
+`lib/bloomops/mail.mjs` exposes `createMailer(env).send({ to, subject, text, html })` with three transports: `resend` (the REST call; key only in the Authorization header; errors carry status and Resend's error name, never the body or key), `r2-dev` (development only, refused elsewhere; writes the message as JSON into the local R2 simulation under `dev-mail/<sha256(recipient)>.json` so a local smoke can read a link back with `wrangler r2 object get --local`), and `none`. Templates (`magicLinkEmail`, `invitationEmail`) are short, plain, escape names, and name no other member. Configuration: `BLOOMOPS_RESEND_API_KEY` (secret), `BLOOMOPS_MAIL_FROM` (defaults to `BloomOps <onboarding@resend.dev>`, Resend's test sender, which delivers only to the Resend account's own address until a sending domain is verified there), `BLOOMOPS_MAIL_TRANSPORT` (optional; `resend` when a key exists). For staging, the safe path is a Resend key for a verified sending domain, or the onboarding sender while the only recipients are the account owner's address and Resend's test addresses (`delivered@resend.dev`, `bounced@resend.dev`).
+
+### Old access-code login removed
+
+Deleted: `lib/session.mjs`, `app/api/auth/route.js`, `app/gate/`, `docs/ACCESS-CODES.md`, `tests/session.test.mjs`. Rewritten: `middleware.js`, `lib/workspace.mjs`, `app/page.jsx`, the sign-out button in `components/GlassRail.jsx` (now `POST /api/auth/sign-out` then `/sign-in`), `app/api/credits/route.js` (known workspaces come from the `workspaces` table instead of the access-code map), `.dev.vars.example`, the staging workflow and verifier. `LTB_ACCESS_CODES` is read nowhere. `LTB_SESSION_SECRET` no longer signs or verifies anything; the inherited prospecting code still derives the Gmail token encryption key from it (`lib/secret-box.mjs`, `app/api/gmail/*`), which is not authentication and leaves with that code. `POST /api/auth` with a code answers 401 from Better Auth (unknown endpoint), and an `ltb_session` cookie opens nothing. `tests/bloomops-middleware.test.mjs` pins all of this and scans `app/`, `lib/`, `components/`, `.github/`, and `scripts/` for the old symbols.
+
+### Local verification (2026-09-05)
+
+| Check | Result |
+|---|---|
+| `npm ci` | ok from the regenerated lockfile. `npm install` needed `--force` once because Better Auth's optional SvelteKit peer chain wants a newer esbuild than OpenNext pins; npm installs none of those optional peers, and a clean `npm ci` reproduces the tree without flags |
+| `npm test` | 2680 tests, 2680 pass, 0 fail (2634 before A3; 6 inherited access-code tests removed, 52 A3 tests added across `bloomops-auth`, `bloomops-invitations`, `bloomops-membership`, `bloomops-mail`, `bloomops-middleware`; `bloomops-schema` and the Pages and editor tests unchanged and green) |
+| `npm run build` | exit 0, all new routes listed as dynamic |
+| `npm run cf:build` | exit 0, `Worker saved in .open-next/worker.js` |
+| Local D1 | `db:domain:migrate:local` applied 0000, 0001, 0002; bootstrap CLI run twice: 1 workspace, 2 users, 2 memberships, 3 activity events both times |
+| External verifier against the local Worker | `node .github/scripts/verify-staging.mjs --url http://localhost:8787 --expect-env development`: 21 of 21 (front door, `/gate` and `POST /api/auth` gone, inherited cookie worthless, health and schema, identical responses for two unknown addresses, malformed link refused, foreign callback origin refused, anonymous BloomOps routes refused) |
+| End-to-end smoke against the local Worker | `node scripts/auth-smoke-local.mjs --url http://localhost:8787`: 40 of 40 through the real bundle on workerd with the r2-dev mailbox: bootstrap, unknown address, Owner link request, delivery, click, single use, `/api/bloomops/me`, home page, inherited `/api/pages` scoped to the slug, `/sign-in` redirecting a member home, invitation created and delivered without the token, invitee identity created on click, no access before acceptance, wrong-person acceptance refused, acceptance, idempotent retry, Team Member cannot manage, suspend (identity session survives, every protected surface refuses), self-suspension refused, cross-site origin refused, remove, old login gone, sign-out |
+
+The A3 tests run Better Auth's real request handler and the drizzle D1 driver over a real SQLite (`tests/_bloomops-db.mjs` wears D1's interface, including `raw()` and `batch()`), built from the committed migrations, so the code path is the one Cloudflare runs. Two defects found and fixed during the Worker smoke, neither reachable from unit tests: the Origin check refused `127.0.0.1` while wrangler answered as `localhost` (now the loopback siblings are trusted in development only), and on the server-component path Next reports `x-forwarded-proto: https` for a loopback host, which selected the `__Secure-` cookie name (now a loopback host is always plain http for the purpose of picking the development origin).
+
+### Staging verification (A3)
+
+The deploy workflow (`.github/workflows/deploy-staging.yml`) now sets `BLOOMOPS_AUTH_SECRET`, `BLOOMOPS_RESEND_API_KEY`, and optionally `BLOOMOPS_MAIL_FROM` on `bloomops-staging` from `STAGING_BLOOMOPS_AUTH_SECRET`, `STAGING_BLOOMOPS_RESEND_API_KEY`, `STAGING_BLOOMOPS_MAIL_FROM`; runs the bootstrap from `STAGING_BLOOMOPS_WORKSPACE_NAME` (default "BloomOps Staging"), `STAGING_BLOOMOPS_OWNER_EMAIL`, `STAGING_BLOOMOPS_OWNER_NAME`, `STAGING_BLOOMOPS_ADMIN_EMAIL`, `STAGING_BLOOMOPS_ADMIN_NAME`; and no longer reads `STAGING_LTB_ACCESS_CODES` or `STAGING_LTB_SESSION_SECRET` (delete them from the repository). `BLOOMOPS_APP_URL` for staging is committed in `wrangler.jsonc`. The verifier fails the run when authentication is not configured and warns when mail is not. It cannot sign in: no endpoint exposes tokens, so the one manual acceptance step is a real click on a magic link from a real mailbox.
+
+Result of the first run on this branch: see "Last Verification" (recorded after the run). Values that still have to be supplied as repository secrets before staging can sign anybody in: the auth secret, the Resend key, and Ellen's and Ary's addresses for the bootstrap. None were guessed.
+
+### Intentionally deferred to A4 and later
+
+- the authorization engine (roles beyond Owner/Admin member management, client, service, and project assignment scope, record visibility, capabilities such as `finance.view`), and all client-facing authorization rules
+- linking a Client-role membership to `client_contacts.user_id` on acceptance
+- a workspace switcher for a person with several memberships (today the earliest active membership is the one; `resolveWorkspaceAccess` already takes a `workspaceId`)
+- member and invitation management screens (the routes exist; A5 owns the shell), profile editing, session listing and revocation from the UI
+- database-backed rate limiting for Better Auth (memory storage is per isolate), email change, and any second sign-in method
+- `account.issuer NOT NULL`, with the first OAuth or credential provider
+
 ## Leadsthatbloom Reference Audit (A1)
 
 | Reference | Where it was | What happened |
@@ -253,7 +352,7 @@ The same script runs locally against wrangler's local D1 with `node .github/scri
 | Windows launcher into `F:\bloomtrack-pro` | `Bloomtrack.bat` | Deleted |
 | Tracked generated Worker output (204 files, 13 MB) | `.open-next/` | Removed from version control and gitignored. Regenerated by `npm run cf:build` |
 | Prospect exports (5 files, 700 KB) | `all-prospects.json`, `all-emailed-prospects.csv`, `ellen-coaches.csv`, `done-coaches.csv`, `coaches.json` | No runtime source referenced them. Deleted and gitignored by name |
-| `LTB_ACCESS_CODES`, `LTB_SESSION_SECRET` | `lib/session.mjs`, `middleware.js`, `app/api/auth/route.js`, `docs/ACCESS-CODES.md` | Still read by the inherited login until A3 replaces it. Not placed in any wrangler config. Documented as temporary in `.dev.vars.example` |
+| `LTB_ACCESS_CODES`, `LTB_SESSION_SECRET` | `lib/session.mjs`, `middleware.js`, `app/api/auth/route.js`, `docs/ACCESS-CODES.md` | Removed in A3 with the access-code login. `LTB_SESSION_SECRET` survives only as the Gmail token encryption key in the inherited prospecting code (`lib/secret-box.mjs`, `app/api/gmail/*`), which goes with that code |
 | `LTB_SHARED_APIFY_TOKEN`, `RENDER_SECRET`, `UPLOAD_SECRET`, `CRON_SECRET`, `GOOGLE_*`, `GMAIL_*`, `BRAVE_API_KEY`, `SERPER_API_KEY` | prospecting routes and `lib/` | Prospecting secrets. Not configured for any BloomOps environment. They go with the prospecting code |
 | `NEXT_PUBLIC_LTB_*` build stamps | `next.config.js`, `lib/version.mjs` | Kept. Build-time version badge, not infrastructure. Rename with the app identity later |
 | `CF_PAGES_COMMIT_SHA`, `CF_PAGES_BRANCH` | `app/api/system-health/route.js` | Kept. Reports `unknown` on Workers. Prospecting system page |
@@ -312,7 +411,10 @@ Re-running the workflow is safe. Schema and migrations are idempotent, the provi
 ## Known Risks
 
 - inherited application is still Leadsthatbloom in behavior and UI, and `ProspectsApp.jsx` remains the root
-- inherited authentication is access-code based (`LTB_ACCESS_CODES`, `LTB_SESSION_SECRET`) until A3
+- authorization beyond "active member of the workspace" and "Owner or Admin manages members" does not exist yet; every inherited route still treats any active member as it treated an access-code holder, with Owner and Admin as `admin`. A4 builds the engine
+- Better Auth's rate limiter uses memory storage, which is per Worker isolate; the magic-link path is still bounded (5 requests a minute per IP per isolate) but not globally
+- staging cannot sign anybody in until the repository secrets named in the deploy workflow exist (auth secret, Resend key, bootstrap addresses), and a real magic-link click from a real mailbox remains a manual step
+- the `resend` transport sends from `onboarding@resend.dev` until `BLOOMOPS_MAIL_FROM` names an address on a domain verified in Resend; that sender only delivers to the Resend account's own mailbox
 - prospecting code, skills, tools, `services/audit-render/`, the quarantined `workers/bloomwired-review/`, and the Leadsthatbloom report markdown files at the repository root remain until replacement phases make removal safe
 - the inherited schema is still bootstrapped from `schema.sql` plus postcondition-aware migrations. A2 added the BloomOps domain schema beside it. The inherited schema is retired only when the prospecting code that reads it is removed
 - `open-next.config.ts` configures no cache. Every inherited route is dynamic, so nothing is lost today. Revisit when a route needs ISR
@@ -320,6 +422,15 @@ Re-running the workflow is safe. Schema and migrations are idempotent, the provi
 - the production D1 id is a placeholder until production is provisioned deliberately
 - two migration systems coexist in one database until the inherited prospecting schema is retired: keep running the inherited bootstrap before the domain migrations on a brand-new database, as the workflow does, even though either order works today
 - the BloomOps client table is physically named `bloomops_clients` until the inherited `clients` table is dropped
+
+## Intentionally Not Done in A3
+
+- no authorization engine, capabilities, assignment scope, or visibility rules (A4)
+- no member or invitation management UI, no shell or navigation changes, no redesign of the sign-in screens (A5)
+- no social OAuth, no email and password, no Better Auth organization plugin
+- no production provisioning, secrets, or deployment
+- no removal of prospecting code beyond the access-code login itself
+- no change to the Pages/editor system
 
 ## Intentionally Not Done in A2
 
@@ -345,16 +456,18 @@ For the next phase, read:
 
 1. `CLAUDE.md`
 2. this file
-3. `docs/phases/A3.md` and `docs/DOMAIN_MODEL.md`
+3. `docs/phases/A4.md` and `docs/DOMAIN_MODEL.md`
 
 Read additional canonical planning docs only when the phase file or `docs/INDEX.md` calls for them.
 
 ## Next Planned Phase
 
-A3, Authentication and membership. Not started.
+A4, Authorization engine. Not started. A3's primitives to build on: `lib/bloomops/access.mjs` (`getAccess`, `requireAccess`, `requireIdentity`, `originAllowed`), `lib/bloomops/membership.mjs` (`resolveWorkspaceAccess`, `canManageMembers`, `setMembershipStatus`), and the `member_capabilities`, `client_assignments`, and `service_assignments` tables from A2.
 
 ## Last Verification
 
-2026-09-05, A2 execution. Local results are in "Domain Schema (A2)". GitHub Actions run 33968508433 applied the two domain migrations to `bloomops-staging`, and run 33968734285 (commit `ea075bc`) deployed and passed all 16 live checks, including the domain schema check. Run 33987071853 (commit `ee96d17`) then proved the fresh-remote case: a disposable D1 named `bloomops-a2-zero-verify` went from empty to the current schema through `schema.sql`, `scripts/migrate.mjs`, and the Drizzle migrations, took a second pass as a no-op, and was deleted, with the account inventory and `bloomops-staging` unchanged. A2 satisfies every verification item in `docs/phases/A2.md`, including "fresh staging DB migrates from zero". No production resource was provisioned. `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched.
+2026-09-05, A3 execution. Local results are in "Local verification (2026-09-05)" under "Authentication and Membership (A3)": 2680 tests pass, `npm run build` and `npm run cf:build` exit 0, the external verifier passes 21 of 21 and the end-to-end smoke 40 of 40 against the local Worker, and the bootstrap CLI is idempotent against the local D1. The staging run for this branch is recorded here once GitHub Actions has run it. No production resource was touched. `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched: no wrangler command in this session was authenticated, and the only wrangler operations run were local (`--local`, `wrangler dev` through `opennextjs-cloudflare preview`, `r2 object get --local`).
+
+Earlier the same day, A2 execution. Local results are in "Domain Schema (A2)". GitHub Actions run 33968508433 applied the two domain migrations to `bloomops-staging`, and run 33968734285 (commit `ea075bc`) deployed and passed all 16 live checks, including the domain schema check. Run 33987071853 (commit `ee96d17`) then proved the fresh-remote case: a disposable D1 named `bloomops-a2-zero-verify` went from empty to the current schema through `schema.sql`, `scripts/migrate.mjs`, and the Drizzle migrations, took a second pass as a no-op, and was deleted, with the account inventory and `bloomops-staging` unchanged. A2 satisfies every verification item in `docs/phases/A2.md`, including "fresh staging DB migrates from zero". No production resource was provisioned. `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched.
 
 Earlier the same day, A1 execution. Results are in "Verified Working". Later the same day the remote staging step ran from GitHub Actions (run 33966322588) and passed every check, as recorded under "Staging Deployment". A1 satisfies every verification item in `docs/phases/A1.md`. `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched: no wrangler command in this session was authenticated, and the only wrangler operations run were local (`--local`, `--dry-run`, `wrangler dev`).
