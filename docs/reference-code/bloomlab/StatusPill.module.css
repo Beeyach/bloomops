@@ -1,0 +1,75 @@
+/* Reference snapshot copied from Beeyach/Bloomlab/packages/design-system/src/semantic/StatusPill.module.css for BloomOps visual implementation. Reference-only; not runtime code. */
+.pill {
+  --pill-fg: var(--bl-color-text);
+  --pill-bg: var(--bl-color-surface-2);
+  --pill-glyph: var(--bl-color-text-soft);
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bl-space-1);
+  min-height: 24px;
+  padding: 0 var(--bl-space-2);
+  border-radius: var(--bl-radius-full);
+  background: var(--pill-bg);
+  color: var(--pill-fg);
+  font-size: var(--bl-font-size-xs);
+  font-weight: var(--bl-font-weight-semibold);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.glyph {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  color: var(--pill-glyph);
+}
+
+.success {
+  --pill-bg: rgb(86 191 161 / 0.16);
+  --pill-glyph: var(--bl-color-success);
+}
+
+.warning {
+  --pill-bg: rgb(229 169 76 / 0.18);
+  --pill-glyph: var(--bl-color-warning);
+}
+
+.error {
+  --pill-bg: rgb(216 92 114 / 0.14);
+  --pill-glyph: var(--bl-color-error);
+}
+
+.info {
+  --pill-bg: rgb(93 144 217 / 0.14);
+  --pill-glyph: var(--bl-color-info);
+}
+
+.execution {
+  --pill-bg: rgb(117 230 222 / 0.22);
+  --pill-glyph: #1f9e94;
+}
+
+:global([data-tone='ink']) .pill {
+  --pill-bg: rgb(255 255 255 / 0.1);
+}
+
+:global([data-tone='ink']) .execution {
+  --pill-glyph: var(--bl-color-aqua);
+}
+
+.pulse {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse {
+    animation: none;
+  }
+}
