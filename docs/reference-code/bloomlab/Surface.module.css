@@ -1,0 +1,76 @@
+/* Reference snapshot copied from Beeyach/Bloomlab/packages/design-system/src/primitives/Surface.module.css for BloomOps visual implementation. Reference-only; not runtime code. */
+.surface {
+  border: 1px solid var(--bl-color-border);
+  border-radius: var(--bl-radius-lg);
+  background: var(--bl-color-surface);
+  color: var(--bl-color-text);
+}
+
+.snow {
+  background: var(--bl-color-snow);
+}
+
+.mist {
+  background: var(--bl-color-mist);
+}
+
+.tint {
+  background: var(--bl-color-lilac-soft);
+}
+
+.elevation1 {
+  box-shadow: var(--bl-shadow-sm);
+}
+
+.elevation2 {
+  box-shadow: var(--bl-shadow-md);
+}
+
+.padSm {
+  padding: var(--bl-space-3);
+}
+
+.padMd {
+  padding: var(--bl-space-4);
+}
+
+.padLg {
+  padding: var(--bl-space-6);
+}
+
+.interactive {
+  cursor: pointer;
+  transition:
+    transform var(--bl-motion-fast) var(--bl-motion-ease-standard),
+    box-shadow var(--bl-motion-fast) var(--bl-motion-ease-standard),
+    border-color var(--bl-motion-fast) var(--bl-motion-ease-standard);
+}
+
+.interactive:hover {
+  border-color: var(--bl-color-border-strong);
+  box-shadow: var(--bl-shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Ink surfaces: dark workspaces (Workflow Lab, Call Room). Roles invert here (DES-016). */
+.ink {
+  --bl-color-text: var(--bl-color-snow);
+  --bl-color-text-soft: #c6c2d9;
+  --bl-color-text-faint: var(--bl-color-ink-faint);
+  --bl-color-text-inverse: var(--bl-color-ink);
+  --bl-color-surface: rgb(255 255 255 / 0.06);
+  --bl-color-surface-2: rgb(255 255 255 / 0.1);
+  --bl-color-border: rgb(255 255 255 / 0.12);
+  --bl-color-border-strong: rgb(255 255 255 / 0.28);
+  --bl-color-link: var(--bl-color-aqua);
+  --bl-color-focus: var(--bl-color-aqua);
+
+  border-radius: var(--bl-radius-lg);
+  background: var(--bl-color-workspace);
+  color: var(--bl-color-text);
+  color-scheme: dark;
+}
+
+.inkDeep {
+  background: var(--bl-color-workspace-deep);
+}
