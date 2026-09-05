@@ -1,0 +1,96 @@
+name: Deploy staging
+
+# Builds the inherited app with OpenNext, makes sure the BloomOps staging D1
+# database and R2 bucket exist, applies the schema and migrations to that
+# database, deploys the bloomops-staging Worker, sets its two temporary login
+# secrets, and verifies the live Worker end to end (gate, sign-in, bindings,
+# Pages read and a disposable page write).
+#
+# Staging only. There is deliberately no production job here. Every command
+# names the `staging` Wrangler environment, so nothing in this workflow can
+# reach any other database, bucket, or Worker.
+#
+# Repository secrets it needs (Settings > Secrets and variables > Actions):
+#   CLOUDFLARE_API_TOKEN        scoped token: Account Settings Read, Workers Scripts Edit,
+#                               D1 Edit, Workers R2 Storage Edit, User Details Read,
+#                               Memberships Read. Account resources: this account only.
+#   CLOUDFLARE_ACCOUNT_ID       the Cloudflare account id
+#   STAGING_LTB_ACCESS_CODES    throwaway staging login JSON, for example
+#                               {"bloomops-staging-2026":{"workspace":"staging","role":"admin"}}
+#   STAGING_LTB_SESSION_SECRET  any long random string
+#
+# Runs on demand from the Actions tab (pick the branch), and on every push to
+# main once the A0 and A1 work has merged.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: bloomops-staging
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  WRANGLER_SEND_METRICS: "false"
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  staging:
+    name: Staging (provision, migrate, deploy, verify)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install from the lockfile
+        run: npm ci
+
+      - name: Confirm the Cloudflare identity this run deploys as
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::Add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID as repository secrets first."
+            exit 1
+          fi
+          npx wrangler whoami
+
+      - name: Ensure the staging D1 and R2 exist, and pin the D1 id for this run
+        run: node .github/scripts/ensure-staging-resources.mjs
+
+      - name: Apply the base schema (safe to repeat)
+        run: npm run db:schema:staging
+
+      - name: Apply migrations (ledger keeps this idempotent)
+        run: npm run db:migrate:staging
+
+      - name: Build with OpenNext and deploy bloomops-staging
+        run: |
+          set -o pipefail
+          npm run deploy:staging 2>&1 | tee deploy.log
+
+      - name: Set the temporary staging login secrets on the Worker
+        env:
+          STAGING_LTB_ACCESS_CODES: ${{ secrets.STAGING_LTB_ACCESS_CODES }}
+          STAGING_LTB_SESSION_SECRET: ${{ secrets.STAGING_LTB_SESSION_SECRET }}
+        run: |
+          if [ -z "$STAGING_LTB_ACCESS_CODES" ] || [ -z "$STAGING_LTB_SESSION_SECRET" ]; then
+            echo "::warning::STAGING_LTB_ACCESS_CODES or STAGING_LTB_SESSION_SECRET is not set. The Worker is deployed, but nobody can sign in until both exist."
+            exit 0
+          fi
+          printf '%s' "$STAGING_LTB_ACCESS_CODES" | npx wrangler secret put LTB_ACCESS_CODES --env staging
+          printf '%s' "$STAGING_LTB_SESSION_SECRET" | npx wrangler secret put LTB_SESSION_SECRET --env staging
+
+      - name: Verify the live staging Worker
+        env:
+          STAGING_LTB_ACCESS_CODES: ${{ secrets.STAGING_LTB_ACCESS_CODES }}
+        run: node .github/scripts/verify-staging.mjs --log deploy.log --expect-env staging

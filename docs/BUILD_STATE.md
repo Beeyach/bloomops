@@ -181,7 +181,9 @@ Not performed. Attempted twice on 2026-09-05, the second time after commit `3463
 - no Cloudflare credentials exist in this environment: `wrangler whoami` reports not authenticated, there is no `CLOUDFLARE_API_TOKEN` or `CLOUDFLARE_ACCOUNT_ID`, and no wrangler OAuth config
 - the environment's egress policy answers 403 to `api.cloudflare.com`, `workers.cloudflare.com`, and `*.workers.dev`, so a token alone would not be enough here: `wrangler d1 create`, `r2 bucket create`, `secret put`, `deploy`, and the remote smoke test all need those hosts
 
-Everything up to the upload is proven locally. To finish A1, either run the commands below from a machine with Cloudflare access to the BloomOps account, or give this environment a scoped API token (Workers Scripts Edit, D1 Edit, R2 Edit, Account Settings Read) as `CLOUDFLARE_API_TOKEN` with `CLOUDFLARE_ACCOUNT_ID`, and allow egress to `api.cloudflare.com` and `*.workers.dev`:
+Everything up to the upload is proven locally. The intended way to finish A1 is the GitHub Actions workflow `.github/workflows/deploy-staging.yml`. It runs on Cloudflare-reachable GitHub runners, provisions the staging D1 and R2 if they are missing, pins the D1 id, applies the schema and migrations, deploys `bloomops-staging`, sets the two temporary login secrets, and verifies the live Worker (gate, sign-in, `/api/infra`, `/api/pages`, a disposable page created and deleted). It needs four repository secrets: `CLOUDFLARE_API_TOKEN` (Account Settings Read, Workers Scripts Edit, D1 Edit, Workers R2 Storage Edit, User Details Read, Memberships Read), `CLOUDFLARE_ACCOUNT_ID`, `STAGING_LTB_ACCESS_CODES`, and `STAGING_LTB_SESSION_SECRET`. Run it from the Actions tab on the PR branch, then commit the database id it reports into `env.staging` and record the results here. The verifier `.github/scripts/verify-staging.mjs` passed all 14 checks against the local Worker on 2026-09-05.
+
+The same steps by hand, from a machine with Cloudflare access to the BloomOps account:
 
 ```
 npx wrangler login
