@@ -85,6 +85,11 @@ jobs:
         run: npm run db:domain:migrate:staging
 
       - name: Build with OpenNext and deploy bloomops-staging
+        env:
+          # next.config.js stamps these into the bundle, so /api/version can
+          # tell the verifier which commit is actually being served.
+          WORKERS_CI_COMMIT_SHA: ${{ github.sha }}
+          WORKERS_CI_BRANCH: ${{ github.ref_name }}
         run: |
           set -o pipefail
           npm run deploy:staging 2>&1 | tee deploy.log
@@ -104,4 +109,4 @@ jobs:
       - name: Verify the live staging Worker
         env:
           STAGING_LTB_ACCESS_CODES: ${{ secrets.STAGING_LTB_ACCESS_CODES }}
-        run: node .github/scripts/verify-staging.mjs --log deploy.log --expect-env staging
+        run: node .github/scripts/verify-staging.mjs --log deploy.log --expect-env staging --expect-sha "${{ github.sha }}"

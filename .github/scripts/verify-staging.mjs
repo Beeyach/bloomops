@@ -4,7 +4,7 @@
 // created, read back, and deleted. Prints a summary and exits non-zero on the
 // first failure.
 //
-//   node .github/scripts/verify-staging.mjs --log deploy.log --expect-env staging
+//   node .github/scripts/verify-staging.mjs --log deploy.log --expect-env staging --expect-sha <commit>
 //   node .github/scripts/verify-staging.mjs --url http://127.0.0.1:8787 --expect-env development
 //
 // Sign-in uses the first code inside STAGING_LTB_ACCESS_CODES (the same JSON
@@ -16,6 +16,7 @@ const arg = (name, fallback = '') => {
   return i >= 0 ? String(process.argv[i + 1] || '') : fallback;
 };
 const expectEnv = arg('--expect-env', 'staging');
+const expectSha = arg('--expect-sha', '').slice(0, 7);
 let base = arg('--url') || process.env.STAGING_URL || '';
 if (!base && arg('--log')) {
   const log = readFileSync(arg('--log'), 'utf8');
@@ -95,6 +96,21 @@ if (!code) {
     : [r.headers.get('set-cookie')].filter(Boolean);
   cookie = setCookies.map((c) => c.split(';')[0]).join('; ');
   record('session cookie issued', cookie.length > 0);
+}
+
+// 2b. Wait until the build under test is the one being served. A new Worker
+// version rolls out over a few seconds, and the secret uploads just before
+// this step each create another version, so early requests can still land on
+// the previous build. The build stamps its commit into /api/version.
+if (expectSha) {
+  let served = '';
+  for (let attempt = 0; attempt < 24; attempt++) {
+    const v = await call('/api/version');
+    served = String(v.json?.sha || '');
+    if (v.status === 200 && served.startsWith(expectSha)) break;
+    await sleep(5000);
+  }
+  record(`build ${expectSha} is being served`, served.startsWith(expectSha), `served ${served || 'nothing'}`);
 }
 
 // 3. Bindings for this environment.
