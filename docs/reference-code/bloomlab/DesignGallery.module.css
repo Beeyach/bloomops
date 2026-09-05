@@ -1,0 +1,209 @@
+/* Reference snapshot copied from Beeyach/Bloomlab/apps/web/src/screens/DesignGallery.module.css for BloomOps visual implementation. Reference-only; not runtime code. */
+.screen {
+  max-width: 64rem;
+}
+
+.back {
+  margin: 0;
+  font-size: var(--bl-font-size-sm);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--bl-font-display);
+  font-size: var(--bl-font-size-3xl);
+  font-weight: var(--bl-font-weight-bold);
+  letter-spacing: var(--bl-font-tracking-display);
+  line-height: var(--bl-font-leading-tight);
+}
+
+.lede {
+  margin: 0;
+  color: var(--bl-color-text-soft);
+  font-size: var(--bl-font-size-md);
+}
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: var(--bl-z-sticky);
+  margin: 0 calc(-1 * var(--bl-space-2));
+  padding: var(--bl-space-2);
+  background: rgb(248 250 255 / 0.9);
+  backdrop-filter: blur(8px);
+  font-size: var(--bl-font-size-sm);
+}
+
+.nav a {
+  padding: var(--bl-space-2) var(--bl-space-1);
+}
+
+.section {
+  padding-top: var(--bl-space-6);
+  border-top: 1px solid var(--bl-color-border);
+}
+
+.h2 {
+  margin: 0;
+  font-family: var(--bl-font-display);
+  font-size: var(--bl-font-size-xl);
+  font-weight: var(--bl-font-weight-bold);
+  letter-spacing: -0.01em;
+}
+
+.h3 {
+  margin: 0;
+  color: var(--bl-color-text-soft);
+  font-size: var(--bl-font-size-sm);
+  font-weight: var(--bl-font-weight-semibold);
+}
+
+.note {
+  margin: 0;
+  color: var(--bl-color-text-soft);
+  font-size: var(--bl-font-size-sm);
+}
+
+/* Palette */
+.swatch {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bl-space-2);
+  font-size: var(--bl-font-size-xs);
+}
+
+.chip {
+  height: 56px;
+  border: 1px solid var(--bl-color-border);
+  border-radius: var(--bl-radius-md);
+}
+
+.swatchName {
+  font-weight: var(--bl-font-weight-semibold);
+}
+
+.mono {
+  font-variant-numeric: tabular-nums;
+}
+
+.ratios {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--bl-color-text-soft);
+}
+
+/* Typography */
+.display {
+  margin: 0;
+  font-family: var(--bl-font-display);
+  font-size: var(--bl-font-size-3xl);
+  font-weight: var(--bl-font-weight-bold);
+  letter-spacing: var(--bl-font-tracking-display);
+  line-height: var(--bl-font-leading-tight);
+}
+
+.displayMd {
+  margin: 0;
+  font-family: var(--bl-font-display);
+  font-size: var(--bl-font-size-xl);
+  font-weight: var(--bl-font-weight-semibold);
+}
+
+.body {
+  margin: 0;
+  max-width: 48rem;
+  line-height: var(--bl-font-leading-relaxed);
+}
+
+.small {
+  margin: 0;
+  color: var(--bl-color-text-soft);
+  font-size: var(--bl-font-size-sm);
+}
+
+.code {
+  margin: 0;
+  font-size: var(--bl-font-size-sm);
+}
+
+/* Holo */
+.holoDemo {
+  min-height: 180px;
+  padding: var(--bl-space-5);
+}
+
+.holoDemo h3 {
+  margin: 0;
+  font-family: var(--bl-font-display);
+  font-size: var(--bl-font-size-xl);
+  font-weight: var(--bl-font-weight-bold);
+  letter-spacing: var(--bl-font-tracking-display);
+}
+
+.holoDemo p {
+  margin: var(--bl-space-2) 0 0;
+  color: var(--bl-color-text-soft);
+  font-size: var(--bl-font-size-sm);
+}
+
+/* Motion */
+.stateDemo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 var(--bl-space-4);
+  border: 1px solid var(--bl-color-border);
+  border-radius: var(--bl-radius-md);
+  background: var(--bl-color-surface);
+  cursor: default;
+}
+
+.stateDemo:hover {
+  border-color: var(--bl-color-ink);
+  background: var(--bl-color-lilac-soft);
+  transform: translateY(-2px);
+}
+
+.reward {
+  padding: var(--bl-space-8) var(--bl-space-5);
+  text-align: center;
+}
+
+.reward h3 {
+  margin: 0;
+  font-family: var(--bl-font-display);
+  font-size: var(--bl-font-size-2xl);
+  font-weight: var(--bl-font-weight-bold);
+  letter-spacing: var(--bl-font-tracking-display);
+}
+
+.reward p {
+  margin: var(--bl-space-2) 0 0;
+  color: var(--bl-color-text-soft);
+}
+
+/* Workflow canvas */
+.canvas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bl-space-4);
+  align-items: flex-start;
+}
+
+.events {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  margin: 0 calc(-1 * var(--bl-space-4));
+}
+
+.panelPreview {
+  min-height: 120px;
+}
