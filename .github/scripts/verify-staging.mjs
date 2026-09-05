@@ -1,15 +1,19 @@
-// Verifies a deployed BloomOps Worker from the outside, the way a person would:
-// the gate holds, sign-in works, /api/infra reports the expected environment
-// with D1 and R2 answering, /api/pages reads, and a disposable page can be
-// created, read back, and deleted. Prints a summary and exits non-zero on the
-// first failure.
+// Verifies a deployed BloomOps Worker from the outside, the way a person and
+// a script would: the front door holds, the sign-in screen renders, Better
+// Auth answers on its endpoints, a magic-link request looks the same for any
+// address, a bad link is refused, the inherited access-code flow is gone,
+// and the health probe reports the expected environment, configuration, and
+// schema. Prints a summary and exits non-zero on the first failure.
 //
 //   node .github/scripts/verify-staging.mjs --log deploy.log --expect-env staging --expect-sha <commit>
 //   node .github/scripts/verify-staging.mjs --url http://127.0.0.1:8787 --expect-env development
 //
-// Sign-in uses the first code inside STAGING_LTB_ACCESS_CODES (the same JSON
-// the Worker holds as its secret). Without it only the unauthenticated checks run.
+// Nothing here signs in. A real sign-in needs a link from a real mailbox,
+// and no endpoint exposes tokens to make that automatable; that single click
+// is the manual acceptance step. The addresses used below are random and
+// unknown to the deployment, so no email is ever sent by this script.
 import { readFileSync, appendFileSync } from 'node:fs';
+import { randomBytes } from 'node:crypto';
 
 const arg = (name, fallback = '') => {
   const i = process.argv.indexOf(name);
@@ -41,11 +45,13 @@ function record(name, ok, detail = '') {
   console.log(`${ok ? 'ok  ' : 'FAIL'} ${name}${detail ? `  (${detail})` : ''}`);
   if (!ok) finish(1);
 }
+function warn(name, detail = '') {
+  results.push({ name, ok: true, detail: `warning: ${detail}` });
+  console.log(`::warning::${name}${detail ? `: ${detail}` : ''}`);
+}
 
-let cookie = '';
-async function call(path, { method = 'GET', body = null, auth = true } = {}) {
-  const headers = { accept: 'application/json' };
-  if (auth && cookie) headers.cookie = cookie;
+async function call(path, { method = 'GET', body = null, headers: extra = {}, accept = 'application/json' } = {}) {
+  const headers = { accept, ...extra };
   if (body !== null) headers['content-type'] = 'application/json';
   const res = await fetch(base + path, {
     method,
@@ -59,49 +65,12 @@ async function call(path, { method = 'GET', body = null, auth = true } = {}) {
   return { status: res.status, json, text, headers: res.headers };
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const setCookies = (r) => (typeof r.headers.getSetCookie === 'function' ? r.headers.getSetCookie() : [r.headers.get('set-cookie')].filter(Boolean));
+const randomAddress = () => `verify-${randomBytes(8).toString('hex')}@example.invalid`;
 
-// 1. The gate holds for anonymous callers.
-{
-  const r = await call('/api/infra', { auth: false });
-  record('anonymous /api/infra is refused', r.status === 401, `status ${r.status}`);
-  const g = await call('/gate', { auth: false });
-  record('/gate renders', g.status === 200, `status ${g.status}`);
-  const home = await call('/', { auth: false });
-  const location = home.headers.get('location') || '';
-  record('anonymous / redirects to the gate', home.status >= 300 && home.status < 400 && /\/gate/.test(location), `status ${home.status}`);
-}
-
-// 2. Sign in with the throwaway code, retrying briefly while a just-set secret propagates.
-const codesJson = process.env.STAGING_LTB_ACCESS_CODES || '';
-if (!codesJson) {
-  console.log('::warning::STAGING_LTB_ACCESS_CODES not provided, skipping authenticated checks');
-  finish(0);
-}
-let code = '';
-try { code = Object.keys(JSON.parse(codesJson))[0] || ''; } catch {}
-if (!code) {
-  console.error('::error::STAGING_LTB_ACCESS_CODES is not a JSON object of codes');
-  process.exit(1);
-}
-{
-  let r = null;
-  for (let attempt = 0; attempt < 18; attempt++) {
-    r = await call('/api/auth', { method: 'POST', body: { code }, auth: false });
-    if (r.status === 200) break;
-    await sleep(5000);
-  }
-  record('sign-in with the staging code', r.status === 200, `status ${r.status}`);
-  const setCookies = typeof r.headers.getSetCookie === 'function'
-    ? r.headers.getSetCookie()
-    : [r.headers.get('set-cookie')].filter(Boolean);
-  cookie = setCookies.map((c) => c.split(';')[0]).join('; ');
-  record('session cookie issued', cookie.length > 0);
-}
-
-// 2b. Wait until the build under test is the one being served. A new Worker
-// version rolls out over a few seconds, and the secret uploads just before
-// this step each create another version, so early requests can still land on
-// the previous build. The build stamps its commit into /api/version.
+// 0. Wait until the build under test is the one being served. A new Worker
+// version rolls out over a few seconds and each secret upload creates
+// another version, so early requests can land on the previous build.
 if (expectSha) {
   let served = '';
   for (let attempt = 0; attempt < 24; attempt++) {
@@ -113,35 +82,75 @@ if (expectSha) {
   record(`build ${expectSha} is being served`, served.startsWith(expectSha), `served ${served || 'nothing'}`);
 }
 
-// 3. Bindings for this environment.
+// 1. The front door holds for anonymous callers.
 {
   const r = await call('/api/infra');
-  const j = r.json || {};
-  record('/api/infra answers', r.status === 200, `status ${r.status}`);
-  record(`environment is ${expectEnv}`, j.environment === expectEnv, `reported ${j.environment}`);
-  record('D1 binding DB resolves', j.d1?.bound === true && j.d1?.ok === true, JSON.stringify(j.d1));
-  record('R2 binding FILES resolves', j.r2?.bound === true && j.r2?.ok === true, JSON.stringify(j.r2));
-  record('BloomOps domain schema present', j.domain?.ok === true, JSON.stringify(j.domain));
+  record('anonymous /api/infra is refused', r.status === 401, `status ${r.status}`);
+  const home = await call('/', { accept: 'text/html' });
+  const location = home.headers.get('location') || '';
+  record('anonymous / redirects to /sign-in', home.status >= 300 && home.status < 400 && /\/sign-in/.test(location), `status ${home.status} -> ${location}`);
+  const page = await call('/sign-in', { accept: 'text/html' });
+  record('/sign-in renders', page.status === 200 && /BloomOps/.test(page.text) && /sign-in-email/.test(page.text), `status ${page.status}`);
+  const stale = await call('/api/infra', { headers: { cookie: 'ltb_session=eyJ3IjoiYXJ5IiwiciI6ImFkbWluIn0.forged' } });
+  record('an old Leadsthatbloom session cookie does not authorize', stale.status === 401, `status ${stale.status}`);
 }
 
-// 4. Pages read, disposable write, read back, delete.
+// 2. The inherited access-code flow is gone.
 {
-  const list = await call('/api/pages');
-  const count = list.json?.pages?.length ?? '?';
-  record('/api/pages reads', list.status === 200 && Array.isArray(list.json?.pages), `status ${list.status}, ${count} pages`);
-  const title = `BloomOps ${expectEnv} verification ${new Date().toISOString()}`;
-  const created = await call('/api/pages', {
-    method: 'POST',
-    body: { title, emoji: '🧪', body: '<p>Disposable verification page. Safe to delete.</p>' },
-  });
-  const id = created.json?.page?.id;
-  record('disposable page created', created.status === 201 && Boolean(id), `status ${created.status}`);
-  const again = await call('/api/pages');
-  record('disposable page reads back', (again.json?.pages || []).some((p) => p.id === id));
-  const del = await call(`/api/pages/${id}`, { method: 'DELETE' });
-  record('disposable page deleted', del.status === 200 && del.json?.ok === true, `status ${del.status}`);
-  const after = await call('/api/pages');
-  record('disposable page no longer listed', !(after.json?.pages || []).some((p) => p.id === id));
+  const gate = await call('/gate', { accept: 'text/html' });
+  record('/gate is no longer a login page', gate.status !== 200 || !/access code/i.test(gate.text), `status ${gate.status}`);
+  const old = await call('/api/auth', { method: 'POST', body: { code: 'bloomops-staging-2026' } });
+  record('POST /api/auth with an access code does not sign in', old.status !== 200 && setCookies(old).length === 0, `status ${old.status}`);
+  const oldGet = await call('/api/auth');
+  record('GET /api/auth is not the old session endpoint', oldGet.status !== 200 || oldGet.json?.authenticated === undefined, `status ${oldGet.status}`);
+}
+
+// 3. Health: environment, auth configuration, domain schema. Booleans only.
+{
+  const h = await call('/api/health');
+  const j = h.json || {};
+  record('/api/health answers', h.status === 200 && j.auth && j.schema, `status ${h.status}`);
+  record(`environment is ${expectEnv}`, j.environment === expectEnv, `reported ${j.environment}`);
+  record('BloomOps domain schema present with the A3 migration', j.schema?.ok === true && Number(j.schema?.migrations) >= 3, JSON.stringify(j.schema));
+  record('authentication is configured (secret and app URL present)', j.auth?.configured === true, JSON.stringify(j.auth));
+  if (j.auth?.mail === 'resend') record('mail transport is Resend', true, 'resend');
+  else if (j.auth?.mail === 'r2-dev' && expectEnv === 'development') record('mail transport is the development mailbox', true, 'r2-dev');
+  else warn('no mail transport is configured', `reported ${j.auth?.mail}; sign-in answers 503 until BLOOMOPS_RESEND_API_KEY is set`);
+}
+
+// 4. Better Auth answers, and its answers do not depend on the address.
+{
+  const s = await call('/api/auth/get-session');
+  record('anonymous get-session is null', s.status === 200 && s.json === null, `status ${s.status}, body ${s.text.slice(0, 40)}`);
+
+  const health = (await call('/api/health')).json || {};
+  const origin = { origin: base };
+  const first = await call('/api/auth/sign-in/magic-link', { method: 'POST', body: { email: randomAddress(), callbackURL: '/' }, headers: origin });
+  const second = await call('/api/auth/sign-in/magic-link', { method: 'POST', body: { email: randomAddress(), callbackURL: '/' }, headers: origin });
+  if (health.auth?.mail === 'none' || health.auth?.mail === 'invalid') {
+    record('magic-link request answers 503 while mail is unconfigured', first.status === 503, `status ${first.status}`);
+  } else {
+    record('magic-link request for an unknown address is accepted', first.status === 200 && first.json?.status === true, `status ${first.status}`);
+  }
+  record('two unknown addresses get identical responses', first.status === second.status && first.text === second.text, `status ${first.status}/${second.status}`);
+  record('no session cookie is issued by a magic-link request', setCookies(first).length === 0);
+
+  const bogus = await call('/api/auth/magic-link/verify?token=not-a-real-token&callbackURL=%2F&errorCallbackURL=%2Fsign-in', { accept: 'text/html' });
+  const where = bogus.headers.get('location') || '';
+  record('a malformed magic link is refused and sent to the sign-in error state', bogus.status >= 300 && bogus.status < 400 && /error=INVALID_TOKEN/.test(where) && setCookies(bogus).length === 0, `status ${bogus.status} -> ${where}`);
+
+  const foreign = await call('/api/auth/magic-link/verify?token=not-a-real-token&callbackURL=https%3A%2F%2Fevil.example', { accept: 'text/html' });
+  record('a magic link with a foreign callback origin is refused', foreign.status === 403 || (foreign.status >= 300 && foreign.status < 400 && !/evil\.example/.test(foreign.headers.get('location') || '')), `status ${foreign.status}`);
+}
+
+// 5. BloomOps membership routes refuse anonymous callers.
+{
+  const me = await call('/api/bloomops/me');
+  record('anonymous /api/bloomops/me is refused', me.status === 401, `status ${me.status}`);
+  const accept = await call('/api/bloomops/invitations/accept', { method: 'POST', body: { token: 'x'.repeat(43) } });
+  record('anonymous invitation acceptance is refused', accept.status === 401, `status ${accept.status}`);
+  const invite = await call(`/invite/${'x'.repeat(43)}`, { accept: 'text/html' });
+  record('an unknown invitation link renders the not-found state', invite.status === 200 && /not valid/.test(invite.text), `status ${invite.status}`);
 }
 
 finish(0);
