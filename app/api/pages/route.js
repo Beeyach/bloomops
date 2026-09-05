@@ -3,9 +3,7 @@ import { getDb } from '@/lib/db';
 import { WELCOME_PAGE, SAMPLE_PAGES } from '@/lib/pages-seed.mjs';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 
-// D1 is only available in the edge runtime on Cloudflare Pages.
-export const runtime = 'edge';
-// Force-dynamic so next-on-pages keeps this a real Function for ALL methods.
+// Force-dynamic: this route reads per-request state from D1 and must never be prerendered.
 export const dynamic = 'force-dynamic';
 
 const COLUMNS = 'id, title, emoji, body, position, parent_id, share_token, created_at';

@@ -5,11 +5,11 @@ import { loadLimits, bumpAiCalls, readAiCalls } from '@/lib/limits.mjs';
 import { spendCredits, refundCredits, priceOf, OUT_OF_CREDITS } from '@/lib/credits.mjs';
 import { modelForTask, recordUsage } from '@/lib/ai-cost.mjs';
 import { openSecret } from '@/lib/secret-box.mjs';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 function secretEnv() {
   try {
-    const { env } = getRequestContext();
+    const { env } = getCloudflareContext();
     if (env) return env;
   } catch {}
   return typeof process !== 'undefined' && process.env ? process.env : {};
@@ -42,9 +42,7 @@ import { rankProspects, renderPicks, picksForPrompt } from '@/lib/pick.mjs';
 // was reading.
 import { tzToday } from '@/lib/tz.mjs';
 
-// D1 is only available in the edge runtime on Cloudflare Pages.
-export const runtime = 'edge';
-// Force-dynamic so next-on-pages keeps this a real Function for ALL methods.
+// Force-dynamic: this route reads per-request state from D1 and must never be prerendered.
 export const dynamic = 'force-dynamic';
 
 // The hive's shared transport. The engine's prompt builders stay the

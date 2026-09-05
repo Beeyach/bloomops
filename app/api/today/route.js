@@ -5,7 +5,6 @@ import { PROSPECT_COLUMNS } from '@/lib/columns.mjs';
 import { buildExceptionQueue, summarise } from '@/lib/exceptions.mjs';
 import { listAccounts, publicView } from '@/lib/gmail-store.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Today, as the exception queue.

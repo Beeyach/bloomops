@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { listAccounts, publicView, getAccount, accessTokenFor, recordWatch } from '@/lib/gmail-store.mjs';
 import { startWatch, stopWatch, GMAIL_SCOPE } from '@/lib/gmail.mjs';
 import { openSecret } from '@/lib/secret-box.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Connection state, for the person who has to trust it.
@@ -15,7 +14,7 @@ export const dynamic = 'force-dynamic';
 // a masked secret in a response body is still a secret in a response body.
 
 function env() {
-  try { const { env: e } = getRequestContext(); if (e) return e; } catch {}
+  try { const { env: e } = getCloudflareContext(); if (e) return e; } catch {}
   return typeof process !== 'undefined' && process.env ? process.env : {};
 }
 

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getDb } from '@/lib/db';
 // From the service's own directory, not lib/. The Docker build context is
 // services/audit-render, so a file outside it is not in the image and the
@@ -8,7 +8,6 @@ import { greetingFor } from '@/services/audit-render/greeting.mjs';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { spendCredits, refundCredits, OUT_OF_CREDITS } from '@/lib/credits.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Kicks off an audit video for one prospect, and reports whether it has landed.
@@ -64,7 +63,7 @@ function slugFor(domain) {
 // context first and fall back, the same way every other route here does.
 function env() {
   try {
-    return { ...process.env, ...(getRequestContext().env || {}) };
+    return { ...process.env, ...(getCloudflareContext().env || {}) };
   } catch {
     return process.env || {};
   }
@@ -328,7 +327,7 @@ export async function POST(req) {
   // This used to reach for globalThis[Symbol.for('__cloudflare_context__')],
   // which is not the API on Pages: the lookup returned undefined, the optional
   // chaining swallowed it, and the catch made the failure invisible. Every
-  // other route here reads the context through getRequestContext, so this does
+  // other route here reads the context through getCloudflareContext, so this does
   // too, and a missing waitUntil is now logged rather than ignored.
   //
   // It now also carries the failure to the prospect. A render that fails does
@@ -403,7 +402,7 @@ export async function POST(req) {
   }).catch(() => {});
 
   try {
-    const rc = getRequestContext()?.ctx;
+    const rc = getCloudflareContext()?.ctx;
     if (rc?.waitUntil) rc.waitUntil(recorded);
     else console.warn('audit-video: no waitUntil available; the render may be cancelled');
   } catch (err) {

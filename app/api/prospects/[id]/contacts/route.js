@@ -3,7 +3,6 @@ import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { showable } from '@/lib/contact-discovery.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Every way in we found for one prospect.

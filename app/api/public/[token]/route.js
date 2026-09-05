@@ -5,7 +5,6 @@ import { upgradeEmbedsForPublic } from '@/lib/public-embeds.mjs';
 import { renderEquationsForPublic } from '@/lib/public-equations.mjs';
 import { sanitizePublicHtml } from '@/lib/sanitize-public-html.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // The ONLY unauthenticated read in the app.

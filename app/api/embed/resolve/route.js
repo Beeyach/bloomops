@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { isFacebookShare, canonicalFacebookPost } from '@/lib/embeds.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Turns a facebook.com/share/p/<code> link into the canonical permalink.

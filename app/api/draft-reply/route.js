@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Retired by Ary's instruction (2026-08-27): the app no longer writes email.

@@ -4,7 +4,6 @@ import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { CONTACT_STATE, contactStateOf } from '@/lib/contact-state.mjs';
 import { showable } from '@/lib/contact-discovery.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Prospects we cannot write to yet.

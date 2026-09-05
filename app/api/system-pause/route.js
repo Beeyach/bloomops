@@ -3,7 +3,6 @@ import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { autonomyPaused, setAutonomyPaused } from '@/lib/spend-breaker.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // The spend breaker's handle. Cloudflare's alerts announce a burn and stop

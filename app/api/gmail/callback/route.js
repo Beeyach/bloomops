@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { exchangeCode, profile, startWatch } from '@/lib/gmail.mjs';
 import { saveConnection, getAccount, recordWatch, accessTokenFor } from '@/lib/gmail-store.mjs';
 import { readState, redirectUri } from '../connect/route';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Where Google sends the person back.
@@ -17,7 +16,7 @@ export const dynamic = 'force-dynamic';
 // which is the worst of the possible states.
 
 function env() {
-  try { const { env: e } = getRequestContext(); if (e) return e; } catch {}
+  try { const { env: e } = getCloudflareContext(); if (e) return e; } catch {}
   return typeof process !== 'undefined' && process.env ? process.env : {};
 }
 

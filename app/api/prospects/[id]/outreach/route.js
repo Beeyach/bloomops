@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // What has actually been sent to one person, and the machinery behind it.

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { verifySession, SESSION_COOKIE } from '@/lib/session.mjs';
 
 // Gate the whole app behind an access code. Anything without a valid signed
@@ -29,11 +29,11 @@ function freshHtml(res) {
   return res;
 }
 
-// Resolve env exactly like the auth route (getRequestContext), falling back
+// Resolve env exactly like the auth route (getCloudflareContext), falling back
 // to process.env, so the signing secret matches on both sides.
 function resolveEnv() {
   try {
-    const { env } = getRequestContext();
+    const { env } = getCloudflareContext();
     if (env) return env;
   } catch {}
   return typeof process !== 'undefined' && process.env ? process.env : {};

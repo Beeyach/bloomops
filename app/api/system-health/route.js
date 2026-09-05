@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { loadAutoLimits, autoSpentToday } from '@/lib/auto-budget.mjs';
 import { loadCredits } from '@/lib/credits.mjs';
 import { CLAIM_TTL_MINUTES } from '@/lib/queue.mjs';
@@ -14,7 +14,6 @@ import {
   systemHealth, scannerSummary, scannerLane, serviceState, claimIsStale, MAILBOX_STALE_MINUTES,
 } from '@/lib/system-health.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Everything the health page needs, in one bounded read.
@@ -44,7 +43,7 @@ const MAX_ATTENTION = 25;
 // the binding is both honest and the right source on Pages anyway.
 function buildInfo() {
   let e = {};
-  try { e = getRequestContext().env || {}; } catch { e = {}; }
+  try { e = getCloudflareContext().env || {}; } catch { e = {}; }
   const sha = String(e.CF_PAGES_COMMIT_SHA || '');
   return {
     commit: sha ? sha.slice(0, 7) : 'unknown',

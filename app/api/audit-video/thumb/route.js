@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Hosts the email thumbnail the browser just drew: a frame of the audit video
@@ -18,7 +17,7 @@ const THUMB_BASE = 'https://file.gobloomwired.com/thumb/';
 
 function env() {
   try {
-    return { ...process.env, ...(getRequestContext().env || {}) };
+    return { ...process.env, ...(getCloudflareContext().env || {}) };
   } catch {
     return process.env || {};
   }

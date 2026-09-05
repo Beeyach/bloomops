@@ -10,9 +10,8 @@ import { filterPosts } from '@/lib/post-filter.mjs';
 import { parseFeedUrls, runPodcastScan } from '@/lib/podcast-scan.mjs';
 import { runBookingSearch } from '@/lib/booking-search.mjs';
 import { siteEmailAndSignals, signalsInText } from '@/lib/extract-email.mjs';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // In-app scans. The server runs Apify actors on a shared token (env
@@ -101,7 +100,7 @@ function parseHandles(raw) {
 }
 
 function env() {
-  try { return getRequestContext().env || {}; } catch {}
+  try { return getCloudflareContext().env || {}; } catch {}
   return typeof process !== 'undefined' && process.env ? process.env : {};
 }
 

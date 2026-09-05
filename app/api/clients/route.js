@@ -4,9 +4,7 @@ import { DEFAULT_ONBOARDING } from '@/lib/onboarding.mjs';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { normalizeStage, parseFiles } from '@/lib/client-profile.mjs';
 
-// D1 is only available in the edge runtime on Cloudflare Pages.
-export const runtime = 'edge';
-// Force-dynamic so next-on-pages keeps this a real Function for ALL methods.
+// Force-dynamic: this route reads per-request state from D1 and must never be prerendered.
 export const dynamic = 'force-dynamic';
 
 const COLUMNS =

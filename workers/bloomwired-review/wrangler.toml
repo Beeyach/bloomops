@@ -1,10 +1,18 @@
-name = "bloomwired-review"
+# LEGACY LEADSTHATBLOOM WORKER. NOT PART OF BLOOMOPS. DO NOT DEPLOY.
+#
+# Kept only because tests pin the drain cadence below and the routing in
+# src/index.js. The Worker name and R2 bucket were renamed away from the live
+# Leadsthatbloom resources so that a stray `wrangler deploy` from this directory
+# cannot reach them (the bucket does not exist, so the deploy is refused).
+# Scheduled for removal together with the rest of the prospecting code.
+
+name = "bloomops-legacy-review-do-not-deploy"
 main = "src/index.js"
 compatibility_date = "2024-01-01"
 
 [[r2_buckets]]
 binding = "PDF_BUCKET"
-bucket_name = "bloomwired-pdfs"
+bucket_name = "bloomops-legacy-review-bucket-does-not-exist"
 
 # UPLOAD_SECRET is intentionally NOT declared under [vars].
 # A plaintext var of the same name collides with the secret and would also

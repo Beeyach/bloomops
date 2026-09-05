@@ -4,7 +4,6 @@ import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { RUN, isLive, mayContinue, stopTransition, settleState, isStale, reconcileStaleScannerRuns } from '@/lib/scanner-run.mjs';
 import { snapshotMembership, runProgress, stopRun, feedRun, cancelAbandonedItems, recentThroughput, reconcileScannerRuns, livenessOf } from '@/lib/scanner-items.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // The Hive scanners, as something the server knows about.

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { VERSION } from '@/lib/version.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // What build is serving. Deliberately unauthenticated: it discloses a commit

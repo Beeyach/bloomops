@@ -24,7 +24,15 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 
-const DB = 'bloomtrack-pro';
+// The BloomOps `DB` binding from wrangler.jsonc, resolved per --env. Never a
+// database name, so no Leadsthatbloom database is reachable from here.
+const DB = 'DB';
+function remoteEnv() {
+  const i = process.argv.indexOf('--env');
+  const v = i >= 0 ? String(process.argv[i + 1] || '') : '';
+  if (!v) throw new Error('A remote ledger audit needs --env staging or --env production.');
+  return v;
+}
 const DIR = 'migrations';
 
 export const VERDICT = {
@@ -91,7 +99,7 @@ function d1(command) {
   // at wrangler as a dozen separate arguments.
   const out = execFileSync(
     'npx',
-    ['wrangler', 'd1', 'execute', DB, '--remote', '--json', '--command', `"${command.replace(/"/g, '\\"')}"`],
+    ['wrangler', 'd1', 'execute', DB, '--remote', '--env', remoteEnv(), '--json', '--command', `"${command.replace(/"/g, '\\"')}"`],
     { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024, shell: true }
   );
   const start = out.indexOf('[');

@@ -3,9 +3,8 @@ import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { loadCredits, setCredits, PRICE_LABELS } from '@/lib/credits.mjs';
 import { loadCodes } from '@/lib/session.mjs';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // The workspace's credit balance. Everyone may read their own; only an admin
@@ -45,7 +44,7 @@ export async function PUT(req) {
   // said "ellenn now has 20,000 credits" as though it had worked. Ellen would
   // then open the app and find nothing had changed.
   let env = {};
-  try { env = getRequestContext().env || {}; } catch { env = (typeof process !== 'undefined' && process.env) || {}; }
+  try { env = getCloudflareContext().env || {}; } catch { env = (typeof process !== 'undefined' && process.env) || {}; }
   const known = new Set(
     Object.values(loadCodes(env))
       .filter((v) => v && v.workspace)

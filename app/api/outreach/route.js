@@ -18,7 +18,6 @@ import { threadFor } from '@/lib/send-events.mjs';
 import { LATE_FOLLOWUP_GENERATOR_VERSION } from '@/lib/late-followup.mjs';
 import { SEQUENCE_STAGE_PLAYBOOK } from '@/lib/sequence-stage.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // The approval queue, and what approving means.

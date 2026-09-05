@@ -3,7 +3,6 @@ import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { summarise, outputStats, MODEL_PRICES, USD_PER_CREDIT } from '@/lib/ai-cost.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // What the AI actually cost, against what was charged for it.

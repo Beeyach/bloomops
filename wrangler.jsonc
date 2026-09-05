@@ -1,0 +1,91 @@
+{
+  // BloomOps Cloudflare Worker configuration.
+  //
+  // Three isolated environments. Bindings (d1_databases, r2_buckets, vars) are
+  // NOT inherited between Wrangler environments, so each environment below
+  // declares its own resources in full. Nothing here may name a Leadsthatbloom
+  // resource: BloomOps owns every database, bucket, and Worker listed.
+  //
+  //   development  top-level config. `next dev` and `npm run preview` run it
+  //                with wrangler's local D1/R2 simulation. No `--env` flag.
+  //   staging      `--env staging`. Own Worker, own D1, own R2. Never holds
+  //                production data.
+  //   production   `--env production`. Own Worker, own D1, own R2.
+  //
+  // Remote D1 database ids are filled in once `wrangler d1 create` has run for
+  // that environment (see docs/BUILD_STATE.md, Current Infrastructure). Until
+  // then a remote deploy of that environment fails on the placeholder id, which
+  // is the intended failure: no environment can be pointed at a database it
+  // does not own.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "bloomops-dev",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-05-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "BLOOMOPS_ENV": "development"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "bloomops-dev",
+      "database_id": "bloomops-dev-local",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "FILES",
+      "bucket_name": "bloomops-files-dev"
+    }
+  ],
+  "env": {
+    "staging": {
+      "name": "bloomops-staging",
+      "vars": {
+        "BLOOMOPS_ENV": "staging"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "bloomops-staging",
+          "database_id": "REPLACE_WITH_BLOOMOPS_STAGING_D1_ID",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "FILES",
+          "bucket_name": "bloomops-files-staging"
+        }
+      ]
+    },
+    "production": {
+      "name": "bloomops-production",
+      "vars": {
+        "BLOOMOPS_ENV": "production"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "bloomops-production",
+          "database_id": "REPLACE_WITH_BLOOMOPS_PRODUCTION_D1_ID",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "FILES",
+          "bucket_name": "bloomops-files-production"
+        }
+      ]
+    }
+  }
+}

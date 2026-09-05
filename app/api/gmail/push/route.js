@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Shutdown 2026-08-27: the app no longer reads Gmail.

@@ -3,7 +3,6 @@ import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized, forbidden } from '@/lib/workspace.mjs';
 import { summarise, preparationAllowance, BUCKET, BAND } from '@/lib/backlog.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // What is in the unworked pile, and where the money should go first.

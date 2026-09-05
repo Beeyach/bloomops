@@ -6,7 +6,6 @@ import { canProgressOutbound } from '@/lib/outbound.mjs';
 import { guardView } from '@/lib/prospect-view.mjs';
 import { friendlyError, canRetry } from '@/lib/friendly-errors.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // "Try again" on a check that could not finish.

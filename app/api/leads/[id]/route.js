@@ -4,7 +4,6 @@ import { LEAD_PLATFORMS, LEAD_STATUSES, LEAD_VERDICTS } from '@/lib/engine-promp
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { LEAD_COLUMNS } from '@/lib/columns.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 const SELECT_COLS =

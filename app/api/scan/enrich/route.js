@@ -2,13 +2,12 @@ import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { enrichBusinessSite } from '@/lib/booking-search.mjs';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 function env() {
-  try { return getRequestContext().env || {}; } catch {}
+  try { return getCloudflareContext().env || {}; } catch {}
   return typeof process !== 'undefined' && process.env ? process.env : {};
 }
 

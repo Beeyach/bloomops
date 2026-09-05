@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { runJobs } from '@/lib/runner.mjs';
 import { cancelAbandonedItems, reconcileScannerRuns } from '@/lib/scanner-items.mjs';
 import { queueSummary, KIND } from '@/lib/queue.mjs';
@@ -8,7 +8,6 @@ import { markSchedulerInvoked, markSchedulerCompleted, markSchedulerFinished, ru
 import { reconcileProspectFacts } from '@/lib/prospect-facts.mjs';
 import { autonomyPaused, tripIfBurning } from '@/lib/spend-breaker.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // The thing that makes any of this autonomous.
@@ -25,7 +24,7 @@ export const dynamic = 'force-dynamic';
 // stolen secret would make worth stealing.
 
 function env() {
-  try { return { ...process.env, ...(getRequestContext().env || {}) }; } catch { return process.env || {}; }
+  try { return { ...process.env, ...(getCloudflareContext().env || {}) }; } catch { return process.env || {}; }
 }
 
 // Constant-time-ish compare so the secret cannot be guessed a character at a

@@ -6,7 +6,6 @@ import { artifactFrom, asEvidence, normalizeUrl } from '@/lib/visual-capture.mjs
 import { reviewArtifact, questionFor } from '@/lib/visual-review.mjs';
 import { VIEWPORT } from '@/lib/visual-evidence.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // The real path: photograph a page, keep the picture, and ask a model what is
@@ -60,7 +59,7 @@ export async function POST(req) {
   const prospectId = Number.isFinite(Number(body?.prospectId)) ? Number(body.prospectId) : null;
 
   let env = {};
-  try { env = (await import('@cloudflare/next-on-pages')).getRequestContext().env || {}; } catch {}
+  try { env = (await import('@opennextjs/cloudflare')).getCloudflareContext().env || {}; } catch {}
   const service = String(env.RENDER_URL || '').replace(/\/+$/, '');
   const secret = env.RENDER_SECRET;
   if (!service || !secret) {

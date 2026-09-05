@@ -5,9 +5,7 @@ import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { PROSPECT_COLUMNS, SLIM_PROSPECT_COLUMNS } from '@/lib/columns.mjs';
 import { resolveOrigin, originValues } from '@/lib/origin.mjs';
 
-// D1 is only available in the edge runtime on Cloudflare Pages.
-export const runtime = 'edge';
-// Force-dynamic so next-on-pages keeps this a real Function for ALL methods.
+// Force-dynamic: this route reads per-request state from D1 and must never be prerendered.
 // Without it the route can be prerendered as a static asset — GET then works
 // but POST/PUT/DELETE hit the static bucket and return a bare 405. That was
 // the "can't add / edits don't save" bug on the deployed site.

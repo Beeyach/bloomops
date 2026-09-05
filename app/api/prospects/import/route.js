@@ -3,9 +3,8 @@ import { getDb, STAGES, RATINGS, COUNTRIES } from '@/lib/db';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { resolveOrigin, originValues } from '@/lib/origin.mjs';
 
-export const runtime = 'edge';
-// Force-dynamic so the import POST survives as a real Function on
-// Cloudflare Pages (otherwise a static prerender 405s the POST).
+// Force-dynamic so the import POST is served per request (otherwise a
+// static prerender 405s the POST).
 export const dynamic = 'force-dynamic';
 
 // Minimal CSV parser supporting quoted fields and embedded commas/newlines.

@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { getAccount, accessTokenFor } from '@/lib/gmail-store.mjs';
 import { buildMime, sendMessage, senderName, hasSendScope } from '@/lib/gmail-send.mjs';
 import { canSendHumanReply, replyTarget } from '@/lib/reply-send-guard.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Send a human reply, into the conversation it answers.
@@ -24,7 +23,7 @@ export const dynamic = 'force-dynamic';
 // not a cold touch.
 
 function env() {
-  try { return getRequestContext().env || {}; } catch { return {}; }
+  try { return getCloudflareContext().env || {}; } catch { return {}; }
 }
 
 export async function POST(req) {

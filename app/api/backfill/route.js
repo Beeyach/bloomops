@@ -3,13 +3,12 @@ import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized, forbidden } from '@/lib/workspace.mjs';
 import { getAccount, accessTokenFor } from '@/lib/gmail-store.mjs';
 import { backfillProspect, RESULT } from '@/lib/gmail-backfill.mjs';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 function env() {
-  try { const { env: e } = getRequestContext(); if (e) return e; } catch {}
+  try { const { env: e } = getCloudflareContext(); if (e) return e; } catch {}
   return typeof process !== 'undefined' && process.env ? process.env : {};
 }
 

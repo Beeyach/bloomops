@@ -5,7 +5,6 @@ import { enqueue, queueSummary, wakeBudgetWaiters, KIND, PRIORITY } from '@/lib/
 import { runJobs } from '@/lib/runner.mjs';
 import { loadAutoLimits } from '@/lib/auto-budget.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // The queue's front door, for a signed-in person.

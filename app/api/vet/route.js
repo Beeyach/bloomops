@@ -5,7 +5,6 @@ import { PROSPECT_COLUMNS } from '@/lib/columns.mjs';
 import { prescreen, buildVetResult, VERDICT } from '@/lib/vet.mjs';
 import { recordOutcome, snapshot, KIND } from '@/lib/outcomes.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Vet Bee, staged.

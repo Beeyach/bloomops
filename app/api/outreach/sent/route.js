@@ -4,7 +4,6 @@ import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { recordSend, sendsFor, reconcileSends, reconcileFromMailbox, VIA } from '@/lib/send-events.mjs';
 import { appendEntry } from '@/lib/activity-log.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Where a send comes back into the product.

@@ -4,7 +4,6 @@ import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { stageableSequence, sequencePackageFields } from '@/lib/sequence-stage.mjs';
 import { savePackage } from '@/lib/runner.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Stage a prospect's stored email sequence as a READY_FOR_APPROVAL package.

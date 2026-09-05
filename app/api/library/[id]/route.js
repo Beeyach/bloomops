@@ -15,9 +15,7 @@ async function guardLocked(db, id, ctx) {
   return 'ok';
 }
 
-// D1 is only available in the edge runtime on Cloudflare Pages.
-export const runtime = 'edge';
-// Force-dynamic so next-on-pages keeps this a real Function for ALL methods.
+// Force-dynamic: this route reads per-request state from D1 and must never be prerendered.
 export const dynamic = 'force-dynamic';
 
 const COLUMNS = 'id, title, note, position, items';

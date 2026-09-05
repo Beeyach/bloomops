@@ -9,7 +9,6 @@ import { verificationDecision, VERIFICATION } from '@/lib/verification.mjs';
 import { PROSPECT_COLUMNS } from '@/lib/columns.mjs';
 import { appendEntry } from '@/lib/activity-log.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // The old drafts, and what can be done with them.

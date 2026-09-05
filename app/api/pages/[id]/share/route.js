@@ -3,7 +3,6 @@ import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { makeShareToken } from '@/lib/page-share.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Turn sharing on or off for one page. Authenticated and workspace-scoped —

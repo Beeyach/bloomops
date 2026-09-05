@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // The watch page's beacon. The second unauthenticated write surface in the

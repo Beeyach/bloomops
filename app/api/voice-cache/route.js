@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // The narration clips the render service is holding.
@@ -19,7 +18,7 @@ export const dynamic = 'force-dynamic';
 
 function env() {
   try {
-    return { ...process.env, ...(getRequestContext().env || {}) };
+    return { ...process.env, ...(getCloudflareContext().env || {}) };
   } catch {
     return process.env || {};
   }

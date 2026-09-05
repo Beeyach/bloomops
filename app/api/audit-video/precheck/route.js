@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { OUT_OF_CREDITS } from '@/lib/credits.mjs';
 import { runPrecheck, PRECHECK_OUTCOME } from '@/lib/precheck.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Does this prospect actually need a video? Asked of the render service,
@@ -26,7 +25,7 @@ export const dynamic = 'force-dynamic';
 
 function env() {
   try {
-    return { ...process.env, ...(getRequestContext().env || {}) };
+    return { ...process.env, ...(getCloudflareContext().env || {}) };
   } catch {
     return process.env || {};
   }

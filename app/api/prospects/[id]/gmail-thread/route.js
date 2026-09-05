@@ -3,7 +3,6 @@ import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { readStored } from '@/lib/conversation-store.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // The stored conversation for one prospect. Stored only.

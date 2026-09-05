@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { authUrl, GMAIL_SCOPE } from '@/lib/gmail.mjs';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Step one of connecting a mailbox: send the person to Google.
@@ -14,7 +13,7 @@ export const dynamic = 'force-dynamic';
 // control to somebody else's workspace.
 
 function env() {
-  try { const { env: e } = getRequestContext(); if (e) return e; } catch {}
+  try { const { env: e } = getCloudflareContext(); if (e) return e; } catch {}
   return typeof process !== 'undefined' && process.env ? process.env : {};
 }
 

@@ -3,7 +3,6 @@ import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { loadLimits, sanitizeLimits, scansUsedThisWeek } from '@/lib/limits.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Per-workspace feature allowances, set by an admin, stored in the settings

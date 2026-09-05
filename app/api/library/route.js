@@ -15,9 +15,7 @@ import { getWorkspace, unauthorized, forbidden } from '@/lib/workspace.mjs';
 // by admin codes. Enforced here, not just hidden in the UI.
 export const LOCKED_CATEGORIES = new Set(['guide-agents', 'guide-sourcing', 'guide-automation']);
 
-// D1 is only available in the edge runtime on Cloudflare Pages.
-export const runtime = 'edge';
-// Force-dynamic so next-on-pages keeps this a real Function for ALL methods.
+// Force-dynamic: this route reads per-request state from D1 and must never be prerendered.
 export const dynamic = 'force-dynamic';
 
 const COLUMNS = 'id, title, note, position, items, category';

@@ -6,7 +6,6 @@ import { readRules, matchRules, buildSnapshot } from '@/lib/qual-rules.mjs';
 import { SOURCE, PROVIDER, PROVIDER_YIELDS } from '@/lib/sources.mjs';
 import { loadEngineSettings } from '@/lib/workspace.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // The client replaces its whole lead object with this response, so any column

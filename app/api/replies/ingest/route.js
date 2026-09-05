@@ -5,7 +5,6 @@ import { bareAddress } from '@/lib/reply-match.mjs';
 import { ingestMessages } from '@/lib/reply-ingest.mjs';
 import { markMailboxRead } from '@/lib/gmail-store.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Reply ingestion over HTTP.

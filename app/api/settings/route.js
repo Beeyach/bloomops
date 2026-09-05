@@ -4,13 +4,13 @@ import { DEFAULT_ENGINE_SETTINGS, LEAD_PLATFORMS } from '@/lib/engine-prompts.mj
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { sanitizeSequenceTemplate } from '@/lib/sequence-template.mjs';
 import { sealSecret } from '@/lib/secret-box.mjs';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 // Cloudflare secrets arrive on the request context env; local dev falls
 // back to process.env (or the secret-box dev default).
 function secretEnv() {
   try {
-    const { env } = getRequestContext();
+    const { env } = getCloudflareContext();
     if (env) return env;
   } catch {}
   return typeof process !== 'undefined' && process.env ? process.env : {};
@@ -33,9 +33,7 @@ function redact(stored) {
   };
 }
 
-// D1 is only available in the edge runtime on Cloudflare Pages.
-export const runtime = 'edge';
-// Force-dynamic so next-on-pages keeps this a real Function for ALL methods.
+// Force-dynamic: this route reads per-request state from D1 and must never be prerendered.
 export const dynamic = 'force-dynamic';
 
 export async function GET(req) {

@@ -4,9 +4,8 @@ import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { PROSPECT_COLUMNS } from '@/lib/columns.mjs';
 import { recordTransition, SOURCE } from '@/lib/outcomes.mjs';
 
-export const runtime = 'edge';
-// Force-dynamic so PUT/DELETE survive the next-on-pages build as a real
-// Function instead of being prerendered static (which 405s non-GET methods).
+// Force-dynamic so PUT/DELETE are served per request instead of being
+// prerendered static (which 405s non-GET methods).
 export const dynamic = 'force-dynamic';
 
 // Note on what is deliberately ABSENT: site_intel, site_intel_at and

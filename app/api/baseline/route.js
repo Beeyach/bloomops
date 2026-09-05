@@ -5,7 +5,6 @@ import { summarise, POSITIVE_REPLY } from '@/lib/baseline.mjs';
 import { STRUCTURED_FROM } from '@/lib/cohort.mjs';
 import { needingReconciliation } from '@/lib/send-events.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Counts for the structured cohort, and nothing else.

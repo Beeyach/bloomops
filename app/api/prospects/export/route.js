@@ -1,7 +1,6 @@
 import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 
-export const runtime = 'edge';
 // Match the other routes: keep this a dynamic Function, never a static asset.
 export const dynamic = 'force-dynamic';
 

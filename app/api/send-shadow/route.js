@@ -6,7 +6,6 @@ import { shadowDecision, preparedFollowups } from '@/lib/send-guard.mjs';
 import { guardView } from '@/lib/prospect-view.mjs';
 import { loadEngineSettings } from '@/lib/runner.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Stage B, watched rather than trusted.

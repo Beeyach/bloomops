@@ -5,7 +5,6 @@ import { standingOf, correctTo } from '@/lib/relationship-store.mjs';
 import { REL, LABEL, explain, describeEvent } from '@/lib/relationship.mjs';
 import { defer, DEFERRAL_SOURCE } from '@/lib/deferral.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Where this prospect stands, and how they got there.

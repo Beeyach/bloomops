@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { resolveCode, signSession, verifySession, sessionCookie, clearCookie, SESSION_COOKIE, loadCodes } from '@/lib/session.mjs';
 import { getDb } from '@/lib/db';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 function env() {
-  try { return getRequestContext().env || {}; } catch { return {}; }
+  try { return getCloudflareContext().env || {}; } catch { return {}; }
 }
 
 // An access code is the entire account: no username to also get right, no

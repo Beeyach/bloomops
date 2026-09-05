@@ -4,7 +4,6 @@ import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { stageableVideoDelivery, videoDeliveryPackageFields } from '@/lib/video-delivery.mjs';
 import { savePackage } from '@/lib/runner.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Stage a one-off video delivery as a READY_FOR_APPROVAL package.

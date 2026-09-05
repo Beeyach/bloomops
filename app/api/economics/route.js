@@ -3,7 +3,6 @@ import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized, forbidden } from '@/lib/workspace.mjs';
 import { summarise, perProspect, periodSql, PERIODS, catalogSummary } from '@/lib/economics.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Internal economics. Admin only: this is what the product costs to run, and

@@ -10,10 +10,16 @@ import { execSync } from 'node:child_process';
 import { nextStepFor, dispositionFor, NEXT, DISPOSITION, STALE_CUTOVER_DAYS } from '../lib/cutover.mjs';
 
 const REMOTE = process.argv.includes('--remote');
+// BloomOps: the target is the `DB` binding declared in wrangler.jsonc. A remote run
+// must name its environment (--env staging or --env production). Nothing here can
+// address a database by name, so no Leadsthatbloom database is reachable.
+const ENV_FLAG = (() => { const i = process.argv.indexOf('--env'); return i >= 0 ? String(process.argv[i + 1] || '') : ''; })();
+if (REMOTE && !ENV_FLAG) { console.error('A remote run needs --env staging or --env production.'); process.exit(2); }
+const D1_TARGET = `DB ${REMOTE ? `--remote --env ${ENV_FLAG}` : '--local'}`;
 
 function sql(query) {
   const one = query.replace(/\s+/g, ' ').trim();
-  const cmd = `npx wrangler d1 execute bloomtrack-pro ${REMOTE ? '--remote' : '--local'} --json --command "${one}"`;
+  const cmd = `npx wrangler d1 execute ${D1_TARGET} --json --command "${one}"`;
   const out = execSync(cmd, { encoding: 'utf8', maxBuffer: 60 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
   return JSON.parse(out.slice(out.indexOf('[')))[0]?.results || [];
 }

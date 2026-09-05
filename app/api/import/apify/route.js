@@ -4,19 +4,17 @@ import { DEFAULT_ENGINE_SETTINGS, LEAD_PLATFORMS } from '@/lib/engine-prompts.mj
 import { itemsToLeads } from '@/lib/apify-import.mjs';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { openSecret } from '@/lib/secret-box.mjs';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 function secretEnv() {
   try {
-    const { env } = getRequestContext();
+    const { env } = getCloudflareContext();
     if (env) return env;
   } catch {}
   return typeof process !== 'undefined' && process.env ? process.env : {};
 }
 
-// D1 is only available in the edge runtime on Cloudflare Pages.
-export const runtime = 'edge';
-// Force-dynamic so next-on-pages keeps this a real Function for ALL methods.
+// Force-dynamic: this route reads per-request state from D1 and must never be prerendered.
 export const dynamic = 'force-dynamic';
 
 // Pull a finished Apify dataset into the inbox as leads. The user runs any

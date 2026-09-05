@@ -4,7 +4,6 @@ import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { enqueue, KIND, PRIORITY } from '@/lib/queue.mjs';
 import { COHORT_SQL } from '@/lib/contact-save.mjs';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Feeding the free contact search.

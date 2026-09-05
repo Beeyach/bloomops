@@ -1,6 +1,5 @@
 import GateForm from './GateForm';
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // The access-code screen. Nothing else in the app renders until a valid

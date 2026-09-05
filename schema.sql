@@ -1,32 +1,33 @@
--- Bloomtrack · D1 schema
+-- BloomOps (inherited from Leadsthatbloom) · D1 schema
 -- One-time setup for the production database.
--- Run with: npx wrangler d1 execute bloomtrack --file=schema.sql --remote
+-- Run with: npx wrangler d1 execute DB --env <environment> --file=schema.sql --remote
+-- Local development: npx wrangler d1 execute DB --local --file=schema.sql
 
 -- ─────────────────────────────────────────────────────────────────────────
 -- Migration: Add country column (run once on existing databases)
--- npx wrangler d1 execute bloomtrack --command="ALTER TABLE prospects ADD COLUMN country TEXT;" --remote
+-- npx wrangler d1 execute DB --env <environment> --command="ALTER TABLE prospects ADD COLUMN country TEXT;" --remote
 --
 -- Migration: Add email sequence storage (run once on existing databases)
--- npx wrangler d1 execute bloomtrack --command="ALTER TABLE prospects ADD COLUMN email_sequence TEXT;" --remote
--- npx wrangler d1 execute bloomtrack --command="ALTER TABLE prospects ADD COLUMN audit_notes TEXT;" --remote
--- npx wrangler d1 execute bloomtrack --command="ALTER TABLE prospects ADD COLUMN pdf_filename TEXT;" --remote
+-- npx wrangler d1 execute DB --env <environment> --command="ALTER TABLE prospects ADD COLUMN email_sequence TEXT;" --remote
+-- npx wrangler d1 execute DB --env <environment> --command="ALTER TABLE prospects ADD COLUMN audit_notes TEXT;" --remote
+-- npx wrangler d1 execute DB --env <environment> --command="ALTER TABLE prospects ADD COLUMN pdf_filename TEXT;" --remote
 --
 -- Migration: Add info column (run once on existing databases)
--- npx wrangler d1 execute bloomtrack --command="ALTER TABLE prospects ADD COLUMN info TEXT;" --remote
+-- npx wrangler d1 execute DB --env <environment> --command="ALTER TABLE prospects ADD COLUMN info TEXT;" --remote
 --
 -- Migration: Add review_url column (run once on existing databases)
--- npx wrangler d1 execute bloomtrack --command="ALTER TABLE prospects ADD COLUMN review_url TEXT;" --remote
+-- npx wrangler d1 execute DB --env <environment> --command="ALTER TABLE prospects ADD COLUMN review_url TEXT;" --remote
 --
 -- Migration: Reply tracking, next action, and source (run once on existing DBs)
--- npx wrangler d1 execute bloomtrack --command="ALTER TABLE prospects ADD COLUMN replied INTEGER DEFAULT 0;" --remote
--- npx wrangler d1 execute bloomtrack --command="ALTER TABLE prospects ADD COLUMN reply_date TEXT;" --remote
--- npx wrangler d1 execute bloomtrack --command="ALTER TABLE prospects ADD COLUMN reply_type TEXT;" --remote
--- npx wrangler d1 execute bloomtrack --command="ALTER TABLE prospects ADD COLUMN next_action_date TEXT;" --remote
--- npx wrangler d1 execute bloomtrack --command="ALTER TABLE prospects ADD COLUMN source TEXT;" --remote
--- npx wrangler d1 execute bloomtrack --command="ALTER TABLE prospects ADD COLUMN replied_at_email INTEGER;" --remote
+-- npx wrangler d1 execute DB --env <environment> --command="ALTER TABLE prospects ADD COLUMN replied INTEGER DEFAULT 0;" --remote
+-- npx wrangler d1 execute DB --env <environment> --command="ALTER TABLE prospects ADD COLUMN reply_date TEXT;" --remote
+-- npx wrangler d1 execute DB --env <environment> --command="ALTER TABLE prospects ADD COLUMN reply_type TEXT;" --remote
+-- npx wrangler d1 execute DB --env <environment> --command="ALTER TABLE prospects ADD COLUMN next_action_date TEXT;" --remote
+-- npx wrangler d1 execute DB --env <environment> --command="ALTER TABLE prospects ADD COLUMN source TEXT;" --remote
+-- npx wrangler d1 execute DB --env <environment> --command="ALTER TABLE prospects ADD COLUMN replied_at_email INTEGER;" --remote
 --
 -- Data migration: Instagram was a stage; make it a source and reset the stage.
--- npx wrangler d1 execute bloomtrack --command="UPDATE prospects SET source='Instagram', stage='New' WHERE stage='Instagram';" --remote
+-- npx wrangler d1 execute DB --env <environment> --command="UPDATE prospects SET source='Instagram', stage='New' WHERE stage='Instagram';" --remote
 -- ─────────────────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS prospects (
@@ -112,7 +113,7 @@ CREATE INDEX IF NOT EXISTS idx_prospects_last_contact ON prospects(last_contact_
 -- Lead Engine Phase A (2026-07-16)
 -- Migration for existing databases (schema.sql is idempotent, so running the
 -- whole file with --remote also works):
--- npx wrangler d1 execute bloomtrack-pro --file=schema.sql --remote
+-- npx wrangler d1 execute DB --env <environment> --file=schema.sql --remote
 -- ─────────────────────────────────────────────────────────────────────────
 
 -- Candidate leads found on social platforms. Triage happens here; only
