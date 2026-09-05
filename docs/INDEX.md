@@ -18,6 +18,8 @@ For every implementation session:
 - `ROADMAP.md` — later releases and sequencing
 - `DESIGN_SYSTEM.md` — Bloomlab-derived visual language, tokens, component behavior, accessibility, and BloomOps adaptation rules
 - `DESIGN_CHECKLIST.md` — per-screen visual QA and responsive/accessibility acceptance checklist
+- `PAGES_SYSTEM.md` — inherited bloomtrack-pro Notion-style Pages/editor architecture and BloomOps adaptation rules
+- `reference-code/bloomlab/` — local reference snapshots of the real Bloomlab design-system code; reference-only, never imported automatically into runtime
 
 Do not automatically load every planning document into context.
 
