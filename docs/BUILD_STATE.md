@@ -110,6 +110,7 @@ Secrets are per environment and never in the repository. `.dev.vars.example` doc
 | Local Worker preview | `npm run preview` | development, local |
 | Apply base schema | `npm run db:schema:local`, `db:schema:staging`, `db:schema:production` | `DB` binding of that environment |
 | Apply migrations | `npm run db:migrate:local`, `db:migrate:staging`, `db:migrate:production` | `DB` binding of that environment |
+| Prove a fresh database migrates from zero | `node .github/scripts/verify-zero-remote.mjs --local`, or the "Verify zero-to-current migration" workflow for a disposable remote D1 | a temporary config bound to one disposable database, never a named environment |
 | Deploy | `npm run deploy:staging`, `npm run deploy:production` | named environment only |
 | Binding types | `npm run cf:typegen` | writes `cloudflare-env.d.ts` (gitignored) |
 
@@ -208,6 +209,26 @@ The Deploy staging workflow runs `db:domain:migrate:staging` after the inherited
 The fix in `ea075bc` stamps the commit into the build (`WORKERS_CI_COMMIT_SHA`) and makes the verifier wait until `/api/version` reports that commit before it inspects bindings, so a verify run can no longer land on the previous version.
 
 The staging database now holds the 35 inherited tables plus the 22 domain tables and both immutability triggers. No production database exists, and no Leadsthatbloom database was named or touched: every wrangler call in both runs carried `--env staging` and resolved to `bloomops-staging`.
+
+### Zero-to-current remote verification (2026-09-05)
+
+`docs/phases/A2.md` requires a fresh staging or remote database to migrate from zero. The staging runs above cannot show that, because `bloomops-staging` already carried the inherited schema and its full migration ledger when the domain migrations arrived. Commit `ee96d17` added `.github/scripts/verify-zero-remote.mjs` and the workflow `.github/workflows/verify-zero-remote.yml`, which create a disposable remote D1 database, migrate it from empty through the repository's own three paths, migrate it again, verify, and delete it. GitHub Actions run 33987071853 (job 101362522182, 19:26:03Z to 19:30:44Z) did this once:
+
+| Item | Result |
+|---|---|
+| Disposable database | `bloomops-a2-zero-verify`, id `3426af49-50cb-4204-ac12-8da621e9db70`, created 19:26:10Z in region ENAM. The account inventory was read first: seven databases, none by that name, so it was newly created. Its id matched neither the committed staging id nor the production placeholder |
+| Target isolation | every migration command ran with `--config` pointing at a wrangler config written to the runner's temp directory whose only D1 binding was that id. `wrangler.jsonc` was not edited and no staging or production id was repointed. The script routes every wrangler call through one guard that refuses any database command without that config and any account command naming anything but the disposable database (plus a read-only `d1 info` on `bloomops-staging`) |
+| Began empty | `sqlite_master` held one Cloudflare-internal object, table `_cf_KV`, and no user objects |
+| Inherited base schema | `schema.sql` executed as one remote batch with no failed statement |
+| Inherited migration ledger | `scripts/migrate.mjs --remote --config`: 44 migrations executed, 16 recorded as already present because `schema.sql` already satisfied their postconditions, 0 previously applied, all 60 files accounted for. Afterwards `_migrations` held exactly the 60 file names |
+| Drizzle migrations | `wrangler d1 migrations apply DB --config … --remote`: `0000_bloomops_release_a_foundation.sql` executed 67 commands, `0001_immutability_triggers.sql` executed 4 commands, both ✅. `d1_migrations` then held exactly those two names in committed order and `migrations list` reported nothing pending |
+| Tables | all 22 BloomOps A2 tables present. 58 tables in total: 34 inherited tables, `_migrations`, 22 domain tables, and `d1_migrations`. `d1 info` reports the same 58 for `bloomops-staging`, so the fresh database and the incrementally migrated staging database have the same table set |
+| Triggers | `template_versions_immutable_update`, `activity_events_immutable_update`, `activity_events_immutable_delete` all present |
+| Second run | `schema.sql` again with no failed statement, `migrate.mjs` reported 0 applied, 0 recorded, 60 already applied, `migrations apply` reported "No migrations to apply". A full `sqlite_master` snapshot plus both ledgers was identical before and after the second run |
+| Deletion | `d1 info bloomops-a2-zero-verify` resolved to the id created in this run, then `wrangler d1 delete bloomops-a2-zero-verify --skip-confirmation` at 19:30:40Z. The inventory afterwards listed the same seven databases as before, by uuid, name, version, and creation time, and the disposable name and id were gone |
+| Untouched | `bloomops-staging`: 58 tables before and after, same uuid and creation time. No production database exists. The Leadsthatbloom database on the account appeared in the inventory by name only and was identical before and after. The account identity was `hello@bloomwired.io` on account `Bloomwired` |
+
+The same script runs locally against wrangler's local D1 with `node .github/scripts/verify-zero-remote.mjs --local`, where it skips the create, inventory, and delete steps and passed the same checks before the remote run. `scripts/migrate.mjs` gained `--config <file>` for this; a bare `--remote` is still refused, and `tests/migrate.test.mjs` covers the argument handling.
 
 ### Deferred to A3 and later
 
@@ -334,6 +355,6 @@ A3, Authentication and membership. Not started.
 
 ## Last Verification
 
-2026-09-05, A2 execution. Local results are in "Domain Schema (A2)". GitHub Actions run 33968508433 applied the two domain migrations to `bloomops-staging`, and run 33968734285 (commit `ea075bc`) deployed and passed all 16 live checks, including the domain schema check. A2 satisfies every verification item in `docs/phases/A2.md`. No production resource was provisioned. `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched.
+2026-09-05, A2 execution. Local results are in "Domain Schema (A2)". GitHub Actions run 33968508433 applied the two domain migrations to `bloomops-staging`, and run 33968734285 (commit `ea075bc`) deployed and passed all 16 live checks, including the domain schema check. Run 33987071853 (commit `ee96d17`) then proved the fresh-remote case: a disposable D1 named `bloomops-a2-zero-verify` went from empty to the current schema through `schema.sql`, `scripts/migrate.mjs`, and the Drizzle migrations, took a second pass as a no-op, and was deleted, with the account inventory and `bloomops-staging` unchanged. A2 satisfies every verification item in `docs/phases/A2.md`, including "fresh staging DB migrates from zero". No production resource was provisioned. `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched.
 
 Earlier the same day, A1 execution. Results are in "Verified Working". Later the same day the remote staging step ran from GitHub Actions (run 33966322588) and passed every check, as recorded under "Staging Deployment". A1 satisfies every verification item in `docs/phases/A1.md`. `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched: no wrangler command in this session was authenticated, and the only wrangler operations run were local (`--local`, `--dry-run`, `wrangler dev`).
