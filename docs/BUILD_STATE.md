@@ -6,9 +6,9 @@ Release A: Foundation, Auth, Clients, Services, Onboarding, Client Portal
 
 ## Current Phase
 
-A1 (Infrastructure isolation) is implemented and verified locally. The remote staging deployment is the one A1 step still outstanding, because this environment holds no Cloudflare credentials. See "Staging Deployment" below for the exact commands.
+A1 (Infrastructure isolation) is complete. Staging was deployed and verified remotely on 2026-09-05 by the repository's own GitHub Actions workflow. See "Staging Deployment" below.
 
-Phase spec: `docs/phases/A1.md`
+Completed phase spec: `docs/phases/A1.md`. Next phase spec: `docs/phases/A2.md` (not started).
 
 Documentation index: `docs/INDEX.md`
 
@@ -34,7 +34,7 @@ BloomOps Git history is fresh. The source commit object does not exist in the Bl
 
 - Planning documentation structure under `CLAUDE.md` and `docs/`
 - A0: source snapshot imported, planning docs preserved, source SHA recorded, install/test/build verified
-- A1: deployment path migrated to Cloudflare Workers through OpenNext, three isolated environments configured, Leadsthatbloom infrastructure references removed or neutralized, generated output and prospect exports removed from version control, fresh-database bootstrap made reproducible, local runtime verified
+- A1: deployment path migrated to Cloudflare Workers through OpenNext, three isolated environments configured, Leadsthatbloom infrastructure references removed or neutralized, generated output and prospect exports removed from version control, fresh-database bootstrap made reproducible, local runtime verified, `bloomops-staging` deployed from GitHub Actions and verified live
 
 ## Deployment Path Decision (A1)
 
@@ -89,12 +89,12 @@ All names below are BloomOps names. None existed in Leadsthatbloom.
 | Environment | Selected by | Worker | D1 binding `DB` | R2 binding `FILES` | `BLOOMOPS_ENV` |
 |---|---|---|---|---|---|
 | development | top-level config (no `--env`) | `bloomops-dev` | `bloomops-dev` (local id `bloomops-dev-local`) | `bloomops-files-dev` | `development` |
-| staging | `--env staging` | `bloomops-staging` | `bloomops-staging` | `bloomops-files-staging` | `staging` |
+| staging | `--env staging` | `bloomops-staging` at `https://bloomops-staging.cool-sunset-2169.workers.dev` | `bloomops-staging` (id `4bb0c8e9-a08f-43d7-9ad7-68b28c371d23`) | `bloomops-files-staging` | `staging` |
 | production | `--env production` | `bloomops-production` | `bloomops-production` | `bloomops-files-production` | `production` |
 
 Every environment also has the `ASSETS` binding for static files from `.open-next/assets`.
 
-Configuration lives in `wrangler.jsonc`. Wrangler does not inherit `d1_databases`, `r2_buckets`, or `vars` between environments, so each environment declares its own resources in full. The staging and production `database_id` values are placeholders (`REPLACE_WITH_BLOOMOPS_STAGING_D1_ID`, `REPLACE_WITH_BLOOMOPS_PRODUCTION_D1_ID`) until `wrangler d1 create` has run for that environment. A remote deploy fails on a placeholder, which is the intended failure. Compatibility date is `2025-05-01` with `nodejs_compat` and `global_fetch_strictly_public`, the combination the inherited migration proved on this codebase. Raising the date is a later, deliberate change.
+Configuration lives in `wrangler.jsonc`. Wrangler does not inherit `d1_databases`, `r2_buckets`, or `vars` between environments, so each environment declares its own resources in full. The staging `database_id` is committed. The production `database_id` is still the placeholder `REPLACE_WITH_BLOOMOPS_PRODUCTION_D1_ID` until production is provisioned as a deliberate, separate step. A remote deploy fails on a placeholder, which is the intended failure. Compatibility date is `2025-05-01` with `nodejs_compat` and `global_fetch_strictly_public`, the combination the inherited migration proved on this codebase. Raising the date is a later, deliberate change.
 
 Development runs entirely on wrangler's local D1 and R2 simulation (`.wrangler/state/`, gitignored). `next dev` reaches the same local bindings through `initOpenNextCloudflareForDev()`.
 
@@ -176,27 +176,34 @@ New tests: `tests/infra-status.test.mjs` (binding report never carries ids or se
 
 ## Staging Deployment
 
-Not performed. Attempted twice on 2026-09-05, the second time after commit `3463f5d` with the sole goal of finishing this step. Both attempts stopped at the same two blockers before any remote command ran:
+Completed on 2026-09-05 by GitHub Actions run 33966322588 of `.github/workflows/deploy-staging.yml` at commit `9442c11`. The same workflow runs on every push to `main` and, until PR #2 merges, on pushes to its branch, so staging stays current on its own.
 
-- no Cloudflare credentials exist in this environment: `wrangler whoami` reports not authenticated, there is no `CLOUDFLARE_API_TOKEN` or `CLOUDFLARE_ACCOUNT_ID`, and no wrangler OAuth config
-- the environment's egress policy answers 403 to `api.cloudflare.com`, `workers.cloudflare.com`, and `*.workers.dev`, so a token alone would not be enough here: `wrangler d1 create`, `r2 bucket create`, `secret put`, `deploy`, and the remote smoke test all need those hosts
+| Item | Value |
+|---|---|
+| Cloudflare identity | User API token for `hello@bloomwired.io`, account `Bloomwired`. The account id lives only in the repository secret |
+| Worker | `bloomops-staging` at `https://bloomops-staging.cool-sunset-2169.workers.dev` |
+| Deployed version | `a876ed03-2fe0-405a-9a60-e883c9870501`, deployed 2026-09-05T12:40:14Z |
+| D1 | `bloomops-staging`, id `4bb0c8e9-a08f-43d7-9ad7-68b28c371d23`, committed in `wrangler.jsonc` under `env.staging` |
+| R2 | `bloomops-files-staging`, present on the account, bound as `FILES` |
+| Bindings at deploy | `DB` (bloomops-staging), `FILES` (bloomops-files-staging), `ASSETS`, `BLOOMOPS_ENV` = `staging` |
+| Schema | `db:schema:staging`: 28 statements executed on the staging database |
+| Migrations | `db:migrate:staging`: 16 recorded as already present, 44 executed, none previously applied (fresh database) |
+| Secrets | `LTB_ACCESS_CODES` and `LTB_SESSION_SECRET` set on `bloomops-staging` from throwaway repository secrets |
+| Bundle | 9811 KiB, 1981 KiB gzipped, 25 ms startup |
 
-Everything up to the upload is proven locally. The intended way to finish A1 is the GitHub Actions workflow `.github/workflows/deploy-staging.yml`. It runs on Cloudflare-reachable GitHub runners, provisions the staging D1 and R2 if they are missing, pins the D1 id, applies the schema and migrations, deploys `bloomops-staging`, sets the two temporary login secrets, and verifies the live Worker (gate, sign-in, `/api/infra`, `/api/pages`, a disposable page created and deleted). It needs four repository secrets: `CLOUDFLARE_API_TOKEN` (Account Settings Read, Workers Scripts Edit, D1 Edit, Workers R2 Storage Edit, User Details Read, Memberships Read), `CLOUDFLARE_ACCOUNT_ID`, `STAGING_LTB_ACCESS_CODES`, and `STAGING_LTB_SESSION_SECRET`. Run it from the Actions tab on the PR branch, then commit the database id it reports into `env.staging` and record the results here. The verifier `.github/scripts/verify-staging.mjs` passed all 14 checks against the local Worker on 2026-09-05.
+Remote verification by `.github/scripts/verify-staging.mjs` against the live URL, 12:40:19Z to 12:40:25Z, 14 of 14 checks passed:
 
-The same steps by hand, from a machine with Cloudflare access to the BloomOps account:
+- anonymous `/api/infra` refused with 401, `/gate` renders 200, anonymous `/` redirects to `/gate`
+- sign-in with the throwaway staging code returns 200 and issues a session cookie
+- `/api/infra` returns `environment: staging`, `d1: bound, ok`, `r2: bound, ok`
+- `/api/pages` returns 200 with the 4 seeded pages
+- a disposable page was created (201), read back, deleted (200), and no longer listed. The row remains soft-deleted in the staging trash and holds no real data
 
-```
-npx wrangler login
-npx wrangler d1 create bloomops-staging           # paste the id into wrangler.jsonc env.staging
-npx wrangler r2 bucket create bloomops-files-staging
-npm run db:schema:staging
-npm run db:migrate:staging
-npx wrangler secret put LTB_ACCESS_CODES --env staging     # throwaway staging codes, never production values
-npx wrangler secret put LTB_SESSION_SECRET --env staging
-npm run deploy:staging
-```
+Isolation proof. The staging Worker binds only the resources above, and their names and id differ from every other environment: development runs on wrangler's local simulation with id `bloomops-dev-local`, and production still carries the placeholder id and has no Worker. The provisioning script refuses to run if the staging block names anything other than the BloomOps staging resources or shares an id with production, and it passed.
 
-Then, on the staging URL: sign in with the throwaway staging code, confirm `GET /api/infra` returns `environment: staging` with D1 and R2 `ok`, confirm `GET /api/pages` returns 200, create one disposable page through `POST /api/pages` and read it back, then delete it. Record the staging D1 id, Worker URL, deployment timestamp, and these results here, and only then mark A1 complete. Production follows the same steps with `production` in place of `staging` once staging is accepted.
+Leadsthatbloom and BloomOps production untouched. The run's wrangler operations were `whoami`, `d1 list`, `r2 bucket info`, `d1 execute DB --env staging --remote`, `deploy --env staging`, and `secret put --env staging`. Every mutating call carried `--env staging`. No production environment was deployed, no production database or bucket was created, and no Leadsthatbloom database, bucket, Worker, Pages project, or secret was named or touched.
+
+Re-running the workflow is safe. Schema and migrations are idempotent, the provisioning step verifies the committed id against the account, and the verifier creates and deletes its own page.
 
 ## Known Risks
 
@@ -206,7 +213,7 @@ Then, on the staging URL: sign in with the throwaway staging code, confirm `GET 
 - the inherited schema is bootstrapped from `schema.sql` plus postcondition-aware migrations. A2 replaces it with the BloomOps domain schema and Drizzle migrations
 - `open-next.config.ts` configures no cache. Every inherited route is dynamic, so nothing is lost today. Revisit when a route needs ISR
 - `compatibility_date` is `2025-05-01`. Wrangler suggests a newer date. Raise it deliberately with a test pass
-- staging and production D1 ids are placeholders until the resources are created
+- the production D1 id is a placeholder until production is provisioned deliberately
 
 ## Intentionally Not Done in A1
 
@@ -214,7 +221,7 @@ Then, on the staging URL: sign in with the throwaway staging code, confirm `GET 
 - no removal of prospecting routes, components, or libraries
 - no rename of inherited `LTB_*` login secrets (A3 replaces the login)
 - no change to the Pages/editor system
-- no remote resource creation or deployment (no credentials here)
+- no production provisioning or deployment
 - no A2 work
 
 ## Context Discipline
@@ -229,8 +236,8 @@ Read additional canonical planning docs only when the phase file or `docs/INDEX.
 
 ## Next Planned Phase
 
-A2, Database foundation. Start only after the staging deployment above is verified.
+A2, Database foundation. Not started.
 
 ## Last Verification
 
-2026-09-05, A1 execution. Results are in "Verified Working". Later the same day a session dedicated to the remote staging step verified the branch (commits `7cb376a` and `3463f5d`, clean tree, `wrangler.jsonc` names no Leadsthatbloom resource) and then stopped at the credential and egress blockers described under "Staging Deployment". No remote command ran and no configuration changed. `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched: no wrangler command in this session was authenticated, and the only wrangler operations run were local (`--local`, `--dry-run`, `wrangler dev`).
+2026-09-05, A1 execution. Results are in "Verified Working". Later the same day the remote staging step ran from GitHub Actions (run 33966322588) and passed every check, as recorded under "Staging Deployment". A1 satisfies every verification item in `docs/phases/A1.md`. `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched: no wrangler command in this session was authenticated, and the only wrangler operations run were local (`--local`, `--dry-run`, `wrangler dev`).
