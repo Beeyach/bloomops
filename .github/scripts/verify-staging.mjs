@@ -90,7 +90,9 @@ if (expectSha) {
   const location = home.headers.get('location') || '';
   record('anonymous / redirects to /sign-in', home.status >= 300 && home.status < 400 && /\/sign-in/.test(location), `status ${home.status} -> ${location}`);
   const page = await call('/sign-in', { accept: 'text/html' });
-  record('/sign-in renders', page.status === 200 && /BloomOps/.test(page.text) && /sign-in-email/.test(page.text), `status ${page.status}`);
+  const signInForm = /sign-in-email/.test(page.text);
+  const notConfigured = /Sign-in is not set up/.test(page.text);
+  record('/sign-in renders (the form, or the not-configured state)', page.status === 200 && /BloomOps/.test(page.text) && (signInForm || notConfigured), `status ${page.status}, ${signInForm ? 'form' : notConfigured ? 'not configured' : 'neither'}`);
   const stale = await call('/api/infra', { headers: { cookie: 'ltb_session=eyJ3IjoiYXJ5IiwiciI6ImFkbWluIn0.forged' } });
   record('an old Leadsthatbloom session cookie does not authorize', stale.status === 401, `status ${stale.status}`);
 }
@@ -112,7 +114,7 @@ if (expectSha) {
   record('/api/health answers', h.status === 200 && j.auth && j.schema, `status ${h.status}`);
   record(`environment is ${expectEnv}`, j.environment === expectEnv, `reported ${j.environment}`);
   record('BloomOps domain schema present with the A3 migration', j.schema?.ok === true && Number(j.schema?.migrations) >= 3, JSON.stringify(j.schema));
-  record('authentication is configured (secret and app URL present)', j.auth?.configured === true, JSON.stringify(j.auth));
+  record('authentication is configured (secret and app URL present)', j.auth?.configured === true, `${JSON.stringify(j.auth)}; set STAGING_BLOOMOPS_AUTH_SECRET as a repository secret and rerun`);
   if (j.auth?.mail === 'resend') record('mail transport is Resend', true, 'resend');
   else if (j.auth?.mail === 'r2-dev' && expectEnv === 'development') record('mail transport is the development mailbox', true, 'r2-dev');
   else warn('no mail transport is configured', `reported ${j.auth?.mail}; sign-in answers 503 until BLOOMOPS_RESEND_API_KEY is set`);

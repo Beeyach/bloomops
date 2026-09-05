@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import AuthShell from '@/components/auth/AuthShell';
-import { getAccess } from '@/lib/bloomops/access.mjs';
+import { getAccessOrProblem } from '@/lib/bloomops/access.mjs';
 import SignInForm from './SignInForm';
 import SignOutButton from './SignOutButton';
 
@@ -33,7 +33,16 @@ export default async function SignInPage({ searchParams }) {
   const params = (await searchParams) || {};
   const next = safeNext(params.next);
   const problem = linkProblem(String(params.error || ''));
-  const access = await getAccess(await headers());
+  const { access, configured } = await getAccessOrProblem(await headers());
+
+  if (!configured) {
+    return (
+      <AuthShell
+        title="Sign-in is not set up"
+        lead="This deployment has no authentication configuration yet, so nobody can sign in. An administrator needs to set its auth secret and app URL."
+      />
+    );
+  }
 
   if (access?.membership) redirect(next);
 

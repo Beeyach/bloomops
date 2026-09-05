@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAccess, unauthenticated } from '@/lib/bloomops/access.mjs';
+import { getAccessOrProblem, notConfigured, unauthenticated } from '@/lib/bloomops/access.mjs';
 import { ROLE_LABELS, canManageMembers } from '@/lib/bloomops/membership.mjs';
 
 export const dynamic = 'force-dynamic';
@@ -9,7 +9,8 @@ export const dynamic = 'force-dynamic';
 // is told so here (200 with workspace: null) so the sign-in screen can
 // explain; every other route refuses such a caller with 403.
 export async function GET(req) {
-  const access = await getAccess(req);
+  const { access, configured } = await getAccessOrProblem(req);
+  if (!configured) return notConfigured();
   if (!access) return unauthenticated();
   const { user, workspace, membership } = access;
   return NextResponse.json(

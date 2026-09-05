@@ -61,7 +61,8 @@
       "name": "bloomops-staging",
       "vars": {
         "BLOOMOPS_ENV": "staging",
-        "BLOOMOPS_APP_URL": "https://bloomops-staging.cool-sunset-2169.workers.dev"
+        "BLOOMOPS_APP_URL": "https://bloomops-staging.cool-sunset-2169.workers.dev",
+        "BLOOMOPS_MAIL_TRANSPORT": "resend"
       },
       "d1_databases": [
         {
@@ -81,7 +82,8 @@
     "production": {
       "name": "bloomops-production",
       "vars": {
-        "BLOOMOPS_ENV": "production"
+        "BLOOMOPS_ENV": "production",
+        "BLOOMOPS_MAIL_TRANSPORT": "resend"
         // BLOOMOPS_APP_URL is deliberately absent until production is
         // provisioned. Without it authentication fails closed.
       },

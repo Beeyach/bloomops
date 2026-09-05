@@ -11,6 +11,7 @@ import {
   SESSION_MAX_AGE_SECONDS,
   authSecret,
   authStatus,
+  isAuthConfigurationError,
   mailConfig,
   resolveAppUrl,
   trustedOrigins,
@@ -68,7 +69,10 @@ test('without a key or transport the mailer is not ready and says so', async () 
   assert.equal(mailer.transport, 'none');
   assert.equal(mailer.ready, false);
   await assert.rejects(() => mailer.send({ to: 'x@example.com', subject: 's', text: 'b' }), /No mail transport/);
-  assert.throws(() => mailConfig({ BLOOMOPS_ENV: 'staging', BLOOMOPS_MAIL_TRANSPORT: 'resend' }), /BLOOMOPS_RESEND_API_KEY is required/);
+  const namedButKeyless = mailConfig({ BLOOMOPS_ENV: 'staging', BLOOMOPS_MAIL_TRANSPORT: 'resend' });
+  assert.equal(namedButKeyless.transport, 'none', 'resend named without a key is "not ready", never a crash');
+  assert.equal(namedButKeyless.missingKey, true);
+  assert.equal(createMailer({ BLOOMOPS_ENV: 'staging', BLOOMOPS_MAIL_TRANSPORT: 'resend' }).ready, false);
   assert.throws(() => mailConfig({ BLOOMOPS_MAIL_TRANSPORT: 'pigeon' }), /must be one of/);
 });
 
@@ -103,7 +107,8 @@ test('app URL resolution: development uses the loopback request, deployed enviro
 
 test('the auth secret fails closed outside development', () => {
   assert.equal(authSecret({ BLOOMOPS_ENV: 'staging', BLOOMOPS_AUTH_SECRET: 'x'.repeat(32) }), 'x'.repeat(32));
-  assert.throws(() => authSecret({ BLOOMOPS_ENV: 'staging' }), /BLOOMOPS_AUTH_SECRET is not configured/);
+  assert.throws(() => authSecret({ BLOOMOPS_ENV: 'staging' }), (err) => isAuthConfigurationError(err) && /BLOOMOPS_AUTH_SECRET is not configured/.test(err.message));
+  assert.throws(() => resolveAppUrl({ BLOOMOPS_ENV: 'staging' }), (err) => isAuthConfigurationError(err));
   assert.throws(() => authSecret({ BLOOMOPS_ENV: 'production', BLOOMOPS_AUTH_SECRET: 'short' }), /at least 32/);
   assert.throws(() => authSecret({}), /not configured/);
   const dev = authSecret({ BLOOMOPS_ENV: 'development' });

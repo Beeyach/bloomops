@@ -14,7 +14,7 @@ import {
   resolveWorkspaceAccess,
   setMembershipStatus,
 } from '../lib/bloomops/membership.mjs';
-import { getAccess, requireAccess, requireIdentity } from '../lib/bloomops/access.mjs';
+import { getAccess, getAccessOrProblem, requireAccess, requireIdentity } from '../lib/bloomops/access.mjs';
 import { getWorkspace } from '../lib/workspace.mjs';
 import * as schema from '../lib/bloomops/schema.mjs';
 
@@ -233,6 +233,23 @@ test('server components can hand over Next\'s read-only headers object', async (
   const forwarded = new Headers({ cookie, host: 'localhost:3000', 'x-forwarded-proto': 'https' });
   assert.equal((await getAccess(forwarded, { env: t.env }))?.membership?.role, 'owner');
   assert.equal(await getAccess({ get: () => null }, { env: t.env }), null);
+});
+
+test('an unconfigured deployment answers 503 on routes and "not configured" on pages, never 500 and never a session', async () => {
+  const t = testAuth();
+  await runBootstrap(t.d1, BOOT);
+  const { cookie } = await t.signIn('owner@example.com');
+  const unconfigured = { BLOOMOPS_ENV: 'staging', BLOOMOPS_APP_URL: 'https://staging.example', DB: t.d1 };
+  const req = new Request('https://staging.example/api/bloomops/me', { headers: { cookie } });
+  const denied = await requireAccess(req, { env: unconfigured });
+  assert.equal(denied.response.status, 503);
+  assert.deepEqual(await denied.response.json(), { error: 'Authentication is not configured on this deployment.' });
+  assert.equal((await requireIdentity(req, { env: unconfigured })).response.status, 503);
+  assert.deepEqual(await getAccessOrProblem(req, { env: unconfigured }), { access: null, configured: false });
+  assert.equal(await getWorkspace(req, { env: unconfigured }), null);
+  await assert.rejects(() => getAccess(req, { env: unconfigured }), /BLOOMOPS_AUTH_SECRET/, 'the raw call still throws the configuration error');
+  // Any other failure still surfaces.
+  await assert.rejects(() => getAccessOrProblem(req, { env: { ...t.env, DB: null } }), /D1 binding/);
 });
 
 test('a team member cannot manage members, and a cross-site origin is refused on writes', async () => {

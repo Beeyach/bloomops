@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import AuthShell from '@/components/auth/AuthShell';
-import { getAccess } from '@/lib/bloomops/access.mjs';
+import { getAccessOrProblem } from '@/lib/bloomops/access.mjs';
 import { bloomOpsDb } from '@/lib/bloomops/db.mjs';
 import { lookupInvitation } from '@/lib/bloomops/invitations.mjs';
 import { ROLE_LABELS, normalizeEmail } from '@/lib/bloomops/membership.mjs';
@@ -41,7 +41,11 @@ export default async function InvitePage({ params }) {
 
   const { invitation, workspace } = looked;
   const roleLabel = ROLE_LABELS[invitation.role] || invitation.role;
-  const access = await getAccess(await headers());
+  const { access, configured } = await getAccessOrProblem(await headers());
+
+  if (!configured) {
+    return <AuthShell title="Sign-in is not set up" lead="This deployment has no authentication configuration yet, so the invitation cannot be accepted here. An administrator needs to set its auth secret and app URL." />;
+  }
 
   if (!access) {
     return (

@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { STAGES, RATINGS, COUNTRIES, SOURCES, REPLY_TYPES } from '@/lib/db';
-import { getAccess } from '@/lib/bloomops/access.mjs';
+import { getAccessOrProblem } from '@/lib/bloomops/access.mjs';
 import ProspectsApp from '@/components/ProspectsApp';
 
 // Rendered per request: it checks who is asking before it renders anything.
@@ -10,7 +10,7 @@ import ProspectsApp from '@/components/ProspectsApp';
 export const dynamic = 'force-dynamic';
 
 export default async function Page() {
-  const access = await getAccess(await headers());
+  const { access } = await getAccessOrProblem(await headers());
   if (!access || !access.membership) redirect('/sign-in');
   return (
     <ProspectsApp
