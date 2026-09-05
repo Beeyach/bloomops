@@ -26,6 +26,7 @@
     "db:domain:status:staging": "wrangler d1 migrations list DB --env staging --remote"
   },
   "dependencies": {
+    "@better-auth/drizzle-adapter": "^1.7.2",
     "@opennextjs/cloudflare": "^1.20.6",
     "@tiptap/extension-drag-handle-react": "^3.28.0",
     "@tiptap/extension-highlight": "^3.28.0",
@@ -38,6 +39,7 @@
     "@tiptap/extension-youtube": "^3.28.0",
     "@tiptap/react": "^3.28.0",
     "@tiptap/starter-kit": "^3.28.0",
+    "better-auth": "^1.7.2",
     "drizzle-orm": "^0.45.2",
     "katex": "^0.18.1",
     "marked": "^18.0.6",

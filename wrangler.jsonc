@@ -30,7 +30,17 @@
     "enabled": true
   },
   "vars": {
-    "BLOOMOPS_ENV": "development"
+    "BLOOMOPS_ENV": "development",
+    // The origin magic links point at. In development the request's own
+    // loopback origin wins (see lib/bloomops/auth-config.mjs), so this is the
+    // fallback for `npm run preview`. Deployed environments must set an
+    // https origin here; nothing is ever inferred from a Host header there.
+    "BLOOMOPS_APP_URL": "http://localhost:8787",
+    // Development only: outbound mail is written into the local R2
+    // simulation instead of Resend, so a local smoke test can read a magic
+    // link back. Refused outside development. Set BLOOMOPS_RESEND_API_KEY in
+    // .dev.vars and change this to "resend" to send real mail locally.
+    "BLOOMOPS_MAIL_TRANSPORT": "r2-dev"
   },
   "d1_databases": [
     {
@@ -50,7 +60,8 @@
     "staging": {
       "name": "bloomops-staging",
       "vars": {
-        "BLOOMOPS_ENV": "staging"
+        "BLOOMOPS_ENV": "staging",
+        "BLOOMOPS_APP_URL": "https://bloomops-staging.cool-sunset-2169.workers.dev"
       },
       "d1_databases": [
         {
@@ -71,6 +82,8 @@
       "name": "bloomops-production",
       "vars": {
         "BLOOMOPS_ENV": "production"
+        // BLOOMOPS_APP_URL is deliberately absent until production is
+        // provisioned. Without it authentication fails closed.
       },
       "d1_databases": [
         {

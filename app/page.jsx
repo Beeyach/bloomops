@@ -1,14 +1,17 @@
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { STAGES, RATINGS, COUNTRIES, SOURCES, REPLY_TYPES } from '@/lib/db';
+import { getAccess } from '@/lib/bloomops/access.mjs';
 import ProspectsApp from '@/components/ProspectsApp';
 
-// The page itself doesn't touch the DB, but it renders per-request app
-// state, so it must never be prerendered at build time.
+// Rendered per request: it checks who is asking before it renders anything.
+// The middleware only looked for a cookie; this is the real check, session
+// and ACTIVE workspace membership, the same one every data route makes.
 export const dynamic = 'force-dynamic';
 
-export default function Page() {
-  // Note: the old version called getDb() here to trigger schema creation on
-  // first request. With D1, the schema is applied separately via
-  // `wrangler d1 execute` — no per-request setup needed.
+export default async function Page() {
+  const access = await getAccess(await headers());
+  if (!access || !access.membership) redirect('/sign-in');
   return (
     <ProspectsApp
       stages={STAGES}

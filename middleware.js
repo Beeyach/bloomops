@@ -1,22 +1,24 @@
 import { NextResponse } from 'next/server';
-import { getCloudflareContext } from '@opennextjs/cloudflare';
-import { verifySession, SESSION_COOKIE } from '@/lib/session.mjs';
+import { SESSION_COOKIE_NAMES } from '@/lib/bloomops/auth-config.mjs';
 
-// Gate the whole app behind an access code. Anything without a valid signed
-// session cookie is bounced: pages redirect to /gate, API calls get 401.
-// The gate itself, the auth API, and static assets are exempt (see matcher).
-
-// The matcher now also covers /gate and /api/auth. Their AUTH behaviour is
-// unchanged (both are still exempt from the session check below) — they are
-// matched only so the no-cache header below reaches them. The gate's HTML
-// was the exact document browsers were caching stale, then requesting the
-// previous build's chunk hashes and getting 404s.
-// `fonts/` is exempt for the same reason `_next/` is: it is a static asset, not
-// a page. Without it the session check sent every font file to /gate, so the
-// browser asked for a typeface and got the login page's HTML back. Requests
-// aborted, the app fell back to system fonts, and the wordmark on the gate
-// itself — the one screen guaranteed to be unauthenticated — never rendered in
-// the serif it was designed in.
+// The front door. Anything without a BloomOps session cookie is bounced:
+// pages go to /sign-in, API calls get 401. This is a presence check only,
+// the fast one Better Auth documents for middleware. It does not validate
+// the cookie and it knows nothing about workspaces: every protected route
+// and page verifies the session and the caller's ACTIVE workspace membership
+// itself through lib/bloomops/access.mjs. Authorization is server-side and
+// per request; this file only decides who gets to knock.
+//
+// Exempt from the cookie check (each pinned to an exact shape, see
+// tests/bloomops-middleware.test.mjs):
+//   /sign-in, /invite/<token>     the pages a signed-out person needs
+//   /api/auth/*                   Better Auth's own endpoints
+//   /api/version, /api/health     build stamp and configuration booleans
+//   /p/<token>, /api/public/<token>  shared Pages, GET only
+//   the inherited unattended callers (video beacon, cron drain, Gmail push)
+//
+// The matcher also covers the exempt pages so the no-cache header below
+// reaches them. `fonts/` and `_next/` are static assets, never pages.
 export const config = {
   matcher: ['/((?!_next/|favicon.ico|fonts/|guide/).*)'],
 };
@@ -29,26 +31,26 @@ function freshHtml(res) {
   return res;
 }
 
-// Resolve env exactly like the auth route (getCloudflareContext), falling back
-// to process.env, so the signing secret matches on both sides.
-function resolveEnv() {
-  try {
-    const { env } = getCloudflareContext();
-    if (env) return env;
-  } catch {}
-  return typeof process !== 'undefined' && process.env ? process.env : {};
+export function hasSessionCookie(req) {
+  return SESSION_COOKIE_NAMES.some((name) => Boolean(req.cookies.get(name)?.value));
+}
+
+// Only a same-origin path may be remembered for after sign-in.
+function safeNextPath(pathname, search) {
+  if (!pathname.startsWith('/') || pathname.startsWith('//') || pathname.includes('\\')) return '/';
+  return `${pathname}${search || ''}`;
 }
 
 export async function middleware(req) {
   const { pathname } = req.nextUrl;
 
-  // Unchanged exemptions: the gate page and the auth API never require a
-  // session (that would lock everyone out). They pass straight through,
-  // just with the fresh-document header attached.
-  // /api/version is exempt for the same reason /gate is: a stale tab needs to
-  // learn a newer build exists even when its session has lapsed, and the
-  // response is a commit hash and a date - nothing about the workspace.
-  if (pathname === '/gate' || pathname.startsWith('/api/auth') || pathname === '/api/version') {
+  if (
+    pathname === '/sign-in' ||
+    /^\/invite\/[A-Za-z0-9_-]{40,64}\/?$/.test(pathname) ||
+    pathname.startsWith('/api/auth/') ||
+    pathname === '/api/version' ||
+    pathname === '/api/health'
+  ) {
     return freshHtml(NextResponse.next());
   }
 
@@ -84,7 +86,6 @@ export async function middleware(req) {
   // Worker's scheduled handler calls it with a shared secret, which the route
   // itself verifies. Exempted as narrowly as the public read above — exactly
   // this path, exactly these verbs, and the secret is still checked inside.
-  // Without the exemption the request never reaches the route to be checked.
   if (
     pathname === '/api/cron/drain' &&
     (req.method === 'POST' || req.method === 'PUT') &&
@@ -95,16 +96,9 @@ export async function middleware(req) {
 
   // Gmail's push notifications. Same reasoning as the cron drain: there is no
   // person here and therefore no session. Pub/Sub signs every push with an
-  // OIDC token, and the route verifies it properly — signature against
-  // Google's published keys, then issuer, audience, service account and
-  // expiry — before doing anything at all.
-  //
-  // This exemption exists because without it the request never reaches the
-  // route to be checked. That is not a hypothetical: the first live push was
-  // answered by this middleware with "Enter your access code", Pub/Sub read a
-  // 401, retried, and the notification that should have found a reply died
-  // here every time. Narrow as ever: exactly this path, exactly POST, and only
-  // when a bearer token is actually present.
+  // OIDC token, and the route verifies it properly before doing anything at
+  // all. Narrow as ever: exactly this path, exactly POST, and only when a
+  // bearer token is actually present.
   if (
     pathname === '/api/gmail/push' &&
     req.method === 'POST' &&
@@ -113,16 +107,15 @@ export async function middleware(req) {
     return NextResponse.next();
   }
 
-  const env = resolveEnv();
-  const cookie = req.cookies.get(SESSION_COOKIE);
-  const session = cookie ? await verifySession(env, cookie.value) : null;
-  if (session) return freshHtml(NextResponse.next());
+  if (hasSessionCookie(req)) return freshHtml(NextResponse.next());
 
   if (pathname.startsWith('/api/')) {
-    return NextResponse.json({ error: 'Not authenticated. Enter your access code.' }, { status: 401 });
+    return NextResponse.json({ error: 'Sign in to continue.' }, { status: 401 });
   }
-  const gate = req.nextUrl.clone();
-  gate.pathname = '/gate';
-  gate.search = '';
-  return NextResponse.redirect(gate);
+  const signIn = req.nextUrl.clone();
+  signIn.pathname = '/sign-in';
+  signIn.search = '';
+  const next = safeNextPath(pathname, req.nextUrl.search);
+  if (next !== '/') signIn.searchParams.set('next', next);
+  return NextResponse.redirect(signIn);
 }

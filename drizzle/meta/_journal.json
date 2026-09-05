@@ -15,6 +15,13 @@
       "when": 1788613961707,
       "tag": "0001_immutability_triggers",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788638502712,
+      "tag": "0002_a3_auth_membership",
+      "breakpoints": true
     }
   ]
 }
