@@ -1,0 +1,21 @@
+-- When the server last looked at this run and decided to leave it waiting.
+--
+-- Separate from heartbeat_at on purpose. heartbeat_at means "a site check
+-- finished", and that is the only thing that should ever move it; overloading it
+-- would make a genuinely dead run indistinguishable from one the scheduler is
+-- deliberately parking, and dead-run detection is the whole reason any of this
+-- exists.
+--
+-- The gap this closes was found in production. A run waiting for a free site
+-- checker was correctly protected from abandonment, but its silence kept
+-- accumulating the whole time, because nothing was finishing. The moment
+-- capacity freed, the protection dropped and the reconciler saw seventy minutes
+-- of quiet with work to do and a free checker, and closed it. It was killed for
+-- silence it had built up while it was legitimately waiting, one drain before
+-- the lane would have handed it work.
+--
+-- So the run carries a second clock, and staleness reads the later of the two.
+-- Only the drain writes this, and only for runs it has just proved are waiting
+-- on something real. If the machine stops, nothing stamps it, the clock stops
+-- moving, and the run becomes abandonable exactly as before.
+ALTER TABLE scanner_runs ADD COLUMN last_scheduler_seen_at TEXT;

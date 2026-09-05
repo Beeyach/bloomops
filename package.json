@@ -1,0 +1,53 @@
+{
+  "name": "bloomops",
+  "version": "1.17.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "node --test tests/**/*.test.mjs",
+    "cf:build": "opennextjs-cloudflare build",
+    "cf:typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "db:schema:local": "wrangler d1 execute DB --local --file=schema.sql",
+    "db:schema:staging": "wrangler d1 execute DB --env staging --remote --file=schema.sql",
+    "db:schema:production": "wrangler d1 execute DB --env production --remote --file=schema.sql",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy:staging": "opennextjs-cloudflare build && opennextjs-cloudflare deploy -- --env staging",
+    "deploy:production": "opennextjs-cloudflare build && opennextjs-cloudflare deploy -- --env production",
+    "db:migrate:local": "node scripts/migrate.mjs --local",
+    "db:migrate:staging": "node scripts/migrate.mjs --remote --env staging",
+    "db:migrate:production": "node scripts/migrate.mjs --remote --env production"
+  },
+  "dependencies": {
+    "@opennextjs/cloudflare": "^1.20.6",
+    "@tiptap/extension-drag-handle-react": "^3.28.0",
+    "@tiptap/extension-highlight": "^3.28.0",
+    "@tiptap/extension-image": "^3.28.0",
+    "@tiptap/extension-placeholder": "^3.28.0",
+    "@tiptap/extension-table": "^3.28.0",
+    "@tiptap/extension-task-item": "^3.28.0",
+    "@tiptap/extension-task-list": "^3.28.0",
+    "@tiptap/extension-underline": "^3.28.0",
+    "@tiptap/extension-youtube": "^3.28.0",
+    "@tiptap/react": "^3.28.0",
+    "@tiptap/starter-kit": "^3.28.0",
+    "katex": "^0.18.1",
+    "marked": "^18.0.6",
+    "next": "^15.5.25",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@tiptap/html": "^3.28.0",
+    "autoprefixer": "^10.4.20",
+    "esbuild": "^0.25.4",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "wrangler": "^4.129.0",
+    "zeed-dom": "^0.18.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

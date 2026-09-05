@@ -1,0 +1,7 @@
+# Local secrets for `next dev` and `npm run preview`. Copy to `.dev.vars`
+# (gitignored). These reach the local wrangler simulation only.
+#
+# Inherited access-code login, temporary until A3 replaces it with Better Auth.
+# Any throwaway values work locally. Never paste Leadsthatbloom production values.
+LTB_ACCESS_CODES={"local-dev-code":{"workspace":"local","role":"admin"}}
+LTB_SESSION_SECRET=local-dev-session-secret-change-me
