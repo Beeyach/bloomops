@@ -16,6 +16,7 @@ For every implementation session:
 - `DOMAIN_MODEL.md` — entities, lifecycle, permissions, canonical data rules
 - `RELEASE_A.md` — Release A scope and release-level acceptance
 - `ROADMAP.md` — later releases and sequencing
+- `DESIGN_SYSTEM.md` — Bloomlab-derived visual language, tokens, component behavior, accessibility, and BloomOps adaptation rules
 
 Do not automatically load every planning document into context.
 
@@ -36,13 +37,13 @@ Current phase file: `docs/phases/A0.md`
 | A2 | `DOMAIN_MODEL.md`, `phases/A2.md` |
 | A3 | `DOMAIN_MODEL.md`, `phases/A3.md` |
 | A4 | `DOMAIN_MODEL.md`, `phases/A4.md` |
-| A5 | `PRODUCT_SPEC.md`, `phases/A5.md` |
-| A6 | `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `phases/A6.md` |
+| A5 | `PRODUCT_SPEC.md`, `DESIGN_SYSTEM.md`, `phases/A5.md` |
+| A6 | `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `phases/A6.md` |
 | A7 | `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `phases/A7.md` |
 | A8 | `DOMAIN_MODEL.md`, `phases/A8.md` |
 | A9 | `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `phases/A9.md` |
-| A10 | `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `phases/A10.md` |
-| A11 | `RELEASE_A.md`, `DOMAIN_MODEL.md`, `phases/A11.md` |
+| A10 | `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `phases/A10.md` |
+| A11 | `RELEASE_A.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `phases/A11.md` |
 
 ## Minimal Claude Code Prompt Pattern
 
