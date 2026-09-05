@@ -19,13 +19,19 @@ name: Deploy staging
 #                               {"bloomops-staging-2026":{"workspace":"staging","role":"admin"}}
 #   STAGING_LTB_SESSION_SECRET  any long random string
 #
-# Runs on demand from the Actions tab (pick the branch), and on every push to
-# main once the A0 and A1 work has merged.
+# Runs on every push to main, and until PR #2 merges also on pushes to its
+# branch, because GitHub only lists manual-dispatch workflows that exist on the
+# default branch. Documentation-only pushes do not redeploy.
 
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
+      - claude/bloomops-a0-phase-xhae5r
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
 
 concurrency:
   group: bloomops-staging
