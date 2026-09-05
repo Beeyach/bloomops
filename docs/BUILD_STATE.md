@@ -176,7 +176,12 @@ New tests: `tests/infra-status.test.mjs` (binding report never carries ids or se
 
 ## Staging Deployment
 
-Not performed. This environment has no Cloudflare credentials (`wrangler whoami` reports not authenticated, no `CLOUDFLARE_API_TOKEN`), and `workers.cloudflare.com` is blocked by its egress policy. Everything up to the upload is proven locally. To finish A1, from a machine with Cloudflare access to the BloomOps account:
+Not performed. Attempted twice on 2026-09-05, the second time after commit `3463f5d` with the sole goal of finishing this step. Both attempts stopped at the same two blockers before any remote command ran:
+
+- no Cloudflare credentials exist in this environment: `wrangler whoami` reports not authenticated, there is no `CLOUDFLARE_API_TOKEN` or `CLOUDFLARE_ACCOUNT_ID`, and no wrangler OAuth config
+- the environment's egress policy answers 403 to `api.cloudflare.com`, `workers.cloudflare.com`, and `*.workers.dev`, so a token alone would not be enough here: `wrangler d1 create`, `r2 bucket create`, `secret put`, `deploy`, and the remote smoke test all need those hosts
+
+Everything up to the upload is proven locally. To finish A1, either run the commands below from a machine with Cloudflare access to the BloomOps account, or give this environment a scoped API token (Workers Scripts Edit, D1 Edit, R2 Edit, Account Settings Read) as `CLOUDFLARE_API_TOKEN` with `CLOUDFLARE_ACCOUNT_ID`, and allow egress to `api.cloudflare.com` and `*.workers.dev`:
 
 ```
 npx wrangler login
@@ -189,7 +194,7 @@ npx wrangler secret put LTB_SESSION_SECRET --env staging
 npm run deploy:staging
 ```
 
-Then sign in on the staging URL and confirm `GET /api/infra` returns `environment: staging` with D1 and R2 `ok`. Production follows the same steps with `production` in place of `staging` once staging is accepted. Record the resulting URLs and database ids here.
+Then, on the staging URL: sign in with the throwaway staging code, confirm `GET /api/infra` returns `environment: staging` with D1 and R2 `ok`, confirm `GET /api/pages` returns 200, create one disposable page through `POST /api/pages` and read it back, then delete it. Record the staging D1 id, Worker URL, deployment timestamp, and these results here, and only then mark A1 complete. Production follows the same steps with `production` in place of `staging` once staging is accepted.
 
 ## Known Risks
 
@@ -226,4 +231,4 @@ A2, Database foundation. Start only after the staging deployment above is verifi
 
 ## Last Verification
 
-2026-09-05, A1 execution. Results are in "Verified Working". `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched: no wrangler command in this session was authenticated, and the only wrangler operations run were local (`--local`, `--dry-run`, `wrangler dev`).
+2026-09-05, A1 execution. Results are in "Verified Working". Later the same day a session dedicated to the remote staging step verified the branch (commits `7cb376a` and `3463f5d`, clean tree, `wrangler.jsonc` names no Leadsthatbloom resource) and then stopped at the credential and egress blockers described under "Staging Deployment". No remote command ran and no configuration changed. `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched: no wrangler command in this session was authenticated, and the only wrangler operations run were local (`--local`, `--dry-run`, `wrangler dev`).
