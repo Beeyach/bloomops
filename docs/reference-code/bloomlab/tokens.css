@@ -1,0 +1,181 @@
+/* Reference snapshot copied from Beeyach/Bloomlab/packages/design-system/src/tokens.css for BloomOps visual implementation. Reference-only; not runtime code. */
+/*
+ * Bloomlab design tokens (DES-014). Source of truth for the runtime; tokens.ts mirrors the
+ * values that JavaScript needs. Categories: color, spacing, radius, shadow, motion,
+ * typography, holographic material, density, z-index, breakpoints (TA§3).
+ */
+:root {
+  /* ---- color: palette (spec §65) ---- */
+  --bl-color-cloud: #f8faff;
+  --bl-color-snow: #ffffff;
+  --bl-color-mist: #f0f3fc;
+  --bl-color-lilac-soft: #eeeafb;
+  --bl-color-ink: #18152b;
+  --bl-color-ink-deep: #100d22;
+  --bl-color-ink-soft: #5d5873;
+  --bl-color-ink-faint: #86819c; /* spec #8f8aa5, tuned for large-text contrast (D-017) */
+  --bl-color-sky: #6ec8ff;
+  --bl-color-bubblegum: #ff82c8;
+  --bl-color-lavender: #a99bff;
+  --bl-color-aqua: #75e6de;
+  --bl-color-lemon: #ffe98a;
+  --bl-color-peach: #ffb49c;
+  --bl-color-ice: #cff8ff;
+
+  /* ---- color: semantic (spec §65) ---- */
+  --bl-color-success: #56bfa1;
+  --bl-color-warning: #e5a94c;
+  --bl-color-error: #d85c72;
+  --bl-color-info: #5d90d9;
+
+  /* ---- color: roles ---- */
+  --bl-color-bg: var(--bl-color-cloud);
+  --bl-color-surface: var(--bl-color-snow);
+  --bl-color-surface-2: var(--bl-color-mist);
+  --bl-color-surface-tint: var(--bl-color-lilac-soft);
+  --bl-color-text: var(--bl-color-ink);
+  --bl-color-text-soft: var(--bl-color-ink-soft);
+  --bl-color-text-faint: var(--bl-color-ink-faint);
+  --bl-color-workspace: var(--bl-color-ink);
+  --bl-color-workspace-deep: var(--bl-color-ink-deep);
+  --bl-color-execution: var(--bl-color-aqua);
+  /* Info darkened until links/focus clear WCAG AA on the light surfaces (D-017). */
+  --bl-color-link: #3b69bd;
+  --bl-color-focus: #3b69bd;
+  --bl-color-text-inverse: var(--bl-color-snow);
+  --bl-color-border: rgb(24 21 43 / 0.1);
+  --bl-color-border-strong: rgb(24 21 43 / 0.22);
+
+  /* ---- spacing (4px scale) ---- */
+  --bl-space-1: 4px;
+  --bl-space-2: 8px;
+  --bl-space-3: 12px;
+  --bl-space-4: 16px;
+  --bl-space-5: 20px;
+  --bl-space-6: 24px;
+  --bl-space-8: 32px;
+  --bl-space-10: 40px;
+  --bl-space-12: 48px;
+  --bl-space-16: 64px;
+
+  /* ---- layout sizes ---- */
+  /* The primary rail. D-117 widened it for readable labels and breathing room; the page offsets by the same token. */
+  --bl-size-rail: 104px;
+  /* The phone bottom bar the rail becomes below 768 px. */
+  --bl-size-rail-bar: 64px;
+
+  /* ---- radius ---- */
+  --bl-radius-sm: 6px;
+  --bl-radius-md: 10px;
+  --bl-radius-lg: 16px;
+  --bl-radius-xl: 24px;
+  --bl-radius-full: 999px;
+
+  /* ---- shadow (restrained; no huge shadows, spec §70) ---- */
+  --bl-shadow-sm: 0 1px 2px rgb(24 21 43 / 0.06);
+  --bl-shadow-md: 0 4px 12px rgb(24 21 43 / 0.08);
+  --bl-shadow-lg: 0 12px 32px rgb(24 21 43 / 0.12);
+
+  /* ---- motion (spec §69) ---- */
+  --bl-motion-fast: 120ms;
+  --bl-motion-base: 200ms;
+  --bl-motion-slow: 300ms;
+  --bl-motion-settle: 420ms;
+  --bl-motion-reward-min: 1500ms;
+  --bl-motion-reward-max: 3000ms;
+  --bl-motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --bl-motion-ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
+  --bl-motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* ---- typography (spec §66) ---- */
+  --bl-font-display:
+    'Bricolage Grotesque Variable', 'Bricolage Grotesque', 'Inter Variable', sans-serif;
+  --bl-font-ui: 'Inter Variable', Inter, system-ui, sans-serif;
+  --bl-font-size-xs: 0.75rem;
+  --bl-font-size-sm: 0.875rem;
+  --bl-font-size-md: 1rem;
+  --bl-font-size-lg: 1.125rem;
+  --bl-font-size-xl: 1.5rem;
+  --bl-font-size-2xl: 2rem;
+  --bl-font-size-3xl: 2.75rem;
+  --bl-font-leading-tight: 1.15;
+  --bl-font-leading-normal: 1.5;
+  --bl-font-leading-relaxed: 1.65;
+  --bl-font-weight-regular: 400;
+  --bl-font-weight-medium: 500;
+  --bl-font-weight-semibold: 600;
+  --bl-font-weight-bold: 700;
+  --bl-font-tracking-display: -0.02em;
+
+  /* ---- holographic material (spec §67–§68) ---- */
+  --bl-holo-tilt-max: 6deg;
+  /* 1 = reflection and sheen follow the pointer; 0 = static (reduced motion). */
+  --bl-holo-track: 1;
+  --bl-holo-settle: var(--bl-motion-settle);
+  --bl-holo-pearl: linear-gradient(
+    135deg,
+    var(--bl-color-snow) 0%,
+    var(--bl-color-ice) 45%,
+    var(--bl-color-lilac-soft) 100%
+  );
+  /* Foil bands: ~30% period across a 260% tile so three pastel bands cross a card. */
+  --bl-holo-spectral: repeating-linear-gradient(
+    110deg,
+    var(--bl-color-sky) 0%,
+    var(--bl-color-lavender) 5%,
+    var(--bl-color-bubblegum) 10%,
+    var(--bl-color-peach) 15%,
+    var(--bl-color-lemon) 20%,
+    var(--bl-color-aqua) 25%,
+    var(--bl-color-sky) 30%
+  );
+  --bl-holo-spectral-opacity: 0.35;
+  --bl-holo-foil-opacity: 0.18;
+  --bl-holo-sheen: rgb(255 255 255 / 0.55);
+  --bl-holo-reflection-x: 50%;
+  --bl-holo-reflection-y: 50%;
+
+  /* ---- density (spec §72) ---- */
+  --bl-density-low: 20px;
+  --bl-density-medium: 12px;
+  --bl-density-high: 6px;
+  --bl-density-row: var(--bl-density-medium);
+
+  /* ---- z-index ---- */
+  --bl-z-base: 0;
+  --bl-z-raised: 10;
+  --bl-z-sticky: 100;
+  --bl-z-overlay: 1000;
+  --bl-z-modal: 1100;
+  --bl-z-toast: 1200;
+
+  /* ---- breakpoints (spec §82; reference values, media queries repeat them literally) ---- */
+  --bl-bp-xs: 320px;
+  --bl-bp-sm: 390px;
+  --bl-bp-md: 768px;
+  --bl-bp-lg: 1024px;
+  --bl-bp-xl: 1440px;
+}
+
+[data-density='low'] {
+  --bl-density-row: var(--bl-density-low);
+}
+
+[data-density='high'] {
+  --bl-density-row: var(--bl-density-high);
+}
+
+/* Reduced motion (spec §69, §84; MOT-003): no tilt, no moving reflection, instant states. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --bl-motion-fast: 0ms;
+    --bl-motion-base: 0ms;
+    --bl-motion-slow: 0ms;
+    --bl-motion-settle: 0ms;
+    --bl-motion-reward-min: 0ms;
+    --bl-motion-reward-max: 0ms;
+    --bl-holo-tilt-max: 0deg;
+    --bl-holo-track: 0;
+    --bl-holo-spectral-opacity: 0.2;
+  }
+}
