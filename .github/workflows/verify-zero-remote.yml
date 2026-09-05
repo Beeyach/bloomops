@@ -1,0 +1,67 @@
+name: Verify zero-to-current migration
+
+# Creates a disposable D1 database named bloomops-a2-zero-verify on the
+# authenticated account, proves it reaches the current BloomOps schema from an
+# empty database through the repository's own migration paths (schema.sql,
+# scripts/migrate.mjs, then the Drizzle migrations under ./drizzle), proves a
+# second pass is a no-op, and deletes that database again. The account
+# inventory is read before and after and must match.
+#
+# Nothing here names the committed staging or production databases as a
+# target: every migration command runs with a temporary wrangler config whose
+# only D1 binding is the disposable database. See
+# .github/scripts/verify-zero-remote.mjs for the checks.
+#
+# Runs on demand, and on pushes that change this workflow, the script it runs,
+# or the migration runner, so the proof is repeated whenever the machinery
+# under it changes.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - claude/bloomops-a2-database-foundation
+    paths:
+      - ".github/workflows/verify-zero-remote.yml"
+      - ".github/scripts/verify-zero-remote.mjs"
+      - "scripts/migrate.mjs"
+
+concurrency:
+  group: bloomops-a2-zero-verify
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  WRANGLER_SEND_METRICS: "false"
+
+jobs:
+  zero-to-current:
+    name: Disposable D1 from zero to current schema, twice, then deleted
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install from the lockfile
+        run: npm ci
+
+      - name: Confirm the Cloudflare identity this run acts as
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID must be repository secrets."
+            exit 1
+          fi
+          npx wrangler whoami
+
+      - name: Create, migrate from zero, migrate again, verify, delete
+        run: node .github/scripts/verify-zero-remote.mjs

@@ -1,10 +1,11 @@
 name: Deploy staging
 
 # Builds the inherited app with OpenNext, makes sure the BloomOps staging D1
-# database and R2 bucket exist, applies the schema and migrations to that
-# database, deploys the bloomops-staging Worker, sets its two temporary login
-# secrets, and verifies the live Worker end to end (gate, sign-in, bindings,
-# Pages read and a disposable page write).
+# database and R2 bucket exist, applies the inherited schema and migrations
+# and then the BloomOps domain migrations (./drizzle) to that database,
+# deploys the bloomops-staging Worker, sets its two temporary login secrets,
+# and verifies the live Worker end to end (gate, sign-in, bindings, domain
+# schema, Pages read and a disposable page write).
 #
 # Staging only. There is deliberately no production job here. Every command
 # names the `staging` Wrangler environment, so nothing in this workflow can
@@ -29,6 +30,7 @@ on:
     branches:
       - main
       - claude/bloomops-a0-phase-xhae5r
+      - claude/bloomops-a2-database-foundation
     paths-ignore:
       - "docs/**"
       - "**/*.md"
@@ -79,7 +81,15 @@ jobs:
       - name: Apply migrations (ledger keeps this idempotent)
         run: npm run db:migrate:staging
 
+      - name: Apply BloomOps domain migrations (Drizzle SQL, wrangler ledger)
+        run: npm run db:domain:migrate:staging
+
       - name: Build with OpenNext and deploy bloomops-staging
+        env:
+          # next.config.js stamps these into the bundle, so /api/version can
+          # tell the verifier which commit is actually being served.
+          WORKERS_CI_COMMIT_SHA: ${{ github.sha }}
+          WORKERS_CI_BRANCH: ${{ github.ref_name }}
         run: |
           set -o pipefail
           npm run deploy:staging 2>&1 | tee deploy.log
@@ -99,4 +109,4 @@ jobs:
       - name: Verify the live staging Worker
         env:
           STAGING_LTB_ACCESS_CODES: ${{ secrets.STAGING_LTB_ACCESS_CODES }}
-        run: node .github/scripts/verify-staging.mjs --log deploy.log --expect-env staging
+        run: node .github/scripts/verify-staging.mjs --log deploy.log --expect-env staging --expect-sha "${{ github.sha }}"

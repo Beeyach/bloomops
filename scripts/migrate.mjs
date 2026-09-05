@@ -1,11 +1,15 @@
 // Idempotent D1 migration runner (spec §4). Ordered files in migrations/
 // apply once each; bookkeeping lives in a _migrations table on the target
 // database. The target is always the `DB` binding declared in wrangler.jsonc
-// for the chosen environment; no database is ever addressed by name. Usage:
+// for the chosen environment, or in an explicit --config file; no database is
+// ever addressed by name. Usage:
 //   node scripts/migrate.mjs --local                      (development: wrangler's local D1)
 //   node scripts/migrate.mjs --remote --env staging       (staging D1)
 //   node scripts/migrate.mjs --remote --env production    (production D1, owner runs at deploy time)
-// A remote run without --env is refused.
+//   node scripts/migrate.mjs --remote --config <file>     (the DB binding of that wrangler config only)
+// A remote run without --env or --config is refused. --config exists for the
+// disposable zero-to-current verification, which must never repoint the
+// committed staging or production ids.
 // Deploy rule: migrate the live DB BEFORE pushing code that reads new
 // columns (HANDOFF gotcha #2).
 import { readdirSync, readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
@@ -186,16 +190,36 @@ function wranglerExec(targetArgs) {
   };
 }
 
+// The wrangler arguments that pick the database: --local or --remote, plus the
+// environment of wrangler.jsonc and/or an explicit config file. A remote run
+// must name at least one of them, so a bare `--remote` can never fall through
+// to whatever the top-level config happens to bind.
+export function targetArgsFor(argv) {
+  const remote = argv.includes('--remote');
+  const pick = (flag) => {
+    const i = argv.indexOf(flag);
+    return i >= 0 ? String(argv[i + 1] || '') : '';
+  };
+  const env = pick('--env');
+  const config = pick('--config');
+  if (remote && !env && !config) {
+    throw new Error('A remote migration needs --env staging, --env production, or --config <wrangler config>.');
+  }
+  const args = [remote ? '--remote' : '--local'];
+  if (env) args.push('--env', env);
+  if (config) args.push('--config', config);
+  return args;
+}
+
 const isMain = process.argv[1] && process.argv[1].endsWith('migrate.mjs');
 if (isMain) {
-  const REMOTE = process.argv.includes('--remote');
-  const envIdx = process.argv.indexOf('--env');
-  const ENV = envIdx >= 0 ? String(process.argv[envIdx + 1] || '') : '';
-  if (REMOTE && !ENV) {
-    console.error('A remote migration needs --env staging or --env production.');
+  let targetArgs;
+  try {
+    targetArgs = targetArgsFor(process.argv);
+  } catch (err) {
+    console.error(err.message);
     process.exit(2);
   }
-  const targetArgs = REMOTE ? ['--remote', '--env', ENV] : ['--local'];
   const files = readdirSync('migrations').filter((f) => f.endsWith('.sql'));
   const exec = wranglerExec(targetArgs);
   const schema = async () => schemaFromRows(await exec({ command: LIVE_SCHEMA_SQL, rows: true }));
