@@ -6,7 +6,7 @@ Release A: Foundation, Auth, Clients, Services, Onboarding, Client Portal
 
 ## Current Phase
 
-A2 (Database foundation) is implemented and verified locally. The BloomOps domain schema exists as Drizzle-generated migrations and is applied to staging by the same GitHub Actions run that deploys it. See "Domain Schema (A2)" below for the staging result.
+A2 (Database foundation) is complete. The BloomOps domain schema exists as Drizzle-generated migrations, is proven by invariant tests against a real SQLite, and was applied to the staging database `bloomops-staging` by the same GitHub Actions run that deploys the Worker. See "Domain Schema (A2)" below for the local and staging evidence.
 
 Completed phase specs: `docs/phases/A1.md`, `docs/phases/A2.md`. Next phase spec: `docs/phases/A3.md` (not started).
 
@@ -196,9 +196,18 @@ Both schemas live in the same D1 database per environment and never share a tabl
 | Local Worker smoke (`verify-staging.mjs` against `wrangler dev`) | 15 of 15, including "BloomOps domain schema present" |
 | Pages anchors | all eight unchanged, nothing under `components/` changed |
 
-### Staging verification
+### Staging verification (2026-09-05)
 
-The Deploy staging workflow now runs `db:domain:migrate:staging` after the inherited migrations and before the deploy, and the live verifier requires `/api/infra` to report the domain schema. The result of the first run on this branch is recorded under "Last Verification" once it completes.
+The Deploy staging workflow runs `db:domain:migrate:staging` after the inherited migrations and before the deploy, and the live verifier requires `/api/infra` to report the domain schema. Two runs on branch `claude/bloomops-a2-database-foundation` did the work:
+
+| Run | Commit | What happened |
+|---|---|---|
+| 33968508433 | `bf9bcdb` | Identity `hello@bloomwired.io`, account `Bloomwired`. Provisioning confirmed the committed staging D1 id `4bb0c8e9-a08f-43d7-9ad7-68b28c371d23` and bucket `bloomops-files-staging`. Inherited bootstrap: 28 schema statements, all 60 legacy migrations already applied. Domain migrations at 13:19:11Z: "About to apply 2 migration(s)", `0000_bloomops_release_a_foundation.sql` executed 67 commands, `0001_immutability_triggers.sql` executed 4 commands, both recorded in `d1_migrations`. Deployed version `fd0f1f3d-50be-49bf-82a1-0a0bfe9a9b7b`. The live verifier then failed only its new "BloomOps domain schema present" check because `/api/infra` was still answered by the previous Worker version two seconds after the last secret upload |
+| 33968734285 | `ea075bc` | Same steps. Domain migrations: "No migrations to apply", so the second apply is a no-op on staging as it is locally. Deployed version `5ee00b71-0536-46ea-b6f8-233e5b9a44a0` at 13:24:26Z. Verifier 13:24:30Z to 13:24:34Z, 16 of 16 passed, including `build ea075bc is being served` and `BloomOps domain schema present ({"migrations":2,"ok":true})` |
+
+The fix in `ea075bc` stamps the commit into the build (`WORKERS_CI_COMMIT_SHA`) and makes the verifier wait until `/api/version` reports that commit before it inspects bindings, so a verify run can no longer land on the previous version.
+
+The staging database now holds the 35 inherited tables plus the 22 domain tables and both immutability triggers. No production database exists, and no Leadsthatbloom database was named or touched: every wrangler call in both runs carried `--env staging` and resolved to `bloomops-staging`.
 
 ### Deferred to A3 and later
 
@@ -250,7 +259,7 @@ New tests: `tests/infra-status.test.mjs` (binding report never carries ids or se
 
 ## Staging Deployment
 
-Completed on 2026-09-05 by GitHub Actions run 33966322588 of `.github/workflows/deploy-staging.yml` at commit `9442c11`. The same workflow runs on every push to `main` and, until PR #2 merges, on pushes to its branch, so staging stays current on its own.
+First completed on 2026-09-05 by GitHub Actions run 33966322588 of `.github/workflows/deploy-staging.yml` at commit `9442c11`. The same workflow runs on every push to `main` and, until PR #2 and PR #3 merge, on pushes to their branches, so staging stays current on its own. The latest deploy is recorded under "Staging verification" in "Domain Schema (A2)".
 
 | Item | Value |
 |---|---|
@@ -284,7 +293,7 @@ Re-running the workflow is safe. Schema and migrations are idempotent, the provi
 - inherited application is still Leadsthatbloom in behavior and UI, and `ProspectsApp.jsx` remains the root
 - inherited authentication is access-code based (`LTB_ACCESS_CODES`, `LTB_SESSION_SECRET`) until A3
 - prospecting code, skills, tools, `services/audit-render/`, the quarantined `workers/bloomwired-review/`, and the Leadsthatbloom report markdown files at the repository root remain until replacement phases make removal safe
-- the inherited schema is bootstrapped from `schema.sql` plus postcondition-aware migrations. A2 replaces it with the BloomOps domain schema and Drizzle migrations
+- the inherited schema is still bootstrapped from `schema.sql` plus postcondition-aware migrations. A2 added the BloomOps domain schema beside it. The inherited schema is retired only when the prospecting code that reads it is removed
 - `open-next.config.ts` configures no cache. Every inherited route is dynamic, so nothing is lost today. Revisit when a route needs ISR
 - `compatibility_date` is `2025-05-01`. Wrangler suggests a newer date. Raise it deliberately with a test pass
 - the production D1 id is a placeholder until production is provisioned deliberately
@@ -325,4 +334,6 @@ A3, Authentication and membership. Not started.
 
 ## Last Verification
 
-2026-09-05, A1 execution. Results are in "Verified Working". Later the same day the remote staging step ran from GitHub Actions (run 33966322588) and passed every check, as recorded under "Staging Deployment". A1 satisfies every verification item in `docs/phases/A1.md`. `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched: no wrangler command in this session was authenticated, and the only wrangler operations run were local (`--local`, `--dry-run`, `wrangler dev`).
+2026-09-05, A2 execution. Local results are in "Domain Schema (A2)". GitHub Actions run 33968508433 applied the two domain migrations to `bloomops-staging`, and run 33968734285 (commit `ea075bc`) deployed and passed all 16 live checks, including the domain schema check. A2 satisfies every verification item in `docs/phases/A2.md`. No production resource was provisioned. `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched.
+
+Earlier the same day, A1 execution. Results are in "Verified Working". Later the same day the remote staging step ran from GitHub Actions (run 33966322588) and passed every check, as recorded under "Staging Deployment". A1 satisfies every verification item in `docs/phases/A1.md`. `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched: no wrangler command in this session was authenticated, and the only wrangler operations run were local (`--local`, `--dry-run`, `wrangler dev`).
