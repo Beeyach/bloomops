@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { getWorkspace, unauthorized } from '@/lib/workspace.mjs';
 import { loadCredits, setCredits, PRICE_LABELS } from '@/lib/credits.mjs';
-import { loadCodes } from '@/lib/session.mjs';
-import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,14 +40,11 @@ export async function PUT(req) {
   // Any string matching the shape used to be accepted, so one typo in the
   // top-up box wrote 20,000 credits to a workspace that does not exist and
   // said "ellenn now has 20,000 credits" as though it had worked. Ellen would
-  // then open the app and find nothing had changed.
-  let env = {};
-  try { env = getCloudflareContext().env || {}; } catch { env = (typeof process !== 'undefined' && process.env) || {}; }
-  const known = new Set(
-    Object.values(loadCodes(env))
-      .filter((v) => v && v.workspace)
-      .map((v) => String(v.workspace).toLowerCase())
-  );
+  // then open the app and find nothing had changed. Since A3 a workspace is a
+  // BloomOps workspace row, so the slug is checked against those.
+  const db = getDb();
+  const { results } = await db.prepare('SELECT slug FROM workspaces').all();
+  const known = new Set((results || []).map((r) => String(r.slug).toLowerCase()));
   if (known.size && !known.has(target)) {
     return NextResponse.json(
       { error: `There is no workspace called "${target}". Check the spelling, or leave the box empty for this one.` },
@@ -57,7 +52,6 @@ export async function PUT(req) {
     );
   }
 
-  const db = getDb();
   const balance = await setCredits(db, target, body?.balance);
   return NextResponse.json({ workspace: target, balance });
 }

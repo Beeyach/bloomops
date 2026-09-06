@@ -1,0 +1,20 @@
+import { NextResponse } from 'next/server';
+import { requireAccess } from '@/lib/bloomops/access.mjs';
+import { revokeInvitation } from '@/lib/bloomops/invitations.mjs';
+import { invitationError, publicInvitation } from '../../_shared.mjs';
+
+export const dynamic = 'force-dynamic';
+
+// POST -> the pending invitation becomes revoked and its link stops working.
+export async function POST(req, { params }) {
+  const { access, response } = await requireAccess(req, { manageMembers: true });
+  if (response) return response;
+  const { id } = await params;
+  const result = await revokeInvitation(access.db, {
+    workspaceId: access.workspace.id,
+    invitationId: String(id || ''),
+    actorMembershipId: access.membership.id,
+  });
+  if (!result.ok) return invitationError(result.reason);
+  return NextResponse.json({ invitation: publicInvitation(result.invitation) });
+}

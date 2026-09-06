@@ -24,6 +24,13 @@ export async function resolve(specifier, context, nextResolve) {
       const base = fileURLToPath(new URL(specifier, context.parentURL));
       return resolveWithExtensions(base, context, nextResolve);
     }
+    // Bare subpaths without an exports map (next/server -> next/server.js),
+    // which Next resolves itself at build time.
+    if (/^[a-z@][^:]*\/[^.]*$/i.test(specifier) && !specifier.endsWith('.js')) {
+      try {
+        return await nextResolve(`${specifier}.js`, context);
+      } catch {}
+    }
     throw err;
   }
 }

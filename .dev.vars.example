@@ -1,7 +1,15 @@
 # Local secrets for `next dev` and `npm run preview`. Copy to `.dev.vars`
 # (gitignored). These reach the local wrangler simulation only.
 #
-# Inherited access-code login, temporary until A3 replaces it with Better Auth.
-# Any throwaway values work locally. Never paste Leadsthatbloom production values.
-LTB_ACCESS_CODES={"local-dev-code":{"workspace":"local","role":"admin"}}
-LTB_SESSION_SECRET=local-dev-session-secret-change-me
+# Better Auth signing secret. Any 32+ character random string works locally
+# (`openssl rand -base64 32`). Development falls back to a fixed value when
+# this is missing; deployed environments refuse to start authentication
+# without their own. Never paste a staging or production value here.
+BLOOMOPS_AUTH_SECRET=replace-me-with-32-or-more-random-characters-0123456789
+
+# Optional locally. wrangler.jsonc sets BLOOMOPS_MAIL_TRANSPORT=r2-dev for
+# development, which writes outbound mail into the local R2 simulation. To
+# send real mail from your machine instead, set both of these and add
+# BLOOMOPS_MAIL_TRANSPORT=resend.
+# BLOOMOPS_RESEND_API_KEY=re_xxxxxxxx
+# BLOOMOPS_MAIL_FROM=BloomOps <onboarding@resend.dev>

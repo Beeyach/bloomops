@@ -825,8 +825,10 @@ export default function GlassRail({
               </a>
               <button
                 onClick={async () => {
-                  try { await fetch('/api/auth', { method: 'DELETE' }); } catch {}
-                  window.location.href = '/gate';
+                  try {
+                    await fetch('/api/auth/sign-out', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+                  } catch {}
+                  window.location.href = '/sign-in';
                 }}
                 className="ui-meta text-ink-3 hover:text-rose-text transition whitespace-nowrap"
               >

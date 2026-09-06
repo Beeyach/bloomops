@@ -1,36 +1,49 @@
 name: Deploy staging
 
-# Builds the inherited app with OpenNext, makes sure the BloomOps staging D1
-# database and R2 bucket exist, applies the inherited schema and migrations
-# and then the BloomOps domain migrations (./drizzle) to that database,
-# deploys the bloomops-staging Worker, sets its two temporary login secrets,
-# and verifies the live Worker end to end (gate, sign-in, bindings, domain
-# schema, Pages read and a disposable page write).
+# Builds the app with OpenNext, makes sure the BloomOps staging D1 database
+# and R2 bucket exist, applies the inherited schema and migrations and then
+# the BloomOps domain migrations (./drizzle) to that database, deploys the
+# bloomops-staging Worker, sets its authentication and mail secrets,
+# bootstraps the first workspace (idempotent), and verifies the live Worker
+# from the outside (sign-in screen, Better Auth endpoints, enumeration
+# resistance, the old access-code flow gone, health and schema).
 #
 # Staging only. There is deliberately no production job here. Every command
 # names the `staging` Wrangler environment, so nothing in this workflow can
 # reach any other database, bucket, or Worker.
 #
 # Repository secrets it needs (Settings > Secrets and variables > Actions):
-#   CLOUDFLARE_API_TOKEN        scoped token: Account Settings Read, Workers Scripts Edit,
-#                               D1 Edit, Workers R2 Storage Edit, User Details Read,
-#                               Memberships Read. Account resources: this account only.
-#   CLOUDFLARE_ACCOUNT_ID       the Cloudflare account id
-#   STAGING_LTB_ACCESS_CODES    throwaway staging login JSON, for example
-#                               {"bloomops-staging-2026":{"workspace":"staging","role":"admin"}}
-#   STAGING_LTB_SESSION_SECRET  any long random string
+#   CLOUDFLARE_API_TOKEN                   scoped token: Account Settings Read, Workers Scripts Edit,
+#                                          D1 Edit, Workers R2 Storage Edit, User Details Read,
+#                                          Memberships Read. Account resources: this account only.
+#   CLOUDFLARE_ACCOUNT_ID                  the Cloudflare account id
+#   STAGING_BLOOMOPS_AUTH_SECRET           Better Auth signing secret, 32+ random characters
+#                                          (`openssl rand -base64 32`). Required: without it the
+#                                          verifier fails, because nobody can sign in.
+#   STAGING_BLOOMOPS_RESEND_API_KEY        Resend API key for staging mail. Optional; without it
+#                                          sign-in answers 503 and the verifier warns.
+#   STAGING_BLOOMOPS_MAIL_FROM             optional sender, e.g. "BloomOps <team@yourdomain>".
+#                                          Defaults to Resend's onboarding sender, which only
+#                                          delivers to the Resend account's own address.
+#   STAGING_BLOOMOPS_WORKSPACE_NAME        first workspace name (optional, default "BloomOps Staging")
+#   STAGING_BLOOMOPS_OWNER_EMAIL           Owner's email (Ellen). Optional; bootstrap is skipped
+#   STAGING_BLOOMOPS_ADMIN_EMAIL           Admin's email (Ary).  with a warning when either is missing.
+#   STAGING_BLOOMOPS_OWNER_NAME            optional display names
+#   STAGING_BLOOMOPS_ADMIN_NAME
 #
-# Runs on every push to main, and until PR #2 merges also on pushes to its
-# branch, because GitHub only lists manual-dispatch workflows that exist on the
-# default branch. Documentation-only pushes do not redeploy.
+# The inherited STAGING_LTB_* access-code and session secrets are no longer
+# read anywhere. Delete them from the repository.
+#
+# Runs on every push to main, and until the A3 PR merges also on pushes to
+# its branch, because GitHub only lists manual-dispatch workflows that exist
+# on the default branch. Documentation-only pushes do not redeploy.
 
 on:
   workflow_dispatch:
   push:
     branches:
       - main
-      - claude/bloomops-a0-phase-xhae5r
-      - claude/bloomops-a2-database-foundation
+      - claude/a3-auth-membership-xo5r7e
     paths-ignore:
       - "docs/**"
       - "**/*.md"
@@ -50,7 +63,7 @@ env:
 
 jobs:
   staging:
-    name: Staging (provision, migrate, deploy, verify)
+    name: Staging (provision, migrate, deploy, bootstrap, verify)
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -94,19 +107,40 @@ jobs:
           set -o pipefail
           npm run deploy:staging 2>&1 | tee deploy.log
 
-      - name: Set the temporary staging login secrets on the Worker
+      - name: Set the BloomOps auth and mail secrets on the Worker
         env:
-          STAGING_LTB_ACCESS_CODES: ${{ secrets.STAGING_LTB_ACCESS_CODES }}
-          STAGING_LTB_SESSION_SECRET: ${{ secrets.STAGING_LTB_SESSION_SECRET }}
+          STAGING_BLOOMOPS_AUTH_SECRET: ${{ secrets.STAGING_BLOOMOPS_AUTH_SECRET }}
+          STAGING_BLOOMOPS_RESEND_API_KEY: ${{ secrets.STAGING_BLOOMOPS_RESEND_API_KEY }}
+          STAGING_BLOOMOPS_MAIL_FROM: ${{ secrets.STAGING_BLOOMOPS_MAIL_FROM }}
         run: |
-          if [ -z "$STAGING_LTB_ACCESS_CODES" ] || [ -z "$STAGING_LTB_SESSION_SECRET" ]; then
-            echo "::warning::STAGING_LTB_ACCESS_CODES or STAGING_LTB_SESSION_SECRET is not set. The Worker is deployed, but nobody can sign in until both exist."
+          if [ -z "$STAGING_BLOOMOPS_AUTH_SECRET" ]; then
+            echo "::error::STAGING_BLOOMOPS_AUTH_SECRET is not set. The Worker is deployed, but authentication fails closed until it exists."
+          else
+            printf '%s' "$STAGING_BLOOMOPS_AUTH_SECRET" | npx wrangler secret put BLOOMOPS_AUTH_SECRET --env staging
+          fi
+          if [ -z "$STAGING_BLOOMOPS_RESEND_API_KEY" ]; then
+            echo "::warning::STAGING_BLOOMOPS_RESEND_API_KEY is not set. Sign-in will answer 503 until it exists."
+          else
+            printf '%s' "$STAGING_BLOOMOPS_RESEND_API_KEY" | npx wrangler secret put BLOOMOPS_RESEND_API_KEY --env staging
+          fi
+          if [ -n "$STAGING_BLOOMOPS_MAIL_FROM" ]; then
+            printf '%s' "$STAGING_BLOOMOPS_MAIL_FROM" | npx wrangler secret put BLOOMOPS_MAIL_FROM --env staging
+          fi
+
+      - name: Bootstrap the first workspace (idempotent)
+        env:
+          BLOOMOPS_BOOTSTRAP_WORKSPACE_NAME: ${{ secrets.STAGING_BLOOMOPS_WORKSPACE_NAME }}
+          BLOOMOPS_BOOTSTRAP_OWNER_EMAIL: ${{ secrets.STAGING_BLOOMOPS_OWNER_EMAIL }}
+          BLOOMOPS_BOOTSTRAP_OWNER_NAME: ${{ secrets.STAGING_BLOOMOPS_OWNER_NAME }}
+          BLOOMOPS_BOOTSTRAP_ADMIN_EMAIL: ${{ secrets.STAGING_BLOOMOPS_ADMIN_EMAIL }}
+          BLOOMOPS_BOOTSTRAP_ADMIN_NAME: ${{ secrets.STAGING_BLOOMOPS_ADMIN_NAME }}
+        run: |
+          if [ -z "$BLOOMOPS_BOOTSTRAP_OWNER_EMAIL" ] || [ -z "$BLOOMOPS_BOOTSTRAP_ADMIN_EMAIL" ]; then
+            echo "::warning::STAGING_BLOOMOPS_OWNER_EMAIL or STAGING_BLOOMOPS_ADMIN_EMAIL is not set. Bootstrap skipped: no workspace or memberships were created, so nobody can sign in yet."
             exit 0
           fi
-          printf '%s' "$STAGING_LTB_ACCESS_CODES" | npx wrangler secret put LTB_ACCESS_CODES --env staging
-          printf '%s' "$STAGING_LTB_SESSION_SECRET" | npx wrangler secret put LTB_SESSION_SECRET --env staging
+          export BLOOMOPS_BOOTSTRAP_WORKSPACE_NAME="${BLOOMOPS_BOOTSTRAP_WORKSPACE_NAME:-BloomOps Staging}"
+          node scripts/bootstrap-workspace.mjs --env staging --remote
 
       - name: Verify the live staging Worker
-        env:
-          STAGING_LTB_ACCESS_CODES: ${{ secrets.STAGING_LTB_ACCESS_CODES }}
         run: node .github/scripts/verify-staging.mjs --log deploy.log --expect-env staging --expect-sha "${{ github.sha }}"

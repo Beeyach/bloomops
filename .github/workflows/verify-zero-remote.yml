@@ -21,7 +21,7 @@ on:
   push:
     branches:
       - main
-      - claude/bloomops-a2-database-foundation
+      - claude/a3-auth-membership-xo5r7e
     paths:
       - ".github/workflows/verify-zero-remote.yml"
       - ".github/scripts/verify-zero-remote.mjs"
