@@ -40,7 +40,7 @@ export default async function SettingsPage() {
         <Section id="access" title="Your access">
           <Surface padding="lg">
             {capabilities.length === 0 ? (
-              <p className="bo-body">No access beyond your role. Owners and Admins can grant more, such as finance access, when it is needed.</p>
+              <p className="bo-body">No access beyond your role. Additional access, such as finance, can be granted when it is needed.</p>
             ) : (
               <ul className="bo-preview-list" style={{ marginTop: 0 }} aria-label="Granted access">
                 {capabilities.map((key) => (

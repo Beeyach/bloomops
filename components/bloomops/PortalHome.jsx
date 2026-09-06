@@ -2,7 +2,9 @@ import { Surface } from './Primitives';
 
 // The portal's one page in Release A. Calm, short, and only what is true:
 // which client this account is for (when it is linked), that nothing is
-// waiting on the person, and what to do if they expected more. No
+// available to view yet, and what to do if they expected more.
+// No claim about what the agency needs from the person: no requests,
+// approvals, or deliverables exist yet to read, so none is inferred. No
 // internal vocabulary, no counts, no empty modules.
 
 function firstName(user) {
@@ -53,10 +55,10 @@ export function PortalHome({ workspaceName, user, clients = [] }) {
       )}
       <Surface padding="lg" style={{ marginTop: 32 }}>
         <h2 className="bo-h2" style={{ marginBottom: 8 }}>
-          Nothing needs your attention right now
+          Your portal is ready
         </h2>
         <p className="bo-body">
-          There is nothing waiting on you, and nothing new has been shared with you yet. When {workspaceName} needs something from you, or has something to show you, it will appear here.
+          There isn't anything available to view here yet. When {workspaceName} shares requests, updates, or work with you through BloomOps, it will appear here.
         </p>
         <p className="bo-body" style={{ marginTop: 12 }}>
           Need something in the meantime? Reply to the person at {workspaceName} you usually talk to.
