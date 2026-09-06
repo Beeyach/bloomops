@@ -878,13 +878,17 @@ html:has(.bo-root) {
   flex: 1 1 0%;
   min-width: 0;
 }
+/* A row's title and the line under it always stack: they are two facts,
+   not one sentence. */
 .bo-row-title {
+  display: block;
   font-size: 15px;
   font-weight: 500;
   color: var(--bo-text);
   overflow-wrap: anywhere;
 }
 .bo-row-meta {
+  display: block;
   font-size: 13.5px;
   color: var(--bo-text-soft);
   margin-top: 2px;
@@ -1625,4 +1629,301 @@ select.bo-control {
 }
 .bo-auth-problem {
   margin-bottom: var(--bo-s4);
+}
+
+/* ── Clients (A6) ───────────────────────────────────────────────────────
+   A client is an ordinary operational record, so this is rows, hairlines,
+   and facts. No card grid, no holographic material, no gradient, no
+   decorative anything. Medium-to-high density, per docs/DESIGN_CHECKLIST.
+   ───────────────────────────────────────────────────────────────────── */
+
+/* One client in the list. The two state markers sit together at the end on
+   a wide screen and drop under the name on a phone, where a row that also
+   carries a chevron would otherwise be squeezed. */
+.bo-client-row {
+  gap: var(--bo-s3) var(--bo-s4);
+}
+.bo-client-row-state {
+  gap: var(--bo-s2) var(--bo-s3);
+  flex-wrap: wrap;
+}
+.bo-client-row-go {
+  display: flex;
+  align-items: center;
+  color: var(--bo-text-faint);
+  flex-shrink: 0;
+  transition: color var(--bo-fast) var(--bo-ease), transform var(--bo-fast) var(--bo-ease);
+}
+.bo-client-row:hover .bo-client-row-go {
+  color: var(--bo-text-soft);
+  transform: translateX(2px);
+}
+/* On a phone the two state markers drop under the name, and the chevron
+   holds the right edge rather than taking a line of its own between them. */
+@media (max-width: 639px) {
+  .bo-client-row {
+    position: relative;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    padding: var(--bo-s4) var(--bo-s6) var(--bo-s4) 0;
+  }
+  .bo-client-row .bo-row-text {
+    flex: 1 1 100%;
+  }
+  .bo-client-row-state {
+    width: 100%;
+  }
+  .bo-client-row-go {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .bo-client-row:hover .bo-client-row-go {
+    transform: translateY(-50%) translateX(2px);
+  }
+}
+
+.bo-list-count {
+  margin-bottom: var(--bo-s3);
+}
+
+/* Lifecycle filters. Seven of them never fit as pills at 320px, so the
+   strip scrolls inside itself: the page never scrolls sideways, every
+   filter stays reachable, and focus is visible on each one. */
+.bo-filters {
+  margin-bottom: var(--bo-s5);
+  border-bottom: 1px solid var(--bo-border);
+}
+.bo-filter-strip {
+  display: flex;
+  gap: var(--bo-s1);
+  margin: 0;
+  padding: 0 0 var(--bo-s2);
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+.bo-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bo-s2);
+  min-height: 40px;
+  padding: 0 var(--bo-s3);
+  border-radius: var(--bo-r-md);
+  color: var(--bo-text-soft);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color var(--bo-fast) var(--bo-ease), color var(--bo-fast) var(--bo-ease);
+}
+.bo-filter:hover {
+  background: var(--bo-surface-2);
+  color: var(--bo-text);
+}
+.bo-filter[aria-current] {
+  background: var(--bo-ink);
+  color: var(--bo-text-inverse);
+}
+.bo-filter-count {
+  font-size: 12.5px;
+  color: inherit;
+  opacity: 0.7;
+}
+@media (pointer: coarse), (max-width: 767px) {
+  .bo-filter {
+    min-height: 44px;
+  }
+}
+
+/* Client detail header: back, name, and the two independent state facts. */
+.bo-client-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--bo-s4) var(--bo-s6);
+  margin-bottom: var(--bo-s5);
+}
+.bo-client-head-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bo-s2);
+  min-width: 0;
+  flex: 1 1 360px;
+}
+.bo-client-back {
+  margin: 0;
+  font-size: 13.5px;
+}
+.bo-client-back a {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 32px;
+}
+.bo-client-head-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bo-s2) var(--bo-s3);
+  margin: 0;
+}
+@media (pointer: coarse), (max-width: 767px) {
+  .bo-client-back a {
+    min-height: 44px;
+  }
+}
+
+/* The five Release A tabs. The strip scrolls inside itself on a narrow
+   screen rather than shrinking five labels into something unreadable. */
+.bo-tabs {
+  margin-bottom: var(--bo-s6);
+  border-bottom: 1px solid var(--bo-border);
+}
+.bo-tab-strip {
+  display: flex;
+  gap: var(--bo-s5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+.bo-client-tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 2px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--bo-text-soft);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--bo-fast) var(--bo-ease), border-color var(--bo-fast) var(--bo-ease);
+}
+.bo-client-tab:hover {
+  color: var(--bo-text);
+}
+.bo-client-tab[aria-current='page'] {
+  color: var(--bo-text);
+  border-bottom-color: var(--bo-ink);
+  font-weight: 600;
+}
+
+/* The primary-contact marker: a word, never a colour on its own. */
+.bo-client-primary {
+  display: inline-block;
+  margin-left: var(--bo-s2);
+  padding: 1px var(--bo-s2);
+  border: 1px solid var(--bo-border-strong);
+  border-radius: var(--bo-r-full);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bo-text-soft);
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+
+/* A row of mutually exclusive choices (client health). Buttons, so the
+   pressed one is announced and the target is a real 44px on a phone. */
+.bo-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bo-s2);
+  margin-top: var(--bo-s4);
+}
+@media (max-width: 479px) {
+  .bo-choices .bo-btn {
+    flex: 1 1 auto;
+  }
+}
+
+/* Activity: an operational timeline, not an audit log. Words, a name, and
+   a date, on the interface typeface like everything else. */
+.bo-activity {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bo-activity-row {
+  display: flex;
+  gap: var(--bo-s3);
+  padding: var(--bo-s3) 0;
+  border-bottom: 1px solid var(--bo-border);
+}
+.bo-activity-row:first-child {
+  border-top: 1px solid var(--bo-border);
+}
+.bo-activity-mark {
+  width: 7px;
+  height: 7px;
+  margin-top: 7px;
+  border-radius: var(--bo-r-full);
+  background: var(--bo-lavender);
+  flex-shrink: 0;
+}
+.bo-activity-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.bo-activity-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--bo-text);
+}
+.bo-activity-detail {
+  font-size: 14px;
+  color: var(--bo-text-soft);
+  overflow-wrap: anywhere;
+}
+.bo-activity-meta {
+  font-size: 13px;
+  color: var(--bo-text-faint);
+  overflow-wrap: anywhere;
+}
+
+/* Date fields. The inherited Leadsthatbloom stylesheet carries
+   `input[type="date"] { font: inherit }`, which is more specific than
+   `.bo-control` and drags the field down to the body's 15px. Below 16px a
+   phone browser zooms the page when the field is focused, which the design
+   checklist rules out, so BloomOps takes the size back with a selector that
+   outranks it. The inherited stylesheet is left exactly as it is; it still
+   serves the inherited application and the Pages editor. */
+.bo-control[type='date'],
+.bo-control[type='datetime-local'],
+.bo-control[type='time'] {
+  font-family: var(--bo-font-ui);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* A form outside a dialog (add a client). */
+.bo-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bo-s5);
+}
+.bo-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bo-s2);
+}
+.bo-form-actions .bo-btn {
+  flex: 0 1 auto;
+}
+@media (max-width: 479px) {
+  .bo-form-actions {
+    flex-direction: column-reverse;
+  }
+  .bo-form-actions .bo-btn {
+    width: 100%;
+  }
 }

@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `client_contacts_primary_uq` ON `client_contacts` (`client_id`) WHERE is_primary = 1;

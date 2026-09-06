@@ -64,10 +64,11 @@ test('a fresh database reaches the A2 schema from the committed migrations alone
 
 test('migrations are additive and ordered, so applying them is deterministic', () => {
   const files = migrationFiles();
-  assert.equal(files.length, 3);
+  assert.equal(files.length, 4);
   assert.match(files[0].tag, /^0000_/);
   assert.match(files[1].tag, /^0001_immutability_triggers$/);
   assert.match(files[2].tag, /^0002_a3_auth_membership$/);
+  assert.match(files[3].tag, /^0003_a6_primary_contact$/);
   for (const { url } of files) {
     const sql = readFileSync(url, 'utf8');
     assert.doesNotMatch(sql, /\bDROP\s+(TABLE|INDEX|TRIGGER)\b/i, 'Release A migrations only create');

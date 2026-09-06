@@ -282,6 +282,8 @@ test('the role matrix: every role against every representative action, allow and
     'templates.manage': [true, true, false, false, false],
     'finance.view': [true, false, false, false, false],
     'finance.edit': [true, false, false, false, false],
+    // Creating names no record: the client does not exist yet (A6).
+    'client.create': [true, true, true, false, false],
     'client.view': [true, true, true, true, true],
     'client.manage': [true, true, true, false, false],
     'service.view': [true, true, true, true, true],
@@ -291,7 +293,7 @@ test('the role matrix: every role against every representative action, allow and
   assert.deepEqual(Object.keys(cases).sort(), Object.keys(ACTIONS).sort(), 'every action is in the matrix');
   const seen = [];
   for (const [action, expected] of Object.entries(cases)) {
-    const resource = action.startsWith('client.') ? jamesClient : action.startsWith('service.') ? jamesSocial : null;
+    const resource = ACTIONS[action].resource ? (action.startsWith('client.') ? jamesClient : jamesSocial) : null;
     Object.entries(actors).forEach(([role, actor], i) => {
       const decision = evaluate(actor, { action, resource });
       seen.push(`${role} ${action}: ${describe(decision)}`);
