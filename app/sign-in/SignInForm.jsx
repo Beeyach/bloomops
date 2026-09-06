@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Button, Field, Notice, fieldAria } from '@/components/bloomops/Primitives';
 
 // Email in, magic link out. The response is the same whether or not the
 // address is known, and the copy says so: the person is told to check their
@@ -36,45 +37,39 @@ export default function SignInForm({ next = '/', buttonLabel = 'Email me a sign-
 
   if (sent) {
     return (
-      <div className="text-center" role="status">
-        <p className="text-[15px] text-ink font-medium">Check your email</p>
-        <p className="text-[13.5px] text-ink-3 mt-2 text-balance">
-          If <span className="text-ink-2">{email.trim()}</span> belongs to a BloomOps workspace, a sign-in link is on its way.
-          It works once and expires in 15 minutes.
+      <div role="status">
+        <h2 className="bo-h2" style={{ marginBottom: 8 }}>
+          Check your email
+        </h2>
+        <p className="bo-body">
+          If <span className="bo-strong">{email.trim()}</span> belongs to a BloomOps workspace, a sign-in link is on its way. It works once and expires in 15 minutes.
         </p>
-        <button
-          type="button"
-          onClick={() => { setSent(false); }}
-          className="mt-4 text-[12.5px] text-ink-2 hover:text-rose-text underline underline-offset-2"
-        >
+        <Button variant="ghost" onClick={() => setSent(false)} style={{ marginTop: 16, marginLeft: -16 }}>
           Use a different address
-        </button>
+        </Button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={submit}>
-      <label htmlFor="sign-in-email" className="block text-[12.5px] text-ink-3 mb-1.5">Email address</label>
-      <input
-        id="sign-in-email"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="you@example.com"
-        autoComplete="email"
-        autoFocus
-        required
-        className="w-full bg-input border border-line rounded-[10px] px-3 py-3 text-[15px] text-ink placeholder:text-ink-3 focus:outline-none focus:border-rose"
-      />
-      {error && <p role="alert" className="text-[13px] text-poppy-text mt-2">{error}</p>}
-      <button
-        type="submit"
-        disabled={busy || !email.trim()}
-        className="w-full mt-3 btn-bloom font-medium rounded-[10px] py-3 text-[14px] transition disabled:opacity-40"
-      >
-        {busy ? 'Sending…' : buttonLabel}
-      </button>
+    <form onSubmit={submit} className="bo-stack">
+      <Field id="sign-in-email" label="Email address">
+        <input
+          {...fieldAria({ id: 'sign-in-email' })}
+          className="bo-control"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@example.com"
+          autoComplete="email"
+          autoFocus
+          required
+        />
+      </Field>
+      {error && <Notice tone="error">{error}</Notice>}
+      <Button type="submit" variant="primary" block loading={busy}>
+        {buttonLabel}
+      </Button>
     </form>
   );
 }

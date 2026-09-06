@@ -10,7 +10,10 @@
 // the session on inherited and BloomOps routes, invite a new person, sign
 // them in through their invitation, accept it, prove the A4 fence (a Team
 // Member reaches neither the inherited prospecting routes nor the
-// prospecting home page, and holds no capabilities), suspend them, watch
+// inherited app at /legacy, and holds no capabilities) and the A5 shells
+// (the Owner and the Team Member land in the BloomOps internal shell, the
+// Owner is bounced from the portal, the Team Member gets the limited Team
+// and Finance views), suspend them, watch
 // access stop while their identity session survives, and sign out.
 //
 // Development only. It refuses any URL that is not loopback and needs the
@@ -110,7 +113,13 @@ must('the link redirects home and sets the session cookie', owner.verified.statu
   must('/api/bloomops/me shows the Owner membership', me.json?.membership?.role === 'owner' && me.json?.workspace?.slug === 'smoke-agency', JSON.stringify(me.json));
   check('the Owner holds every capability by role and may use the inherited app', JSON.stringify(me.json?.membership?.capabilities) === JSON.stringify(['members.manage', 'workspace.settings', 'templates.manage', 'finance.view', 'finance.edit']) && me.json?.membership?.legacyApp === true, JSON.stringify(me.json?.membership));
   const home = await call('/', { cookie: owner.cookie, accept: 'text/html' });
-  check('the signed-in home page renders the inherited app for the Owner', home.status === 200 && !/sign-in-email/.test(home.text) && !/Nothing here yet/.test(home.text), `status ${home.status}`);
+  check('the signed-in home page is the BloomOps internal shell for the Owner', home.status === 200 && /aria-label="Main"/.test(home.text) && /href="\/team"/.test(home.text) && !/Search prospects/.test(home.text) && !/sign-in-email/.test(home.text), `status ${home.status}`);
+  const team = await call('/team', { cookie: owner.cookie, accept: 'text/html' });
+  check('the Owner gets the Team directory with the invite action', team.status === 200 && /Invite someone/.test(team.text) && new RegExp(OWNER).test(team.text), `status ${team.status}`);
+  const legacy = await call('/legacy', { cookie: owner.cookie, accept: 'text/html' });
+  check('the inherited prospecting app still opens for the Owner at /legacy, off the navigation', legacy.status === 200 && !/aria-label="Main"/.test(legacy.text) && !/sign-in-email/.test(legacy.text), `status ${legacy.status}`);
+  const portalAsOwner = await call('/portal', { cookie: owner.cookie, accept: 'text/html' });
+  check('the Owner opening the portal is sent back to the internal app', portalAsOwner.status === 307 && /\/$/.test(portalAsOwner.headers.get('location') || ''), `status ${portalAsOwner.status} -> ${portalAsOwner.headers.get('location')}`);
   const infra = await call('/api/infra', { cookie: owner.cookie });
   check('/api/infra answers a member', infra.status === 200 && infra.json?.environment === 'development', `status ${infra.status}`);
   const pages = await call('/api/pages', { cookie: owner.cookie });
@@ -154,7 +163,13 @@ let invitationId = '';
   check('a Team Member cannot invite', invite.status === 403, `status ${invite.status}`);
   check('a Team Member cannot reach the inherited prospecting routes', (await call('/api/pages', { cookie: inviteeCookie })).status === 401 && (await call('/api/prospects', { cookie: inviteeCookie })).status === 401 && (await call('/api/settings', { cookie: inviteeCookie })).status === 401);
   const teamHome = await call('/', { cookie: inviteeCookie, accept: 'text/html' });
-  check('a Team Member sees the holding screen, not the prospecting app', teamHome.status === 200 && /Nothing here yet/.test(teamHome.text) && !/Search prospects/.test(teamHome.text), `status ${teamHome.status}`);
+  check('a Team Member lands in the BloomOps internal shell, not the prospecting app', teamHome.status === 200 && /aria-label="Main"/.test(teamHome.text) && /Smoke Agency/.test(teamHome.text) && !/Search prospects/.test(teamHome.text) && !/Nothing here yet/.test(teamHome.text), `status ${teamHome.status}`);
+  const teamPage = await call('/team', { cookie: inviteeCookie, accept: 'text/html' });
+  check('a Team Member gets the limited Team view without the directory', teamPage.status === 200 && /Your place in/.test(teamPage.text) && !/Invite someone/.test(teamPage.text) && !new RegExp(OWNER).test(teamPage.text), `status ${teamPage.status}`);
+  const financePage = await call('/finance', { cookie: inviteeCookie, accept: 'text/html' });
+  check('a Team Member sees Finance as not open to them', financePage.status === 200 && /not open to you/.test(financePage.text) && !/Renewals/.test(financePage.text), `status ${financePage.status}`);
+  const legacyDenied = await call('/legacy', { cookie: inviteeCookie, accept: 'text/html' });
+  check('a Team Member cannot open the inherited prospecting app', legacyDenied.status === 404, `status ${legacyDenied.status}`);
   check('the Owner still reaches the inherited routes', (await call('/api/prospects', { cookie: owner.cookie })).status === 200);
   check('the resend of an accepted invitation is refused', (await call(`/api/bloomops/invitations/${invitationId}/resend`, { method: 'POST', cookie: owner.cookie })).status === 409);
 }

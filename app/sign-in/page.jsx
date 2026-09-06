@@ -2,11 +2,12 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import AuthShell from '@/components/auth/AuthShell';
 import { getAccessOrProblem } from '@/lib/bloomops/access.mjs';
+import { Notice } from '@/components/bloomops/Primitives';
 import SignInForm from './SignInForm';
 import SignOutButton from './SignOutButton';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Sign in · BloomOps' };
+export const metadata = { title: 'Sign in' };
 
 // Only a same-origin path may be resumed after sign-in.
 function safeNext(raw) {
@@ -52,10 +53,10 @@ export default async function SignInPage({ searchParams }) {
         title="No workspace access"
         lead={`You are signed in as ${access.user.email}, but this account is not an active member of a BloomOps workspace.`}
       >
-        <p className="text-[13.5px] text-ink-3 text-balance mb-4">
+        <p className="bo-body" style={{ marginBottom: 16 }}>
           If you were invited, open the link in your invitation email. If your access was paused, ask your workspace Owner or Admin.
         </p>
-        <SignOutButton />
+        <SignOutButton block />
       </AuthShell>
     );
   }
@@ -66,7 +67,11 @@ export default async function SignInPage({ searchParams }) {
       lead="Enter your email and we will send you a link. No password needed."
       footer="BloomOps is invitation-only. If you do not have access yet, ask the agency that works with you."
     >
-      {problem && <p role="alert" className="text-[13px] text-poppy-text mb-3 text-balance">{problem}</p>}
+      {problem && (
+        <Notice tone="error" className="bo-auth-problem">
+          {problem}
+        </Notice>
+      )}
       <SignInForm next={next} />
     </AuthShell>
   );

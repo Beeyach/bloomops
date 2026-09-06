@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Button, Notice } from '@/components/bloomops/Primitives';
 
 export default function AcceptInvitation({ token, workspaceName, roleLabel }) {
   const [busy, setBusy] = useState(false);
@@ -26,19 +27,14 @@ export default function AcceptInvitation({ token, workspaceName, roleLabel }) {
   }
 
   return (
-    <div className="text-center">
-      <p className="text-[14px] text-ink-2 text-balance">
-        You have been invited to join <span className="text-ink font-medium">{workspaceName}</span> as {roleLabel}.
+    <div className="bo-stack">
+      <p className="bo-body">
+        You have been invited to join <span className="bo-strong">{workspaceName}</span> as {roleLabel}.
       </p>
-      {error && <p role="alert" className="text-[13px] text-poppy-text mt-3">{error}</p>}
-      <button
-        type="button"
-        onClick={accept}
-        disabled={busy}
-        className="w-full mt-4 btn-bloom font-medium rounded-[10px] py-3 text-[14px] transition disabled:opacity-40"
-      >
-        {busy ? 'Joining…' : 'Accept and continue'}
-      </button>
+      {error && <Notice tone="error">{error}</Notice>}
+      <Button variant="primary" block loading={busy} onClick={accept}>
+        Accept and continue
+      </Button>
     </div>
   );
 }

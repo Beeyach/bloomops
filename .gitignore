@@ -25,3 +25,6 @@ all-emailed-prospects.csv
 ellen-coaches.csv
 done-coaches.csv
 coaches.json
+
+# Screenshots from scripts/shell-review-local.mjs. Review evidence, never source.
+review-shots/
