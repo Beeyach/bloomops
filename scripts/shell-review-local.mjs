@@ -116,8 +116,28 @@ const seed = [
   ...person('u_review_client2', PEOPLE.clientUnlinked, 'Dana Newclient', 'client'),
   `INSERT INTO bloomops_clients (id, workspace_id, name, slug, relationship_status) SELECT 'c_review_james', ${ws}, 'James Carter Coaching', 'james-carter-coaching', 'active' WHERE NOT EXISTS (SELECT 1 FROM bloomops_clients WHERE id = 'c_review_james');`,
   `INSERT INTO client_contacts (id, workspace_id, client_id, name, email, user_id, is_primary) SELECT 'cc_review_james', ${ws}, 'c_review_james', 'James Carter', ${lit(PEOPLE.clientLinked)}, (SELECT id FROM user WHERE email = ${lit(PEOPLE.clientLinked)}), 1 WHERE NOT EXISTS (SELECT 1 FROM client_contacts WHERE id = 'cc_review_james');`,
+  // A6 review states. Local disposable data only: no BloomOps screen ever
+  // renders a sample client, and staging is never seeded with any of this.
+  `INSERT INTO client_contacts (id, workspace_id, client_id, name, email, phone, title, is_primary) SELECT 'cc_review_james_2', ${ws}, 'c_review_james', 'Priya Raman', 'priya@example.com', '+61 2 5550 0100', 'Marketing manager', 0 WHERE NOT EXISTS (SELECT 1 FROM client_contacts WHERE id = 'cc_review_james_2');`,
+  `INSERT INTO bloomops_clients (id, workspace_id, name, slug, relationship_status, health, website, timezone, start_date, owner_membership_id) SELECT 'c_review_lawrence', ${ws}, 'Lawrence Physiotherapy', 'lawrence-physiotherapy', 'onboarding', 'needs_attention', 'https://lawrence.example', 'Australia/Sydney', '2026-08-14', (SELECT id FROM workspace_memberships WHERE workspace_id = ${ws} AND user_id = (SELECT id FROM user WHERE email = ${lit(PEOPLE.pm)})) WHERE NOT EXISTS (SELECT 1 FROM bloomops_clients WHERE id = 'c_review_lawrence');`,
+  `INSERT INTO client_contacts (id, workspace_id, client_id, name, email, title, is_primary) SELECT 'cc_review_lawrence', ${ws}, 'c_review_lawrence', 'Lawrence Achebe-Fitzwilliam', 'lawrence.achebe.fitzwilliam@lawrencephysiotherapyandrehabilitation.example', 'Practice principal', 1 WHERE NOT EXISTS (SELECT 1 FROM client_contacts WHERE id = 'cc_review_lawrence');`,
+  `INSERT INTO bloomops_clients (id, workspace_id, name, slug, relationship_status, health) SELECT 'c_review_draft', ${ws}, 'Vela', 'vela', 'draft', 'on_track' WHERE NOT EXISTS (SELECT 1 FROM bloomops_clients WHERE id = 'c_review_draft');`,
+  `INSERT INTO bloomops_clients (id, workspace_id, name, slug, relationship_status, health) SELECT 'c_review_paused', ${ws}, 'Harbour & Co Physiotherapy and Rehabilitation Group', 'harbour-co', 'paused', 'at_risk' WHERE NOT EXISTS (SELECT 1 FROM bloomops_clients WHERE id = 'c_review_paused');`,
+  `INSERT INTO bloomops_clients (id, workspace_id, name, slug, relationship_status, health) SELECT 'c_review_ended', ${ws}, 'Northwind Studio', 'northwind-studio', 'ended', 'on_track' WHERE NOT EXISTS (SELECT 1 FROM bloomops_clients WHERE id = 'c_review_ended');`,
+  // The Team Member is assigned to one client, so their scoped list has
+  // something in it and every other client stays out of reach.
+  `INSERT INTO client_assignments (workspace_id, client_id, membership_id, assignment_role) SELECT ${ws}, 'c_review_james', (SELECT id FROM workspace_memberships WHERE workspace_id = ${ws} AND user_id = (SELECT id FROM user WHERE email = ${lit(PEOPLE.tm)})), 'member' WHERE NOT EXISTS (SELECT 1 FROM client_assignments WHERE client_id = 'c_review_james' AND membership_id = (SELECT id FROM workspace_memberships WHERE workspace_id = ${ws} AND user_id = (SELECT id FROM user WHERE email = ${lit(PEOPLE.tm)})));`,
+  // Some history to render on the Activity tab.
+  `INSERT INTO activity_events (id, workspace_id, event_type, subject_type, subject_id, client_id, actor_membership_id, metadata_json, occurred_at) SELECT 'ae_review_1', ${ws}, 'CLIENT_CREATED', 'client', 'c_review_lawrence', 'c_review_lawrence', (SELECT id FROM workspace_memberships WHERE workspace_id = ${ws} AND user_id = (SELECT id FROM user WHERE email = ${lit(PEOPLE.owner)})), '{"name":"Lawrence Physiotherapy"}', '2026-08-14T09:00:00.000Z' WHERE NOT EXISTS (SELECT 1 FROM activity_events WHERE id = 'ae_review_1');`,
+  `INSERT INTO activity_events (id, workspace_id, event_type, subject_type, subject_id, client_id, actor_membership_id, metadata_json, occurred_at) SELECT 'ae_review_2', ${ws}, 'CLIENT_OWNER_CHANGED', 'client', 'c_review_lawrence', 'c_review_lawrence', (SELECT id FROM workspace_memberships WHERE workspace_id = ${ws} AND user_id = (SELECT id FROM user WHERE email = ${lit(PEOPLE.owner)})), '{"from":null,"to":"x","fromName":null,"toName":"Priya Manager"}', '2026-08-20T11:30:00.000Z' WHERE NOT EXISTS (SELECT 1 FROM activity_events WHERE id = 'ae_review_2');`,
+  `INSERT INTO activity_events (id, workspace_id, event_type, subject_type, subject_id, client_id, actor_membership_id, metadata_json, occurred_at) SELECT 'ae_review_3', ${ws}, 'CLIENT_HEALTH_CHANGED', 'client', 'c_review_lawrence', 'c_review_lawrence', (SELECT id FROM workspace_memberships WHERE workspace_id = ${ws} AND user_id = (SELECT id FROM user WHERE email = ${lit(PEOPLE.pm)})), '{"from":"on_track","to":"needs_attention"}', '2026-09-01T15:05:00.000Z' WHERE NOT EXISTS (SELECT 1 FROM activity_events WHERE id = 'ae_review_3');`,
+  `INSERT INTO activity_events (id, workspace_id, event_type, subject_type, subject_id, client_id, actor_membership_id, metadata_json, occurred_at) SELECT 'ae_review_4', ${ws}, 'CLIENT_CONTACT_ADDED', 'client_contact', 'cc_review_lawrence', 'c_review_lawrence', (SELECT id FROM workspace_memberships WHERE workspace_id = ${ws} AND user_id = (SELECT id FROM user WHERE email = ${lit(PEOPLE.pm)})), '{"name":"Lawrence Achebe-Fitzwilliam"}', '2026-09-02T08:15:00.000Z' WHERE NOT EXISTS (SELECT 1 FROM activity_events WHERE id = 'ae_review_4');`,
 ];
 sql(seed.join(' '));
+// The primary marker is the point of the contact fixture, so it is set
+// after the inserts rather than left to them. Idempotent, and the partial
+// unique index still holds: one primary per client.
+sql("UPDATE client_contacts SET is_primary = 0 WHERE client_id = 'c_review_lawrence'; UPDATE client_contacts SET is_primary = 1 WHERE id = 'cc_review_lawrence';");
 console.log('seeded review people in the local D1');
 
 // ── sessions through the real magic-link flow ───────────────────────────
@@ -201,6 +221,21 @@ async function checks(page, name, width) {
   return m;
 }
 
+async function openDialog(page, name) {
+  const button = page.getByRole('button', { name }).first();
+  await button.waitFor();
+  const dialog = page.getByRole('dialog');
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    if (await dialog.count()) break;
+    await button.click().catch(() => {});
+    try {
+      await dialog.waitFor({ timeout: 2500 });
+      break;
+    } catch {}
+  }
+  await dialog.waitFor();
+}
+
 async function capture(context, name, path, width, { before = null, fullPage = true } = {}) {
   const page = await context.newPage();
   const response = await page.goto(base + path, { waitUntil: 'networkidle' });
@@ -236,6 +271,17 @@ for (const width of WIDTHS) {
     [tm, 'home-team-member', '/'],
     [tm, 'team-team-member', '/team'],
     [tm, 'clients-team-member', '/clients'],
+    // A6
+    [owner, 'clients-list-owner', '/clients'],
+    [owner, 'clients-filtered-owner', '/clients?status=onboarding'],
+    [owner, 'clients-new-owner', '/clients/new'],
+    [owner, 'client-overview-owner', '/clients/c_review_lawrence'],
+    [owner, 'client-services-owner', '/clients/c_review_lawrence?tab=services'],
+    [owner, 'client-onboarding-owner', '/clients/c_review_lawrence?tab=onboarding'],
+    [owner, 'client-team-owner', '/clients/c_review_lawrence?tab=team'],
+    [owner, 'client-activity-owner', '/clients/c_review_lawrence?tab=activity'],
+    [owner, 'client-long-names-owner', '/clients/c_review_paused'],
+    [tm, 'client-overview-team-member', '/clients/c_review_james'],
     [pm, 'finance-project-manager', '/finance'],
     [clientLinked, 'portal-linked', '/portal'],
     [clientUnlinked, 'portal-unlinked', '/portal'],
@@ -247,14 +293,19 @@ for (const width of WIDTHS) {
 
   // Interaction states.
   summary.push({ name: 'account-menu-owner', width, ...(await capture(owner, 'account-menu-owner', '/', width, { before: async (page) => { await page.locator('.bo-account-btn:visible').first().click(); await page.locator('[role="menu"]').waitFor(); }, fullPage: false })) });
-  summary.push({ name: 'invite-dialog-owner', width, ...(await capture(owner, 'invite-dialog-owner', '/team', width, { before: async (page) => { await page.getByRole('button', { name: 'Invite someone' }).click(); await page.getByRole('dialog').waitFor(); }, fullPage: false })) });
-  summary.push({ name: 'invite-invalid-owner', width, ...(await capture(owner, 'invite-invalid-owner', '/team', width, { before: async (page) => { await page.getByRole('button', { name: 'Invite someone' }).click(); await page.getByRole('dialog').waitFor(); await page.locator('#invite-email').fill('not-an-address'); await page.getByRole('button', { name: 'Send invitation' }).click(); await page.locator('#invite-email-error').waitFor(); }, fullPage: false })) });
-  summary.push({ name: 'remove-confirm-owner', width, ...(await capture(owner, 'remove-confirm-owner', '/team', width, { before: async (page) => { await page.getByRole('button', { name: /^Remove / }).first().click(); await page.getByRole('dialog').waitFor(); }, fullPage: false })) });
+  summary.push({ name: 'invite-dialog-owner', width, ...(await capture(owner, 'invite-dialog-owner', '/team', width, { before: async (page) => { await openDialog(page, 'Invite someone'); }, fullPage: false })) });
+  summary.push({ name: 'invite-invalid-owner', width, ...(await capture(owner, 'invite-invalid-owner', '/team', width, { before: async (page) => { await openDialog(page, 'Invite someone'); await page.locator('#invite-email').fill('not-an-address'); await page.getByRole('button', { name: 'Send invitation' }).click(); await page.locator('#invite-email-error').waitFor(); }, fullPage: false })) });
+  summary.push({ name: 'remove-confirm-owner', width, ...(await capture(owner, 'remove-confirm-owner', '/team', width, { before: async (page) => { await openDialog(page, /^Remove /); }, fullPage: false })) });
   // A real toast: resending the open invitation (local mailbox only) shows
   // the confirmation, so the dismiss target is measured like any other.
   summary.push({ name: 'toast-owner', width, ...(await capture(owner, 'toast-owner', '/team', width, { before: async (page) => { await page.getByRole('button', { name: /^Resend the invitation/ }).first().click(); await page.locator('.bo-toast').waitFor(); }, fullPage: false })) });
+  summary.push({ name: 'client-create-invalid', width, ...(await capture(owner, 'client-create-invalid', '/clients/new', width, { before: async (page) => { const submit = page.getByRole('button', { name: 'Add client' }); await submit.waitFor(); for (let a = 0; a < 4; a += 1) { if (await page.locator('#client-name-error').count()) break; await submit.click().catch(() => {}); try { await page.locator('#client-name-error').waitFor({ timeout: 2500 }); break; } catch {} } await page.locator('#client-name-error').waitFor(); } })) });
+  summary.push({ name: 'client-edit-dialog', width, ...(await capture(owner, 'client-edit-dialog', '/clients/c_review_lawrence', width, { before: async (page) => { await openDialog(page, 'Edit details'); }, fullPage: false })) });
+  summary.push({ name: 'client-contact-dialog', width, ...(await capture(owner, 'client-contact-dialog', '/clients/c_review_lawrence', width, { before: async (page) => { await openDialog(page, 'Add contact'); }, fullPage: false })) });
+  summary.push({ name: 'client-contact-remove-confirm', width, ...(await capture(owner, 'client-contact-remove-confirm', '/clients/c_review_lawrence', width, { before: async (page) => { await openDialog(page, /^Remove /); }, fullPage: false })) });
+
   if (width < 768) {
-    summary.push({ name: 'more-sheet-owner', width, ...(await capture(owner, 'more-sheet-owner', '/', width, { before: async (page) => { await page.getByRole('button', { name: 'More' }).click(); await page.getByRole('dialog').waitFor(); }, fullPage: false })) });
+    summary.push({ name: 'more-sheet-owner', width, ...(await capture(owner, 'more-sheet-owner', '/', width, { before: async (page) => { await openDialog(page, 'More'); }, fullPage: false })) });
     summary.push({ name: 'portal-account-menu', width, ...(await capture(clientLinked, 'portal-account-menu', '/portal', width, { before: async (page) => { await page.locator('.bo-account-btn:visible').first().click(); await page.locator('[role="menu"]').waitFor(); }, fullPage: false })) });
   }
 
@@ -263,7 +314,20 @@ for (const width of WIDTHS) {
   const clientPage = await clientLinked.newPage();
   await clientPage.goto(`${base}/team`, { waitUntil: 'networkidle' });
   record(`client deep-linking /team lands on the portal @${width}`, new URL(clientPage.url()).pathname === '/portal' && (await clientPage.locator('nav').count()) === 0, clientPage.url());
+  // A6: their own client's internal screen is not theirs either.
+  await clientPage.goto(`${base}/clients/c_review_james`, { waitUntil: 'networkidle' });
+  const clientBody = await clientPage.evaluate(() => document.body.innerText);
+  record(`client deep-linking their own client detail lands on the portal @${width}`, new URL(clientPage.url()).pathname === '/portal' && !/Needs Attention|Internal owner|Activity/.test(clientBody), clientPage.url());
   await clientPage.close();
+  // A6: an assigned Team Member reads their client and is offered nothing
+  // to change; an unassigned one does not find it at all.
+  const tmClientPage = await tm.newPage();
+  await tmClientPage.goto(`${base}/clients/c_review_james`, { waitUntil: 'networkidle' });
+  const tmControls = await tmClientPage.evaluate(() => [...document.querySelectorAll('button')].map((b) => (b.textContent || '').trim()));
+  record(`assigned Team Member reads their client with no controls @${width}`, /James Carter Coaching/.test(await tmClientPage.evaluate(() => document.body.innerText)) && !tmControls.some((t) => /Edit details|Add contact|Make primary|Remove/.test(t)), tmControls.join('|').slice(0, 80));
+  const tmMiss = await tmClientPage.goto(`${base}/clients/c_review_lawrence`, { waitUntil: 'networkidle' });
+  record(`unassigned client is not found for a Team Member @${width}`, tmMiss?.status() === 404, `status ${tmMiss?.status()}`);
+  await tmClientPage.close();
   const ownerPage = await owner.newPage();
   await ownerPage.goto(`${base}/portal`, { waitUntil: 'networkidle' });
   record(`Owner opening /portal is sent to internal Home @${width}`, new URL(ownerPage.url()).pathname === '/' && (await ownerPage.locator('nav[aria-label="Main"]').count()) > 0, ownerPage.url());

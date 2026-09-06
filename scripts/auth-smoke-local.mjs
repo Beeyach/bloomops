@@ -39,6 +39,11 @@ if (!['localhost', '127.0.0.1', '[::1]'].includes(host)) {
 const OWNER = 'smoke-owner@example.com';
 const ADMIN = 'smoke-admin@example.com';
 const INVITEE = `smoke-invitee-${randomBytes(3).toString('hex')}@example.com`;
+const PORTAL_CLIENT = `smoke-portal-${randomBytes(3).toString('hex')}@example.com`;
+const CLIENT_NAME = `Smoke Client ${randomBytes(2).toString('hex')}`;
+const CLIENT_CONTACT = `smoke-contact-${randomBytes(3).toString('hex')}@example.com`;
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 let failures = 0;
 function check(name, ok, detail = '') {
@@ -58,7 +63,20 @@ async function call(path, { method = 'GET', body = null, cookie = '', accept = '
   if (cookie) headers.cookie = cookie;
   if (method !== 'GET') headers.origin = origin;
   if (body !== null) headers['content-type'] = 'application/json';
-  const res = await fetch(base + path, { method, headers, body: body === null ? undefined : JSON.stringify(body), redirect: 'manual' });
+  // wrangler's local server closes idle keep-alive sockets, and undici will
+  // not replay a POST on one it finds closed. That is a transport hiccup
+  // between this script and the dev server, not an answer from the Worker,
+  // so the request is sent again on a fresh connection.
+  let res = null;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      res = await fetch(base + path, { method, headers, body: body === null ? undefined : JSON.stringify(body), redirect: 'manual' });
+      break;
+    } catch (err) {
+      if (err?.cause?.code !== 'UND_ERR_SOCKET' || attempt === 2) throw err;
+      await sleep(250);
+    }
+  }
   const text = await res.text();
   let json = null;
   try { json = JSON.parse(text); } catch {}
@@ -71,6 +89,17 @@ function wrangler(args) {
   return execFileSync('npx', ['--no-install', 'wrangler', ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, WRANGLER_SEND_METRICS: 'false' } });
 }
 
+// Local D1 only, for the two things HTTP cannot do: seed a role the smoke
+// needs (a Client membership) and read back what a route actually wrote.
+function sql(command) {
+  const out = wrangler(['d1', 'execute', 'DB', '--local', '--json', '--command', command]);
+  const parsed = JSON.parse(out.slice(out.indexOf('[')));
+  return parsed[0]?.results || [];
+}
+const sqlOne = (command) => sql(command)[0] || null;
+const countRows = (table, where = '1=1') => Number(sqlOne(`SELECT COUNT(*) AS n FROM ${table} WHERE ${where}`)?.n || 0);
+const lit = (v) => `'${String(v).replace(/'/g, "''")}'`;
+
 // The development transport writes dev-mail/<sha256(recipient)>.json into
 // the local bucket. Overwritten on every send, so read it after the request.
 function readDevMail(recipient) {
@@ -81,12 +110,28 @@ function readDevMail(recipient) {
 }
 
 async function signIn(email, { next = '/' } = {}) {
-  const req = await call('/api/auth/sign-in/magic-link', { method: 'POST', body: { email, callbackURL: next, newUserCallbackURL: next, errorCallbackURL: '/sign-in' } });
+  let req = null;
+  // Better Auth limits magic-link requests per minute. Several people sign
+  // in during one smoke run, so a 429 is expected and waited out.
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    req = await call('/api/auth/sign-in/magic-link', { method: 'POST', body: { email, callbackURL: next, newUserCallbackURL: next, errorCallbackURL: '/sign-in' } });
+    if (req.status !== 429) break;
+    console.log(`     magic link for ${email} was rate limited; waiting 15s`);
+    await sleep(15000);
+  }
   must(`magic link requested for ${email}`, req.status === 200 && req.json?.status === true, `status ${req.status}`);
   const mail = readDevMail(email);
   const link = mail.text.match(/https?:\/\/\S+/)[0];
   must('the link points at this Worker', link.startsWith(`${base}/api/auth/magic-link/verify?token=`), link.split('?')[0]);
-  const verified = await call(link.slice(base.length), { accept: 'text/html' });
+  // The verify hop meets the same limiter, and losing the link to a 429
+  // would waste the one-time token, so it waits too.
+  let verified = null;
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    verified = await call(link.slice(base.length), { accept: 'text/html' });
+    if (verified.status !== 429) break;
+    console.log(`     verifying the link for ${email} was rate limited; waiting 15s`);
+    await sleep(15000);
+  }
   return { verified, link, cookie: verified.cookies };
 }
 
@@ -172,6 +217,103 @@ let invitationId = '';
   check('a Team Member cannot open the inherited prospecting app', legacyDenied.status === 404, `status ${legacyDenied.status}`);
   check('the Owner still reaches the inherited routes', (await call('/api/prospects', { cookie: owner.cookie })).status === 200);
   check('the resend of an accepted invitation is refused', (await call(`/api/bloomops/invitations/${invitationId}/resend`, { method: 'POST', cookie: owner.cookie })).status === 409);
+}
+
+// 3.5 Clients (A6): the real domain through the real routes.
+{
+  const empty = await call('/clients', { cookie: owner.cookie, accept: 'text/html' });
+  check('the Owner opens the Clients area with a way to add one', empty.status === 200 && /Add client/.test(empty.text) && /aria-label="Main"/.test(empty.text), `status ${empty.status}`);
+  const form = await call('/clients/new', { cookie: owner.cookie, accept: 'text/html' });
+  check('the create form renders with its real fields', form.status === 200 && /Client or company name/.test(form.text) && /Primary contact email/.test(form.text) && /Internal owner/.test(form.text), `status ${form.status}`);
+
+  const invitationsBefore = countRows('workspace_invitations');
+  const membershipsBefore = countRows('workspace_memberships');
+  const usersBefore = countRows('user');
+
+  const created = await call('/api/bloomops/clients', {
+    method: 'POST',
+    cookie: owner.cookie,
+    body: { name: CLIENT_NAME, contactName: 'Smoke Contact', contactEmail: CLIENT_CONTACT, website: 'smoke-client.example', timezone: 'Australia/Sydney', startDate: '2026-03-02', relationshipStatus: 'active' },
+  });
+  must('the Owner creates a client', created.status === 201 && created.json?.client?.id, `status ${created.status} ${created.text.slice(0, 200)}`);
+  const clientId = created.json.client.id;
+
+  const row = sqlOne(`SELECT relationship_status, health, website, timezone, start_date, workspace_id FROM bloomops_clients WHERE id = ${lit(clientId)}`);
+  check('a new client is Draft and On Track, whatever the request asked for', row?.relationship_status === 'draft' && row?.health === 'on_track', JSON.stringify(row));
+  check('the website is normalised and the time zone kept', row?.website === 'https://smoke-client.example' && row?.timezone === 'Australia/Sydney' && row?.start_date === '2026-03-02', JSON.stringify(row));
+
+  const contacts = sql(`SELECT name, email, is_primary, user_id FROM client_contacts WHERE client_id = ${lit(clientId)}`);
+  check('the primary contact was created with the client', contacts.length === 1 && contacts[0].is_primary === 1 && contacts[0].email === CLIENT_CONTACT, JSON.stringify(contacts));
+  check('and the portal link was not written', contacts[0]?.user_id === null, JSON.stringify(contacts[0]));
+  check('creating a client invited nobody', countRows('workspace_invitations') === invitationsBefore && countRows('workspace_memberships') === membershipsBefore && countRows('user') === usersBefore, `${countRows('workspace_invitations')}/${invitationsBefore} invitations`);
+  check('and CLIENT_CREATED is the only history so far', JSON.stringify(sql(`SELECT event_type FROM activity_events WHERE client_id = ${lit(clientId)} ORDER BY rowid`).map((r) => r.event_type)) === '["CLIENT_CREATED"]');
+
+  const list = await call('/clients', { cookie: owner.cookie, accept: 'text/html' });
+  check('the client appears in the list with both state markers', list.status === 200 && list.text.includes(CLIENT_NAME) && /Draft/.test(list.text) && /On Track/.test(list.text), `status ${list.status}`);
+  const filtered = await call('/clients?status=active', { cookie: owner.cookie, accept: 'text/html' });
+  check('a lifecycle filter that excludes it hides it', filtered.status === 200 && !filtered.text.includes(CLIENT_NAME), `status ${filtered.status}`);
+
+  const detail = await call(`/clients/${clientId}`, { cookie: owner.cookie, accept: 'text/html' });
+  check('the client detail renders with the five Release A tabs', detail.status === 200 && detail.text.includes(CLIENT_NAME) && /Overview/.test(detail.text) && /Services/.test(detail.text) && /Onboarding/.test(detail.text) && /Team/.test(detail.text) && /Activity/.test(detail.text), `status ${detail.status}`);
+  check('and offers no activation control', !/Activate/.test(detail.text));
+
+  const health = await call(`/api/bloomops/clients/${clientId}`, { method: 'PATCH', cookie: owner.cookie, body: { health: 'needs_attention' } });
+  check('the Owner changes the health', health.status === 200, `status ${health.status} ${health.text.slice(0, 160)}`);
+  const afterHealth = sqlOne(`SELECT relationship_status, health FROM bloomops_clients WHERE id = ${lit(clientId)}`);
+  check('and the lifecycle is untouched by it', afterHealth?.health === 'needs_attention' && afterHealth?.relationship_status === 'draft', JSON.stringify(afterHealth));
+  const lifecycle = await call(`/api/bloomops/clients/${clientId}`, { method: 'PATCH', cookie: owner.cookie, body: { relationshipStatus: 'active' } });
+  check('the lifecycle cannot be written here: activation is a later phase', lifecycle.status === 400 && lifecycle.json?.reason === 'status_not_editable', `status ${lifecycle.status}`);
+
+  const second = await call(`/api/bloomops/clients/${clientId}/contacts`, { method: 'POST', cookie: owner.cookie, body: { name: 'Second Contact', email: `second-${randomBytes(3).toString('hex')}@example.com`, title: 'Operations' } });
+  must('the Owner adds a second contact', second.status === 201, `status ${second.status} ${second.text.slice(0, 160)}`);
+  const promoted = await call(`/api/bloomops/clients/${clientId}/contacts/${second.json.contact.id}`, { method: 'PATCH', cookie: owner.cookie, body: { isPrimary: true } });
+  check('and makes them primary', promoted.status === 200, `status ${promoted.status}`);
+  const primaries = sql(`SELECT id FROM client_contacts WHERE client_id = ${lit(clientId)} AND is_primary = 1`);
+  check('exactly one contact is primary, in the database', primaries.length === 1 && primaries[0].id === second.json.contact.id, JSON.stringify(primaries));
+  const duplicate = await call(`/api/bloomops/clients/${clientId}/contacts`, { method: 'POST', cookie: owner.cookie, body: { name: 'Duplicate', email: CLIENT_CONTACT } });
+  check('one address per client is refused clearly', duplicate.status === 409 && duplicate.json?.reason === 'duplicate_email', `status ${duplicate.status}`);
+
+  const activity = await call(`/clients/${clientId}?tab=activity`, { cookie: owner.cookie, accept: 'text/html' });
+  check('the Activity tab shows real history in words', activity.status === 200 && /Client created/.test(activity.text) && /Health changed/.test(activity.text) && /From On Track to Needs Attention/.test(activity.text) && /Primary contact changed/.test(activity.text), `status ${activity.status}`);
+  check('and no event code, id, or metadata reaches the page', !/CLIENT_HEALTH_CHANGED|metadata_json/.test(activity.text));
+
+  const crossSite = await call(`/api/bloomops/clients/${clientId}`, { method: 'PATCH', cookie: owner.cookie, body: { name: 'Hijacked' }, origin: 'https://evil.example' });
+  check('a cross-site write to a client is refused', crossSite.status === 403 && crossSite.json?.error === 'Cross-site request refused.', `status ${crossSite.status}`);
+  check('and the client was not renamed', sqlOne(`SELECT name FROM bloomops_clients WHERE id = ${lit(clientId)}`)?.name === CLIENT_NAME);
+
+  // A Team Member with no assignment: an empty list, a leak-safe detail,
+  // and no way to create.
+  const tmList = await call('/clients', { cookie: inviteeCookie, accept: 'text/html' });
+  check('an unassigned Team Member sees no clients and no create control', tmList.status === 200 && !tmList.text.includes(CLIENT_NAME) && /No clients are assigned to you/.test(tmList.text) && !/Add client/.test(tmList.text), `status ${tmList.status}`);
+  const tmDetail = await call(`/clients/${clientId}`, { cookie: inviteeCookie, accept: 'text/html' });
+  check('and the client they are not assigned to is not found', tmDetail.status === 404, `status ${tmDetail.status}`);
+  const tmCreate = await call('/api/bloomops/clients', { method: 'POST', cookie: inviteeCookie, body: { name: 'Nope', contactName: 'Nope', contactEmail: 'nope@example.com' } });
+  check('a Team Member cannot create a client', tmCreate.status === 403 && !('reason' in (tmCreate.json || {})), `status ${tmCreate.status}`);
+  const tmForm = await call('/clients/new', { cookie: inviteeCookie, accept: 'text/html' });
+  check('and the create form does not exist for them', tmForm.status === 404, `status ${tmForm.status}`);
+
+  // A Client membership, linked to this very client: the portal is theirs,
+  // the internal Clients area is not.
+  const workspaceId = row.workspace_id;
+  const portalUserId = `u_smoke_portal_${randomBytes(4).toString('hex')}`;
+  sql([
+    `INSERT INTO user (id, name, email, email_verified) VALUES (${lit(portalUserId)}, 'Smoke Portal Client', ${lit(PORTAL_CLIENT)}, 1);`,
+    `INSERT INTO workspace_memberships (id, workspace_id, user_id, role, status, joined_at) VALUES (${lit(`m_${portalUserId}`)}, ${lit(workspaceId)}, ${lit(portalUserId)}, 'client', 'active', '2026-09-01T09:00:00.000Z');`,
+    `UPDATE client_contacts SET user_id = ${lit(portalUserId)} WHERE client_id = ${lit(clientId)} AND email = ${lit(CLIENT_CONTACT)};`,
+  ].join(' '));
+  const portalPerson = await signIn(PORTAL_CLIENT, { next: '/portal' });
+  must('the linked Client signs in', Boolean(portalPerson.cookie), `status ${portalPerson.verified.status}`);
+  const clientArea = await call('/clients', { cookie: portalPerson.cookie, accept: 'text/html' });
+  check('a Client opening the internal Clients area is sent to their portal', clientArea.status === 307 && /\/portal$/.test(clientArea.headers.get('location') || ''), `status ${clientArea.status} -> ${clientArea.headers.get('location')}`);
+  const clientDetail = await call(`/clients/${clientId}`, { cookie: portalPerson.cookie, accept: 'text/html' });
+  check('and their own client’s internal detail is a redirect away from it too', clientDetail.status === 307, `status ${clientDetail.status}`);
+  const clientApi = await call(`/api/bloomops/clients/${clientId}`, { method: 'PATCH', cookie: portalPerson.cookie, body: { health: 'at_risk' } });
+  check('a Client calling the internal client API directly is answered as if it did not exist', clientApi.status === 404 && clientApi.json?.error === 'Not found.', `status ${clientApi.status} ${clientApi.text.slice(0, 120)}`);
+  const clientContactApi = await call(`/api/bloomops/clients/${clientId}/contacts`, { method: 'POST', cookie: portalPerson.cookie, body: { name: 'Sneak' } });
+  check('and cannot add a contact to their own client either', clientContactApi.status === 404, `status ${clientContactApi.status}`);
+  check('nothing they tried changed anything', sqlOne(`SELECT health FROM bloomops_clients WHERE id = ${lit(clientId)}`)?.health === 'needs_attention' && countRows('client_contacts', `client_id = ${lit(clientId)}`) === 2);
+  const portalHome = await call('/portal', { cookie: portalPerson.cookie, accept: 'text/html' });
+  check('their portal still opens and carries no internal chrome', portalHome.status === 200 && !/aria-label="Main"/.test(portalHome.text) && !/Needs Attention/.test(portalHome.text), `status ${portalHome.status}`);
 }
 
 // 4. Suspend: identity survives, access stops.
