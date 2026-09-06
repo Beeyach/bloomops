@@ -1,17 +1,21 @@
 import './globals.css';
+import './bloomops.css';
 
 export const metadata = {
-  title: 'Leads That Bloom',
-  description: 'A cozy prospecting tracker — plant a lead, watch it bloom.',
+  title: { default: 'BloomOps', template: '%s · BloomOps' },
+  description: 'Post-sale agency operations and client portal.',
 };
 
 export const viewport = {
-  // Matches the light --bg in globals.css, which is the default theme.
-  themeColor: '#FAF7F3',
+  // Cloud, the BloomOps ground (app/bloomops.css). The inherited
+  // application updates this itself when it mounts.
+  themeColor: '#F8FAFF',
 };
 
-// The boot script is the SOLE owner of html[data-theme] and html[data-textsize]:
-// it always sets a value (stored preference, else light) before first paint, so
+// The boot script is the SOLE owner of html[data-theme] and html[data-textsize].
+// Those attributes drive the INHERITED application (app/legacy) only; BloomOps
+// surfaces read their own tokens (app/bloomops.css) and look the same under
+// either value. It always sets a value (stored preference, else light) before first paint, so
 // there is no flash. The attributes are deliberately NOT in the JSX — if they
 // were, React hydration would re-apply the JSX value over the stored
 // preference. globals.css keeps :root fallback = light so a blocked script

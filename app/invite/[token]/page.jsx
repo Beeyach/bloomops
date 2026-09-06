@@ -8,9 +8,10 @@ import { ROLE_LABELS, normalizeEmail } from '@/lib/bloomops/membership.mjs';
 import SignInForm from '../../sign-in/SignInForm';
 import SignOutButton from '../../sign-in/SignOutButton';
 import AcceptInvitation from './AcceptInvitation';
+import { Button } from '@/components/bloomops/Primitives';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Invitation · BloomOps' };
+export const metadata = { title: 'Invitation' };
 
 // The invitation link lands here. The page is reachable without a session
 // (the middleware exempts exactly this shape) because the person usually has
@@ -34,7 +35,9 @@ export default async function InvitePage({ params }) {
   if (looked.state === 'accepted') {
     return (
       <AuthShell title="Already accepted" lead="This invitation has already been used.">
-        <a href="/sign-in" className="block text-center btn-bloom font-medium rounded-[10px] py-3 text-[14px]">Sign in</a>
+        <Button href="/sign-in" variant="primary" block>
+          Sign in
+        </Button>
       </AuthShell>
     );
   }
@@ -64,7 +67,7 @@ export default async function InvitePage({ params }) {
         title="Different email address"
         lead={`This invitation was sent to a different address than the one you are signed in with (${access.user.email}). Sign out, then open the link again and sign in with the invited address.`}
       >
-        <SignOutButton next={`/invite/${token}`} label="Sign out and try again" />
+        <SignOutButton next={`/invite/${token}`} label="Sign out and try again" block />
       </AuthShell>
     );
   }

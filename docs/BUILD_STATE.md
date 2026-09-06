@@ -6,15 +6,15 @@ Release A: Foundation, Auth, Clients, Services, Onboarding, Client Portal
 
 ## Current Phase
 
-A4 (Authorization engine) is implemented and verified locally. Every BloomOps route and page now asks one engine, `lib/bloomops/authorization.mjs`, whether an actor may perform an action, in the documented order: identity, active membership, workspace, scope, visibility, role, capability, default deny. The A3-only "Owner or Admin manages members" permission is gone; member and invitation routes name an action and the engine decides. The inherited prospecting routes and home page are fenced to workspace administrators. See "Authorization (A4)" below for the policy, the decisions taken where the planning docs were silent, and the evidence. No migration was needed. Staging has not been redeployed from this branch; the deploy workflow runs on merge to `main`.
+A5 (the BloomOps shell) is implemented and verified locally. BloomOps stops being the inherited prospecting application: internal roles land in a BloomOps internal shell with the eleven PRODUCT_SPEC destinations, Clients land in a separate portal shell, and the boundary between the two is decided on the server from the A4 engine on every request. Home, Clients, Onboarding, Team (real member and invitation management over the A3 routes), and Settings have their Release A treatment; Work, Social, Ads, Systems, Pages, and Finance are deliberate placeholders. The inherited application moved to `/legacy`, off the navigation, for administrators only. See "Shell (A5)" below for the route architecture, the role routing, the design-system implementation, and the evidence. No migration was needed. Staging has not been redeployed from this branch; the deploy workflow runs on merge to `main`.
 
-Completed phase specs: `docs/phases/A1.md`, `docs/phases/A2.md`, `docs/phases/A3.md`, `docs/phases/A4.md`. Next phase spec: `docs/phases/A5.md` (not started).
+Completed phase specs: `docs/phases/A1.md`, `docs/phases/A2.md`, `docs/phases/A3.md`, `docs/phases/A4.md`, `docs/phases/A5.md`. Next phase spec: `docs/phases/A6.md` (not started).
 
 Documentation index: `docs/INDEX.md`
 
 ## Branch State
 
-PR #2 (A0 and A1), PR #3 (A2), and PR #4 (A3) are merged into `main` (`e39fb5d`). A4 lives on `claude/bloomops-phase-a4-tfsnck`, branched from that merged `main`, with its own PR. Nothing was stacked on the earlier branches.
+PR #2 (A0 and A1), PR #3 (A2), PR #4 (A3), and PR #5 (A4) are merged into `main` (`78359bf`). A5 lives on `claude/a5-bloomops-shell-74dhsm`, branched from that merged `main`, with its own PR. Nothing was stacked on the earlier branches.
 
 ## Source
 
@@ -427,6 +427,107 @@ The A4 tests build two agencies with every role represented, real `client_assign
 - no shell, navigation, or portal for the fenced roles; the holding screen is the whole experience of a Project Manager, Team Member, or Client until A5
 - `/api/infra` (environment name and binding booleans, no data) still answers any active member; it reveals nothing about clients and is left for the phase that retires the inherited probes
 
+## Shell (A5)
+
+BloomOps has its own application shells now. An internal person (Owner, Admin, Project Manager, Team Member) signs in to a BloomOps internal application with the eleven-destination navigation from `docs/PRODUCT_SPEC.md`; a Client signs in to a separate client portal with no internal chrome at all. The inherited Leadsthatbloom application is no longer the root of anything: it lives at `/legacy`, off the navigation, for workspace administrators only, until later phases retire it. No migration was needed.
+
+### Route architecture
+
+| Route | File | Who | What |
+|---|---|---|---|
+| `/` | `app/(internal)/page.jsx` | internal roles | Home |
+| `/clients`, `/onboarding`, `/work`, `/social`, `/ads`, `/systems`, `/pages`, `/team`, `/finance`, `/settings` | `app/(internal)/<area>/page.jsx` | internal roles | one page per destination, inside `app/(internal)/layout.jsx` |
+| `/portal` | `app/portal/page.jsx` inside `app/portal/layout.jsx` | Client | Portal Home |
+| `/legacy` | `app/legacy/page.jsx` | Owner, Admin (engine action `legacy.prospecting`) | the inherited prospecting application, unchanged |
+| `/design` | `app/design/page.jsx` | internal roles, development only (or `BLOOMOPS_DESIGN_GALLERY=1`) | developer design gallery, `?section=<id>` isolates one section |
+| `/sign-in`, `/invite/<token>` | unchanged routes, restyled | anyone | signed-out screens |
+| any other address | `app/not-found.jsx` | anyone | not found |
+
+The `(internal)` route group shares one layout that renders the internal shell; the portal is a separate tree with its own layout. Neither layout is the security boundary. `lib/bloomops/shell.mjs#resolveShellAccess` resolves a request through the A4 primitives (`getAccessOrProblem`, `getActor`, `evaluate`) and answers with a decision: redirect, not found, or render with the loaded actor. `lib/bloomops/shell-server.mjs#requireShell(area)` turns that into `redirect()` / `notFound()` for server components, memoised with React `cache()` so the layout and the page share one resolution per request. Every page and both layouts call it (`tests/bloomops-shell.test.mjs` checks that each file does), so a client-side navigation that skips the layout is checked by the page on its own, and a suspended or removed membership loses the shell on its very next request while its identity session survives.
+
+### Root routing by role
+
+| Actor | `/` and every internal address | `/portal` | `/legacy` |
+|---|---|---|---|
+| anonymous (no cookie) | middleware: `/sign-in?next=…` | `/sign-in` | `/sign-in` |
+| identity, no active membership | `/sign-in` (which explains "No workspace access") | `/sign-in` | `/sign-in` |
+| suspended or removed | `/sign-in` | `/sign-in` | `/sign-in` |
+| Owner, Admin | renders the internal shell | redirect to `/` | renders the inherited app |
+| Project Manager, Team Member | renders the internal shell | redirect to `/` | not found |
+| Client | redirect to `/portal` | renders the portal shell | redirect to `/portal` |
+| unconfigured deployment | `/sign-in` (which explains "Sign-in is not set up") | same | same |
+
+A Client never renders the internal shell, with nothing hidden by CSS or conditionals: the redirect happens before any chrome exists. An internal person never becomes a portal user by opening `/portal`. Both are proven through real Better Auth sessions in `tests/bloomops-shell.test.mjs` and in the browser by `scripts/shell-review-local.mjs`.
+
+### Internal shell
+
+`components/bloomops/InternalShell.jsx`, rendered by `app/(internal)/layout.jsx`: a labelled sidebar (232px) from 1024px, a labelled rail (84px, icon over label) from 768px to 1023px, and on phones a top bar plus a bottom tab bar with four destinations (Home, Clients, Onboarding, Team) and More, which opens the other seven as a labelled sheet. Nothing is dropped at any width; the More sheet reuses the same list. The workspace name, the person, and their role appear once each (sidebar head and foot; top bar on phones). The account menu (`AccountMenu.jsx`) holds the identity, a Settings link, and Sign out; it closes on Escape and outside click and returns focus. Dialogs and toasts are shell infrastructure (`ShellHosts.jsx`, reading the inherited `lib/dialog.mjs` and `lib/toast.mjs` stores, so a page calls `confirmDialog(...)` or `toast(...)` and never mounts its own host). A skip link reaches `main`. Bloomlab's 104px rail was not copied: eleven labelled destinations in a stacked rail were cramped, so the desktop uses a compact sidebar and the rail is the tablet geometry.
+
+### Navigation
+
+One list, `lib/bloomops/navigation.mjs#INTERNAL_NAV`, feeds the sidebar, the rail, the tab bar, the More sheet, the active state (`activeKey(pathname)`: exact root, own path and everything under it), and the area map on Home. Order and labels are PRODUCT_SPEC's: Home, Clients, Onboarding, Work, Social, Ads, Systems, Pages, Team, Finance, Settings, in four groups (Home; Clients, Onboarding, Work; Social, Ads, Systems; Pages, Team, Finance, Settings) separated by hairlines. Every entry carries a one-sentence purpose and an `availability` of `now` (Home, Clients, Onboarding, Team, Settings) or `later`. The list is the same for every internal role; what a person may do inside an area is the engine's decision on the server. `PORTAL_NAV` is Home alone. No prospecting destination exists in either.
+
+### Portal shell
+
+`components/bloomops/PortalShell.jsx`, rendered by `app/portal/layout.jsx`: a top bar naming the agency's workspace ("Client portal" beneath it) and a compact account menu with Sign out, a narrow calm page, a one-line footer. No `nav` element, no internal path, no internal vocabulary; `tests/bloomops-shell.test.mjs` asserts all three on the rendered markup. Portal Home (`PortalHome.jsx`) reads only what A4 scope allows through `lib/bloomops/overview.mjs#portalClients` (the clients whose `client_contacts.user_id` is the caller): a linked Client sees their client's name and "Nothing needs your attention right now"; an unlinked Client (the A3 acceptance state, unchanged) sees "Your portal is not connected yet" with plain words and a suggestion to reply to whoever invited them. Nothing works around the missing link. Content, Projects, and Files join the portal only when those features exist.
+
+### Pages in Release A
+
+- **Home**: the workspace name, who you are signed in as and your role, then "Right now" (Clients, Onboarding, Services, and, only with `members.manage`, Team, each with a real count read through the actor's own scope by `lib/bloomops/overview.mjs#workspaceOverview`) and "Areas of BloomOps" (every destination, its purpose, and "Available now" or "Not available yet"). Zero reads as "None yet" or, for a Team Member, "None assigned to you yet". No metrics, charts, activity, or sample data
+- **Clients**: the destination and its honest initial state. A read-only list of name and relationship status for the clients the actor may see (`visibleClients`, scoped like everything else), or "No clients yet" / "No clients are assigned to you". No creation, detail, editing, or links into detail; A6 owns those
+- **Onboarding**: the destination, its purpose, and either "Nothing is being onboarded" or the count of clients with open onboarding, again scoped. The engine and checklist are A8 and A10
+- **Team**: `teamViewFor(actor)` picks one of two screens. With `members.manage`, `TeamManager.jsx` shows the directory (name, email, role, status with label and glyph, joined date, "(you)" on yourself, removed members folded away), open invitations (name, address, role, expiry), and drives the real A3 routes: invite (email, optional name, role among the four internal roles; Client invitations need a client record and are not offered yet), resend, withdraw, suspend, reinstate, remove. Remove and withdraw confirm first. Every backend answer is shown as written (the last-Owner, self, removed, already-member, and expired rules live on the server and are not duplicated); after a change the server re-renders the screen (`router.refresh()`). The token never reaches the browser. Without `members.manage`, the page shows the person's own place (name, email, role, what the role means) and says the directory is managed by the Owner and Admins; the directory is never loaded
+- **Settings**: account (name, email, sign out), workspace (name, your role, what it means), and "Your access" (the capabilities the engine lists for you, by label). Nothing is editable. No inherited Leadsthatbloom settings appear
+- **Work, Social, Ads, Systems, Pages**: deliberate placeholders through one `AreaPreview` composition: the title, the purpose, what will live there, and "This area is part of a later BloomOps release. Nothing here is live yet." No records, counts, or controls. Pages says the editor is ready and connecting it to the workspace with client-safe visibility is a later step
+- **Finance**: `financeViewFor(actor)`. With `finance.view` (the Owner by role; anyone else by explicit grant), the same placeholder treatment. Without it, "Finance is open to the workspace Owner and to people who have been given finance access. It is not open to you." and nothing else
+
+### Legacy transition
+
+`app/page.jsx` is gone; `ProspectsApp.jsx` renders only from `app/legacy/page.jsx`, which calls `requireShell('legacy')`: a Client is sent to the portal, an internal role the engine does not admit to `legacy.prospecting` gets not found, Owner and Admin get the inherited application exactly as A4 left it. It is not in the navigation, not linked from any BloomOps screen, and its data routes keep the A4 fence in `lib/workspace.mjs`. No inherited route, component, or stylesheet was edited; `app/globals.css` still serves the inherited app and the Pages editor, and `app/bloomops.css` sits beside it under its own `--bo-*` / `.bo-*` namespace, so a BloomOps surface looks the same whatever `html[data-theme]` the inherited theme boot script set.
+
+### Design system implementation
+
+- **Tokens** (`app/bloomops.css`): the Bloomlab palette (Cloud, Snow, Mist, Soft Lilac, Ink, Deep Ink, Ink Soft, Ink Faint, the seven accents, Success, Warning, Error, Info, Link/focus), darker semantic text values that clear AA on Cloud, the 4px spacing scale, radius 6/10/16/24/full, three restrained shadows, the 120/200/300/420ms motion family with reduced-motion zeroing
+- **Fonts**: Bricolage Grotesque (display, variable weight 200–800) and Inter (interface, variable 100–900), self-hosted under `public/fonts/` as latin and latin-ext woff2 from the fontsource packages, with their OFL licences beside them. Declared in `app/bloomops.css`, served through the existing `/fonts/*` immutable cache rule; no remote font dependency and nothing fetched at build time
+- **Primitives** (`components/bloomops/`): `Button` (primary, secondary, ghost, danger; 44px; 1px press; spinner with `aria-busy`), `Field` with `fieldAria` (real label, hint, sentence-and-glyph error, 16px controls, custom select chevron), `Status` (label plus glyph, five tones), `PageHeader`, `Section`, `Surface` (snow, mist, tint), `Facts`, `EmptyState`, `Notice`, `AreaPreview`, `Dialog` (focus trap, Escape, outside click, scroll lock, focus return; a bottom sheet on phones), `Icons` (eleven navigation glyphs and a dozen controls, one stroke weight), `InternalNav`/`NavList`, `MobileNav`/`TabBar`/`MoreSheet`, `AccountMenu`, `ShellHosts`, `InternalShell`, `PortalShell`, `HomeOverview`, `PortalHome`, `TeamManager`. No universal Card; operational lists are hairline rows (`.bo-rows`), and surfaces are used only where a group of facts needs an edge
+- **Typography**: display at 32px (27px on phones) and 40px for the portal title, tracking −0.02em; section headings 20px; body 15px Inter; small 13.5px; tabular numerals on counts; no monospace, no eyebrow labels, no gradient text
+- **Gallery**: `/design`, developer-only, showing palette, typography, surfaces, buttons, forms, status, navigation, and states for the primitives above, with `?section=<id>` isolation
+- **Visual reference**: the live Bloomlab gallery at `bloomlab-preview.cool-sunset-2169.workers.dev/design` could not be opened from this session (the sandbox's egress proxy refused the connection), so the design was built from `docs/DESIGN_SYSTEM.md` and the local reference snapshots under `docs/reference-code/bloomlab/` (tokens, Button, Field, Surface, StatusPill, gallery). No Bloomlab runtime code was imported
+
+### Accessibility
+
+Landmarks (`aside` workspace, `nav` Main, `main`, `header`, `footer`), a skip link, `aria-current="page"` on the active destination, `aria-expanded`/`aria-haspopup` on More and the account button, `role="menu"` with `menuitem`s, dialogs with `aria-modal`, `aria-labelledby`, a focus trap, Escape, and focus return, labels programmatically tied to every control with `aria-describedby` for hints and errors and `aria-invalid` on failure, status never colour alone, 44px targets for navigation, buttons, menu items, and dialog controls on phones and coarse pointers (36px small buttons on desktop pointers), 16px minimum control text, no hover-only information, reduced motion respected throughout. Keyboard order (skip link, then Home) and dialog focus behaviour are checked in the browser by `scripts/shell-review-local.mjs`.
+
+### Responsive strategy
+
+Widths: sidebar from 1024px; rail 768–1023px; top bar plus tab bar below 768px, with page padding reserved for the bar. Rows with actions (`.bo-row-wrap`) put their actions under the text on phones; rows with only a chevron or a pill never wrap. The page header stacks its action under the title on phones. Dialogs become bottom sheets under 480px with stacked full-width actions. The account menu opens upward from the sidebar foot and downward from the top bar. The portal is a narrow single column at every width.
+
+### Local verification (2026-09-06)
+
+| Check | Result |
+|---|---|
+| `npm ci` | ok |
+| `npm test` | 2715 tests, 2715 pass, 0 fail (2698 before A5; 17 A5 tests in `tests/bloomops-shell.test.mjs`) |
+| `npm run build` | exit 0, no warnings |
+| `npm run cf:build` | exit 0, `Worker saved in .open-next/worker.js` |
+| Local D1 | fresh simulation: `db:schema:local`, `db:migrate:local`, `db:domain:migrate:local` (3 applied); a second `db:domain:migrate:local` reports nothing to apply |
+| End-to-end smoke against the local Worker | `node scripts/auth-smoke-local.mjs --url http://localhost:8787`: all checks pass through the real bundle on workerd, the 46 A4 checks (updated where the home page changed) plus the A5 ones: the Owner's `/` is the internal shell with the full navigation and no prospecting markup, `/team` is the directory with the invite action, `/legacy` still opens for the Owner without BloomOps chrome, the Owner opening `/portal` is sent to `/`; the Team Member's `/` is the internal shell, `/team` is the limited view without the directory or other people's addresses, `/finance` says it is not open to them and describes nothing, `/legacy` is 404 |
+| External verifier against the local Worker | `node .github/scripts/verify-staging.mjs --url http://localhost:8787 --expect-env development`: 21 of 21 |
+| Browser review | `node scripts/shell-review-local.mjs --url http://localhost:8787 --out …`: every review state at 1440, 1024, 768, 390, and 320 (sign-in; Home, Clients, Onboarding, Team, Settings, Work, Finance, and the gallery as Owner; Home, Team, Clients as Team Member; Finance as Project Manager; the portal as a linked and an unlinked Client; the account menu, invite dialog, invalid-invite state, remove confirmation, More sheet, and portal account menu open) in headless Chromium, checking no horizontal overflow, 16px controls and 44px targets on phones, the Client-to-portal and Owner-from-portal redirects and the Team Member's 404 at `/legacy` in the browser, keyboard order, and dialog focus behaviour: all structural checks pass. Screenshots were reviewed by eye against `docs/DESIGN_CHECKLIST.md` and the no-AI-slop list |
+
+`tests/bloomops-shell.test.mjs` covers: the navigation list and its invariants (order, labels, one path each, no prospecting, four on the phone bar and seven behind More, active-key resolution); the pure shell decision (unknown area, unconfigured deployment, no session, no membership, unknown role, each role against each area); every role through real Better Auth sessions, with the refused decision carrying no access or actor; suspension and removal taking the shell away while the session survives; Team and Finance views by capability, including a Project Manager and an Admin gaining Finance by explicit grant only; Home, Clients, Onboarding, and portal reads scoped to the actor (workspace-wide, assigned-only, none, and never internal counts for a Client); the internal shell markup (navigation once per geometry, every destination reachable, no prospecting, skip link, landmarks, no emoji); one current destination and the More sheet's seven; the portal markup carrying no navigation, no internal path, and no internal vocabulary, and Portal Home's linked and unlinked states in plain words; Home's honest zero by scope and the area map's availability; Team rows offering only the actions the server would accept and never a token; the signed-out frame keeping the anchors the deploy verifier reads; the inherited application no longer being the root and every shell page re-checking on the server; and the middleware still bouncing anonymous callers from every new address.
+
+### Intentionally deferred to A6 and later
+
+- the Clients feature (list depth, create, detail, contacts, status and health editing, assignments, activity, archive): A6
+- services and departments, assignments management: A7; the onboarding engine: A8; activation and client linkage on acceptance: A9 and A10
+- Work, Social, Ads, Systems, Finance features, and Pages inside the BloomOps shell; the placeholders stand until each phase
+- a capability grant/revoke screen (the library functions exist since A4; the Team screen does not expose them yet)
+- an appearance preference: BloomOps is light by design (Bloomlab's Cloud ground; dark Ink surfaces are for focused execution contexts later), and the inherited dark/text-size toggles belong to the inherited palette, so Settings shows none
+- portal destinations (Content, Projects, Files) until the features behind them exist
+- Playwright as a dependency: `scripts/shell-review-local.mjs` runs on a locally installed `playwright-core` and Chromium and is a developer tool, not a test-suite step
+- removal of the inherited prospecting code; it is unreachable from BloomOps navigation but still in source and still served at `/legacy` for administrators
+
 ## Leadsthatbloom Reference Audit (A1)
 
 | Reference | Where it was | What happened |
@@ -500,8 +601,11 @@ Re-running the workflow is safe. Schema and migrations are idempotent, the provi
 
 ## Known Risks
 
-- inherited application is still Leadsthatbloom in behavior and UI, and `ProspectsApp.jsx` remains the root
-- the inherited prospecting routes are fenced, not authorized: Owner and Admin reach all of them as `admin`, and no other role reaches any. Every inherited route still knows nothing of client, service, or visibility scope, which is why the fence admits nobody else until A5 and later replace those surfaces
+- the inherited Leadsthatbloom application is still in source and still served to Owner and Admin at `/legacy` (no longer the root, not in navigation); its Pages editor is the part worth keeping, and retiring the rest is later work
+- the inherited prospecting routes are fenced, not authorized: Owner and Admin reach all of them as `admin`, and no other role reaches any. Every inherited route still knows nothing of client, service, or visibility scope, which is why the fence admits nobody else until later phases replace those surfaces
+- the shell layouts and pages resolve access through React `cache()` per request; a page that forgets to call `requireShell` would render inside the shell without its own check. `tests/bloomops-shell.test.mjs` fails if any page or layout under `app/(internal)` or `app/portal` omits the call
+- `app/bloomops.css` and the inherited `app/globals.css` both load on every page; the BloomOps layer is namespaced, but a future inherited-CSS change to element selectors (`html`, `body`, focus rings) could still reach BloomOps surfaces. `html:has(.bo-root)` and `.bo-root` reset the ground, font, and focus colour deliberately
+- the `/design` gallery is gated to development or an explicit `BLOOMOPS_DESIGN_GALLERY=1` var plus an internal membership; staging does not set the var, so the gallery does not exist there
 - the restricted-visibility policy (Owner, Admin, and named memberships) and the Owner-holds-everything capability baseline are A4 decisions taken where the planning docs are silent; each is one line in `lib/bloomops/authorization.mjs` and one row in the tests to change
 - a Client membership created through the A3 invitation flow has no `client_contacts.user_id` link yet and therefore reaches nothing until a later phase links the contact on acceptance; that is the intended fail-closed state, not an oversight
 - Better Auth's rate limiter uses memory storage, which is per Worker isolate; the magic-link path is still bounded (5 requests a minute per IP per isolate) but not globally
@@ -515,6 +619,15 @@ Re-running the workflow is safe. Schema and migrations are idempotent, the provi
 - the production D1 id is a placeholder until production is provisioned deliberately
 - two migration systems coexist in one database until the inherited prospecting schema is retired: keep running the inherited bootstrap before the domain migrations on a brand-new database, as the workflow does, even though either order works today
 - the BloomOps client table is physically named `bloomops_clients` until the inherited `clients` table is dropped
+
+## Intentionally Not Done in A5
+
+- no Clients CRUD or detail, no service or department management, no onboarding engine, no activation or client linkage, no projects, milestones, actions, deliverables, social, ads, systems, or finance records, no payment or billing, no public registration, no new auth method, no Better Auth organization plugin, no workload analytics
+- no capability grant/revoke screen, no appearance preference, no portal destinations beyond Home
+- no schema change or migration
+- no edit to any inherited prospecting route, component, or the Pages/editor system; `app/globals.css` is untouched
+- no staging deploy from the branch and no production provisioning; the extra A3 staging membership is untouched; no workflow trigger was changed
+- no removal of inherited code; the inherited application is served at `/legacy` for administrators until later phases retire it
 
 ## Intentionally Not Done in A4
 
@@ -558,15 +671,17 @@ For the next phase, read:
 
 1. `CLAUDE.md`
 2. this file
-3. `docs/phases/A5.md`, `docs/PRODUCT_SPEC.md`, `docs/DESIGN_SYSTEM.md`, and `docs/DESIGN_CHECKLIST.md`
+3. `docs/phases/A6.md`, `docs/PRODUCT_SPEC.md`, `docs/DOMAIN_MODEL.md`, `docs/DESIGN_SYSTEM.md`, and `docs/DESIGN_CHECKLIST.md`
 
 Read additional canonical planning docs only when the phase file or `docs/INDEX.md` calls for them.
 
 ## Next Planned Phase
 
-A5, the new BloomOps shell. Not started. A4's engine is what the shell and every later route call: `requireAuthorized(req, { action, resource })` in routes, `getActor(access)` plus `evaluate` in server components, `legacyAppAllowed(access)` for the transitional prospecting app, and `ACTIONS` in `lib/bloomops/authorization.mjs` to extend as features arrive. The Project Manager, Team Member, and Client roles currently land on the holding screen at `/`; A5 gives internal roles the internal shell and Clients the portal shell.
+A6, Clients. Not started. It grows into the Clients destination A5 left: `app/(internal)/clients/page.jsx` (today a read-only name-and-status list through `lib/bloomops/overview.mjs#visibleClients`), a `/clients/:clientId` detail route inside the same `(internal)` group (every page calls `requireShell('internal')` and then asks the engine with `evaluate(actor, { action: 'client.view' | 'client.manage', resource })` through `loadClientResource`), and routes that use `requireAuthorized(req, { action, resource })`. The primitives to build with are in `components/bloomops/` (rows, `Status`, `Field`, `Dialog`, `Button`, `EmptyState`); semantic objects such as ClientRow and ClientHealth sit above them. `ACTIONS` in `lib/bloomops/authorization.mjs` is where new actions go.
 
 ## Last Verification
+
+2026-09-06, A5 execution. Results are in "Local verification (2026-09-06)" under "Shell (A5)": 2715 tests pass, `npm run build` and `npm run cf:build` exit 0, the end-to-end smoke passes every check and the external verifier 21 of 21 against the local Worker built from this branch, the browser review passes every structural check at all five widths, and the local D1 was migrated from a fresh simulation with a no-op second pass. No migration was added, so the zero-to-current proof from A3 stands unchanged. No staging or production resource was touched from this session: no wrangler command was authenticated, and the only wrangler operations run were local (`d1 execute --local`, `d1 migrations apply --local`, `d1 migrations list --local`, `wrangler dev` through `opennextjs-cloudflare preview`, `r2 object get --local`). `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched.
 
 2026-09-06, A4 execution. Results are in "Local verification (2026-09-06)" under "Authorization (A4)": 2698 tests pass, `npm run build` and `npm run cf:build` exit 0, the end-to-end smoke passes 46 of 46 and the external verifier 21 of 21 against the local Worker built from this branch, and the local D1 was migrated from a fresh simulation with a no-op second pass. No migration was added, so the zero-to-current proof from A3 stands unchanged. No staging or production resource was touched from this session: no wrangler command was authenticated, and the only wrangler operations run were local (`d1 execute --local`, `d1 migrations apply --local`, `d1 migrations list --local`, `wrangler dev` through `opennextjs-cloudflare preview`, `r2 object get --local`). `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched.
 
