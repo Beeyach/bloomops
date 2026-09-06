@@ -277,6 +277,21 @@ let invitationId = '';
   check('the Activity tab shows real history in words', activity.status === 200 && /Client created/.test(activity.text) && /Health changed/.test(activity.text) && /From On Track to Needs Attention/.test(activity.text) && /Primary contact changed/.test(activity.text), `status ${activity.status}`);
   check('and no event code, id, or metadata reaches the page', !/CLIENT_HEALTH_CHANGED|metadata_json/.test(activity.text));
 
+  // An owner who stops qualifying as a new owner stays on the record, and
+  // the edit form sends every field on save, so the stored id coming back
+  // unchanged must not fail an unrelated edit.
+  const ownerMembershipId = sqlOne(`SELECT id FROM workspace_memberships WHERE workspace_id = ${lit(row.workspace_id)} AND user_id = (SELECT id FROM user WHERE email = ${lit(ADMIN)})`)?.id;
+  must('the Admin membership is available to own a client', Boolean(ownerMembershipId), 'no admin membership');
+  const owned = await call(`/api/bloomops/clients/${clientId}`, { method: 'PATCH', cookie: owner.cookie, body: { ownerMembershipId } });
+  check('the Owner names an internal owner', owned.status === 200, `status ${owned.status} ${owned.text.slice(0, 160)}`);
+  sql(`UPDATE workspace_memberships SET status = 'suspended' WHERE id = ${lit(ownerMembershipId)};`);
+  const keptOwner = await call(`/api/bloomops/clients/${clientId}`, { method: 'PATCH', cookie: owner.cookie, body: { website: 'smoke-client-2.example', ownerMembershipId } });
+  check('an unrelated edit still saves when the stored owner is no longer eligible', keptOwner.status === 200, `status ${keptOwner.status} ${keptOwner.text.slice(0, 200)}`);
+  check('and the owner is unchanged with no owner event', sqlOne(`SELECT owner_membership_id FROM bloomops_clients WHERE id = ${lit(clientId)}`)?.owner_membership_id === ownerMembershipId && countRows('activity_events', `client_id = ${lit(clientId)} AND event_type = 'CLIENT_OWNER_CHANGED'`) === 1);
+  const newIneligible = await call(`/api/bloomops/clients/${clientId}`, { method: 'PATCH', cookie: owner.cookie, body: { ownerMembershipId: `m_${'x'.repeat(8)}` } });
+  check('but a genuinely new ineligible owner is still refused', newIneligible.status === 400 && newIneligible.json?.errors?.ownerMembershipId === 'Choose an owner from the list.', `status ${newIneligible.status}`);
+  sql(`UPDATE workspace_memberships SET status = 'active' WHERE id = ${lit(ownerMembershipId)};`);
+
   const crossSite = await call(`/api/bloomops/clients/${clientId}`, { method: 'PATCH', cookie: owner.cookie, body: { name: 'Hijacked' }, origin: 'https://evil.example' });
   check('a cross-site write to a client is refused', crossSite.status === 403 && crossSite.json?.error === 'Cross-site request refused.', `status ${crossSite.status}`);
   check('and the client was not renamed', sqlOne(`SELECT name FROM bloomops_clients WHERE id = ${lit(clientId)}`)?.name === CLIENT_NAME);

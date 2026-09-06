@@ -717,6 +717,116 @@ test('an owner who leaves the workspace is kept on the record rather than silent
   assert.ok(!(await ownerCandidates(s.db, s.A)).some((c) => c.id === 'm_pm'));
 });
 
+// An owner who was valid when they were assigned may stop qualifying as a
+// *new* owner: suspended, removed, or a Team Member whose client assignment
+// went away. A6 keeps them on the record rather than silently dropping them
+// (getClient returns them with active: false, and the edit form keeps them
+// in its list), so the server has to accept the stored value coming back
+// unchanged. Validating it as a fresh assignment would make every unrelated
+// edit fail with "Choose an owner from the list."
+
+test('keeping a suspended owner does not block an unrelated edit', async () => {
+  const s = await scenario();
+  const id = (await s.create(PEOPLE.owner, GOOD)).json.client.id;
+  assert.equal((await s.patch(PEOPLE.owner, id, { ownerMembershipId: 'm_pm' })).status, 200);
+  assert.equal(s.clientRow(id).owner_membership_id, 'm_pm');
+
+  run(s.raw, "UPDATE workspace_memberships SET status = 'suspended' WHERE id = 'm_pm'");
+  const client = await getClient(s.db, await s.actorFor(PEOPLE.owner), id);
+  assert.equal(client.owner.membershipId, 'm_pm', 'still on the record');
+  assert.equal(client.owner.active, false, 'and shown as no longer active');
+  assert.ok(!(await ownerCandidates(s.db, s.A, { clientId: id })).some((c) => c.id === 'm_pm'), 'and no longer a candidate for a new assignment');
+
+  const eventsBefore = s.eventTypes(id).length;
+  // Exactly what the edit form sends: every field, owner included, unchanged.
+  const r = await s.patch(PEOPLE.owner, id, {
+    name: 'Northwind',
+    website: 'northwind.example',
+    timezone: '',
+    startDate: '2026-05-01',
+    endDate: '',
+    ownerMembershipId: 'm_pm',
+  });
+  assert.equal(r.status, 200, `the unrelated edit succeeds (${JSON.stringify(r.json)})`);
+  assert.equal(s.clientRow(id).name, 'Northwind');
+  assert.equal(s.clientRow(id).website, 'https://northwind.example');
+  assert.equal(s.clientRow(id).start_date, '2026-05-01');
+  assert.equal(s.clientRow(id).owner_membership_id, 'm_pm', 'the owner is untouched');
+
+  const added = s.eventTypes(id).slice(eventsBefore);
+  assert.deepEqual(added, [ACTIVITY.CLIENT_DETAILS_UPDATED], 'one event, for the details that actually changed');
+  assert.deepEqual(Object.keys(JSON.parse(s.events(id).at(-1).metadata_json).fields).sort(), ['name', 'startDate', 'website']);
+
+  // And an edit that names only the unchanged owner is a plain no-op.
+  const only = await s.patch(PEOPLE.owner, id, { ownerMembershipId: 'm_pm' });
+  assert.equal(only.status, 200);
+  assert.equal(only.json.unchanged, true);
+  assert.equal(s.eventTypes(id).length, eventsBefore + 1, 'and records nothing');
+});
+
+test('keeping a Team Member owner whose client assignment went away does not block an unrelated edit', async () => {
+  const s = await scenario();
+  // Assigned to Lawrence, so eligible to own it.
+  assert.ok((await ownerCandidates(s.db, s.A, { clientId: 'c_lawrence' })).some((c) => c.id === 'm_tmClient'));
+  assert.equal((await s.patch(PEOPLE.owner, 'c_lawrence', { ownerMembershipId: 'm_tmClient' })).status, 200);
+  assert.equal(s.clientRow('c_lawrence').owner_membership_id, 'm_tmClient');
+
+  run(s.raw, "DELETE FROM client_assignments WHERE client_id = 'c_lawrence' AND membership_id = 'm_tmClient'");
+  assert.ok(!(await ownerCandidates(s.db, s.A, { clientId: 'c_lawrence' })).some((c) => c.id === 'm_tmClient'), 'no longer a candidate for a new assignment');
+
+  const eventsBefore = s.eventTypes('c_lawrence').length;
+  const r = await s.patch(PEOPLE.owner, 'c_lawrence', { website: 'lawrence.example', ownerMembershipId: 'm_tmClient' });
+  assert.equal(r.status, 200, `the unrelated edit succeeds (${JSON.stringify(r.json)})`);
+  assert.equal(s.clientRow('c_lawrence').website, 'https://lawrence.example');
+  assert.equal(s.clientRow('c_lawrence').owner_membership_id, 'm_tmClient', 'the owner is untouched');
+  assert.deepEqual(s.eventTypes('c_lawrence').slice(eventsBefore), [ACTIVITY.CLIENT_DETAILS_UPDATED]);
+
+  // Ownership is not scope: losing the assignment lost the access, and
+  // still owning the client did not give any of it back.
+  const tm = await s.actorFor(PEOPLE.tmClient);
+  assert.deepEqual([...tm.scope.clientIds], [], 'no client scope remains');
+  assert.equal(await getClient(s.db, tm, 'c_lawrence'), null, 'the client they own is out of reach');
+  assert.equal((await s.patch(PEOPLE.tmClient, 'c_lawrence', { health: 'at_risk' })).status, 404, 'and answered as if it did not exist');
+});
+
+test('an actual owner change to an ineligible membership is still refused', async () => {
+  const s = await scenario();
+  const id = (await s.create(PEOPLE.owner, GOOD)).json.client.id;
+  assert.equal((await s.patch(PEOPLE.owner, id, { ownerMembershipId: 'm_pm' })).status, 200);
+  const eventsBefore = s.eventTypes(id).length;
+
+  run(s.raw, "UPDATE workspace_memberships SET status = 'suspended' WHERE id = 'm_tmClient'");
+  run(s.raw, "UPDATE workspace_memberships SET status = 'removed' WHERE id = 'm_tmService'");
+  // An Admin who is suspended: a workspace-wide role is not a free pass.
+  run(s.raw, "UPDATE workspace_memberships SET status = 'suspended' WHERE id = 'm_admin'");
+
+  const refused = [
+    ['a suspended Admin', 'm_admin'],
+    ['a suspended Team Member', 'm_tmClient'],
+    ['a removed Team Member', 'm_tmService'],
+    ['a Client membership', 'm_clientLinked'],
+    ['an unlinked Client membership', 'm_clientUnlinked'],
+    ['a Team Member with no client scope', 'm_tmNone'],
+    ['a membership in another workspace', 'm_bOwner'],
+    ['an invented id', 'not-a-membership'],
+  ];
+  for (const [what, membershipId] of refused) {
+    const r = await s.patch(PEOPLE.owner, id, { ownerMembershipId: membershipId });
+    assert.equal(r.status, 400, `${what} is refused as a new owner`);
+    assert.equal(r.json.errors.ownerMembershipId, 'Choose an owner from the list.', `${what} says nothing more`);
+    assert.equal(s.clientRow(id).owner_membership_id, 'm_pm', `${what} left the owner alone`);
+  }
+  // A Team Member assigned to a different client is still not a candidate here.
+  run(s.raw, "INSERT INTO client_assignments (workspace_id, client_id, membership_id, assignment_role) VALUES (?, 'c_other', 'm_tmNone', 'member')", s.A);
+  const elsewhere = await s.patch(PEOPLE.owner, id, { ownerMembershipId: 'm_tmNone' });
+  assert.equal(elsewhere.status, 400, 'an assignment to another client does not qualify them for this one');
+
+  assert.equal(s.eventTypes(id).length, eventsBefore, 'and no refusal was recorded as history');
+  // The escape hatch is only for the value already stored, and only for it.
+  assert.equal((await s.patch(PEOPLE.owner, id, { ownerMembershipId: 'm_pm', name: 'Still fine' })).status, 200);
+  assert.equal(s.clientRow(id).name, 'Still fine');
+});
+
 // ── contacts ─────────────────────────────────────────────────────────────
 
 test('a client holds several contacts; adding, editing, and removing each records one event', async () => {
