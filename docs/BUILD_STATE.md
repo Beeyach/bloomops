@@ -6,15 +6,15 @@ Release A: Foundation, Auth, Clients, Services, Onboarding, Client Portal
 
 ## Current Phase
 
-A3 (Authentication and membership) is implemented and verified locally and on staging. BloomOps signs people in with Better Auth magic links sent through Resend, resolves every protected request against an ACTIVE workspace membership, bootstraps the first workspace from explicit inputs, runs the invitation lifecycle, and no longer accepts the inherited access-code login. See "Authentication and Membership (A3)" below for the decisions, the schema comparison, and the evidence. The staging cutover ran from the same GitHub Actions workflow once the repository secrets were added on 2026-09-06: deploy, Worker secrets, bootstrap, and all 22 verifier checks passed. The run is recorded under "Staging verification (A3)". One manual step remains, a real magic-link click on staging.
+A4 (Authorization engine) is implemented and verified locally. Every BloomOps route and page now asks one engine, `lib/bloomops/authorization.mjs`, whether an actor may perform an action, in the documented order: identity, active membership, workspace, scope, visibility, role, capability, default deny. The A3-only "Owner or Admin manages members" permission is gone; member and invitation routes name an action and the engine decides. The inherited prospecting routes and home page are fenced to workspace administrators. See "Authorization (A4)" below for the policy, the decisions taken where the planning docs were silent, and the evidence. No migration was needed. Staging has not been redeployed from this branch; the deploy workflow runs on merge to `main`.
 
-Completed phase specs: `docs/phases/A1.md`, `docs/phases/A2.md`, `docs/phases/A3.md`. Next phase spec: `docs/phases/A4.md` (not started).
+Completed phase specs: `docs/phases/A1.md`, `docs/phases/A2.md`, `docs/phases/A3.md`, `docs/phases/A4.md`. Next phase spec: `docs/phases/A5.md` (not started).
 
 Documentation index: `docs/INDEX.md`
 
 ## Branch State
 
-PR #2 (A0 and A1) and PR #3 (A2) are merged into `main` (`541da1e`). A3 lives on `claude/a3-auth-membership-xo5r7e`, branched from that merged `main`, with its own PR. Nothing was stacked on the earlier branches.
+PR #2 (A0 and A1), PR #3 (A2), and PR #4 (A3) are merged into `main` (`e39fb5d`). A4 lives on `claude/bloomops-phase-a4-tfsnck`, branched from that merged `main`, with its own PR. Nothing was stacked on the earlier branches.
 
 ## Source
 
@@ -37,6 +37,7 @@ BloomOps Git history is fresh. The source commit object does not exist in the Bl
 - A1: deployment path migrated to Cloudflare Workers through OpenNext, three isolated environments configured, Leadsthatbloom infrastructure references removed or neutralized, generated output and prospect exports removed from version control, fresh-database bootstrap made reproducible, local runtime verified, `bloomops-staging` deployed from GitHub Actions and verified live
 - A2: BloomOps domain schema for Release A declared with Drizzle, materialised as SQL migrations, applied alongside the inherited schema, proven with invariant tests
 - A3: Better Auth magic-link identity and sessions over the A2 tables, Resend mail behind a small transport, per-request workspace membership enforcement, first-workspace bootstrap, the invitation lifecycle, minimal sign-in and invitation screens, and removal of the inherited access-code login; verified by invariant tests, a full local Worker smoke, and the external verifier
+- A4: one server-side authorization engine over the A2 and A3 tables (role, capability, client and service assignment scope, client-contact scope, internal/client/restricted visibility, leak-safe HTTP answers), member and invitation routes moved onto it, the inherited prospecting surfaces fenced to workspace administrators; verified by an explicit allow/deny matrix over the real schema and Better Auth sessions, the local Worker smoke, and the external verifier
 
 ## Deployment Path Decision (A1)
 
@@ -347,6 +348,85 @@ The repository secrets now exist: the auth secret, the Resend key, and the owner
 - database-backed rate limiting for Better Auth (memory storage is per isolate), email change, and any second sign-in method
 - `account.issuer NOT NULL`, with the first OAuth or credential provider
 
+## Authorization (A4)
+
+One engine, `lib/bloomops/authorization.mjs`, answers every "may this person do this to that?" for BloomOps. Route handlers and pages name an action and, for one record, hand over a resource descriptor; they never compare roles or capabilities themselves. Policy is three small tables in that file (`ROLE_CAPABILITIES`, `SCOPE_BY_ROLE`, `RESTRICTED_BY_ROLE`) plus the `ACTIONS` table, so a policy change is one line and one test row.
+
+| Item | Value |
+|---|---|
+| Engine | `lib/bloomops/authorization.mjs`: `loadActor`, `evaluate`, `hasCapability`, `canAccessClient`, `canAccessService`, `inScope`, `canSeeVisibility`, `listCapabilities`, `grantCapability`, `revokeCapability`, `loadClientResource`, `loadServiceResource`, plus the vocabulary (`ROLES`, `INTERNAL_ROLES`, `CAPABILITIES`, `VISIBILITIES`, `ACTIONS`) |
+| Request helpers | `lib/bloomops/access.mjs`: `requireAuthorized(req, { action, resource })` (identity, membership, origin, then the engine; answers 401/403/404 itself), `getActor(access)` (loads the actor once per request), `notFound()`. `requireAccess` (membership only) and `requireIdentity` (identity only, invitation acceptance) remain |
+| Order of checks | identity, ACTIVE membership in an ACTIVE workspace, cross-site Origin on writes, then in `evaluate`: membership status, action known, resource in this workspace, resource within scope, visibility admits the actor, role may perform the action, capability held. Anything unknown or missing refuses |
+| Routes moved | `GET /api/bloomops/members` and `PATCH /api/bloomops/members/:id` (`members.manage`); `GET|POST /api/bloomops/invitations`, `POST .../:id/resend`, `POST .../:id/revoke` (`invitations.manage`). `GET /api/bloomops/me` now lists the caller's capabilities and whether the inherited app is open to them |
+| Removed | `canManageMembers` and the `manageMembers` option of `requireAccess` (the A3-only permission) |
+| Schema | none. The A2 tables (`workspace_memberships`, `member_capabilities`, `client_assignments`, `service_assignments`, `client_contacts.user_id`, `bloomops_clients`, `service_engagements`) express every invariant A4 needs. `department_memberships` is read by nothing in the engine, on purpose |
+| Activity | `CAPABILITY_GRANTED` and `CAPABILITY_REVOKED` join the event vocabulary |
+
+### Roles and capabilities
+
+Capabilities are the five dotted keys the domain model reserves: `members.manage`, `workspace.settings`, `templates.manage`, `finance.view`, `finance.edit`. A role carries some without a `member_capabilities` row; the rest are explicit grants on the membership.
+
+| Role | By role | Grantable | Client/service scope | Restricted records | Inherited prospecting app |
+|---|---|---|---|---|---|
+| Owner | all five | yes | whole workspace | yes | yes |
+| Admin | `members.manage`, `workspace.settings`, `templates.manage` | yes (Finance is an explicit grant) | whole workspace | yes | yes |
+| Project Manager | none | yes | whole workspace | only when named on the record | no |
+| Team Member | none | yes | assignments only | only when named on the record | no |
+| Client | none | no (rows are ignored) | own client through `client_contacts.user_id` | never | no |
+
+Decisions where the planning docs were silent, all in `authorization.mjs` and one line each to change:
+
+- Owner holds every capability by role. The Owner is the workspace principal, cannot be locked out (A3's last-Owner rule), and can grant themself anything through `members.manage`, so withholding a capability from the role would be theatre. `docs/PRODUCT_SPEC.md` gives the Owner "full operational access"
+- Admin is not Finance by role because the same document says the Admin's Finance access "is separately configurable"; `finance.view` and `finance.edit` are explicit grants
+- Project Manager has workspace-wide client and service scope because `docs/PRODUCT_SPEC.md` gives the role "broad delivery visibility and coordination, but not security administration or Finance by default"; it therefore holds no capability by role and may not manage members, settings, or templates without a grant
+- restricted visibility admits Owner and Admin, and anyone the record names in `restrictedToMembershipIds` (internal roles only, and still only inside their scope). It is deliberately not "all internal users", and a Client never sees a restricted record even when named
+- a Client membership holds no capability whatever rows say, and `grantCapability` refuses to write one for a Client. Capabilities open internal areas, and a Client never enters those
+
+### Actions
+
+`ACTIONS` in `authorization.mjs`. Workspace-level: `members.manage`, `invitations.manage`, `capabilities.manage` (all need `members.manage`), `workspace.settings`, `templates.manage`, `finance.view`, `finance.edit` (each needs the capability of the same name). Record-level (refuse to run without a resource): `client.view` and `service.view` for every role that can reach the record, `client.manage` and `service.manage` for Owner, Admin, and Project Manager. Transitional: `legacy.prospecting` for Owner and Admin. Later phases add actions here as they add features; nothing else in the engine changes.
+
+### Scope
+
+- Owner, Admin, Project Manager: every client and every engagement in their workspace
+- Team Member: a `client_assignments` row reaches that client and everything under it, including all of its engagements; a `service_assignments` row reaches that one engagement and the records under it, not the client record and not sibling engagements. A person on James' Social engagement cannot see James' GHL work. Department membership grants nothing
+- Client: the clients whose `client_contacts.user_id` equals the caller's user id in this workspace, and every engagement of those clients. Nothing else links a Client to a client: not an address match, not an accepted invitation naming a client, not request input. A Client membership with no such row fails closed, which is where the unlinked A3 acceptance flow leaves a new Client until a later phase links the contact on acceptance
+- a record naming a service is service-scoped; one naming only a client is client-scoped; one naming neither is workspace-level, reachable by internal roles and never by a Client
+- assignments, capability rows, and contact links are read for the acting membership in the acting workspace only. The same person's Owner membership in Agency B gives them nothing in Agency A, and the reverse
+
+### Visibility
+
+Resource descriptors carry `visibility`: `internal`, `client`, or `restricted`. A missing value is `internal`, so a record that never declared itself client-visible is never shown to a Client. Scope is checked before visibility, so a client-visible record of another client is still out of reach. A Client sees only `client`; internal roles see `internal` and `client` within scope; `restricted` follows the table above. An unknown value refuses. The two loaders for today's tables mark a client record and an engagement `client`, since a client's own record and their own purchased services are by nature visible to them; what they see of either is a projection for the portal to decide.
+
+### Leak safety over HTTP
+
+`requireAuthorized` answers 401 with no identity, 403 with an identity but no active membership, 403 for a cross-site write, 403 when the actor can see the record (or there is no record) but may not act, and 404 `{ "error": "Not found." }` whenever admitting a record exists would say something: another workspace, out of scope, hidden by visibility, or simply absent. The tests compare the bodies and headers of the hidden and the absent case byte for byte. The engine's reasons (`foreign_workspace`, `scope`, `visibility`, `role`, `capability`, ...) exist for tests and logs and never reach a response.
+
+### Legacy compatibility fence
+
+`lib/workspace.mjs#getWorkspace`, which all inherited prospecting routes call, now returns null unless the engine allows `legacy.prospecting` for the membership (Owner and Admin), so a Project Manager, Team Member, or Client calling `/api/pages`, `/api/prospects`, `/api/settings`, or any of the other inherited routes is answered as an anonymous caller is (401). `app/page.jsx` applies the same decision: administrators get the inherited application, everyone else a plain "Nothing here yet" holding screen with sign-out, until A5 gives their role a home. Not rendering the app is not the boundary; the routes refuse on their own. No inherited route was edited. `legacyRole` still maps Owner and Admin to the inherited two-value `admin`.
+
+### Local verification (2026-09-06)
+
+| Check | Result |
+|---|---|
+| `npm ci` | ok |
+| `npm test` | 2698 tests, 2698 pass, 0 fail (2681 before A4; 17 A4 tests added in `tests/bloomops-authorization.test.mjs`, 1 A3 test migrated from `canManageMembers` to the engine) |
+| `npm run build` | exit 0 |
+| `npm run cf:build` | exit 0, `Worker saved in .open-next/worker.js` |
+| Local D1 | `db:schema:local`, `db:migrate:local`, `db:domain:migrate:local` from a fresh local simulation; a second `db:domain:migrate:local` reports nothing to apply |
+| End-to-end smoke against the local Worker | `node scripts/auth-smoke-local.mjs --url http://localhost:8787`: 46 of 46 through the real bundle on workerd, the 40 A3 checks plus: the Owner holds every capability and the inherited app; a Team Member holds none, is refused member listing and invitation with the generic 403 and no reason, is refused `/api/pages`, `/api/prospects`, and `/api/settings` with 401, and sees the holding screen at `/` while the Owner still gets the inherited app and routes |
+| External verifier against the local Worker | `node .github/scripts/verify-staging.mjs --url http://localhost:8787 --expect-env development`: 21 of 21 (a first run seconds after the smoke hit Better Auth's per-minute magic-link limiter with 429, the documented A3 behaviour; the rerun passed) |
+
+The A4 tests build two agencies with every role represented, real `client_assignments`, `service_assignments`, `department_memberships`, `client_contacts`, and `member_capabilities` rows, and sign people in through Better Auth's real handler where the HTTP answer is under test. They cover, with denied cases throughout: anonymous, no workspace, suspended and removed (session surviving); same-workspace versus foreign records; the full role-by-action matrix; capability baselines, explicit grants, revocation, a rogue row on a Client, an unknown key, and cross-workspace rows; Team Member client scope, service scope (not the sibling engagement, not the client record), and department membership; the linked, unlinked, and elsewhere-linked Client; all three visibilities against scope, including being named on a restricted record; member management for all five roles; identical answers for hidden and absent records; the Origin fence; the legacy fence for every role; and the same person in two workspaces.
+
+### Intentionally deferred to A5 and later
+
+- no route grants or revokes capabilities yet (`grantCapability` and `revokeCapability` exist in the library with their invariants tested; A5's Team screen or a later phase exposes them). Until then a grant on staging is a direct `member_capabilities` insert
+- no route creates `client_assignments` or `service_assignments` (A7) or links `client_contacts.user_id` on Client invitation acceptance (A9/A10)
+- no shell, navigation, or portal for the fenced roles; the holding screen is the whole experience of a Project Manager, Team Member, or Client until A5
+- `/api/infra` (environment name and binding booleans, no data) still answers any active member; it reveals nothing about clients and is left for the phase that retires the inherited probes
+
 ## Leadsthatbloom Reference Audit (A1)
 
 | Reference | Where it was | What happened |
@@ -421,7 +501,9 @@ Re-running the workflow is safe. Schema and migrations are idempotent, the provi
 ## Known Risks
 
 - inherited application is still Leadsthatbloom in behavior and UI, and `ProspectsApp.jsx` remains the root
-- authorization beyond "active member of the workspace" and "Owner or Admin manages members" does not exist yet; every inherited route still treats any active member as it treated an access-code holder, with Owner and Admin as `admin`. A4 builds the engine
+- the inherited prospecting routes are fenced, not authorized: Owner and Admin reach all of them as `admin`, and no other role reaches any. Every inherited route still knows nothing of client, service, or visibility scope, which is why the fence admits nobody else until A5 and later replace those surfaces
+- the restricted-visibility policy (Owner, Admin, and named memberships) and the Owner-holds-everything capability baseline are A4 decisions taken where the planning docs are silent; each is one line in `lib/bloomops/authorization.mjs` and one row in the tests to change
+- a Client membership created through the A3 invitation flow has no `client_contacts.user_id` link yet and therefore reaches nothing until a later phase links the contact on acceptance; that is the intended fail-closed state, not an oversight
 - Better Auth's rate limiter uses memory storage, which is per Worker isolate; the magic-link path is still bounded (5 requests a minute per IP per isolate) but not globally
 - staging can sign in only its bootstrapped addresses. Real magic-link delivery and sign-in were manually verified on 2026-09-06 from a bootstrapped staging Owner mailbox using the configured verified Resend sender domain
 - staging holds one extra active membership, created as Owner when the bootstrap addresses were changed between workflow attempts on 2026-09-06. The bootstrap never rewrites or removes memberships, so it stays until removed by hand or through the members API
@@ -433,6 +515,15 @@ Re-running the workflow is safe. Schema and migrations are idempotent, the provi
 - the production D1 id is a placeholder until production is provisioned deliberately
 - two migration systems coexist in one database until the inherited prospecting schema is retired: keep running the inherited bootstrap before the domain migrations on a brand-new database, as the workflow does, even though either order works today
 - the BloomOps client table is physically named `bloomops_clients` until the inherited `clients` table is dropped
+
+## Intentionally Not Done in A4
+
+- no Clients, client detail, onboarding, project, task, social, ads, systems, finance, settings, or portal features; no A5 shell or navigation; no member or invitation management UI; no capability, assignment, or contact-link routes
+- no change to Better Auth, the sign-in or invitation screens, or the magic-link flow; no new auth method, no organization plugin
+- no schema change or migration
+- no edit to any inherited prospecting route; the fence is in `lib/workspace.mjs` and `app/page.jsx` only
+- no staging deploy from the branch and no production provisioning; the extra staging membership A3 recorded is untouched
+- no removal of the extra A3 staging membership or any other staging data
 
 ## Intentionally Not Done in A3
 
@@ -467,15 +558,17 @@ For the next phase, read:
 
 1. `CLAUDE.md`
 2. this file
-3. `docs/phases/A4.md` and `docs/DOMAIN_MODEL.md`
+3. `docs/phases/A5.md`, `docs/PRODUCT_SPEC.md`, `docs/DESIGN_SYSTEM.md`, and `docs/DESIGN_CHECKLIST.md`
 
 Read additional canonical planning docs only when the phase file or `docs/INDEX.md` calls for them.
 
 ## Next Planned Phase
 
-A4, Authorization engine. Not started. A3's primitives to build on: `lib/bloomops/access.mjs` (`getAccess`, `requireAccess`, `requireIdentity`, `originAllowed`), `lib/bloomops/membership.mjs` (`resolveWorkspaceAccess`, `canManageMembers`, `setMembershipStatus`), and the `member_capabilities`, `client_assignments`, and `service_assignments` tables from A2.
+A5, the new BloomOps shell. Not started. A4's engine is what the shell and every later route call: `requireAuthorized(req, { action, resource })` in routes, `getActor(access)` plus `evaluate` in server components, `legacyAppAllowed(access)` for the transitional prospecting app, and `ACTIONS` in `lib/bloomops/authorization.mjs` to extend as features arrive. The Project Manager, Team Member, and Client roles currently land on the holding screen at `/`; A5 gives internal roles the internal shell and Clients the portal shell.
 
 ## Last Verification
+
+2026-09-06, A4 execution. Results are in "Local verification (2026-09-06)" under "Authorization (A4)": 2698 tests pass, `npm run build` and `npm run cf:build` exit 0, the end-to-end smoke passes 46 of 46 and the external verifier 21 of 21 against the local Worker built from this branch, and the local D1 was migrated from a fresh simulation with a no-op second pass. No migration was added, so the zero-to-current proof from A3 stands unchanged. No staging or production resource was touched from this session: no wrangler command was authenticated, and the only wrangler operations run were local (`d1 execute --local`, `d1 migrations apply --local`, `d1 migrations list --local`, `wrangler dev` through `opennextjs-cloudflare preview`, `r2 object get --local`). `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched.
 
 2026-09-05, A3 execution, updated 2026-09-06 with the staging result. Local results are in "Local verification (2026-09-05)" under "Authentication and Membership (A3)": 2680 tests pass, `npm run build` and `npm run cf:build` exit 0, the external verifier passes 21 of 21 and the end-to-end smoke 40 of 40 against the local Worker, and the bootstrap CLI is idempotent against the local D1. Staging runs 33991041976 and 33991512885 deployed and migrated successfully. The second passed 11 live checks (including the A3 migration present and the access-code flow gone) and failed only at the explicit "authentication is configured" check for lack of the new repository secrets. On 2026-09-06, after the secrets were added, run 33991512885 was re-run as attempt 2 and passed end to end: secrets set on the Worker, bootstrap created the Owner and Admin memberships, and all 22 verifier checks passed against Worker version `68cc78e9`. Attempt 3 (00:32Z) failed at the bootstrap by design after the owner and admin secrets changed between runs, and attempt 4 (00:40Z) passed end to end again, 22 of 22, with the sender address secret now set. The zero-to-current workflow (run 33991041981) proved a fresh remote D1 reaches the A3 schema. Details under "Staging verification (A3)". No production resource was touched. `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched: no wrangler command in this session was authenticated, and the only wrangler operations run were local (`--local`, `wrangler dev` through `opennextjs-cloudflare preview`, `r2 object get --local`).
 

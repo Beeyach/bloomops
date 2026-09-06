@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
-import { requireAccess } from '@/lib/bloomops/access.mjs';
+import { requireAuthorized } from '@/lib/bloomops/access.mjs';
 import { createInvitation, listInvitations } from '@/lib/bloomops/invitations.mjs';
 import { sendInvitationEmail, invitationError, publicInvitation } from './_shared.mjs';
 
 export const dynamic = 'force-dynamic';
 
-// Invitations of the caller's workspace. Owner or Admin only.
+// Invitations of the caller's workspace. Needs the members.manage
+// capability (Owner and Admin by role).
 
 export async function GET(req) {
-  const { access, response } = await requireAccess(req, { manageMembers: true });
+  const { access, response } = await requireAuthorized(req, { action: 'invitations.manage' });
   if (response) return response;
   const rows = await listInvitations(access.db, access.workspace.id);
   return NextResponse.json({ invitations: rows.map(publicInvitation) }, { headers: { 'Cache-Control': 'no-store' } });
@@ -18,7 +19,7 @@ export async function GET(req) {
 // the email. If one is already pending for that address it is rotated and
 // re-sent, and the previous link stops working. The token is never returned.
 export async function POST(req) {
-  const { access, response } = await requireAccess(req, { manageMembers: true });
+  const { access, response } = await requireAuthorized(req, { action: 'invitations.manage' });
   if (response) return response;
   let body;
   try { body = await req.json(); } catch { body = null; }

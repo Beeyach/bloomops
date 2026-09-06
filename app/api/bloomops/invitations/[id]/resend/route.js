@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireAccess } from '@/lib/bloomops/access.mjs';
+import { requireAuthorized } from '@/lib/bloomops/access.mjs';
 import { resendInvitation } from '@/lib/bloomops/invitations.mjs';
 import { sendInvitationEmail, invitationError, publicInvitation } from '../../_shared.mjs';
 
@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 // POST -> a fresh token and expiry for a pending invitation (the old link
 // stops working) or a replacement for an expired one, then the email.
 export async function POST(req, { params }) {
-  const { access, response } = await requireAccess(req, { manageMembers: true });
+  const { access, response } = await requireAuthorized(req, { action: 'invitations.manage' });
   if (response) return response;
   const { id } = await params;
   const result = await resendInvitation(access.db, {

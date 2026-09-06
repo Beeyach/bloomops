@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireAccess } from '@/lib/bloomops/access.mjs';
+import { requireAuthorized } from '@/lib/bloomops/access.mjs';
 import { setMembershipStatus } from '@/lib/bloomops/membership.mjs';
 
 export const dynamic = 'force-dynamic';
@@ -18,7 +18,7 @@ const REASONS = {
 // removed members lose workspace access on their next request even if their
 // identity session is still valid.
 export async function PATCH(req, { params }) {
-  const { access, response } = await requireAccess(req, { manageMembers: true });
+  const { access, response } = await requireAuthorized(req, { action: 'members.manage' });
   if (response) return response;
   const { id } = await params;
   let body;
