@@ -27,9 +27,9 @@ Do not automatically load every planning document into context.
 
 Release A is the active release.
 
-Current phase: **A6 complete, A7 next**
+Current phase: **A7 complete, A8 next**
 
-Current phase file: `docs/phases/A7.md` (A6 is recorded in `docs/BUILD_STATE.md`)
+Current phase file: `docs/phases/A8.md` (A7 is recorded in `docs/BUILD_STATE.md`)
 
 ## Phase Reading Matrix
 

@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `service_engagements_client_type_open_uq` ON `service_engagements` (`client_id`,`service_type_id`) WHERE status IN ('planned', 'onboarding', 'active', 'paused');

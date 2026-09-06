@@ -1927,3 +1927,103 @@ select.bo-control {
     width: 100%;
   }
 }
+
+/* ── Services and scoped team assignment (A7) ───────────────────────────
+   A purchased service is an ordinary operational record, so this is rows
+   and hairlines like the Clients area. No card per service, no department
+   icon, no progress ring, no statistic. The one thing this section works
+   at is keeping client-wide assignment and service-specific assignment
+   visibly apart, because they are different amounts of access.
+   ───────────────────────────────────────────────────────────────────── */
+
+/* A service row carries its state marker and, for a manager, an action, so
+   its end can hold two groups. On a phone both drop below the text rather
+   than squeezing the service name. */
+.bo-service-row .bo-row-end {
+  gap: var(--bo-s2);
+}
+@media (max-width: 767px) {
+  .bo-service-row {
+    flex-wrap: wrap;
+  }
+  .bo-service-row .bo-row-end {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
+/* The scope note: the third line of a service row, quiet, wrapping, and
+   clamped so one long note cannot push the list out of shape. The full
+   text is in the edit form. */
+.bo-service-scope {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  margin-top: var(--bo-s2);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--bo-text-soft);
+  overflow-wrap: anywhere;
+  max-width: 70ch;
+}
+
+.bo-service-note {
+  margin-top: var(--bo-s4);
+}
+
+/* The service an engagement was bought for, stated in the edit form rather
+   than offered as a control. */
+.bo-service-fixed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bo-s2);
+}
+
+/* The assignment role beside a name: a word, never a colour on its own,
+   and the same shape as the primary-contact marker so the two read as the
+   same kind of fact. */
+.bo-assign-role {
+  display: inline-block;
+  margin-left: var(--bo-s2);
+  padding: 1px var(--bo-s2);
+  border: 1px solid var(--bo-border-strong);
+  border-radius: var(--bo-r-full);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bo-text-soft);
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+
+/* One service's own team. Indented under its heading so the eye can tell
+   at a glance that these people have this service and not the client. */
+.bo-service-team {
+  margin-top: var(--bo-s6);
+  padding-left: var(--bo-s4);
+  border-left: 2px solid var(--bo-border);
+}
+.bo-service-team > .bo-btn {
+  margin-top: var(--bo-s3);
+}
+.bo-service-team-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--bo-s3);
+  margin-bottom: var(--bo-s3);
+}
+@media (max-width: 479px) {
+  .bo-service-team {
+    padding-left: var(--bo-s3);
+  }
+}
+
+/* A multi-line control: the same field as every other, taller. */
+.bo-textarea {
+  min-height: 96px;
+  resize: vertical;
+  line-height: 1.5;
+}

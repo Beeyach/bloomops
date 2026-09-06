@@ -117,6 +117,15 @@ const domainFiles = journal.entries.map((e) => `${e.tag}.sql`);
 const domainTables = BLOOMOPS_TABLES.map(getTableName);
 const triggerNames = [...readFileSync(join(REPO, 'drizzle', '0001_immutability_triggers.sql'), 'utf8')
   .matchAll(/CREATE\s+TRIGGER\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`]?(\w+)/gi)].map((m) => m[1]);
+// Every index the committed migrations create, read from the migrations
+// themselves rather than listed here, so a migration that adds one is
+// covered without editing this file. Some phases add nothing but an index
+// (A6's one primary contact per client, A7's one open engagement per
+// service type), and a table-only check would pass with it missing.
+const indexNames = [...domainFiles
+  .map((file) => readFileSync(join(REPO, 'drizzle', file), 'utf8'))
+  .join('\n')
+  .matchAll(/CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`]?(\w+)/gi)].map((m) => m[1]);
 const listSql = (type) => `SELECT name FROM sqlite_master WHERE type = '${type}' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' ORDER BY name`;
 const names = (type) => query(listSql(type)).map((r) => r.name);
 
@@ -215,6 +224,10 @@ try {
   const triggers = names('trigger');
   const missingTriggers = triggerNames.filter((t) => !triggers.includes(t));
   record('A2 immutability triggers exist', missingTriggers.length === 0 && triggerNames.length > 0, `${triggers.join(', ')}`);
+  const indexes = names('index');
+  const missingIndexes = indexNames.filter((i) => !indexes.includes(i));
+  record('every index the migrations create exists', missingIndexes.length === 0 && indexNames.length > 0,
+    missingIndexes.length === 0 ? `${indexNames.length} indexes, including the partial unique ones` : `missing: ${missingIndexes.join(', ')}`);
 
   const snapA = snapshot();
   const second = migrateAll('second run');

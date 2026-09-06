@@ -86,24 +86,29 @@ async function scenario() {
   person('cross', A, 'team_member', 'cross_a');
   run(t.raw, "INSERT INTO workspace_memberships (id, workspace_id, user_id, role, status, created_at) VALUES ('m_cross_b', ?, 'u_cross_a', 'owner', 'active', '2026-06-01T00:00:00.000Z')", B);
 
-  // Clients, service types, engagements, departments.
+  // Clients, engagements, and a department. The service types and the
+  // departments themselves come from the workspace's own seeded catalogue
+  // (A7 bootstrap), so this fixture uses the real rows rather than
+  // inventing a second Social that the unique slug would refuse.
+  const typeId = (workspaceId, slug) => one(t.raw, 'SELECT id FROM service_types WHERE workspace_id = ? AND slug = ?', workspaceId, slug).id;
+  const departmentId = (workspaceId, slug) => one(t.raw, 'SELECT id FROM departments WHERE workspace_id = ? AND slug = ?', workspaceId, slug).id;
   run(t.raw, "INSERT INTO bloomops_clients (id, workspace_id, name, slug) VALUES ('c_james', ?, 'James', 'james')", A);
   run(t.raw, "INSERT INTO bloomops_clients (id, workspace_id, name, slug) VALUES ('c_lawrence', ?, 'Lawrence', 'lawrence')", A);
   run(t.raw, "INSERT INTO bloomops_clients (id, workspace_id, name, slug) VALUES ('c_b1', ?, 'B One', 'b-one')", B);
-  run(t.raw, "INSERT INTO service_types (id, workspace_id, name, slug) VALUES ('st_a_social', ?, 'Social', 'social')", A);
-  run(t.raw, "INSERT INTO service_types (id, workspace_id, name, slug) VALUES ('st_a_ghl', ?, 'GHL Systems', 'ghl')", A);
-  run(t.raw, "INSERT INTO service_types (id, workspace_id, name, slug) VALUES ('st_b_social', ?, 'Social', 'social')", B);
-  run(t.raw, "INSERT INTO service_engagements (id, workspace_id, client_id, service_type_id) VALUES ('se_james_social', ?, 'c_james', 'st_a_social')", A);
-  run(t.raw, "INSERT INTO service_engagements (id, workspace_id, client_id, service_type_id) VALUES ('se_james_ghl', ?, 'c_james', 'st_a_ghl')", A);
-  run(t.raw, "INSERT INTO service_engagements (id, workspace_id, client_id, service_type_id) VALUES ('se_lawrence_social', ?, 'c_lawrence', 'st_a_social')", A);
-  run(t.raw, "INSERT INTO service_engagements (id, workspace_id, client_id, service_type_id) VALUES ('se_b1_social', ?, 'c_b1', 'st_b_social')", B);
-  run(t.raw, "INSERT INTO departments (id, workspace_id, name, slug) VALUES ('d_social', ?, 'Social', 'social')", A);
+  const stASocial = typeId(A, 'social-media-management');
+  const stAGhl = typeId(A, 'ghl');
+  const stBSocial = typeId(B, 'social-media-management');
+  run(t.raw, "INSERT INTO service_engagements (id, workspace_id, client_id, service_type_id) VALUES ('se_james_social', ?, 'c_james', ?)", A, stASocial);
+  run(t.raw, "INSERT INTO service_engagements (id, workspace_id, client_id, service_type_id) VALUES ('se_james_ghl', ?, 'c_james', ?)", A, stAGhl);
+  run(t.raw, "INSERT INTO service_engagements (id, workspace_id, client_id, service_type_id) VALUES ('se_lawrence_social', ?, 'c_lawrence', ?)", A, stASocial);
+  run(t.raw, "INSERT INTO service_engagements (id, workspace_id, client_id, service_type_id) VALUES ('se_b1_social', ?, 'c_b1', ?)", B, stBSocial);
+  const dSocial = departmentId(A, 'social');
 
   // Scope rows.
   run(t.raw, "INSERT INTO client_assignments (workspace_id, client_id, membership_id, assignment_role) VALUES (?, 'c_james', 'm_tmClient', 'member')", A);
   run(t.raw, "INSERT INTO client_assignments (workspace_id, client_id, membership_id, assignment_role) VALUES (?, 'c_james', 'm_cross_a', 'member')", A);
   run(t.raw, "INSERT INTO service_assignments (workspace_id, service_engagement_id, membership_id, assignment_role) VALUES (?, 'se_james_social', 'm_tmService', 'lead')", A);
-  run(t.raw, "INSERT INTO department_memberships (workspace_id, department_id, membership_id) VALUES (?, 'd_social', 'm_tmDept')", A);
+  run(t.raw, 'INSERT INTO department_memberships (workspace_id, department_id, membership_id) VALUES (?, ?, ?)', A, dSocial, 'm_tmDept');
   run(t.raw, "INSERT INTO client_contacts (id, workspace_id, client_id, name, email, user_id, is_primary) VALUES ('cc_james', ?, 'c_james', 'James Client', ?, 'u_clientLinked', 1)", A, PEOPLE.clientLinked);
   run(t.raw, "INSERT INTO client_contacts (id, workspace_id, client_id, name, email, user_id) VALUES ('cc_b1', ?, 'c_b1', 'B Contact', ?, 'u_clientBLinked')", B, PEOPLE.clientBLinked);
 
@@ -136,7 +141,7 @@ async function scenario() {
   const client = (id) => (access) => loadClientResource(access.db, access.workspace.id, id);
   const service = (id) => (access) => loadServiceResource(access.db, access.workspace.id, id);
 
-  return { ...t, A, B, ownerA, adminA, membershipOf, actorFor, cookieFor, request, http, client, service };
+  return { ...t, A, B, ownerA, adminA, membershipOf, actorFor, cookieFor, request, http, client, service, typeId, departmentId, stASocial, stAGhl, stBSocial, dSocial };
 }
 
 const describe = (d) => `${d.allowed ? 'allow' : d.outcome}:${d.reason}`;
@@ -282,18 +287,39 @@ test('the role matrix: every role against every representative action, allow and
     'templates.manage': [true, true, false, false, false],
     'finance.view': [true, false, false, false, false],
     'finance.edit': [true, false, false, false, false],
-    // Creating names no record: the client does not exist yet (A6).
+    // Creating a client names no record: it does not exist yet (A6).
     'client.create': [true, true, true, false, false],
     'client.view': [true, true, true, true, true],
     'client.manage': [true, true, true, false, false],
     'service.view': [true, true, true, true, true],
     'service.manage': [true, true, true, false, false],
+    // A7's three delivery-coordination actions. Owner, Admin, and Project
+    // Manager; never a Team Member, never a Client. `service.create` names
+    // the client the engagement is being added to, because the engagement
+    // does not exist yet.
+    'service.create': [true, true, true, false, false],
+    'client.assign': [true, true, true, false, false],
+    'service.assign': [true, true, true, false, false],
     'legacy.prospecting': [true, true, false, false, false],
   };
+  // Which record each resource action is asked about, so the matrix uses
+  // the same descriptor the real routes do rather than a convenient one.
+  const RESOURCE_OF = {
+    'client.view': jamesClient,
+    'client.manage': jamesClient,
+    'client.assign': jamesClient,
+    'service.create': jamesClient,
+    'service.view': jamesSocial,
+    'service.manage': jamesSocial,
+    'service.assign': jamesSocial,
+  };
   assert.deepEqual(Object.keys(cases).sort(), Object.keys(ACTIONS).sort(), 'every action is in the matrix');
+  for (const [action, policy] of Object.entries(ACTIONS)) {
+    assert.equal(Boolean(policy.resource), Object.prototype.hasOwnProperty.call(RESOURCE_OF, action), `${action} names a record, or does not`);
+  }
   const seen = [];
   for (const [action, expected] of Object.entries(cases)) {
-    const resource = ACTIONS[action].resource ? (action.startsWith('client.') ? jamesClient : jamesSocial) : null;
+    const resource = RESOURCE_OF[action] || null;
     Object.entries(actors).forEach(([role, actor], i) => {
       const decision = evaluate(actor, { action, resource });
       seen.push(`${role} ${action}: ${describe(decision)}`);

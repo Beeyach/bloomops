@@ -60,10 +60,21 @@ export function d1Binding(raw) {
   });
   return {
     prepare: (sql) => statement(sql, []),
+    // D1 applies a batch as one implicit transaction: every statement
+    // commits or none does. The double has to do the same, or a test that
+    // asserts "the record cannot exist without its activity event" would
+    // pass against a double that simply left the first insert behind.
     async batch(statements) {
-      const out = [];
-      for (const s of statements) out.push(await s.all());
-      return out;
+      raw.exec('BEGIN');
+      try {
+        const out = [];
+        for (const s of statements) out.push(await s.all());
+        raw.exec('COMMIT');
+        return out;
+      } catch (err) {
+        raw.exec('ROLLBACK');
+        throw err;
+      }
     },
     async exec(sql) {
       raw.exec(sql);

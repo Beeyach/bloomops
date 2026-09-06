@@ -4,10 +4,16 @@ import { requireShell } from '@/lib/bloomops/shell-server.mjs';
 import { getClient, ownerCandidates, timezoneOptions } from '@/lib/bloomops/clients.mjs';
 import { listContacts } from '@/lib/bloomops/client-contacts.mjs';
 import { clientActivity } from '@/lib/bloomops/client-activity.mjs';
+import { availableServiceTypes, listClientServices } from '@/lib/bloomops/services.mjs';
+import { listServiceTypes } from '@/lib/bloomops/service-catalog.mjs';
+import { assignmentCandidates, listClientAssignments, listServiceAssignments } from '@/lib/bloomops/assignments.mjs';
 import { EmptyState, Notice, Section, Surface } from '@/components/bloomops/Primitives';
 import { ActivityRow, ClientDetailHeader, ClientTabs, ContactRow, isClientTab } from '@/components/bloomops/Clients';
+import { AssignmentRow, ServiceRow, ServiceTeamHeading } from '@/components/bloomops/Services';
 import ClientOverview, { ClientFactsList } from '@/components/bloomops/ClientOverview';
 import ClientContacts from '@/components/bloomops/ClientContacts';
+import ClientServices from '@/components/bloomops/ClientServices';
+import ClientTeam from '@/components/bloomops/ClientTeam';
 
 // One client (A6). The canonical route is /clients/:id; the five Release A
 // tabs are `?tab=`, so every section is an address that can be shared and
@@ -56,9 +62,9 @@ export default async function ClientDetailPage({ params, searchParams }) {
       <ClientDetailHeader client={client} />
       <ClientTabs clientId={client.id} active={tab} />
       {tab === 'overview' && <OverviewTab access={access} client={client} contacts={contacts} mayManage={mayManage} />}
-      {tab === 'services' && <ServicesTab />}
+      {tab === 'services' && <ServicesTab access={access} actor={actor} client={client} mayManage={mayManage} />}
       {tab === 'onboarding' && <OnboardingTab clientName={client.name} />}
-      {tab === 'team' && <TeamTab client={client} mayManage={mayManage} />}
+      {tab === 'team' && <TeamTab access={access} actor={actor} client={client} mayManage={mayManage} />}
       {tab === 'activity' && <ActivityTab access={access} client={client} />}
     </>
   );
@@ -97,21 +103,39 @@ async function OverviewTab({ access, client, contacts, mayManage }) {
   );
 }
 
-// A7 owns service types, purchased engagements, and their lifecycle. This
-// tab says so and shows nothing invented: no catalogue, no fake package,
-// no placeholder rows.
-function ServicesTab() {
-  return (
-    <Section id="services" title="Services">
-      <Surface tone="mist" padding="lg" className="bo-page-narrow">
-        <p className="bo-body">
-          What this client has bought will live here: one entry per service, each with its own status, so a client with Social, Ads, and GHL Systems is still one
-          client.
-        </p>
-        <p className="bo-body">Services are part of a later BloomOps release. Nothing has been set up for this client yet.</p>
-      </Surface>
-    </Section>
-  );
+// What this client has bought (A7). One row per purchased service, each
+// with its own status, so a client with Social, Ads, and GHL is still one
+// client.
+//
+// A manager gets the real controls. A Team Member who reaches this client
+// reads the same rows with no controls at all, rendered on the server, and
+// the routes behind those controls would refuse them anyway. Which services
+// a Team Member sees is the engine's answer, not this page's: someone
+// assigned to the client sees all of them, someone assigned to one service
+// sees that one.
+async function ServicesTab({ access, actor, client, mayManage }) {
+  const services = await listClientServices(access.db, actor, client.id);
+  if (!mayManage) {
+    return (
+      <Section id="services" title="Services">
+        {services.length === 0 ? (
+          <EmptyState title="No services yet">
+            <p>Nothing has been added for {client.name} yet.</p>
+          </EmptyState>
+        ) : (
+          <ul className="bo-rows" aria-label="Purchased services">
+            {services.map((service) => (
+              <ServiceRow key={service.id} service={service} />
+            ))}
+          </ul>
+        )}
+        <p className="bo-small bo-service-note">Services are added and changed by the workspace Owner, an Admin, or a Project Manager.</p>
+      </Section>
+    );
+  }
+  const catalogue = await listServiceTypes(access.db, access.workspace.id);
+  const availableTypes = await availableServiceTypes(access.db, access.workspace.id, client.id, catalogue);
+  return <ClientServices clientId={client.id} clientName={client.name} services={services} availableTypes={availableTypes} />;
 }
 
 // A8 generates onboarding from templates, A9 creates the instance at
@@ -130,13 +154,84 @@ function OnboardingTab({ clientName }) {
   );
 }
 
-// A6 owns one team fact about a client: who is responsible for it inside
-// the agency. Assigning people to a client or to one of its services, and
-// everything that follows from that, is A7's; this tab does not pretend
-// otherwise and offers no assignment controls.
-function TeamTab({ client, mayManage }) {
+// Who is responsible for this client (A6), and who has access to it (A7).
+//
+// Three sections, kept apart on purpose because they are three different
+// facts. The owner is responsibility and grants nothing. The client-wide
+// team reaches the client and every service under it. A service team
+// reaches one service and nothing else.
+async function TeamTab({ access, actor, client, mayManage }) {
+  const [services, clientAssignments] = await Promise.all([
+    listClientServices(access.db, actor, client.id),
+    listClientAssignments(access.db, access.workspace.id, client.id),
+  ]);
+  const byService = await listServiceAssignments(access.db, access.workspace.id, services.map((s) => s.id));
+  const serviceAssignments = Object.fromEntries([...byService.entries()]);
+
+  const owner = <OwnerSection client={client} mayManage={mayManage} />;
+  if (!mayManage) {
+    return (
+      <>
+        {owner}
+        <Section id="client-team" title="Client-wide team">
+          <p className="bo-body">People here work across every service {client.name} has.</p>
+          {clientAssignments.length === 0 ? (
+            <p className="bo-small">Nobody is assigned to the whole client yet.</p>
+          ) : (
+            <ul className="bo-rows" aria-label="Client-wide team">
+              {clientAssignments.map((assignment) => (
+                <AssignmentRow key={assignment.id} assignment={assignment} />
+              ))}
+            </ul>
+          )}
+        </Section>
+        <Section id="service-teams" title="Service teams">
+          <p className="bo-body">People here work on one service only.</p>
+          {services.length === 0 ? (
+            <p className="bo-small">No services have been added yet.</p>
+          ) : (
+            services.map((service) => (
+              <div key={service.id} className="bo-service-team">
+                <ServiceTeamHeading service={service} />
+                {(serviceAssignments[service.id] || []).length === 0 ? (
+                  <p className="bo-small">Nobody is assigned to this service yet.</p>
+                ) : (
+                  <ul className="bo-rows" aria-label={`${service.serviceTypeName} team`}>
+                    {serviceAssignments[service.id].map((assignment) => (
+                      <AssignmentRow key={assignment.id} assignment={assignment} />
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))
+          )}
+        </Section>
+        <p className="bo-small">Assignments are changed by the workspace Owner, an Admin, or a Project Manager.</p>
+      </>
+    );
+  }
+
+  const candidates = await assignmentCandidates(access.db, access.workspace.id);
   return (
-    <Section id="team" title="Team">
+    <ClientTeam
+      clientId={client.id}
+      clientName={client.name}
+      clientAssignments={clientAssignments}
+      services={services}
+      serviceAssignments={serviceAssignments}
+      candidates={candidates}
+    >
+      {owner}
+    </ClientTeam>
+  );
+}
+
+// The A6 owner fact, unchanged by A7. Ownership is responsibility, not
+// access: naming somebody here writes no assignment row, and removing their
+// assignment leaves this exactly as recorded.
+function OwnerSection({ client, mayManage }) {
+  return (
+    <Section id="team" title="Internal owner">
       {client.owner ? (
         <>
           <p className="bo-body">
@@ -153,12 +248,9 @@ function TeamTab({ client, mayManage }) {
         <p className="bo-body">Nobody owns this client yet.</p>
       )}
       <p className="bo-small">
-        The owner is who is responsible, not who has access. Being named here does not give anyone access they did not already have.
+        The owner is who is responsible, not who has access. Access comes from the assignments below.
         {mayManage ? ' Change the owner from Edit details on the Overview tab.' : ''}
       </p>
-      <Surface tone="mist" padding="lg" className="bo-page-narrow" style={{ marginTop: 16 }}>
-        <p className="bo-body">Assigning people to this client and to its individual services is part of a later BloomOps release.</p>
-      </Surface>
     </Section>
   );
 }
