@@ -8,8 +8,10 @@
 // Owner, read the email back from the development mail transport (the local
 // R2 simulation, via `wrangler r2 object get --local`), click the link, use
 // the session on inherited and BloomOps routes, invite a new person, sign
-// them in through their invitation, accept it, suspend them, watch access
-// stop while their identity session survives, and sign out.
+// them in through their invitation, accept it, prove the A4 fence (a Team
+// Member reaches neither the inherited prospecting routes nor the
+// prospecting home page, and holds no capabilities), suspend them, watch
+// access stop while their identity session survives, and sign out.
 //
 // Development only. It refuses any URL that is not loopback and needs the
 // r2-dev transport, which the Worker itself refuses outside development. It
@@ -106,8 +108,9 @@ must('the link redirects home and sets the session cookie', owner.verified.statu
   check('the same link cannot be used twice', reuse.status === 302 && /error=INVALID_TOKEN/.test(reuse.headers.get('location') || '') && !reuse.cookies, reuse.headers.get('location'));
   const me = await call('/api/bloomops/me', { cookie: owner.cookie });
   must('/api/bloomops/me shows the Owner membership', me.json?.membership?.role === 'owner' && me.json?.workspace?.slug === 'smoke-agency', JSON.stringify(me.json));
+  check('the Owner holds every capability by role and may use the inherited app', JSON.stringify(me.json?.membership?.capabilities) === JSON.stringify(['members.manage', 'workspace.settings', 'templates.manage', 'finance.view', 'finance.edit']) && me.json?.membership?.legacyApp === true, JSON.stringify(me.json?.membership));
   const home = await call('/', { cookie: owner.cookie, accept: 'text/html' });
-  check('the signed-in home page renders', home.status === 200 && !/sign-in-email/.test(home.text), `status ${home.status}`);
+  check('the signed-in home page renders the inherited app for the Owner', home.status === 200 && !/sign-in-email/.test(home.text) && !/Nothing here yet/.test(home.text), `status ${home.status}`);
   const infra = await call('/api/infra', { cookie: owner.cookie });
   check('/api/infra answers a member', infra.status === 200 && infra.json?.environment === 'development', `status ${infra.status}`);
   const pages = await call('/api/pages', { cookie: owner.cookie });
@@ -144,7 +147,15 @@ let invitationId = '';
   check('accepting again is idempotent', again.status === 200 && again.json?.alreadyAccepted === true, `status ${again.status}`);
   const after = await call('/api/bloomops/me', { cookie: inviteeCookie });
   check('the invitee is now a Team Member', after.json?.membership?.role === 'team_member' && after.json?.membership?.canManageMembers === false, JSON.stringify(after.json?.membership));
-  check('a Team Member cannot list members', (await call('/api/bloomops/members', { cookie: inviteeCookie })).status === 403);
+  check('a Team Member holds no capability and may not use the inherited app', Array.isArray(after.json?.membership?.capabilities) && after.json.membership.capabilities.length === 0 && after.json?.membership?.legacyApp === false, JSON.stringify(after.json?.membership));
+  const denied = await call('/api/bloomops/members', { cookie: inviteeCookie });
+  check('a Team Member cannot list members', denied.status === 403 && denied.json?.error === 'You do not have permission to do that.' && !('reason' in (denied.json || {})), `status ${denied.status} ${denied.text.slice(0, 120)}`);
+  const invite = await call('/api/bloomops/invitations', { method: 'POST', cookie: inviteeCookie, body: { email: 'nobody@example.com', role: 'team_member' } });
+  check('a Team Member cannot invite', invite.status === 403, `status ${invite.status}`);
+  check('a Team Member cannot reach the inherited prospecting routes', (await call('/api/pages', { cookie: inviteeCookie })).status === 401 && (await call('/api/prospects', { cookie: inviteeCookie })).status === 401 && (await call('/api/settings', { cookie: inviteeCookie })).status === 401);
+  const teamHome = await call('/', { cookie: inviteeCookie, accept: 'text/html' });
+  check('a Team Member sees the holding screen, not the prospecting app', teamHome.status === 200 && /Nothing here yet/.test(teamHome.text) && !/Search prospects/.test(teamHome.text), `status ${teamHome.status}`);
+  check('the Owner still reaches the inherited routes', (await call('/api/prospects', { cookie: owner.cookie })).status === 200);
   check('the resend of an accepted invitation is refused', (await call(`/api/bloomops/invitations/${invitationId}/resend`, { method: 'POST', cookie: owner.cookie })).status === 409);
 }
 

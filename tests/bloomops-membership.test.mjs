@@ -7,14 +7,14 @@ import { testDb, testAuth, run, one, all, APP_URL } from './_bloomops-db.mjs';
 import { assessReport, bootstrapInput, bootstrapPlan, maskEmail, runBootstrap, slugify } from '../lib/bloomops/bootstrap.mjs';
 import {
   ROLE_LABELS,
-  canManageMembers,
   legacyRole,
   listWorkspaceMembers,
   normalizeEmail,
   resolveWorkspaceAccess,
   setMembershipStatus,
 } from '../lib/bloomops/membership.mjs';
-import { getAccess, getAccessOrProblem, requireAccess, requireIdentity } from '../lib/bloomops/access.mjs';
+import { getAccess, getAccessOrProblem, requireAccess, requireAuthorized, requireIdentity } from '../lib/bloomops/access.mjs';
+import { hasCapability, loadActor } from '../lib/bloomops/authorization.mjs';
 import { getWorkspace } from '../lib/workspace.mjs';
 import * as schema from '../lib/bloomops/schema.mjs';
 
@@ -122,7 +122,7 @@ test('roles are persisted exactly as the five BloomOps roles and nothing else', 
     const access = await resolveWorkspaceAccess(t.db, `u${i}`);
     assert.equal(access.membership.role, role);
     assert.equal(legacyRole(role), role === 'owner' || role === 'admin' ? 'admin' : 'user');
-    assert.equal(canManageMembers(access.membership), role === 'owner' || role === 'admin');
+    assert.equal(hasCapability(await loadActor(t.db, access), 'members.manage'), role === 'owner' || role === 'admin');
   }
   assert.throws(() => run(t.raw, "INSERT INTO workspace_memberships (id, workspace_id, user_id, role) VALUES ('bad', ?, 'u0', 'superuser')", ws.id), /CHECK/);
   assert.throws(() => run(t.raw, "INSERT INTO workspace_memberships (id, workspace_id, user_id, role, status) VALUES ('bad', ?, 'u0', 'client', 'banned')", ws.id), /CHECK/);
@@ -196,7 +196,7 @@ test('an identity with no membership, a suspended one, or a removed one is denie
   assert.equal(await getWorkspace(req(''), { env: t.env }), null);
 
   const admin = await t.signIn('admin@example.com');
-  const ok = await requireAccess(req(admin.cookie), { manageMembers: true, env: t.env });
+  const ok = await requireAuthorized(req(admin.cookie), { action: 'members.manage', env: t.env });
   assert.equal(ok.access.membership.role, 'admin');
   const legacy = await getWorkspace(req(admin.cookie), { env: t.env });
   assert.equal(legacy.workspace, 'ellen-s-agency');
@@ -261,12 +261,12 @@ test('a team member cannot manage members, and a cross-site origin is refused on
   const tm = await t.signIn('tm@example.com');
   const read = await requireAccess(new Request(`${APP_URL}/api/bloomops/me`, { headers: { cookie: tm.cookie } }), { env: t.env });
   assert.equal(read.access.membership.role, 'team_member');
-  const manage = await requireAccess(new Request(`${APP_URL}/api/bloomops/invitations`, { method: 'POST', headers: { cookie: tm.cookie, origin: APP_URL } }), { manageMembers: true, env: t.env });
+  const manage = await requireAuthorized(new Request(`${APP_URL}/api/bloomops/invitations`, { method: 'POST', headers: { cookie: tm.cookie, origin: APP_URL } }), { action: 'invitations.manage', env: t.env });
   assert.equal(manage.response.status, 403);
   const owner = await t.signIn('owner@example.com');
-  const foreign = await requireAccess(new Request(`${APP_URL}/api/bloomops/invitations`, { method: 'POST', headers: { cookie: owner.cookie, origin: 'https://evil.example' } }), { manageMembers: true, env: t.env });
+  const foreign = await requireAuthorized(new Request(`${APP_URL}/api/bloomops/invitations`, { method: 'POST', headers: { cookie: owner.cookie, origin: 'https://evil.example' } }), { action: 'invitations.manage', env: t.env });
   assert.equal(foreign.response.status, 403);
-  const same = await requireAccess(new Request(`${APP_URL}/api/bloomops/invitations`, { method: 'POST', headers: { cookie: owner.cookie, origin: APP_URL } }), { manageMembers: true, env: t.env });
+  const same = await requireAuthorized(new Request(`${APP_URL}/api/bloomops/invitations`, { method: 'POST', headers: { cookie: owner.cookie, origin: APP_URL } }), { action: 'invitations.manage', env: t.env });
   assert.ok(same.access);
 });
 
