@@ -843,7 +843,13 @@ Somebody who was legitimately assigned and has since been suspended or removed *
 
 Assignment roles are `lead` and `member`, and no third was invented. The canonical documents do not ask for exactly one lead, so nothing enforces one: a client or a service may have several leads, or none.
 
-Re-assigning the same person is never a second row: the same role is a no-op that records nothing, a different role is a role change that records one update event. The unique indexes on `(client_id, membership_id)` and `(service_engagement_id, membership_id)` make that true under concurrency.
+Re-assigning the same person is never a second row: the same role is a no-op that records nothing, a different role is a role change that records one update event.
+
+Those semantics hold under concurrent requests, not only sequential ones, and two things in `addAssignment` make that true.
+
+**Atomicity.** The assignment row and its `*_ASSIGNMENT_ADDED` event are one `db.batch`, with the id generated in the domain so the event can name the row before either exists. D1 applies a batch as one transaction, so there is no state in which an assignment exists without the significant activity event that records it.
+
+**Concurrency.** The read before the write is a fast path and never the authority; the unique indexes on `(client_id, membership_id)` and `(service_engagement_id, membership_id)` are. Two requests can both read nothing before either writes, and one then loses the index. That loser does not fail: it re-reads the winning row by workspace, parent, and membership and resolves through exactly the semantics above, so the caller gets the answer it would have got had the two requests arrived in order. Detection is scoped to a UNIQUE violation naming that kind's own table and both of its index columns, read down the error's cause chain; a foreign key failure, a CHECK failure, or a unique violation anywhere else is re-thrown rather than mistaken for a re-assignment. Two attempts, then a calm `conflict` refusal, so a row that keeps vanishing cannot spin.
 
 ### Owner versus assignment
 
@@ -915,7 +921,7 @@ No column was added, no table was redesigned, and the A6 primary-contact migrati
 | Check | Result |
 |---|---|
 | `npm ci` | ok |
-| `npm test` | 2819 tests, 2819 pass, 0 fail (2765 before A7; 54 A7 tests across `tests/bloomops-services.test.mjs` and `tests/bloomops-assignments.test.mjs`) |
+| `npm test` | 2826 tests, 2826 pass, 0 fail (2765 before A7; 61 A7 tests across `tests/bloomops-services.test.mjs` and `tests/bloomops-assignments.test.mjs`, including the seven added by the correction pass below) |
 | `npm run build` | exit 0 |
 | `npm run cf:build` | exit 0, `Worker saved in .open-next/worker.js` |
 | Local D1 from zero | `.wrangler/state` deleted, then `db:schema:local`, `db:migrate:local`, `db:domain:migrate:local` (5 applied). Second pass: "No migrations to apply". `client_contacts_primary_uq` and `service_engagements_client_type_open_uq` both present on the fresh database |
@@ -1143,6 +1149,14 @@ A8, Onboarding Templates. Not started. It builds the template and template-versi
 A7, Services and Departments. Complete. It seeds the four departments and the initial service types, gives one client several purchased service engagements with their own lifecycle, and builds assignment at both the client and the engagement level. The Services and Team tabs of the client detail (`app/(internal)/clients/[id]/page.jsx`) are where its screens land; both say today, honestly, that services and assignments are a later release. `service.view` and `service.manage` already exist in `ACTIONS`, and `loadServiceResource` already builds the descriptor; A7 adds whatever creation action it needs beside `client.create` and may widen `ownerCandidates` in `lib/bloomops/clients.mjs` once a manager can grant client access in the same place they name an owner. The A4 rule that a service assignment reaches the engagement and not the client record is load-bearing and is covered by tests in both `tests/bloomops-authorization.test.mjs` and `tests/bloomops-clients.test.mjs`.
 
 ## Last Verification
+
+2026-09-06, A7 correction pass after an independent audit of PR #8. The audit found one blocking problem in `lib/bloomops/assignments.mjs`: `addAssignment` read then inserted, so two concurrent requests assigning the same person to the same parent could both read nothing and the loser would surface a raw unique-constraint failure instead of the documented re-assignment semantics; and the assignment insert and its `*_ASSIGNMENT_ADDED` event were two separate writes, so an assignment could exist without the event that records it. Both are fixed in the shared implementation, so client and service assignments behave identically (see "Assignment, and exactly what each row grants"). Seven regression tests were added, including three that arrange the real interleaving (the pre-read finds nothing, another writer commits through the real domain path, the insert meets the real index) and one that proves the batch rolls back when the event write fails. Each was confirmed to fail against the unfixed code before being kept.
+
+One test-harness correction came with it: the D1 double in `tests/_bloomops-db.mjs` ran a batch as sequential statements with no rollback, so it could not have proved atomicity for A6's `createClient` or A7's `createServiceEngagement` either. It now wraps a batch in a real SQLite transaction, matching what D1 does. Correct domain code fails the new atomicity test against the old double, which is why the change was necessary.
+
+The optional dialog cleanup the audit flagged was taken: the assignment form no longer renders a role selector when nobody is left to assign.
+
+Re-verified: 2826 tests pass (2819 before this pass), `npm run build` and `npm run cf:build` exit 0, the local Worker smoke passes 132 of 132, and a focused browser check of the changed dialog passes at 1440, 390, and 320 in both its states. No migration was added or changed, so the zero-to-current proof from the A7 execution stands. No staging or production resource was touched, and no wrangler command was authenticated: the only wrangler operations run were local. `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched.
 
 2026-09-06, A7 execution. Results are in "Local verification (2026-09-06)" under "Services and Departments (A7)": 2819 tests pass (2765 before A7), `npm run build` and `npm run cf:build` exit 0, the end-to-end smoke passes 132 of 132 and the external verifier 21 of 21 against the local Worker built from this branch, and the browser review passes 538 of 538 structural checks at all five widths with 249 screenshots inspected by hand. A7 added migration `0004_a7_open_service_uq.sql`, so zero-to-current was re-proved: `node .github/scripts/verify-zero-remote.mjs --local` passed every check, including a new one asserting that every index the committed migrations create is present on a database built only from them, and the local D1 went from an empty simulation through all five domain migrations with a no-op second pass. The browser review found two defects (the assignment role running into the name in the accessible text, and the per-service assign button overflowing a 320px screen); both were fixed and re-reviewed before this was recorded. No staging or production resource was touched from this session: no wrangler command was authenticated, and the only wrangler operations run were local (`d1 execute --local`, `d1 migrations apply --local`, `wrangler dev` through `opennextjs-cloudflare preview`, `r2 object get --local`). `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched.
 

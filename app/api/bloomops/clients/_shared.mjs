@@ -86,6 +86,7 @@ const STATUS_BY_REASON = {
   duplicate_email: 409,
   duplicate_service: 409,
   slug_conflict: 409,
+  conflict: 409,
   linked: 409,
 };
 
@@ -97,6 +98,9 @@ const MESSAGE_BY_REASON = {
   // Never the database's own words. The per-field message that comes with
   // this names the service and says what to do about it.
   duplicate_service: 'That service is already running for this client.',
+  // A write that lost a race twice over. Nothing was written; the caller is
+  // told to try again rather than shown a constraint message.
+  conflict: 'That could not be saved just now. Try again.',
   slug_conflict: 'That could not be saved just now. Try again.',
   linked: 'This contact can sign in to the client portal, so they cannot be removed here.',
 };

@@ -30,6 +30,9 @@ import { send } from './ClientOverview';
 
 function AssignForm({ candidates, assigned, onSubmit, onCancel, busy, serverError, fieldErrors, idPrefix, scopeHint }) {
   const available = candidates.filter((c) => !assigned.some((a) => a.membershipId === c.membershipId));
+  // Nobody left to assign: the form says so and offers nothing, rather than
+  // a role selector for an assignment that cannot be made.
+  const nobodyLeft = available.length === 0;
   const [values, setValues] = useState({ membershipId: available[0]?.membershipId || '', assignmentRole: 'member' });
   const [errors, setErrors] = useState({});
   const shown = { ...errors, ...fieldErrors };
@@ -49,7 +52,7 @@ function AssignForm({ candidates, assigned, onSubmit, onCancel, busy, serverErro
   return (
     <form onSubmit={submit} noValidate>
       <div className="bo-dialog-body">
-        {available.length === 0 ? (
+        {nobodyLeft ? (
           <Notice tone="info">Everyone active in this workspace is already on this list.</Notice>
         ) : (
           <Field id={id('membershipId')} label="Person" error={shown.membershipId} hint={scopeHint}>
@@ -68,24 +71,28 @@ function AssignForm({ candidates, assigned, onSubmit, onCancel, busy, serverErro
             </select>
           </Field>
         )}
-        <Field id={id('assignmentRole')} label="On this work they are" error={shown.assignmentRole}>
-          <select {...fieldAria({ id: id('assignmentRole'), error: shown.assignmentRole })} className="bo-control" value={values.assignmentRole} onChange={set('assignmentRole')}>
-            {ASSIGNMENT_ROLES.map((role) => (
-              <option key={role} value={role}>
-                {ASSIGNMENT_ROLE_LABELS[role]}
-              </option>
-            ))}
-          </select>
-        </Field>
+        {!nobodyLeft && (
+          <Field id={id('assignmentRole')} label="On this work they are" error={shown.assignmentRole}>
+            <select {...fieldAria({ id: id('assignmentRole'), error: shown.assignmentRole })} className="bo-control" value={values.assignmentRole} onChange={set('assignmentRole')}>
+              {ASSIGNMENT_ROLES.map((role) => (
+                <option key={role} value={role}>
+                  {ASSIGNMENT_ROLE_LABELS[role]}
+                </option>
+              ))}
+            </select>
+          </Field>
+        )}
         {serverError && <Notice tone="error">{serverError}</Notice>}
       </div>
       <div className="bo-dialog-actions">
         <Button onClick={onCancel} disabled={busy}>
-          Cancel
+          {nobodyLeft ? 'Close' : 'Cancel'}
         </Button>
-        <Button type="submit" variant="primary" loading={busy} disabled={available.length === 0}>
-          Assign
-        </Button>
+        {!nobodyLeft && (
+          <Button type="submit" variant="primary" loading={busy}>
+            Assign
+          </Button>
+        )}
       </div>
     </form>
   );

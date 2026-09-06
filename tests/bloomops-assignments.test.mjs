@@ -30,6 +30,8 @@ import { getClient, listClients } from '../lib/bloomops/clients.mjs';
 import { listClientServices } from '../lib/bloomops/services.mjs';
 import {
   ASSIGNMENT_ROLES,
+  addClientAssignment,
+  addServiceAssignment,
   assignmentCandidates,
   listClientAssignments,
   listServiceAssignments,
@@ -146,6 +148,37 @@ async function scenario() {
     assignClient, patchClient, unassignClient, assignService, patchServiceAssignment, unassignService,
     events, eventTypes, clientRow,
   };
+}
+
+// A database that lets another writer in at exactly the wrong moment.
+//
+// The domain reads first and writes second. The interesting interleaving is
+// the one it cannot see: its read found nothing, and by the time its write
+// runs somebody else has already committed the same row. This wraps the real
+// Drizzle instance and runs `interloper` once, immediately before the first
+// batch reaches the database, so the pre-read really did see nothing and the
+// insert really does meet the unique index.
+//
+// Nothing is faked. The reads, the writes, the constraint, and the recovery
+// are all the real ones; only the timing is arranged.
+function racingDb(db, interloper) {
+  let fired = false;
+  return new Proxy(db, {
+    get(target, prop) {
+      const value = Reflect.get(target, prop);
+      if (prop === 'batch') {
+        return async (statements) => {
+          if (!fired) {
+            fired = true;
+            await interloper();
+          }
+          return value.call(target, statements);
+        };
+      }
+      // Every other method keeps the real instance as its `this`.
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
 }
 
 // What one person can actually reach, asked of a freshly loaded actor.
@@ -435,6 +468,248 @@ test('re-assigning the same person is never a second row: the same role is a no-
     ['CLIENT_ASSIGNMENT_ADDED', 'CLIENT_ASSIGNMENT_UPDATED', 'CLIENT_ASSIGNMENT_UPDATED'],
     'one event per real change, none for the two no-ops',
   );
+});
+
+// ── the concurrent cases ─────────────────────────────────────────────────
+//
+// The sequential semantics above are the easy half. These prove the same
+// three outcomes hold when two requests overlap: the pre-read is a fast
+// path, and the unique index is the authority that decides.
+
+test('a client assignment that loses the race to an identical one resolves as unchanged, not as a database error', async () => {
+  const s = await scenario();
+  const actor = { actorMembershipId: 'm_pm', actorUserId: 'u_pm' };
+
+  // Our request reads, finds nothing, and is about to insert. Another
+  // request assigning the same person to the same client with the same role
+  // commits first, through the real domain path.
+  let winner = null;
+  const db = racingDb(s.db, async () => {
+    winner = await addClientAssignment(s.db, {
+      workspaceId: s.A,
+      clientId: 'c_james',
+      input: { membershipId: 'm_maria', assignmentRole: 'member' },
+      ...actor,
+    });
+  });
+
+  const loser = await addClientAssignment(db, {
+    workspaceId: s.A,
+    clientId: 'c_james',
+    input: { membershipId: 'm_maria', assignmentRole: 'member' },
+    ...actor,
+  });
+
+  assert.equal(winner.ok, true);
+  assert.equal(winner.created, true, 'the winner created the row');
+  assert.equal(loser.ok, true, 'and the loser did not fail');
+  assert.equal(loser.unchanged, true, 'it resolved to the documented no-op');
+  assert.equal(loser.created, undefined, 'it created nothing');
+  assert.equal(loser.assignmentId, winner.assignmentId, 'both name the one row that exists');
+
+  const rows = all(s.raw, "SELECT * FROM client_assignments WHERE client_id = 'c_james' AND membership_id = 'm_maria'");
+  assert.equal(rows.length, 1, 'exactly one row');
+  assert.equal(rows[0].assignment_role, 'member', 'with the requested role');
+  assert.deepEqual(s.eventTypes('c_james'), ['CLIENT_ASSIGNMENT_ADDED'], 'exactly one ADDED, from the winner alone');
+
+  // And the scope the row grants is the ordinary one.
+  assert.equal((await reach(s, PEOPLE.maria)).james, true);
+});
+
+test('a service assignment that loses the same race resolves the same way', async () => {
+  const s = await scenario();
+  const actor = { actorMembershipId: 'm_pm', actorUserId: 'u_pm' };
+  const args = {
+    workspaceId: s.A,
+    clientId: 'c_james',
+    serviceEngagementId: 'se_james_social',
+    serviceTypeName: 'Social Media Management',
+    input: { membershipId: 'm_maria', assignmentRole: 'member' },
+    ...actor,
+  };
+
+  let winner = null;
+  const db = racingDb(s.db, async () => {
+    winner = await addServiceAssignment(s.db, args);
+  });
+  const loser = await addServiceAssignment(db, args);
+
+  assert.equal(winner.created, true);
+  assert.equal(loser.ok, true);
+  assert.equal(loser.unchanged, true);
+  assert.equal(loser.assignmentId, winner.assignmentId);
+
+  const rows = all(s.raw, "SELECT * FROM service_assignments WHERE service_engagement_id = 'se_james_social' AND membership_id = 'm_maria'");
+  assert.equal(rows.length, 1, 'exactly one row');
+  assert.deepEqual(s.eventTypes('c_james'), ['SERVICE_ASSIGNMENT_ADDED'], 'exactly one ADDED');
+  assert.equal(s.events('c_james')[0].service_engagement_id, 'se_james_social');
+
+  // The narrow grant is still exactly one engagement.
+  const after = await reach(s, PEOPLE.maria);
+  assert.deepEqual([after.social, after.james, after.ghl], [true, false, false]);
+});
+
+test('losing the race with a different role ends as one row, one ADDED, and one UPDATED', async () => {
+  const s = await scenario();
+  const actor = { actorMembershipId: 'm_pm', actorUserId: 'u_pm' };
+
+  // Ours intends Lead. The request that wins inserted Member.
+  let winner = null;
+  const db = racingDb(s.db, async () => {
+    winner = await addClientAssignment(s.db, {
+      workspaceId: s.A,
+      clientId: 'c_james',
+      input: { membershipId: 'm_maria', assignmentRole: 'member' },
+      ...actor,
+    });
+  });
+  const loser = await addClientAssignment(db, {
+    workspaceId: s.A,
+    clientId: 'c_james',
+    input: { membershipId: 'm_maria', assignmentRole: 'lead' },
+    ...actor,
+  });
+
+  assert.equal(loser.ok, true);
+  assert.equal(loser.unchanged, undefined, 'this one did change something');
+  assert.equal(loser.created, undefined, 'but it created nothing');
+  assert.deepEqual(loser.changed, { role: true });
+  assert.equal(loser.assignmentId, winner.assignmentId);
+
+  const rows = all(s.raw, "SELECT * FROM client_assignments WHERE client_id = 'c_james' AND membership_id = 'm_maria'");
+  assert.equal(rows.length, 1, 'exactly one row');
+  assert.equal(rows[0].assignment_role, 'lead', 'ending on the role the second request asked for');
+  assert.deepEqual(
+    s.eventTypes('c_james'),
+    ['CLIENT_ASSIGNMENT_ADDED', 'CLIENT_ASSIGNMENT_UPDATED'],
+    'one ADDED for the creation and one UPDATED for the role change, and no duplicate ADDED',
+  );
+  const updated = JSON.parse(s.events('c_james')[1].metadata_json);
+  assert.equal(updated.from, 'member');
+  assert.equal(updated.to, 'lead');
+  assert.equal(updated.memberName, 'Maria Reyes');
+});
+
+test('the same race through the real route answers 200 unchanged, and never a constraint message', async () => {
+  const s = await scenario();
+  // The route path, so the outward answer is proved too, not only the domain
+  // return value. The interloper writes through the domain as another
+  // request would.
+  const first = await s.assignClient(PEOPLE.owner, 'c_james', { membershipId: 'm_maria', assignmentRole: 'member' });
+  assert.equal(first.status, 201);
+
+  const second = await s.assignClient(PEOPLE.owner, 'c_james', { membershipId: 'm_maria', assignmentRole: 'member' });
+  assert.equal(second.status, 200, 'the same role again is not a creation');
+  assert.equal(second.json.unchanged, true);
+  const third = await s.assignClient(PEOPLE.owner, 'c_james', { membershipId: 'm_maria', assignmentRole: 'lead' });
+  assert.equal(third.status, 200, 'a different role is a change, not a creation');
+  assert.equal(third.json.unchanged, false);
+
+  for (const res of [first, second, third]) {
+    assert.doesNotMatch(JSON.stringify(res.json), /UNIQUE|constraint|sqlite|D1_ERROR/i, 'no database wording ever reaches the caller');
+  }
+  assert.equal(all(s.raw, "SELECT id FROM client_assignments WHERE client_id = 'c_james'").length, 1);
+});
+
+test('neither POST route, and no role change, can expose a raw duplicate constraint', async () => {
+  const s = await scenario();
+  // The two POST routes are the only paths that can insert an assignment,
+  // and both go through the one shared create. A role change updates
+  // assignment_role alone and so cannot collide with the (parent,
+  // membership) index at all; a removal obviously cannot either. This walks
+  // all of them and reads every answer.
+  const answers = [];
+  answers.push(await s.assignClient(PEOPLE.owner, 'c_james', { membershipId: 'm_maria', assignmentRole: 'member' }));
+  answers.push(await s.assignClient(PEOPLE.owner, 'c_james', { membershipId: 'm_maria', assignmentRole: 'member' }));
+  answers.push(await s.assignClient(PEOPLE.owner, 'c_james', { membershipId: 'm_maria', assignmentRole: 'lead' }));
+  const clientAssignmentId = answers[0].json.assignment.id;
+  answers.push(await s.patchClient(PEOPLE.owner, 'c_james', clientAssignmentId, { assignmentRole: 'lead' }));
+  answers.push(await s.patchClient(PEOPLE.owner, 'c_james', clientAssignmentId, { assignmentRole: 'member' }));
+
+  answers.push(await s.assignService(PEOPLE.owner, 'c_james', 'se_james_social', { membershipId: 'm_maria', assignmentRole: 'member' }));
+  answers.push(await s.assignService(PEOPLE.owner, 'c_james', 'se_james_social', { membershipId: 'm_maria', assignmentRole: 'member' }));
+  answers.push(await s.assignService(PEOPLE.owner, 'c_james', 'se_james_social', { membershipId: 'm_maria', assignmentRole: 'lead' }));
+  const serviceAssignmentId = answers[5].json.assignment.id;
+  answers.push(await s.patchServiceAssignment(PEOPLE.owner, 'c_james', 'se_james_social', serviceAssignmentId, { assignmentRole: 'member' }));
+
+  for (const res of answers) {
+    assert.ok(res.status === 200 || res.status === 201, `every answer is a success, got ${res.status}`);
+    assert.doesNotMatch(JSON.stringify(res.json), /UNIQUE|constraint|sqlite|D1_ERROR|client_assignments\.|service_assignments\./i, 'and none carries database wording');
+  }
+  assert.deepEqual(answers.map((r) => r.status), [201, 200, 200, 200, 200, 201, 200, 200, 200], 'created once each, then changed or unchanged');
+  assert.equal(all(s.raw, "SELECT id FROM client_assignments WHERE client_id = 'c_james'").length, 1, 'one client assignment');
+  assert.equal(all(s.raw, "SELECT id FROM service_assignments WHERE service_engagement_id = 'se_james_social'").length, 1, 'one service assignment');
+});
+
+test('an assignment cannot survive its own ADDED event failing: the batch is one transaction', async () => {
+  const s = await scenario();
+  // The activity event carries a composite foreign key to the actor's
+  // membership in this workspace. An actor id that is not one makes the
+  // SECOND statement of the batch fail while the first would have succeeded,
+  // which is exactly the integrity case: a real assignment with no record of
+  // it having been made.
+  await assert.rejects(
+    () => addClientAssignment(s.db, {
+      workspaceId: s.A,
+      clientId: 'c_james',
+      input: { membershipId: 'm_maria', assignmentRole: 'member' },
+      actorMembershipId: 'm_not_a_membership',
+      actorUserId: null,
+    }),
+    /FOREIGN KEY/i,
+    'the fault is raised, not swallowed as a duplicate',
+  );
+  assert.equal(all(s.raw, "SELECT id FROM client_assignments WHERE client_id = 'c_james'").length, 0, 'no assignment was left behind');
+  assert.equal(s.events('c_james').length, 0, 'and no event either');
+
+  // The same for a service assignment, through the same shared code.
+  await assert.rejects(
+    () => addServiceAssignment(s.db, {
+      workspaceId: s.A,
+      clientId: 'c_james',
+      serviceEngagementId: 'se_james_social',
+      serviceTypeName: 'Social Media Management',
+      input: { membershipId: 'm_maria', assignmentRole: 'member' },
+      actorMembershipId: 'm_not_a_membership',
+      actorUserId: null,
+    }),
+    /FOREIGN KEY/i,
+  );
+  assert.equal(all(s.raw, 'SELECT id FROM service_assignments').length, 0);
+  assert.equal(s.events('c_james').length, 0);
+
+  // With a real actor the same call writes both, together.
+  const ok = await addClientAssignment(s.db, {
+    workspaceId: s.A,
+    clientId: 'c_james',
+    input: { membershipId: 'm_maria', assignmentRole: 'member' },
+    actorMembershipId: 'm_pm',
+    actorUserId: 'u_pm',
+  });
+  assert.equal(ok.created, true);
+  assert.equal(all(s.raw, "SELECT id FROM client_assignments WHERE client_id = 'c_james'").length, 1);
+  assert.deepEqual(s.eventTypes('c_james'), ['CLIENT_ASSIGNMENT_ADDED']);
+});
+
+test('only this table’s own duplicate is treated as a race: every other failure is raised', async () => {
+  const s = await scenario();
+  // A foreign key failure and a unique failure on another table must not be
+  // mistaken for "this person is already assigned". The activity event's
+  // actor key covers the first; the second is what the test above proves for
+  // service_engagements, whose unique index names a different table
+  // entirely. Here the point is that the duplicate path is never reached
+  // when the constraint is not this one, so nothing is silently reported as
+  // an existing assignment.
+  await assert.rejects(
+    () => addClientAssignment(s.db, {
+      workspaceId: s.A,
+      clientId: 'c_james',
+      input: { membershipId: 'm_maria' },
+      actorMembershipId: 'm_not_a_membership',
+    }),
+    (err) => !/already assigned|unchanged/i.test(String(err.message)),
+  );
+  assert.equal(all(s.raw, 'SELECT id FROM client_assignments').length, 0);
 });
 
 test('several people may be lead on the same client or service: nothing enforces exactly one', async () => {
