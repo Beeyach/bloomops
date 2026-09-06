@@ -744,6 +744,213 @@ The browser review adds the A6 states at all five widths: the list empty and pop
 - the `clients.company` column stays unsurfaced; `clients.name` is the canonical A6 display name
 - projects, work, social, ads, systems, and finance records: Release B and later
 
+## Services and Departments (A7)
+
+One client can now hold several purchased services at once, each with its own lifecycle, and internal people can be assigned to a client as a whole or to one of its services. The Services and Team tabs of the client detail stop being placeholders. One migration (a partial unique index), three new authorization actions, one new resource descriptor, nine new activity events.
+
+| Item | Value |
+|---|---|
+| Domain | `lib/bloomops/service-catalog.mjs` (the default departments and service types, both seeding paths, catalogue reads), `lib/bloomops/services.mjs` (engagement vocabulary, validation, reads, create, update, the duplicate invariant), `lib/bloomops/assignments.mjs` (candidates, reads, add/update/remove for both kinds of assignment) |
+| Routes | `POST /api/bloomops/clients/:id/services`, `PATCH /api/bloomops/clients/:id/services/:serviceId`, `POST /api/bloomops/clients/:id/assignments`, `PATCH\|DELETE /api/bloomops/clients/:id/assignments/:assignmentId`, `POST /api/bloomops/clients/:id/services/:serviceId/assignments`, `PATCH\|DELETE /api/bloomops/clients/:id/services/:serviceId/assignments/:assignmentId` |
+| Screens | the real Services and Team tabs in `app/(internal)/clients/[id]/page.jsx` |
+| Components | `components/bloomops/Services.jsx` (presentational: `ServiceStatus`, `ServiceRow`, `AssignmentRow`, `ServiceTeamHeading`), `ClientServices.jsx`, `ClientTeam.jsx` |
+| Authorization | three new actions, `service.create`, `client.assign`, `service.assign` (Owner, Admin, Project Manager; each about a record), and one new descriptor, `loadInternalServiceResource` |
+| Migration | `drizzle/0004_a7_open_service_uq.sql`: one partial unique index |
+| Activity | nine new event types: three `SERVICE_*` and six `*_ASSIGNMENT_*` |
+
+### The default catalogue, and where it is defined
+
+The four departments and the five initial service types are declared once, in `lib/bloomops/service-catalog.mjs`, and nowhere else.
+
+Departments, in position order:
+
+| Slug | Name | Position |
+|---|---|---|
+| `social` | Social | 10 |
+| `ads` | Ads | 20 |
+| `systems` | Systems | 30 |
+| `operations` | Operations | 40 |
+
+Service types, each on one of those departments:
+
+| Slug | Name | Department |
+|---|---|---|
+| `social-media-management` | Social Media Management | Social |
+| `ads` | Ads | Ads |
+| `ghl` | GHL | Systems |
+| `kajabi` | Kajabi | Systems |
+| `content-calendar` | Content Calendar | Social |
+
+Operations deliberately has no default service type: it is where internal work lives, not something the agency sells. `docs/PRODUCT_SPEC.md` also lists funnels, email sequences, automation, course builds, and integrations as examples; those are deliverables inside a Systems engagement rather than separate purchases, so seeding them would only lengthen the picker. They were left out on purpose.
+
+### Seeding strategy, and why it is not a data migration
+
+Two paths put the catalogue into a workspace, and both read the same constants:
+
+- `ensureWorkspaceServiceCatalog(db, workspaceId)` — Drizzle, for a workspace that already has an id. Two passes, because a service type needs its department's id.
+- `catalogStatements({ workspaceSlug })` — literal `INSERT ... SELECT ... WHERE NOT EXISTS` statements, appended to the plan in `lib/bloomops/bootstrap.mjs`, because that plan is handed to `wrangler d1 execute --file` against a remote database where none of our JavaScript runs.
+
+Both are idempotent by slug and neither ever rewrites a row it did not create: a workspace that renamed Ads or deactivated Kajabi keeps its decision. A test asserts the two paths produce identical rows, so they cannot drift.
+
+An existing workspace picks the catalogue up without a data migration because `.github/workflows/deploy-staging.yml` runs `scripts/bootstrap-workspace.mjs` on every push to main, and a second pass inserts nothing. That is why the catalogue is not in a schema migration: it is workspace-scoped configuration, one workspace's rows are not another's, and the bootstrap already owns "make this workspace's starting state true, again and again".
+
+Nothing seeds a client, a contact, or an engagement anywhere. The catalogue is configuration; there is no sample data in any environment.
+
+### Service engagements
+
+A service engagement is one purchased service for one client. James with Social, Ads, and GHL is one client record with three engagement rows, and nothing in `lib/bloomops/services.mjs` writes to `bloomops_clients` at all.
+
+Creation takes a service type (required, from this workspace's own active catalogue), and optionally a package name, a start date, and scope notes. `approval_preference` and `source_template_version_id` exist from A2, belong to later phases, and are never read from a request or offered by a form.
+
+**A new engagement is always Planned.** The route does not read `status` from the body. Onboarding and Active describe work that activation (A9) coordinates, and letting a create request name them would let a client skip it.
+
+Creating an engagement changes no client field, generates no onboarding, instantiates no template, sets no `source_template_version_id`, invites nobody, sends no mail, and creates no project or action. The engagement row and its `SERVICE_ENGAGEMENT_CREATED` event are one batch, so a failure leaves neither.
+
+### Lifecycle, and its independence from the client
+
+A manager may move an engagement through all six canonical statuses: Planned, Onboarding, Active, Paused, Completed, Cancelled. The service type itself is never editable — an engagement is the purchase of one service, and buying a different one is a different engagement.
+
+Service status and client relationship status are two separate canonical facts on two separate records. Pausing a service leaves an active client active; a service reaching Onboarding generates nothing. Tests walk every status in turn and assert the client's relationship status, health, and dates after each one.
+
+### The duplicate invariant
+
+A client may hold at most **one non-terminal engagement of the same service type at a time**. Non-terminal is Planned, Onboarding, Active, Paused; terminal is Completed and Cancelled. So a completed Social may be replaced with a new one, and a live Social may not be duplicated.
+
+The invariant is the database's, not a check in code: `service_engagements_client_type_open_uq`, a partial unique index over `(client_id, service_type_id)` that applies only while the status is open. A read-then-insert would let two simultaneous requests both pass their check and both insert; the index is what makes the rule true. The domain still checks first, but only so the refusal has human wording, and it catches the constraint error as the same refusal when it loses a race.
+
+The open and terminal lists are declared once in `lib/bloomops/schema.mjs` and the index's `WHERE` clause is built from them, so the schema declaration and the migration cannot disagree.
+
+Reopening a terminal engagement into a conflict (one completed Social, one current planned Social, then trying to make the completed one Active) is refused with the same calm message, never a raw database error.
+
+### Assignment, and exactly what each row grants
+
+Nothing in A7 interprets assignment rows. The A4 engine already does, in `loadAssignedScope` and `canAccessService`, and A7 did not touch it: this phase writes the rows the engine reads, and scope widens or narrows on the next request because the actor is loaded fresh every time.
+
+- **`client_assignments`** grants the client record and every service engagement under it, including engagements added later.
+- **`service_assignments`** grants exactly one engagement: not the client record, not the client's other engagements, not another client's engagement of the same service type.
+- **`department_memberships`** grants nothing. Belonging to Social organises a person; A4 ignores the table entirely and A7 keeps it that way.
+
+The two narrowing cases are proved explicitly, through freshly loaded actors:
+
+- Somebody holding both a client assignment and a service assignment on James → Social, whose **client** assignment is removed, loses the James record and implicit access to James' other services, and **keeps** James → Social through the explicit row. Nothing cascades; the service row is not deleted.
+- The same person whose **service** assignment is removed instead **keeps** Social, because the client assignment still grants every service. Removing a narrower assignment never revokes broader access that still exists.
+
+### Assignment candidates, and rows that outlive eligibility
+
+A new assignment may name only an active internal membership of this workspace: Owner, Admin, Project Manager, Team Member. Never a Client membership, never a suspended or removed one, never a pending invitation, never a membership of another workspace, never a bare user id. Assignment records use membership ids; the workspace comes from the session and the client and service from the route, never from a body.
+
+Somebody who was legitimately assigned and has since been suspended or removed **keeps their row**. The engine refuses them anyway, the Team tab says "No longer active in this workspace" in words, and a manager decides whether to take the row away. Nothing deletes an assignment because a membership changed.
+
+Assignment roles are `lead` and `member`, and no third was invented. The canonical documents do not ask for exactly one lead, so nothing enforces one: a client or a service may have several leads, or none.
+
+Re-assigning the same person is never a second row: the same role is a no-op that records nothing, a different role is a role change that records one update event. The unique indexes on `(client_id, membership_id)` and `(service_engagement_id, membership_id)` make that true under concurrency.
+
+### Owner versus assignment
+
+A6 established that `clients.owner_membership_id` is operational responsibility and not an authorization grant, and A7 preserves it in both directions: assigning somebody writes no owner, naming an owner writes no assignment row, and removing an assignment leaves the owner exactly as recorded. A Team Member who owns a client and loses their assignment keeps the ownership record and loses the scope. Ownership alone still grants nothing.
+
+`ownerCandidates` in `lib/bloomops/clients.mjs` was not widened. A7 could now grant client access in the same place an owner is named, but the A6 rule (a Team Member qualifies as owner only through a real client assignment) is still the correct one and needed no change.
+
+### Authorization
+
+Three new actions, each about a record that already exists, so each proves reach as well as role:
+
+| Action | Resource | Owner | Admin | Project Manager | Team Member | Client |
+|---|---|---|---|---|---|---|
+| `service.create` | the client the engagement is added to | yes | yes | yes | no | no |
+| `client.assign` | the client | yes | yes | yes | no | no |
+| `service.assign` | the engagement | yes | yes | yes | no | no |
+
+`service.create` names the client rather than nothing, because the engagement does not exist yet and asking only about the role would let a manager add a service to a client they cannot otherwise reach. None of the three needs `members.manage`: putting a colleague on a client decides who does the work, while who is in the workspace at all stays where A4 put it. The A4 role matrix test now covers all sixteen actions and asserts that every action naming a record has one and every action naming none has none.
+
+`loadInternalServiceResource` is the service counterpart of A6's `loadInternalClientResource`. `loadServiceResource` stays client-visible, because a portal contact may one day be shown a projection of a service their own client bought; the package, the scope notes, the lifecycle, and the internal team are not that, so every internal route asks about an `internal` record and the engine refuses a Client on visibility. `loadServiceResource` also takes an optional `clientId`, put into the lookup rather than compared afterwards, so an engagement under a different client of the same workspace answers exactly as one that never existed.
+
+### Activity
+
+Nine new event types on the existing append-only `activity_events`; no second history table.
+
+`SERVICE_ENGAGEMENT_CREATED`, `SERVICE_DETAILS_UPDATED`, `SERVICE_STATUS_CHANGED`, `CLIENT_ASSIGNMENT_ADDED`, `CLIENT_ASSIGNMENT_UPDATED`, `CLIENT_ASSIGNMENT_REMOVED`, `SERVICE_ASSIGNMENT_ADDED`, `SERVICE_ASSIGNMENT_UPDATED`, `SERVICE_ASSIGNMENT_REMOVED`.
+
+Every one carries the workspace and the client, so a client's history reads as one story; the service ones also carry the engagement. Details and status are two distinct facts and record one event each. A validation failure, a refused request, and a no-op record nothing, and one request never records the same fact twice.
+
+Metadata carries the safe display names it needs to stay readable later — the service type's name, the member's name, and old and new roles — and nothing else: no request body, no contact address, no whole service record. `lib/bloomops/client-activity.mjs` renders each one as a sentence, and event codes, ids, and metadata JSON never reach the screen:
+
+- "Service added — Social Media Management (Growth) was added."
+- "Service status changed — Social Media Management changed from Planned to Active."
+- "Client team member added — Maria Reyes was assigned to this client as member."
+- "Service team member removed — Tomas Bell was removed from Social Media Management."
+
+Client-wide and service-specific assignment read differently on purpose, so somebody skimming the history can tell the two amounts of access apart without opening the Team tab.
+
+### The Services tab
+
+Real for a manager: one hairline row per purchased service with the service name, its department, its status as a label plus a glyph, the package and start date on a quiet second line, and the scope note clamped to two lines underneath. Add service and Edit are small dialogs, not wizards. No card per service, no department icon, no progress ring, no statistic.
+
+A Team Member who reaches the client reads the same rows on the server with no controls at all. Which services they see is the engine's answer, not the page's: a client-level assignment shows all of them, a service-level assignment shows that one.
+
+The Add service form offers only service types that could actually start now — active, with no open engagement already — so the screen does not invite the duplicate the server would refuse. When a client already has every service in the catalogue, the form says so and offers nothing rather than fields that cannot be submitted. The server is still the boundary either way.
+
+### The Team tab
+
+Three sections, kept apart because they are three different facts:
+
+- **Internal owner** (A6): who is responsible, with the plain statement that it is not who has access.
+- **Client-wide team**: "People here work across every service this client has, including services added later."
+- **Service teams**: one indented, left-ruled block per engagement, each with its own heading, status, and list, under "People here work on one service only. Being on a service team does not give access to this client's other services."
+
+They are never collapsed into one ambiguous "Team" list. Assignment roles are words beside the name, never a colour, and a member whose workspace membership has ended is marked in words. Owner, Admin, and Project Manager may assign, change a role, and remove, with a confirmation before a removal that says exactly what the person loses and what they keep. A Team Member who can reach the client reads both lists with no controls; a Client never reaches the tab at all.
+
+### Migration
+
+`drizzle/0004_a7_open_service_uq.sql`, generated by `drizzle-kit` from the schema declaration:
+
+```sql
+CREATE UNIQUE INDEX `service_engagements_client_type_open_uq` ON `service_engagements` (`client_id`,`service_type_id`) WHERE status IN ('planned', 'onboarding', 'active', 'paused');
+```
+
+No column was added, no table was redesigned, and the A6 primary-contact migration is untouched. `.github/scripts/verify-zero-remote.mjs` gained an index check, read from the migration files themselves, because two phases in a row have added nothing but an index and a table-only check would have passed with it missing.
+
+### Local verification (2026-09-06)
+
+| Check | Result |
+|---|---|
+| `npm ci` | ok |
+| `npm test` | 2819 tests, 2819 pass, 0 fail (2765 before A7; 54 A7 tests across `tests/bloomops-services.test.mjs` and `tests/bloomops-assignments.test.mjs`) |
+| `npm run build` | exit 0 |
+| `npm run cf:build` | exit 0, `Worker saved in .open-next/worker.js` |
+| Local D1 from zero | `.wrangler/state` deleted, then `db:schema:local`, `db:migrate:local`, `db:domain:migrate:local` (5 applied). Second pass: "No migrations to apply". `client_contacts_primary_uq` and `service_engagements_client_type_open_uq` both present on the fresh database |
+| Zero-to-current | `node .github/scripts/verify-zero-remote.mjs --local`: every check passed with the five domain migrations, including the new "every index the migrations create exists" (48 indexes) and the identical-after-second-run comparison |
+| End-to-end smoke against the local Worker | `node scripts/auth-smoke-local.mjs --url http://localhost:8787`: 132 of 132 through the real bundle on workerd (89 before A7) |
+| External verifier against the local Worker | `node .github/scripts/verify-staging.mjs --url http://localhost:8787 --expect-env development`: 21 of 21 |
+| Browser review | `node scripts/shell-review-local.mjs`: 538 of 538 structural checks, every A5, A6, and A7 state at 1440, 1024, 768, 390, and 320 in headless Chromium, 249 screenshots inspected |
+
+The 54 A7 tests run the real route handlers over a real SQLite built from the committed migrations, with real Better Auth sessions, and render the real components.
+
+`tests/bloomops-services.test.mjs` covers: the catalogue (exactly four departments and five service types with the right mappings, Operations with none, a second pass adding nothing, a row with a canonical slug left exactly as the workspace made it, two workspaces with independent rows and a foreign department refused by the foreign key, the bootstrap plan and the domain helper producing identical rows, the plan giving an existing workspace the catalogue without rewriting anything, and department membership granting no scope); creation by each role with the denied cases, the forced Planned status, the ignored `status`, `clientId`, `workspaceId`, `approvalPreference`, and `sourceTemplateVersionId`, and the absence of any onboarding, invitation, mail, or portal link; one client holding Social, Ads, and GHL as one record; a foreign, inactive, and invented service type all refused identically; bounded validation that writes nothing; the duplicate invariant in all four open statuses and its release in both terminal ones, a direct database insert refused, and a terminal reopen into a conflict refused in words; every canonical status accepted with the client's status, health, and dates unmoved after each; the service type refused as an edit; activity with the right actor, workspace, client, and engagement, readable after a rename, absent on failure and no-op, and immutable; leak safety across four cases compared byte for byte; the origin fence on both routes; what the add form offers; and the rendered markup of every semantic component.
+
+`tests/bloomops-assignments.test.mjs` covers: the two new actions' policy; assignment by each role with the denied cases; a client assignment granting the client, its list entry, its detail, and every engagement including a later one; its removal taking all of that away on the next request; a service assignment granting exactly one engagement and not the client, its siblings, another client's, or another agency's; both narrowing cases; department membership granting nothing even as lead of all four departments; the candidate list and the five refused kinds of assignee plus a user id; a suspended assignee keeping their row and being marked; re-assignment semantics with no duplicate row and one event per real change; several leads allowed; one row per client and per service for the same person with the database refusing a second; owner and assignment separate in both directions; activity in words with the right actor, client, and engagement; leak safety across six cases; a body-supplied workspace and client ignored; the origin fence on all six routes; and no bleed for one identity with memberships in two workspaces.
+
+The Worker smoke adds, over HTTP through the real bundle: the seeded catalogue and its no-op second pass, the real Services tab, Social added and starting Planned despite the request, GHL added to the same client, both under one client record, a duplicate Social refused in words with no database wording, a status change with the client's lifecycle unmoved and nothing activated behind it, a service-only assignment that does not give the client record, a client-wide assignment that gives every service read-only, the Team tab's two separated sections, a cross-site assignment change refused, a Team Member refused when assigning, the client-wide assignment removed with the client lost and the explicit service row intact, department membership alone reaching nothing, a leak-safe not-found, and the Activity tab in words with no codes or ids.
+
+The browser review adds the A7 states at all five widths: the services list with several statuses and a long package and scope note, the empty state, a client whose catalogue is spoken for, the Team tab with both assignment layers and an inactive member, the empty team, the mixed A6/A7 activity, a Team Member's read-only services and team, the add and edit dialogs, the status selector, the exhausted-catalogue state, both assignment dialogs, and the unassignment confirmation. It also checks in the browser that the two assignment layers are separate sections in order, that each service names its own team through an aria-label, that the assignment role is a word, that an inactive member says so, that a service row carries its department and status, that the Services tab states the lifecycle independence, that A6 and A7 history read as words together with no code, id, or JSON, and that a Team Member is offered no control on either tab.
+
+Two defects the browser review found and A7 fixed before this was recorded:
+
+- **the assignment role ran into the name in the accessible text.** `AssignmentRow` separated the name and the Lead/Member marker with a CSS margin only, so `textContent` and a screen reader both got "Priya ManagerLead". A real space now sits between them, with a render test asserting it.
+- **the per-service assign button overflowed a 320px screen.** Its label carried the whole service name ("Assign to Social Media Management", 293px inside a padded block), which pushed the document 3px wider than the viewport. The service is named by the heading directly above it, so the button now reads "Assign someone" and carries the full name in its accessible label.
+
+### Intentionally deferred to A8 and later
+
+- onboarding template generation and instantiation: A8. Nothing in A7 sets `source_template_version_id` or creates an onboarding row
+- activation, the client lifecycle transitions it owns, and any coordinated Planned → Onboarding move for services: A9. A7 built the choices activation will use and none of the activation
+- client invitation and `client_contacts.user_id` linkage: A9 and A10
+- the client portal's own view of a service: A10. `loadServiceResource` stays client-visible for it, and no portal projection was written
+- service-type administration: no catalogue CRUD, no pricing, no packages catalogue, no custom service builder, no template binding UI. The catalogue is read-only in the product and exists so a manager can choose what a client bought
+- departments administration: no department management screen, no department membership editor, no department dashboard, no workload by department. Departments appear where they are useful (on a service type and on a service row) and nowhere else
+- `approval_preference` on an engagement: the column exists from A2 and no route or form touches it
+- a direct service detail route: not invented. Navigation for a service-only Team Member belongs to the later Social, Ads, and Systems areas, and A7 did not weaken A4 to make the client detail convenient
+- workload analytics, department-wide authorization, projects, milestones, actions, and deliverables: Release B and later
+
 ## Leadsthatbloom Reference Audit (A1)
 
 | Reference | Where it was | What happened |
@@ -817,6 +1024,10 @@ Re-running the workflow is safe. Schema and migrations are idempotent, the provi
 
 ## Known Risks
 
+- the default catalogue reaches an existing workspace through the bootstrap step of the staging deploy, not through a migration. If that step is ever skipped (it is skipped with a warning when the owner or admin secret is missing), a workspace has departments and service types only from whenever the bootstrap last ran, and the Services tab's Add form has nothing to offer. The seeding is idempotent, so re-running the bootstrap fixes it
+- the A7 duplicate rule (one open engagement per service type per client) is a Release A decision taken where the canonical documents are silent about re-selling. It is one partial unique index plus the open/terminal split in `lib/bloomops/schema.mjs`; widening or narrowing it means a migration, not a code change
+- a service-only Team Member has no navigation to the engagement they are assigned to. The engine grants it, `listClientServices` returns it, and no route or screen in A7 exposes a service on its own, because the client detail is behind the client record they deliberately do not have. The later Social, Ads, and Systems areas are where that navigation belongs
+- `describeEvent` falls back to "Client updated" for an event type it does not know, which is right for a screen but means a future phase that adds an event and forgets its renderer degrades quietly rather than loudly
 - A6 shows the client lifecycle and never writes it, so a client created today stays Draft until A9 exists. That is the deliberate boundary (see "Lifecycle, and the A9 boundary"), but it means the lifecycle filters other than Draft can only show clients whose status was set outside the application
 - the A6 owner-candidate policy (workspace-wide roles, plus a Team Member already assigned to that client) is a decision taken where the canonical documents are silent, made because ownership grants no access. It is one function, `ownerCandidates`, and A7 may widen it once assignment management exists
 - `owner_membership_id` is operational responsibility and the A4 engine does not read it. A future phase that decided ownership should imply scope would have to change the engine deliberately, not the client domain
@@ -840,6 +1051,19 @@ Re-running the workflow is safe. Schema and migrations are idempotent, the provi
 - the production D1 id is a placeholder until production is provisioned deliberately
 - two migration systems coexist in one database until the inherited prospecting schema is retired: keep running the inherited bootstrap before the domain migrations on a brand-new database, as the workflow does, even though either order works today
 - the BloomOps client table is physically named `bloomops_clients` until the inherited `clients` table is dropped
+
+## Intentionally Not Done in A7
+
+- no service-type administration: no catalogue CRUD, no pricing, no packages catalogue, no custom service builder, no template binding UI
+- no departments administration: no management screen, no membership editor, no dashboard, no workload by department. Department membership still grants no client or service scope
+- no activation of any kind: no onboarding instance, no template instantiation, no `source_template_version_id`, no client invitation, no `client_contacts.user_id` write, no mail, no project, no action
+- no client lifecycle write. A service status change touches the service and nothing else
+- no `approval_preference` in any route or form, though the column exists from A2
+- no direct service detail route. Navigation for a service-only Team Member belongs to the later specialist areas; A4 was not weakened to make the client detail convenient
+- no portal projection of a service. `loadServiceResource` stays client-visible for A10 and nothing renders it yet
+- no "one lead only" constraint. The canonical documents do not ask for one, so several leads are allowed
+- no workload analytics, no department-wide authorization
+- no staging deployment from this branch, and no fake client or engagement seeded anywhere. The default departments and service types are real workspace configuration and reach staging through the existing bootstrap step
 
 ## Intentionally Not Done in A6
 
@@ -912,9 +1136,15 @@ Read additional canonical planning docs only when the phase file or `docs/INDEX.
 
 ## Next Planned Phase
 
-A7, Services and Departments. Not started. It seeds the four departments and the initial service types, gives one client several purchased service engagements with their own lifecycle, and builds assignment at both the client and the engagement level. The Services and Team tabs of the client detail (`app/(internal)/clients/[id]/page.jsx`) are where its screens land; both say today, honestly, that services and assignments are a later release. `service.view` and `service.manage` already exist in `ACTIONS`, and `loadServiceResource` already builds the descriptor; A7 adds whatever creation action it needs beside `client.create` and may widen `ownerCandidates` in `lib/bloomops/clients.mjs` once a manager can grant client access in the same place they name an owner. The A4 rule that a service assignment reaches the engagement and not the client record is load-bearing and is covered by tests in both `tests/bloomops-authorization.test.mjs` and `tests/bloomops-clients.test.mjs`.
+A8, Onboarding Templates. Not started. It builds the template and template-version records, the stable logical keys onboarding requirements deduplicate on, and the generation that turns a template version into real onboarding items. A7 left it everything it needs and none of its work: `service_engagements.source_template_version_id` exists and is never written, the Onboarding tab of the client detail still says onboarding has not started, and `templates`/`template_versions`/`onboarding_instances`/`onboarding_items`/`onboarding_item_services` have been in the schema since A2 with their immutability trigger. The A7 catalogue is what a template will bind to: `lib/bloomops/service-catalog.mjs` owns the service types, and `lib/bloomops/services.mjs` owns the engagements a generated onboarding will be scoped by. A9 then owns activation, and it must reuse the A7 service domain rather than writing engagements around it.
+
+### The A7 phase, for reference
+
+A7, Services and Departments. Complete. It seeds the four departments and the initial service types, gives one client several purchased service engagements with their own lifecycle, and builds assignment at both the client and the engagement level. The Services and Team tabs of the client detail (`app/(internal)/clients/[id]/page.jsx`) are where its screens land; both say today, honestly, that services and assignments are a later release. `service.view` and `service.manage` already exist in `ACTIONS`, and `loadServiceResource` already builds the descriptor; A7 adds whatever creation action it needs beside `client.create` and may widen `ownerCandidates` in `lib/bloomops/clients.mjs` once a manager can grant client access in the same place they name an owner. The A4 rule that a service assignment reaches the engagement and not the client record is load-bearing and is covered by tests in both `tests/bloomops-authorization.test.mjs` and `tests/bloomops-clients.test.mjs`.
 
 ## Last Verification
+
+2026-09-06, A7 execution. Results are in "Local verification (2026-09-06)" under "Services and Departments (A7)": 2819 tests pass (2765 before A7), `npm run build` and `npm run cf:build` exit 0, the end-to-end smoke passes 132 of 132 and the external verifier 21 of 21 against the local Worker built from this branch, and the browser review passes 538 of 538 structural checks at all five widths with 249 screenshots inspected by hand. A7 added migration `0004_a7_open_service_uq.sql`, so zero-to-current was re-proved: `node .github/scripts/verify-zero-remote.mjs --local` passed every check, including a new one asserting that every index the committed migrations create is present on a database built only from them, and the local D1 went from an empty simulation through all five domain migrations with a no-op second pass. The browser review found two defects (the assignment role running into the name in the accessible text, and the per-service assign button overflowing a 320px screen); both were fixed and re-reviewed before this was recorded. No staging or production resource was touched from this session: no wrangler command was authenticated, and the only wrangler operations run were local (`d1 execute --local`, `d1 migrations apply --local`, `wrangler dev` through `opennextjs-cloudflare preview`, `r2 object get --local`). `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched.
 
 2026-09-06, A6 correction pass after an independent audit of PR #7. The audit found one blocking bug: `updateClient` validated a supplied `ownerMembershipId` as a new-owner candidate before comparing it to the id already stored, so a client whose owner had become ineligible could not have any unrelated field edited. Fixed in the domain layer (see "Owner" above), with three regression tests. Re-verified: 2765 tests pass, `npm run build` and `npm run cf:build` exit 0, the local Worker smoke passes every check including a new one for this case, and the local domain migrations remain a no-op (no migration was added or changed). No production, staging, or Leadsthatbloom resource was touched.
 
