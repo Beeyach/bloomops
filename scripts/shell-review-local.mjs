@@ -79,6 +79,10 @@ const PEOPLE = {
   clientLinked: 'review-client@example.com',
   clientUnlinked: 'review-client-unlinked@example.com',
   invitee: 'review-invitee@example.com',
+  // A7: a second Team Member, so the Team tab has more than one row per
+  // list, and somebody who was assigned and later suspended.
+  maria: 'review-maria@example.com',
+  gone: 'review-gone@example.com',
 };
 
 let failures = 0;
@@ -109,11 +113,26 @@ const person = (id, email, name, role) => [
   `INSERT INTO user (id, name, email, email_verified) SELECT ${lit(id)}, ${lit(name)}, ${lit(email)}, 1 WHERE NOT EXISTS (SELECT 1 FROM user WHERE email = ${lit(email)});`,
   `INSERT INTO workspace_memberships (id, workspace_id, user_id, role, status, joined_at) SELECT ${lit(`m_${id}`)}, ${ws}, (SELECT id FROM user WHERE email = ${lit(email)}), ${lit(role)}, 'active', '2026-09-01T09:00:00.000Z' WHERE NOT EXISTS (SELECT 1 FROM workspace_memberships WHERE workspace_id = ${ws} AND user_id = (SELECT id FROM user WHERE email = ${lit(email)}));`,
 ];
+// A7 fixtures. The service type is named by slug so the row is always this
+// workspace's own catalogue entry, never an id typed in here.
+const typeOf = (slug) => `(SELECT id FROM service_types WHERE workspace_id = ${ws} AND slug = ${lit(slug)})`;
+const membershipOf = (email) => `(SELECT id FROM workspace_memberships WHERE workspace_id = ${ws} AND user_id = (SELECT id FROM user WHERE email = ${lit(email)}))`;
+const engagement = (id, clientId, slug, status, packageName, startDate, scopeNotes) =>
+  `INSERT INTO service_engagements (id, workspace_id, client_id, service_type_id, status, package_name, start_date, scope_notes) SELECT ${lit(id)}, ${ws}, ${lit(clientId)}, ${typeOf(slug)}, ${lit(status)}, ${packageName ? lit(packageName) : 'NULL'}, ${startDate ? lit(startDate) : 'NULL'}, ${scopeNotes ? lit(scopeNotes) : 'NULL'} WHERE NOT EXISTS (SELECT 1 FROM service_engagements WHERE id = ${lit(id)});`;
+const assignment = (table, id, parentId, email, role) => {
+  const parentColumn = table === 'client_assignments' ? 'client_id' : 'service_engagement_id';
+  return `INSERT INTO ${table} (id, workspace_id, ${parentColumn}, membership_id, assignment_role) SELECT ${lit(id)}, ${ws}, ${lit(parentId)}, ${membershipOf(email)}, ${lit(role)} WHERE NOT EXISTS (SELECT 1 FROM ${table} WHERE id = ${lit(id)});`;
+};
+const event = (id, type, subjectType, subjectId, clientId, serviceId, actorEmail, metadata, at) =>
+  `INSERT INTO activity_events (id, workspace_id, event_type, subject_type, subject_id, client_id, service_engagement_id, actor_membership_id, metadata_json, occurred_at) SELECT ${lit(id)}, ${ws}, ${lit(type)}, ${lit(subjectType)}, ${lit(subjectId)}, ${lit(clientId)}, ${serviceId ? lit(serviceId) : 'NULL'}, ${membershipOf(actorEmail)}, ${lit(metadata)}, ${lit(at)} WHERE NOT EXISTS (SELECT 1 FROM activity_events WHERE id = ${lit(id)});`;
+
 const seed = [
   ...person('u_review_pm', PEOPLE.pm, 'Priya Manager', 'project_manager'),
   ...person('u_review_tm', PEOPLE.tm, 'Tomas Member', 'team_member'),
   ...person('u_review_client', PEOPLE.clientLinked, 'James Carter', 'client'),
   ...person('u_review_client2', PEOPLE.clientUnlinked, 'Dana Newclient', 'client'),
+  ...person('u_review_maria', PEOPLE.maria, 'Maria Reyes', 'team_member'),
+  ...person('u_review_gone', PEOPLE.gone, 'Sam Whitfield-Okonkwo', 'team_member'),
   `INSERT INTO bloomops_clients (id, workspace_id, name, slug, relationship_status) SELECT 'c_review_james', ${ws}, 'James Carter Coaching', 'james-carter-coaching', 'active' WHERE NOT EXISTS (SELECT 1 FROM bloomops_clients WHERE id = 'c_review_james');`,
   `INSERT INTO client_contacts (id, workspace_id, client_id, name, email, user_id, is_primary) SELECT 'cc_review_james', ${ws}, 'c_review_james', 'James Carter', ${lit(PEOPLE.clientLinked)}, (SELECT id FROM user WHERE email = ${lit(PEOPLE.clientLinked)}), 1 WHERE NOT EXISTS (SELECT 1 FROM client_contacts WHERE id = 'cc_review_james');`,
   // A6 review states. Local disposable data only: no BloomOps screen ever
@@ -132,6 +151,44 @@ const seed = [
   `INSERT INTO activity_events (id, workspace_id, event_type, subject_type, subject_id, client_id, actor_membership_id, metadata_json, occurred_at) SELECT 'ae_review_2', ${ws}, 'CLIENT_OWNER_CHANGED', 'client', 'c_review_lawrence', 'c_review_lawrence', (SELECT id FROM workspace_memberships WHERE workspace_id = ${ws} AND user_id = (SELECT id FROM user WHERE email = ${lit(PEOPLE.owner)})), '{"from":null,"to":"x","fromName":null,"toName":"Priya Manager"}', '2026-08-20T11:30:00.000Z' WHERE NOT EXISTS (SELECT 1 FROM activity_events WHERE id = 'ae_review_2');`,
   `INSERT INTO activity_events (id, workspace_id, event_type, subject_type, subject_id, client_id, actor_membership_id, metadata_json, occurred_at) SELECT 'ae_review_3', ${ws}, 'CLIENT_HEALTH_CHANGED', 'client', 'c_review_lawrence', 'c_review_lawrence', (SELECT id FROM workspace_memberships WHERE workspace_id = ${ws} AND user_id = (SELECT id FROM user WHERE email = ${lit(PEOPLE.pm)})), '{"from":"on_track","to":"needs_attention"}', '2026-09-01T15:05:00.000Z' WHERE NOT EXISTS (SELECT 1 FROM activity_events WHERE id = 'ae_review_3');`,
   `INSERT INTO activity_events (id, workspace_id, event_type, subject_type, subject_id, client_id, actor_membership_id, metadata_json, occurred_at) SELECT 'ae_review_4', ${ws}, 'CLIENT_CONTACT_ADDED', 'client_contact', 'cc_review_lawrence', 'c_review_lawrence', (SELECT id FROM workspace_memberships WHERE workspace_id = ${ws} AND user_id = (SELECT id FROM user WHERE email = ${lit(PEOPLE.pm)})), '{"name":"Lawrence Achebe-Fitzwilliam"}', '2026-09-02T08:15:00.000Z' WHERE NOT EXISTS (SELECT 1 FROM activity_events WHERE id = 'ae_review_4');`,
+
+  // A7 review states. The catalogue itself came from the bootstrap above;
+  // these are engagements and assignments over it. Local disposable data
+  // only, and staging is never seeded with any of it.
+  //
+  // Lawrence holds three of the five service types, so the Services tab has
+  // several rows in different statuses and the Add service form still has
+  // something left to offer. One carries a long package name and a long
+  // scope note, which is the case that decides whether the row holds up.
+  engagement('se_review_social', 'c_review_lawrence', 'social-media-management', 'active', 'Growth', '2026-08-14', 'Three feed posts and two reels a week, captions written here, client approves in the portal before anything is scheduled. Stories are the client’s own.'),
+  engagement('se_review_ghl', 'c_review_lawrence', 'ghl', 'onboarding', 'Systems build and migration from the old booking tool', '2026-09-01', null),
+  engagement('se_review_ads', 'c_review_lawrence', 'ads', 'paused', null, null, null),
+  // A client whose catalogue is fully spoken for, so the Add service form
+  // has the honest nothing-left state to render.
+  ...['social-media-management', 'ads', 'ghl', 'kajabi', 'content-calendar'].map((slug, i) =>
+    engagement(`se_review_full_${i}`, 'c_review_paused', slug, 'active', null, null, null)),
+  // James has one service, so the assigned Team Member has something to
+  // read on the Services tab they cannot change.
+  engagement('se_review_james_social', 'c_review_james', 'social-media-management', 'active', 'Starter', '2026-07-01', null),
+
+  // Client-wide and service-specific assignment, side by side, which is the
+  // distinction the Team tab exists to make visible.
+  assignment('client_assignments', 'ca_review_pm', 'c_review_lawrence', PEOPLE.pm, 'lead'),
+  assignment('client_assignments', 'ca_review_maria', 'c_review_lawrence', PEOPLE.maria, 'member'),
+  assignment('service_assignments', 'sa_review_social', 'se_review_social', PEOPLE.tm, 'lead'),
+  assignment('service_assignments', 'sa_review_ghl', 'se_review_ghl', PEOPLE.maria, 'member'),
+  // Somebody who was assigned while active and has since been suspended.
+  // Their row stays, and the screen has to say so in words. Seeded
+  // directly, because the API refuses a suspended person a NEW assignment.
+  assignment('client_assignments', 'ca_review_gone', 'c_review_lawrence', PEOPLE.gone, 'member'),
+  `UPDATE workspace_memberships SET status = 'suspended' WHERE workspace_id = ${ws} AND user_id = (SELECT id FROM user WHERE email = ${lit(PEOPLE.gone)});`,
+
+  // A7 history beside the A6 history, so the Activity tab renders both.
+  event('ae_review_5', 'SERVICE_ENGAGEMENT_CREATED', 'service_engagement', 'se_review_social', 'c_review_lawrence', 'se_review_social', PEOPLE.owner, '{"serviceTypeName":"Social Media Management","packageName":"Growth"}', '2026-08-14T09:30:00.000Z'),
+  event('ae_review_6', 'CLIENT_ASSIGNMENT_ADDED', 'client_assignment', 'ca_review_pm', 'c_review_lawrence', null, PEOPLE.owner, '{"memberName":"Priya Manager","assignmentRole":"lead"}', '2026-08-15T10:00:00.000Z'),
+  event('ae_review_7', 'SERVICE_ASSIGNMENT_ADDED', 'service_assignment', 'sa_review_social', 'c_review_lawrence', 'se_review_social', PEOPLE.pm, '{"memberName":"Tomas Member","assignmentRole":"lead","serviceTypeName":"Social Media Management"}', '2026-08-16T14:20:00.000Z'),
+  event('ae_review_8', 'SERVICE_STATUS_CHANGED', 'service_engagement', 'se_review_social', 'c_review_lawrence', 'se_review_social', PEOPLE.pm, '{"serviceTypeName":"Social Media Management","from":"planned","to":"active"}', '2026-08-20T09:05:00.000Z'),
+  event('ae_review_9', 'SERVICE_ASSIGNMENT_REMOVED', 'service_assignment', 'sa_review_old', 'c_review_lawrence', 'se_review_ghl', PEOPLE.owner, '{"memberName":"Sam Whitfield-Okonkwo","assignmentRole":"member","serviceTypeName":"GHL"}', '2026-09-03T16:40:00.000Z'),
 ];
 sql(seed.join(' '));
 // The primary marker is the point of the contact fixture, so it is set
@@ -282,6 +339,15 @@ for (const width of WIDTHS) {
     [owner, 'client-activity-owner', '/clients/c_review_lawrence?tab=activity'],
     [owner, 'client-long-names-owner', '/clients/c_review_paused'],
     [tm, 'client-overview-team-member', '/clients/c_review_james'],
+    // A7
+    [owner, 'client-services-list-owner', '/clients/c_review_lawrence?tab=services'],
+    [owner, 'client-services-none-owner', '/clients/c_review_draft?tab=services'],
+    [owner, 'client-services-full-owner', '/clients/c_review_paused?tab=services'],
+    [owner, 'client-team-assignments-owner', '/clients/c_review_lawrence?tab=team'],
+    [owner, 'client-team-empty-owner', '/clients/c_review_draft?tab=team'],
+    [owner, 'client-activity-mixed-owner', '/clients/c_review_lawrence?tab=activity'],
+    [tm, 'client-services-team-member', '/clients/c_review_james?tab=services'],
+    [tm, 'client-team-team-member', '/clients/c_review_james?tab=team'],
     [pm, 'finance-project-manager', '/finance'],
     [clientLinked, 'portal-linked', '/portal'],
     [clientUnlinked, 'portal-unlinked', '/portal'],
@@ -303,6 +369,17 @@ for (const width of WIDTHS) {
   summary.push({ name: 'client-edit-dialog', width, ...(await capture(owner, 'client-edit-dialog', '/clients/c_review_lawrence', width, { before: async (page) => { await openDialog(page, 'Edit details'); }, fullPage: false })) });
   summary.push({ name: 'client-contact-dialog', width, ...(await capture(owner, 'client-contact-dialog', '/clients/c_review_lawrence', width, { before: async (page) => { await openDialog(page, 'Add contact'); }, fullPage: false })) });
   summary.push({ name: 'client-contact-remove-confirm', width, ...(await capture(owner, 'client-contact-remove-confirm', '/clients/c_review_lawrence', width, { before: async (page) => { await openDialog(page, /^Remove /); }, fullPage: false })) });
+  // A7 interaction states: the two small forms, the status selector open in
+  // the edit form, the assignment dialog for each of the two scopes, the
+  // confirmation before an unassignment, and the honest state when a client
+  // already has every service in the catalogue.
+  summary.push({ name: 'service-add-dialog', width, ...(await capture(owner, 'service-add-dialog', '/clients/c_review_lawrence?tab=services', width, { before: async (page) => { await openDialog(page, 'Add service'); }, fullPage: false })) });
+  summary.push({ name: 'service-add-nothing-left', width, ...(await capture(owner, 'service-add-nothing-left', '/clients/c_review_paused?tab=services', width, { before: async (page) => { await openDialog(page, 'Add service'); }, fullPage: false })) });
+  summary.push({ name: 'service-edit-dialog', width, ...(await capture(owner, 'service-edit-dialog', '/clients/c_review_lawrence?tab=services', width, { before: async (page) => { await openDialog(page, /^Edit Social Media Management$/); }, fullPage: false })) });
+  summary.push({ name: 'service-status-choices', width, ...(await capture(owner, 'service-status-choices', '/clients/c_review_lawrence?tab=services', width, { before: async (page) => { await openDialog(page, /^Edit Social Media Management$/); await page.locator('#edit-service-status').focus(); }, fullPage: false })) });
+  summary.push({ name: 'assign-client-dialog', width, ...(await capture(owner, 'assign-client-dialog', '/clients/c_review_lawrence?tab=team', width, { before: async (page) => { await openDialog(page, 'Assign to client'); }, fullPage: false })) });
+  summary.push({ name: 'assign-service-dialog', width, ...(await capture(owner, 'assign-service-dialog', '/clients/c_review_lawrence?tab=team', width, { before: async (page) => { await openDialog(page, /^Assign someone to Social Media Management$/); }, fullPage: false })) });
+  summary.push({ name: 'unassign-confirm', width, ...(await capture(owner, 'unassign-confirm', '/clients/c_review_lawrence?tab=team', width, { before: async (page) => { await openDialog(page, /^Remove Priya Manager$/); }, fullPage: false })) });
 
   if (width < 768) {
     summary.push({ name: 'more-sheet-owner', width, ...(await capture(owner, 'more-sheet-owner', '/', width, { before: async (page) => { await openDialog(page, 'More'); }, fullPage: false })) });
@@ -327,7 +404,52 @@ for (const width of WIDTHS) {
   record(`assigned Team Member reads their client with no controls @${width}`, /James Carter Coaching/.test(await tmClientPage.evaluate(() => document.body.innerText)) && !tmControls.some((t) => /Edit details|Add contact|Make primary|Remove/.test(t)), tmControls.join('|').slice(0, 80));
   const tmMiss = await tmClientPage.goto(`${base}/clients/c_review_lawrence`, { waitUntil: 'networkidle' });
   record(`unassigned client is not found for a Team Member @${width}`, tmMiss?.status() === 404, `status ${tmMiss?.status()}`);
+  // A7: the same Team Member reads the services and the team of the client
+  // they are assigned to, and is offered nothing to change on either.
+  await tmClientPage.goto(`${base}/clients/c_review_james?tab=services`, { waitUntil: 'networkidle' });
+  const tmServiceControls = await tmClientPage.evaluate(() => [...document.querySelectorAll('button')].map((b) => (b.textContent || '').trim()));
+  record(`assigned Team Member reads the services with no controls @${width}`,
+    /Social Media Management/.test(await tmClientPage.evaluate(() => document.body.innerText)) && !tmServiceControls.some((t) => /Add service|^Edit/.test(t)),
+    tmServiceControls.join('|').slice(0, 80));
+  await tmClientPage.goto(`${base}/clients/c_review_james?tab=team`, { waitUntil: 'networkidle' });
+  const tmTeamText = await tmClientPage.evaluate(() => document.body.innerText);
+  const tmTeamControls = await tmClientPage.evaluate(() => [...document.querySelectorAll('button')].map((b) => (b.textContent || '').trim()));
+  record(`assigned Team Member reads the team with no controls @${width}`,
+    /Client-wide team/.test(tmTeamText) && /Service teams/.test(tmTeamText) && !tmTeamControls.some((t) => /Assign to|Make lead|Make member|^Remove/.test(t)),
+    tmTeamControls.join('|').slice(0, 80));
   await tmClientPage.close();
+
+  // A7: the two kinds of assignment are told apart by structure and words,
+  // not by styling, and a suspended person's row says what happened.
+  const teamPage = await owner.newPage();
+  await teamPage.goto(`${base}/clients/c_review_lawrence?tab=team`, { waitUntil: 'networkidle' });
+  const teamText = await teamPage.evaluate(() => document.body.innerText);
+  record(`client-wide and service-specific assignment are separate sections @${width}`,
+    /Internal owner/.test(teamText) && /Client-wide team/.test(teamText) && /Service teams/.test(teamText) &&
+      teamText.indexOf('Client-wide team') < teamText.indexOf('Service teams'),
+    'headings');
+  record(`each service names its own team @${width}`,
+    (await teamPage.locator('[aria-label="Social Media Management team"]').count()) === 1 &&
+      (await teamPage.locator('[aria-label="Client-wide team"]').count()) === 1,
+    'aria-labelled lists');
+  record(`the assignment role is a word, not a colour @${width}`, /\bLead\b/.test(teamText) && /\bMember\b/.test(teamText), 'Lead / Member');
+  record(`a member who is no longer active says so @${width}`, /No longer active in this workspace/.test(teamText), 'inactive marker');
+  await teamPage.goto(`${base}/clients/c_review_lawrence?tab=services`, { waitUntil: 'networkidle' });
+  const servicesText = await teamPage.evaluate(() => document.body.innerText);
+  record(`a service row carries its department and status in words @${width}`,
+    /Social Media Management/.test(servicesText) && /Systems/.test(servicesText) && /Active/.test(servicesText) && /Paused/.test(servicesText) && /Onboarding/.test(servicesText),
+    'service rows');
+  record(`the Services tab says a service status is not the client's @${width}`,
+    /Changing it does not change/.test(servicesText), 'independence note');
+  await teamPage.goto(`${base}/clients/c_review_lawrence?tab=activity`, { waitUntil: 'networkidle' });
+  const activityText = await teamPage.evaluate(() => document.body.innerText);
+  record(`A6 and A7 history read as words together @${width}`,
+    /Client created/.test(activityText) && /Service added/.test(activityText) && /Service status changed/.test(activityText) &&
+      /Client team member added/.test(activityText) && /Service team member removed/.test(activityText),
+    'activity lines');
+  record(`and no event code, id, or metadata JSON reaches the screen @${width}`,
+    !/SERVICE_|CLIENT_ASSIGNMENT|se_review_|ca_review_|[{}]/.test(activityText), 'activity is words');
+  await teamPage.close();
   const ownerPage = await owner.newPage();
   await ownerPage.goto(`${base}/portal`, { waitUntil: 'networkidle' });
   record(`Owner opening /portal is sent to internal Home @${width}`, new URL(ownerPage.url()).pathname === '/' && (await ownerPage.locator('nav[aria-label="Main"]').count()) > 0, ownerPage.url());

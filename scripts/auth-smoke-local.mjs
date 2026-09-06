@@ -13,7 +13,11 @@
 // inherited app at /legacy, and holds no capabilities) and the A5 shells
 // (the Owner and the Team Member land in the BloomOps internal shell, the
 // Owner is bounced from the portal, the Team Member gets the limited Team
-// and Finance views), suspend them, watch
+// and Finance views), exercise the A6 Clients domain and the A7 services
+// and scoped assignments (one client holding several services, the
+// duplicate refusal, a service status change that leaves the client alone,
+// and a Team Member's scope widening and narrowing as assignment rows come
+// and go), suspend them, watch
 // access stop while their identity session survives, and sign out.
 //
 // Development only. It refuses any URL that is not loopback and needs the
@@ -42,6 +46,8 @@ const INVITEE = `smoke-invitee-${randomBytes(3).toString('hex')}@example.com`;
 const PORTAL_CLIENT = `smoke-portal-${randomBytes(3).toString('hex')}@example.com`;
 const CLIENT_NAME = `Smoke Client ${randomBytes(2).toString('hex')}`;
 const CLIENT_CONTACT = `smoke-contact-${randomBytes(3).toString('hex')}@example.com`;
+const SERVICES_CLIENT = `Smoke Services ${randomBytes(2).toString('hex')}`;
+const SERVICES_CONTACT = `smoke-services-${randomBytes(3).toString('hex')}@example.com`;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -329,6 +335,152 @@ let invitationId = '';
   check('nothing they tried changed anything', sqlOne(`SELECT health FROM bloomops_clients WHERE id = ${lit(clientId)}`)?.health === 'needs_attention' && countRows('client_contacts', `client_id = ${lit(clientId)}`) === 2);
   const portalHome = await call('/portal', { cookie: portalPerson.cookie, accept: 'text/html' });
   check('their portal still opens and carries no internal chrome', portalHome.status === 200 && !/aria-label="Main"/.test(portalHome.text) && !/Needs Attention/.test(portalHome.text), `status ${portalHome.status}`);
+}
+
+// 3.6 Services and scoped team assignment (A7): the real catalogue, one
+// client holding several services, and a Team Member's scope widening and
+// narrowing as the two kinds of assignment row come and go.
+{
+  const workspaceId = sqlOne("SELECT id FROM workspaces WHERE slug = 'smoke-agency'")?.id;
+  must('the smoke workspace exists', Boolean(workspaceId));
+
+  // The catalogue the bootstrap seeded, and nothing invented beside it.
+  const departments = sql(`SELECT slug, name, position FROM departments WHERE workspace_id = ${lit(workspaceId)} ORDER BY position`);
+  check('the workspace has exactly the four default departments, in order',
+    departments.map((d) => d.slug).join(',') === 'social,ads,systems,operations' && departments.length === 4,
+    departments.map((d) => `${d.name}(${d.position})`).join(', '));
+  const types = sql(`SELECT s.slug, s.name, d.slug AS department FROM service_types s LEFT JOIN departments d ON d.id = s.department_id WHERE s.workspace_id = ${lit(workspaceId)} ORDER BY s.slug`);
+  check('and exactly the five default service types, each on its department',
+    types.length === 5 && types.map((t) => `${t.slug}:${t.department}`).join(',') === 'ads:ads,content-calendar:social,ghl:systems,kajabi:systems,social-media-management:social',
+    types.map((t) => t.name).join(', '));
+  check('a second bootstrap left the catalogue exactly as it was', departments.length === 4 && types.length === 5);
+
+  const socialTypeId = sqlOne(`SELECT id FROM service_types WHERE workspace_id = ${lit(workspaceId)} AND slug = 'social-media-management'`)?.id;
+  const ghlTypeId = sqlOne(`SELECT id FROM service_types WHERE workspace_id = ${lit(workspaceId)} AND slug = 'ghl'`)?.id;
+  must('the seeded service types are addressable', Boolean(socialTypeId) && Boolean(ghlTypeId));
+
+  const madeClient = await call('/api/bloomops/clients', {
+    method: 'POST',
+    cookie: owner.cookie,
+    body: { name: SERVICES_CLIENT, contactName: 'Smoke Services Contact', contactEmail: SERVICES_CONTACT },
+  });
+  must('the Owner creates the client A7 works on', madeClient.status === 201, `status ${madeClient.status} ${madeClient.text.slice(0, 200)}`);
+  const clientId = madeClient.json.client.id;
+  const clientBefore = sqlOne(`SELECT relationship_status, health FROM bloomops_clients WHERE id = ${lit(clientId)}`);
+
+  // The Services tab is real now, and honest about being empty.
+  const emptyTab = await call(`/clients/${clientId}?tab=services`, { cookie: owner.cookie, accept: 'text/html' });
+  check('the Owner opens a real Services tab with a way to add one',
+    emptyTab.status === 200 && /Add service/.test(emptyTab.text) && /No services yet/.test(emptyTab.text) && !/later BloomOps release/.test(emptyTab.text),
+    `status ${emptyTab.status}`);
+
+  const social = await call(`/api/bloomops/clients/${clientId}/services`, { method: 'POST', cookie: owner.cookie, body: { serviceTypeId: socialTypeId, packageName: 'Growth', startDate: '2026-04-01', status: 'active' } });
+  must('the Owner adds Social Media Management', social.status === 201 && social.json?.service?.id, `status ${social.status} ${social.text.slice(0, 200)}`);
+  const socialId = social.json.service.id;
+  check('and it starts Planned whatever the request asked for', sqlOne(`SELECT status FROM service_engagements WHERE id = ${lit(socialId)}`)?.status === 'planned');
+
+  const ghl = await call(`/api/bloomops/clients/${clientId}/services`, { method: 'POST', cookie: owner.cookie, body: { serviceTypeId: ghlTypeId } });
+  must('the Owner adds GHL to the same client', ghl.status === 201, `status ${ghl.status} ${ghl.text.slice(0, 200)}`);
+  const ghlId = ghl.json.service.id;
+  check('one client now holds two services, and is still one client record',
+    countRows('service_engagements', `client_id = ${lit(clientId)}`) === 2 && countRows('bloomops_clients', `name = ${lit(SERVICES_CLIENT)}`) === 1);
+
+  const duplicate = await call(`/api/bloomops/clients/${clientId}/services`, { method: 'POST', cookie: owner.cookie, body: { serviceTypeId: socialTypeId } });
+  check('a second open Social is refused in words, never in the database’s',
+    duplicate.status === 409 && /already running for this client/.test(JSON.stringify(duplicate.json)) && !/UNIQUE|constraint|sqlite/i.test(duplicate.text),
+    `status ${duplicate.status} ${duplicate.text.slice(0, 160)}`);
+  check('and nothing was created by it', countRows('service_engagements', `client_id = ${lit(clientId)}`) === 2);
+
+  const activated = await call(`/api/bloomops/clients/${clientId}/services/${socialId}`, { method: 'PATCH', cookie: owner.cookie, body: { status: 'active' } });
+  check('the Owner changes the Social status', activated.status === 200 && sqlOne(`SELECT status FROM service_engagements WHERE id = ${lit(socialId)}`)?.status === 'active', `status ${activated.status}`);
+  const clientAfter = sqlOne(`SELECT relationship_status, health FROM bloomops_clients WHERE id = ${lit(clientId)}`);
+  check('and the client’s own lifecycle did not move with it',
+    clientAfter?.relationship_status === clientBefore?.relationship_status && clientAfter?.health === clientBefore?.health,
+    `${clientBefore?.relationship_status}/${clientBefore?.health} -> ${clientAfter?.relationship_status}/${clientAfter?.health}`);
+  check('nothing was activated behind it either',
+    countRows('onboarding_instances') === 0 && countRows('workspace_invitations', `email = ${lit(SERVICES_CONTACT)}`) === 0);
+
+  const listed = await call(`/clients/${clientId}?tab=services`, { cookie: owner.cookie, accept: 'text/html' });
+  check('the Services tab shows both services with their departments and statuses',
+    listed.status === 200 && /Social Media Management/.test(listed.text) && /GHL/.test(listed.text) && /Systems/.test(listed.text) && />Active</.test(listed.text) && />Planned</.test(listed.text),
+    `status ${listed.status}`);
+
+  // The invitee is an active Team Member at this point (section 4 suspends
+  // them afterwards). Start with the narrow assignment only.
+  const inviteeMembershipId = sqlOne(`SELECT id FROM workspace_memberships WHERE workspace_id = ${lit(workspaceId)} AND user_id = (SELECT id FROM user WHERE email = ${lit(INVITEE)})`)?.id;
+  must('the invited Team Member has a membership to assign', Boolean(inviteeMembershipId));
+
+  const serviceAssignment = await call(`/api/bloomops/clients/${clientId}/services/${socialId}/assignments`, { method: 'POST', cookie: owner.cookie, body: { membershipId: inviteeMembershipId, assignmentRole: 'lead' } });
+  must('the Owner assigns the Team Member to Social only', serviceAssignment.status === 201, `status ${serviceAssignment.status} ${serviceAssignment.text.slice(0, 200)}`);
+  const serviceAssignmentId = serviceAssignment.json.assignment.id;
+  const serviceOnlyDetail = await call(`/clients/${clientId}`, { cookie: inviteeCookie, accept: 'text/html' });
+  check('a service-only assignment does not give them the client record', serviceOnlyDetail.status === 404, `status ${serviceOnlyDetail.status}`);
+  const serviceOnlyList = await call('/clients', { cookie: inviteeCookie, accept: 'text/html' });
+  check('and the client does not appear in their list', serviceOnlyList.status === 200 && !serviceOnlyList.text.includes(SERVICES_CLIENT));
+
+  const clientAssignment = await call(`/api/bloomops/clients/${clientId}/assignments`, { method: 'POST', cookie: owner.cookie, body: { membershipId: inviteeMembershipId, assignmentRole: 'member' } });
+  must('the Owner then assigns them to the whole client', clientAssignment.status === 201, `status ${clientAssignment.status} ${clientAssignment.text.slice(0, 200)}`);
+  const clientAssignmentId = clientAssignment.json.assignment.id;
+  const widened = await call(`/clients/${clientId}?tab=services`, { cookie: inviteeCookie, accept: 'text/html' });
+  check('now they reach the client and every service under it, read-only',
+    widened.status === 200 && /Social Media Management/.test(widened.text) && /GHL/.test(widened.text) && !/Add service/.test(widened.text),
+    `status ${widened.status}`);
+
+  const teamTab = await call(`/clients/${clientId}?tab=team`, { cookie: owner.cookie, accept: 'text/html' });
+  check('the Team tab keeps client-wide and service-specific assignment visibly apart',
+    teamTab.status === 200 && /Client-wide team/.test(teamTab.text) && /Service teams/.test(teamTab.text) && /Internal owner/.test(teamTab.text) && />Lead</.test(teamTab.text) && />Member</.test(teamTab.text),
+    `status ${teamTab.status}`);
+
+  const crossSite = await call(`/api/bloomops/clients/${clientId}/assignments/${clientAssignmentId}`, { method: 'DELETE', cookie: owner.cookie, origin: 'https://evil.example' });
+  check('a cross-site assignment change is refused', crossSite.status === 403 && crossSite.json?.error === 'Cross-site request refused.', `status ${crossSite.status}`);
+  check('and the assignment is still there', countRows('client_assignments', `id = ${lit(clientAssignmentId)}`) === 1);
+
+  const teamMemberAssigning = await call(`/api/bloomops/clients/${clientId}/assignments`, { method: 'POST', cookie: inviteeCookie, body: { membershipId: inviteeMembershipId, assignmentRole: 'lead' } });
+  check('a Team Member who can see the client cannot assign anybody', teamMemberAssigning.status === 403 && !('reason' in (teamMemberAssigning.json || {})), `status ${teamMemberAssigning.status}`);
+
+  // Narrowing: take the broad assignment away and the narrow one stands.
+  const narrowed = await call(`/api/bloomops/clients/${clientId}/assignments/${clientAssignmentId}`, { method: 'DELETE', cookie: owner.cookie });
+  check('the Owner removes the client-wide assignment', narrowed.status === 200, `status ${narrowed.status}`);
+  const afterNarrow = await call(`/clients/${clientId}`, { cookie: inviteeCookie, accept: 'text/html' });
+  check('the Team Member loses the client record on their next request', afterNarrow.status === 404, `status ${afterNarrow.status}`);
+  check('but their explicit Social assignment was not deleted with it',
+    countRows('service_assignments', `id = ${lit(serviceAssignmentId)}`) === 1 && countRows('client_assignments', `client_id = ${lit(clientId)}`) === 0);
+
+  // Department membership organises somebody; it grants nothing.
+  const socialDepartmentId = sqlOne(`SELECT id FROM departments WHERE workspace_id = ${lit(workspaceId)} AND slug = 'social'`)?.id;
+  sql(`INSERT INTO department_memberships (workspace_id, department_id, membership_id) VALUES (${lit(workspaceId)}, ${lit(socialDepartmentId)}, ${lit(inviteeMembershipId)});`);
+  await call(`/api/bloomops/clients/${clientId}/services/${socialId}/assignments/${serviceAssignmentId}`, { method: 'DELETE', cookie: owner.cookie });
+  const departmentOnly = await call(`/clients/${clientId}`, { cookie: inviteeCookie, accept: 'text/html' });
+  check('belonging to the Social department alone reaches nothing', departmentOnly.status === 404, `status ${departmentOnly.status}`);
+  const departmentOnlyList = await call('/clients', { cookie: inviteeCookie, accept: 'text/html' });
+  check('and their client list is empty again',
+    departmentOnlyList.status === 200 && !departmentOnlyList.text.includes(SERVICES_CLIENT) && countRows('department_memberships', `membership_id = ${lit(inviteeMembershipId)}`) === 1);
+
+  // A Client membership never reaches any of it.
+  const clientRoleService = await call(`/api/bloomops/clients/${clientId}/services/${ghlId}`, { method: 'PATCH', cookie: owner.cookie, body: { status: 'active' } });
+  check('the Owner can still change a service', clientRoleService.status === 200);
+
+  // Leak safety: a service under the wrong client, and one that never was.
+  const wrongClient = await call(`/api/bloomops/clients/${clientId}/services/${socialId}`, { method: 'PATCH', cookie: owner.cookie, body: { status: 'paused' } });
+  check('a service under its own client still answers', wrongClient.status === 200);
+  const foreign = await call(`/api/bloomops/clients/${clientId}/services/se_not_a_real_id`, { method: 'PATCH', cookie: owner.cookie, body: { status: 'paused' } });
+  check('and an id that never existed is a plain not-found', foreign.status === 404 && foreign.json?.error === 'Not found.', `status ${foreign.status}`);
+
+  // Activity: words, on the client's own history, with no codes or JSON.
+  const activity = await call(`/clients/${clientId}?tab=activity`, { cookie: owner.cookie, accept: 'text/html' });
+  check('the Activity tab says the A7 events in plain words',
+    activity.status === 200 &&
+      /Service added/.test(activity.text) &&
+      /Service status changed/.test(activity.text) &&
+      /Client team member added/.test(activity.text) &&
+      /Service team member removed/.test(activity.text),
+    `status ${activity.status}`);
+  check('and never shows an event code, a raw id, or metadata JSON',
+    !/SERVICE_ENGAGEMENT_CREATED|CLIENT_ASSIGNMENT_ADDED|metadata_json/.test(activity.text) && !activity.text.includes(socialId),
+    'activity tab');
+  check('every A7 event landed on this client, and the service ones name their engagement',
+    countRows('activity_events', `client_id = ${lit(clientId)} AND event_type LIKE 'SERVICE_%' AND service_engagement_id IS NULL`) === 0 &&
+      countRows('activity_events', `client_id = ${lit(clientId)} AND event_type LIKE 'CLIENT_ASSIGNMENT_%'`) === 2);
 }
 
 // 4. Suspend: identity survives, access stops.
