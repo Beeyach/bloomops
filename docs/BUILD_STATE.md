@@ -6,15 +6,15 @@ Release A: Foundation, Auth, Clients, Services, Onboarding, Client Portal
 
 ## Current Phase
 
-A5 (the BloomOps shell) is implemented and verified locally. BloomOps stops being the inherited prospecting application: internal roles land in a BloomOps internal shell with the eleven PRODUCT_SPEC destinations, Clients land in a separate portal shell, and the boundary between the two is decided on the server from the A4 engine on every request. Home, Clients, Onboarding, Team (real member and invitation management over the A3 routes), and Settings have their Release A treatment; Work, Social, Ads, Systems, Pages, and Finance are deliberate placeholders. The inherited application moved to `/legacy`, off the navigation, for administrators only. See "Shell (A5)" below for the route architecture, the role routing, the design-system implementation, and the evidence. No migration was needed. Staging has not been redeployed from this branch; the deploy workflow runs on merge to `main`.
+A6 (Clients) is implemented and verified locally. BloomOps has its first real business domain: a scoped client list with lifecycle filters, a create flow that makes a Draft client and its primary contact and invites nobody, a `/clients/:id` detail with the five Release A tabs, multiple contacts with a database-enforced single primary, an internal owner that is responsibility and never authorization, manually managed health, and a real append-only activity history in plain words. One migration (a partial unique index for the primary contact), one new authorization action (`client.create`), and one new resource descriptor (`loadInternalClientResource`, which is what keeps a Client membership out of the internal surfaces). A6 deliberately does not write the client lifecycle: moving a client out of Draft is the A9 activation transaction, and `updateClient` refuses the field outright. See "Clients (A6)" below for the architecture, the decisions, and the evidence. Staging has not been redeployed from this branch; the deploy workflow runs on merge to `main`.
 
-Completed phase specs: `docs/phases/A1.md`, `docs/phases/A2.md`, `docs/phases/A3.md`, `docs/phases/A4.md`, `docs/phases/A5.md`. Next phase spec: `docs/phases/A6.md` (not started).
+Completed phase specs: `docs/phases/A1.md`, `docs/phases/A2.md`, `docs/phases/A3.md`, `docs/phases/A4.md`, `docs/phases/A5.md`, `docs/phases/A6.md`. Next phase spec: `docs/phases/A7.md` (not started).
 
 Documentation index: `docs/INDEX.md`
 
 ## Branch State
 
-PR #2 (A0 and A1), PR #3 (A2), PR #4 (A3), and PR #5 (A4) are merged into `main` (`78359bf`). A5 lives on `claude/a5-bloomops-shell-74dhsm`, branched from that merged `main`, with its own PR. Nothing was stacked on the earlier branches.
+PR #2 (A0 and A1), PR #3 (A2), PR #4 (A3), PR #5 (A4), and PR #6 (A5) are merged into `main` (`0f85c19`). A6 lives on `claude/a6-clients-7p5ras`, branched from that merged `main`, with its own PR. Nothing was stacked on the earlier branches.
 
 ## Source
 
@@ -38,6 +38,8 @@ BloomOps Git history is fresh. The source commit object does not exist in the Bl
 - A2: BloomOps domain schema for Release A declared with Drizzle, materialised as SQL migrations, applied alongside the inherited schema, proven with invariant tests
 - A3: Better Auth magic-link identity and sessions over the A2 tables, Resend mail behind a small transport, per-request workspace membership enforcement, first-workspace bootstrap, the invitation lifecycle, minimal sign-in and invitation screens, and removal of the inherited access-code login; verified by invariant tests, a full local Worker smoke, and the external verifier
 - A4: one server-side authorization engine over the A2 and A3 tables (role, capability, client and service assignment scope, client-contact scope, internal/client/restricted visibility, leak-safe HTTP answers), member and invitation routes moved onto it, the inherited prospecting surfaces fenced to workspace administrators; verified by an explicit allow/deny matrix over the real schema and Better Auth sessions, the local Worker smoke, and the external verifier
+- A5: the BloomOps application shells — an internal shell with the eleven PRODUCT_SPEC destinations for Owner, Admin, Project Manager, and Team Member, a separate client portal for Client, the boundary decided on the server by the A4 engine on every request, the Bloomlab-derived design system implemented in `app/bloomops.css` and `components/bloomops/`, and the inherited prospecting application moved to `/legacy` for administrators only
+- A6: the Clients domain — a scoped list with lifecycle filters, create (Draft, primary contact, nobody invited), the `/clients/:id` detail with the five Release A tabs, multiple contacts with a database-enforced single primary, an internal owner that grants no access, manually managed health, and immutable operational activity in plain words; one migration, one new action (`client.create`), and an internal client resource descriptor that keeps Client memberships out of the internal surfaces
 
 ## Deployment Path Decision (A1)
 
@@ -528,6 +530,218 @@ Widths: sidebar from 1024px; rail 768–1023px; top bar plus tab bar below 768px
 - Playwright as a dependency: `scripts/shell-review-local.mjs` runs on a locally installed `playwright-core` and Chromium and is a developer tool, not a test-suite step
 - removal of the inherited prospecting code; it is unreachable from BloomOps navigation but still in source and still served at `/legacy` for administrators
 
+## Clients (A6)
+
+The first real BloomOps business domain. Clients stops being a destination with an honest empty state and becomes the thing the agency actually works in: a scoped list with lifecycle filters, a create flow, a detail screen with the five Release A tabs, multiple contacts with one primary, an internal owner, manually managed health, and a real operational history. One migration, one new authorization action, one new resource descriptor.
+
+| Item | Value |
+|---|---|
+| Domain | `lib/bloomops/clients.mjs` (vocabulary, validation, slug, reads, create, update, owner candidates), `lib/bloomops/client-contacts.mjs` (contacts and the primary marker), `lib/bloomops/client-activity.mjs` (reading history and saying it in words) |
+| Routes | `POST /api/bloomops/clients`, `PATCH /api/bloomops/clients/:id`, `POST /api/bloomops/clients/:id/contacts`, `PATCH|DELETE /api/bloomops/clients/:id/contacts/:contactId`, plus `app/api/bloomops/clients/_shared.mjs` |
+| Screens | `app/(internal)/clients/page.jsx` (list and filters), `app/(internal)/clients/new/page.jsx` (create), `app/(internal)/clients/[id]/page.jsx` (detail and its five tabs) |
+| Components | `components/bloomops/Clients.jsx` (presentational: `ClientStatus`, `ClientHealth`, `ClientRow`, `ClientFilters`, `ClientDetailHeader`, `ClientTabs`, `ContactRow`, `ActivityRow`), `ClientForm.jsx`, `ClientOverview.jsx`, `ClientContacts.jsx` |
+| Authorization | one new action, `client.create` (Owner, Admin, Project Manager; no resource), and one new descriptor, `loadInternalClientResource` |
+| Migration | `drizzle/0003_a6_primary_contact.sql`: one partial unique index |
+| Activity | eight `CLIENT_*` event types |
+
+### Architecture
+
+Reads go straight from a server component to the domain layer; mutations go over HTTP to a route that authorises, picks the keys it names, calls one domain function, and maps the result. No business rule is written twice, no route handler compares a role, and no React component reaches the database.
+
+A route handler is four steps and nothing else:
+
+1. `requireAuthorized` (identity, membership, origin, engine) — or `requireClient` in `_shared.mjs`, which does the same and loads the client as an internal record
+2. `pick(body, [...])`, so only the keys the route names reach the domain
+3. one domain call
+4. `domainProblem(result)` or a success body
+
+`_shared.mjs` also owns the leak-safe mapping. A domain `not_found` answers with exactly the engine's own 404 body (`{"error":"Not found."}`, no `reason`), because a contact id that belongs to another client and a client the caller may not see have to be one answer or the difference between them is the leak.
+
+### Authorization
+
+`client.create` is the one delivery action with no resource: the record it decides about does not exist yet, so it asks only whether this role may bring a client into the workspace. Owner, Admin, and Project Manager, matching `client.manage`. `ACTIONS` and the A4 role matrix in `tests/bloomops-authorization.test.mjs` were updated together; nothing in the engine changed.
+
+`loadInternalClientResource` returns the same descriptor as `loadClientResource` with `visibility: 'internal'`. That single word is what keeps a Client membership out of the A6 surfaces. The generic descriptor is client-visible on purpose, because a portal contact may legitimately be shown a projection of their own client; the internal Clients area is health, the owner, the contact directory, operational history, and the controls over all of it. Every A6 page and route loads its client through the internal descriptor, so a Client calling an internal endpoint directly is refused by the engine on visibility and answered 404 — not by a UI that happens not to link there. There is no second authorization model.
+
+### Role behaviour
+
+| Role | List | Create | Detail | Edit, contacts, owner, health | Activity |
+|---|---|---|---|---|---|
+| Owner | workspace-wide | yes | yes | yes | yes |
+| Admin | workspace-wide | yes | yes | yes | yes |
+| Project Manager | workspace-wide | yes | yes | yes | yes |
+| Team Member | only clients they hold a `client_assignments` row for | no | assigned only, read-only | no controls rendered, and the routes refuse | read-only within the detail |
+| Client | never | never | never | never | never |
+
+A Team Member assigned only to a *service* engagement reaches that engagement, not the client record, exactly as A4 says: their Clients list stays empty and the client's detail is a leak-safe not-found. An Admin gains no Finance and a Project Manager gains no member administration from anything here.
+
+### The list and its filters
+
+`listClients(db, actor, { filter })` builds the WHERE clause from the actor's scope first and adds the lifecycle filter to it, so a filter can only ever narrow. An unknown value falls back to All (`normalizeFilter`), including prototype names. Counts are per lifecycle and are the actor's own, so a Team Member's "All 1" is the truth for them.
+
+The filters are links, not buttons: the list is server-rendered, so `?status=active` is part of the address, works without JavaScript, is keyboard and screen-reader ordinary, and can be bookmarked. Changing one cannot widen authorization because the server rebuilds the scope from the actor on every request.
+
+A row shows the client's name, the primary contact, the internal owner, the start date, and the two state markers. Not every fact is a pill: status and health are compact `Status` markers with a label and a glyph, and the rest is one quiet line of context.
+
+### Create
+
+`/clients/new`, a route rather than a dialog: seven fields want an address a person can return to, a real back step, and room on a phone without a sheet fighting the keyboard. Required: client or company name, primary contact name, primary contact email. Optional: website, time zone, start date, internal owner.
+
+The existing `clients.name` is the canonical display name. The nullable `company` column is not surfaced: nobody is made to type the same business name twice. It stays available to the domain layer (`updateClient` accepts it) for a later phase that has a reason for it.
+
+A new client is always `draft` and always `on_track`, whatever the request says. Creating a client invites nobody: no invitation row, no membership, no email, no Better Auth user, and no `client_contacts.user_id`, even when the address already belongs to somebody who can sign in. That is asserted in the unit tests, in the Worker smoke, and by the fact that neither create path imports the mailer or the invitation module.
+
+The client, its primary contact, and the `CLIENT_CREATED` event are one `db.batch`, so a failure leaves nothing behind — no client without its contact, no client without its history. Ids are generated in application code in the same shape the schema default produces (32 lower-case hex characters), because the contact row has to name the client before the batch runs.
+
+### Slug
+
+Generated server-side from the name and never asked for. `slugify` normalises, strips accents, and collapses to `a-z0-9-`; an empty result becomes `client`. `slugCandidates` reads what is already taken and offers the plain slug, then numbered ones, then random-suffixed ones; `createClient` tries them in order and retries on the unique-index refusal rather than assuming a candidate is still free. A duplicate name inside one workspace is creatable and gets `name-2`; the same name in another workspace keeps the plain slug. Slug is never a tenant boundary: the canonical route stays `/clients/:id` on the opaque id, and authorization never reads the slug.
+
+### Lifecycle, and the A9 boundary
+
+**A6 displays lifecycle and never writes it.** `updateClient` refuses `relationshipStatus` outright with `status_not_editable` rather than ignoring it, so a caller reaching for it learns why. There is no Activate control anywhere, and no A6 code path creates an onboarding instance, a service engagement, or an invitation.
+
+The reasoning, recorded because the canonical documents are silent on manual transitions:
+
+- Draft to Onboarding (or Active) is the A9 activation transaction: validate, generate onboarding, create the instance, move the client, prepare portal access, invite, record activity. A plain field edit that set `relationship_status` would bypass all of it, and would be the easy thing to leave behind.
+- Paused, Completed, and Ended describe an engagement that A7 has not built, and no canonical document gives transition rules for them. Inventing a state machine without support is the larger mistake.
+- Least privilege and least irreversible: a phase that shows a fact and refuses to write it is trivially extended; one that wrote it wrongly is not.
+
+`CLIENT_STATUS_CHANGED` is deliberately not in the activity vocabulary. The phase that moves the lifecycle adds the event that records it. Status and health independence is proven at the domain and route layers instead: a health change leaves `relationship_status` untouched, in both directions, and every lifecycle value is refused through the API.
+
+### Health
+
+Manually managed in Release A, as `docs/phases/A6.md` allows. Three values with their canonical labels (On Track, Needs Attention, At Risk), a three-button group on the Overview tab, one `CLIENT_HEALTH_CHANGED` event carrying the old and new value, and no effect on lifecycle. Setting the health a client already has is a no-op and records nothing.
+
+### Contacts and the primary invariant
+
+The existing schema had no database guarantee that at most one contact per client is primary; the UI, a sequence of updates, and hope were all that stood behind it. Migration `0003_a6_primary_contact.sql` adds the smallest thing that fixes it:
+
+```sql
+CREATE UNIQUE INDEX `client_contacts_primary_uq` ON `client_contacts` (`client_id`) WHERE is_primary = 1;
+```
+
+One statement, additive, matching `lib/bloomops/schema.mjs`. It is partial, so a client with no primary is allowed and contacts that do not claim it are not counted. The application writes the switch as one `db.batch` that clears the old primary and sets the new one together, so the index never sees two and a failure leaves the client with the primary it started with. `tests/bloomops-clients.test.mjs` proves the database refuses two primaries with the domain layer bypassed entirely, through a raw `INSERT` and a raw `UPDATE`.
+
+A client may have any number of contacts. Add, edit, remove, make primary, and clear primary are all supported. Removing or standing down the only primary leaves the client with none and promotes nobody: who speaks for a client is a decision, not a default. `client_contacts` keeps its existing unique `(client_id, email) WHERE email IS NOT NULL`, so one address per client is refused with a readable message and the same address on another client is fine.
+
+### The portal identity link
+
+`client_contacts.user_id` is the durable relationship between a contact and a person who can sign in to the portal, and A9/A10 own its whole lifecycle. A6 never writes it, never accepts it from a request at any spelling, and never infers it from a matching address, an existing identity, or invitation history. `pick()` in the routes names the four contact fields and `isPrimary`, and nothing else reaches the domain.
+
+Where a contact is already linked, A6 chooses fail-safe:
+
+- **removal is refused** (409 `linked`). Deleting the row would revoke a real person's access to their own portal from a screen about the agency's address book.
+- **clearing their email address is refused**, for the same reason: it would leave somebody who can sign in with no way for the agency to reach them.
+- **ordinary editing is allowed** — name, title, phone, a different address, and the primary marker. None of it touches the link, and the tests check the link survives.
+
+The screen does not offer a Remove control on a linked contact rather than offering one that will fail, and says plainly that the contact can sign in to the client portal. The user id itself never leaves the server: `listContacts` projects it to a boolean `linked`.
+
+### Owner
+
+`owner_membership_id` is operational responsibility and nothing else. The A4 engine does not read it, so naming somebody the owner of a client grants them no access they did not already have, and setting an owner writes no `client_assignments` row. A7 owns assignment management. Both facts have tests.
+
+Because ownership grants nothing, offering any membership as owner would make it easy to hand a client to somebody who then cannot open it. The A6 candidate policy is therefore:
+
+- anyone whose role already reaches every client in the workspace: Owner, Admin, Project Manager
+- plus, for one named client, a Team Member who already reaches that client through a real `client_assignments` row
+
+A service-only assignment does not qualify, because under A4 it does not reach the client record. Client memberships are never candidates. A membership from another workspace is refused with the same message as a wrong id ("Choose an owner from the list.") and says nothing about the other workspace. A7 may widen this once a manager can grant the access in the same place they name the owner.
+
+An owner who is later suspended or removed keeps their place on the record: nothing silently reassigns the client, the detail says the person is no longer active, the Team tab explains it, and the edit form keeps them in the list while they hold the role so that saving an unrelated field cannot drop them.
+
+### The detail and its tabs
+
+Canonical route `/clients/:id`; the five Release A tabs are `?tab=`, so each section is an address that can be shared and returned to and the browser's own back step works. The page asks the engine twice: `client.view` on the internal record to decide whether the client exists for this person at all, and `client.manage` to decide whether any control renders.
+
+- **Overview** — the real work. Status, health, website, time zone, start date (end date when set), internal owner, and the contacts. Managers get Edit details (a dialog), the three-way health control, and full contact management. A Team Member assigned to the client gets the same facts as a read-only projection with no controls, and a line saying who changes a client.
+- **Services** — A7's. A deliberate, true state: what will live there and that nothing has been set up for this client. No catalogue, no package fields, no fabricated rows.
+- **Onboarding** — A8's, A9's, and A10's. Says onboarding has not started for this client and that it is generated at activation. No progress, checklist, or percentage.
+- **Team** — only what A6 owns: who is responsible for this client inside the agency, the explicit statement that the owner is responsibility and not access, and the note that assigning people to a client and its services is a later release. No `client_assignments` CRUD, no department or service assignment, no workload, and no weakening of `members.manage`: the owner picker is its own narrow projection (`ownerCandidates`), built only for actors who may manage the client, and never the Team administration directory.
+- **Activity** — real history.
+
+### Activity
+
+Eight event types joined `ACTIVITY`: `CLIENT_CREATED`, `CLIENT_DETAILS_UPDATED`, `CLIENT_OWNER_CHANGED`, `CLIENT_HEALTH_CHANGED`, `CLIENT_CONTACT_ADDED`, `CLIENT_CONTACT_UPDATED`, `CLIENT_CONTACT_REMOVED`, `CLIENT_PRIMARY_CONTACT_CHANGED`.
+
+Every event carries the workspace, the client id, the subject type and id, the acting membership and user, a timestamp, and small metadata: the fields that changed and their old and new values, a contact's name, an owner's name on both sides so the line still reads after somebody leaves. Never a request body, never a copy of every address a contact has held.
+
+No event is written for a validation failure, an authorization failure, a refused origin, or a true no-op, and one request never records the same fact twice. One request can record two or three genuinely distinct facts — details, health, and owner are three different things — and each gets its own line.
+
+`activity_events` remains append-only: the A2 triggers abort every UPDATE and DELETE, and the tests prove it still holds with A6 rows in the table. A6 created no `client_history`, `audit_log`, or `client_events_v2`; every event goes through `recordActivity`/`activityValues`, and `activityValues` exists so an event can be written inside the same batch as the change it describes.
+
+`clientActivity` reads the table back and `describeEvent` turns a row into a sentence: "Client created", "Health changed / From On Track to Needs Attention.", "Primary contact changed / Sam is now the primary contact." Event codes, ids, and metadata JSON never reach the browser, an unknown event type still renders as words, and ordering falls back to insert order within one timestamp so two events from one batch read in the order they happened. Activity is internal; nothing exposes it to the portal.
+
+### Validation
+
+Server-side regardless of the browser, in the domain layer, per field:
+
+- **name** — trimmed, non-empty, at most 120 characters (an over-long value is an error the person can fix, never a silent truncation)
+- **website** — completed to `https://` when a scheme is missing, then parsed: http(s) only, a hostname with a dot, stored absolute and trailing-slash-free. `mailto:` and `javascript:` are refused, so nothing unparsed is rendered into an href
+- **time zone** — null, or a real IANA zone with a region, checked against `Intl`. The picker offers `Intl.supportedValuesOf('timeZone')` where the runtime has it and a small useful list where it does not, and a typed value is validated either way
+- **dates** — `YYYY-MM-DD` calendar dates that actually exist (2026-02-30 is refused), and an end date may not precede the start date
+- **health** — one of the three values
+- **owner** — a candidate under the policy above
+- **contacts** — non-empty name, normalised lower-case email of valid shape, bounded phone and title, one address per client, and the contact must belong to the named client
+
+Nothing is trusted from the browser: not the workspace id, not the actor, not a client id in a body when the route already names one, not a role, and not `user_id`.
+
+### Leak safety
+
+Four cases and one answer. Another workspace's client, a client a Team Member is not assigned to, a contact belonging to a different client, and an id that never existed all produce `404 {"error":"Not found."}`, byte for byte, on both the API and the page. A Client membership calling an internal client route is refused on visibility and gets the same 404, including for their own client. An owner membership id from another workspace is refused with the same words as a wrong id. The tests compare the bodies directly rather than the status alone.
+
+### Design
+
+Built inside the A5 shell with the A5 primitives; nothing about the shell changed. New semantic components sit above them, and the styling is one `bo-client-*` section in `app/bloomops.css`.
+
+Clients are ordinary operational records, so there is no holographic treatment, no gradient, no hero, no card grid, and no fake analytics. The list is hairline rows at medium-to-high density; the detail is semantic sections of label/value facts. Status and health are separate compact markers, each a label plus a glyph, never colour alone.
+
+Two responsive decisions worth recording. Seven lifecycle filters do not fit as pills at 320px, so the filter strip scrolls inside itself with one clear selected state, keyboard-ordinary links, and 44px targets on coarse pointers; the page never scrolls sideways. Five tabs do not shrink into nine-point type, so the tab strip scrolls the same way with a visible focus ring and an obvious active tab. On a phone a client row puts its two state markers under the name and keeps the chevron pinned to the right edge rather than giving it a line of its own.
+
+Two bugs the review found and A6 fixed:
+
+- **date fields were 15px on phones.** The inherited `app/globals.css` carries `input[type="date"] { font: inherit }`, which is more specific than `.bo-control` and dragged the field to the body size. Below 16px a phone browser zooms the page on focus, which `docs/DESIGN_CHECKLIST.md` rules out. `app/bloomops.css` now takes the size back with `.bo-control[type='date']` (and `datetime-local`, `time`). The inherited stylesheet is untouched; a test asserts both halves so it cannot silently regress.
+- **a row's title and meta line ran together.** `.bo-row-title` and `.bo-row-meta` are now block by default, which is what a title and the line under it always want; the two inline `display: block` styles A5 had added in `TeamManager.jsx` are gone as redundant.
+
+### Design gallery
+
+`/design` gained a small Clients section (developer-only, as before): both state markers in every value, the filter strip, three client rows, the tab strip, two contact rows, and an activity list. Its fixtures live in that file and nowhere else — no BloomOps screen ever renders a sample client, and staging was not seeded with any.
+
+### Archive and restore
+
+Not implemented in A6. The canonical client schema has no archive state, and A6 does not invent one: no `archived_at`, no `deleted_at`, no archive machinery. `Ended` is a lifecycle status, not an archive flag, and A6 does not write the lifecycle at all. `docs/phases/A6.md` lists archive/restore conditionally ("if implemented"), and nothing in the repository reveals an intended mechanism to implement.
+
+### Local verification (2026-09-06)
+
+| Check | Result |
+|---|---|
+| `npm ci` | ok |
+| `npm test` | 2762 tests, 2762 pass, 0 fail (2715 before A6; 47 A6 tests in `tests/bloomops-clients.test.mjs`) |
+| `npm run build` | exit 0, no warnings |
+| `npm run cf:build` | exit 0, `Worker saved in .open-next/worker.js` |
+| Local D1 from zero | `.wrangler/state` deleted, then `db:schema:local`, `db:migrate:local` (44 executed, 16 recorded as already present), `db:domain:migrate:local` (4 applied). Second pass: "No migrations to apply", inherited ledger unchanged, base schema re-applied with no failed statement. `client_contacts_primary_uq` present on the fresh database |
+| Zero-to-current | `node .github/scripts/verify-zero-remote.mjs --local`: every check passed with the four domain migrations, including the identical-after-second-run comparison |
+| End-to-end smoke against the local Worker | `node scripts/auth-smoke-local.mjs --url http://localhost:8787`: 89 of 89 through the real bundle on workerd |
+| External verifier against the local Worker | `node .github/scripts/verify-staging.mjs --url http://localhost:8787 --expect-env development`: 17 of 17 |
+| Browser review | `node scripts/shell-review-local.mjs`: every A5 and A6 state at 1440, 1024, 768, 390, and 320 in headless Chromium |
+
+The 47 A6 tests run the real route handlers over a real SQLite built from the committed migrations, with real Better Auth sessions, and render the real components. They cover: the `client.create` policy and the internal descriptor; creation by each role with the denied cases, the forced Draft and On Track, the primary contact, the absence of any invitation, membership, identity, email, or portal link, the `CLIENT_CREATED` event and its metadata, duplicate names and cross-workspace slugs, and field-by-field refusals that write nothing; every lifecycle filter, the scope of every role including the service-only Team Member, and that no filter widens anything; the four leak-safe not-found cases compared byte for byte; editing, its refusals, and the silent no-op; health through all three values in both directions with the lifecycle untouched; the lifecycle refused through the API for every value, including smuggled beside a legitimate field, with no onboarding, engagement, or invitation created; the owner set, changed, and cleared, granting no scope and writing no assignment, and preserved when its holder is suspended; contacts added, edited, removed, and switched, at most one primary with the database refusing two under a bypass, one address per client and the same address elsewhere, a foreign contact unreachable, `user_id` unwritable and uninferable, and a linked contact protected from removal and address clearing while ordinary edits pass through; activity in words with the right actor, workspace, and client, immutable, never duplicated, and never leaking across workspaces; the origin fence on all five state-changing calls; two workspaces with no authority bleed; and the rendered markup of every semantic component.
+
+The Worker smoke adds, over HTTP through the real bundle: the Owner's Clients area and create form, a client created as Draft and On Track with its primary contact and no invitation, the list and a filter that hides it, the detail with its five tabs and no Activate control, a health change that leaves the lifecycle alone, the lifecycle refused, a second contact promoted to primary with exactly one primary in the database, a duplicate address refused, the Activity tab in words with no event codes, a cross-site write refused, an unassigned Team Member's empty list and 404 detail and 403 create and 404 create form, and a linked Client redirected away from the internal Clients area and answered 404 by the internal API for their own client while their portal still opens.
+
+The browser review adds the A6 states at all five widths: the list empty and populated, a non-All filter, the create form and its validation state, the Overview, Services, Onboarding, Team, and Activity tabs, the edit dialog, the add-contact dialog, the removal confirmation, a client with a very long name and a very long contact address, and a Team Member's read-only detail. It also checks in the browser that a Client deep-linking their own client's internal detail lands on the portal with no internal facts on the page, that an assigned Team Member's detail renders no Edit, Add contact, Make primary, or Remove control, and that an unassigned client is a 404 for them.
+
+### Intentionally deferred to A7 and later
+
+- purchased services, the service-type catalogue, and service lifecycle: A7. The Services tab says so and shows nothing invented
+- departments, `client_assignments` and `service_assignments` management, and any scoped team-assignment UI: A7. The Team tab shows only the owner
+- onboarding template generation: A8. The Onboarding tab says onboarding has not started
+- activation, the lifecycle transitions it owns, `CLIENT_STATUS_CHANGED`, client invitation, and `client_contacts.user_id` linkage: A9 and A10
+- the full client onboarding portal: A10
+- archive and restore: not implemented, and no column was added for it
+- the `clients.company` column stays unsurfaced; `clients.name` is the canonical A6 display name
+- projects, work, social, ads, systems, and finance records: Release B and later
+
 ## Leadsthatbloom Reference Audit (A1)
 
 | Reference | Where it was | What happened |
@@ -601,6 +815,11 @@ Re-running the workflow is safe. Schema and migrations are idempotent, the provi
 
 ## Known Risks
 
+- A6 shows the client lifecycle and never writes it, so a client created today stays Draft until A9 exists. That is the deliberate boundary (see "Lifecycle, and the A9 boundary"), but it means the lifecycle filters other than Draft can only show clients whose status was set outside the application
+- the A6 owner-candidate policy (workspace-wide roles, plus a Team Member already assigned to that client) is a decision taken where the canonical documents are silent, made because ownership grants no access. It is one function, `ownerCandidates`, and A7 may widen it once assignment management exists
+- `owner_membership_id` is operational responsibility and the A4 engine does not read it. A future phase that decided ownership should imply scope would have to change the engine deliberately, not the client domain
+- a slug race falls back to random suffixes and, if every candidate loses, answers a plain "try again" rather than a constraint error. It has not been observed; the retry loop exists so it cannot surface as a raw unique-constraint failure
+- `app/globals.css` (inherited) carries element-level rules that can outrank `.bo-*` classes. A6 hit one (`input[type="date"] { font: inherit }`) and answered it in `app/bloomops.css` with a more specific selector plus a test. Other element rules there could do the same to a future control
 - the inherited Leadsthatbloom application is still in source and still served to Owner and Admin at `/legacy` (no longer the root, not in navigation); its Pages editor is the part worth keeping, and retiring the rest is later work
 - the inherited prospecting routes are fenced, not authorized: Owner and Admin reach all of them as `admin`, and no other role reaches any. Every inherited route still knows nothing of client, service, or visibility scope, which is why the fence admits nobody else until later phases replace those surfaces
 - the shell layouts and pages resolve access through React `cache()` per request; a page that forgets to call `requireShell` would render inside the shell without its own check. `tests/bloomops-shell.test.mjs` fails if any page or layout under `app/(internal)` or `app/portal` omits the call
@@ -619,6 +838,20 @@ Re-running the workflow is safe. Schema and migrations are idempotent, the provi
 - the production D1 id is a placeholder until production is provisioned deliberately
 - two migration systems coexist in one database until the inherited prospecting schema is retired: keep running the inherited bootstrap before the domain migrations on a brand-new database, as the workflow does, even though either order works today
 - the BloomOps client table is physically named `bloomops_clients` until the inherited `clients` table is dropped
+
+## Intentionally Not Done in A6
+
+- no purchased services, service types, or service lifecycle (A7); the Services tab is an honest state
+- no departments, `client_assignments` or `service_assignments` management, or scoped team-assignment UI (A7); the Team tab shows only the internal owner
+- no onboarding template generation (A8), activation (A9), client invitation or `client_contacts.user_id` linkage (A9/A10), or client onboarding portal (A10)
+- no client lifecycle write of any kind, and no Activate control: `updateClient` refuses `relationshipStatus`, and `CLIENT_STATUS_CHANGED` is left for the phase that moves the lifecycle
+- no archive or restore, and no `archived_at` or `deleted_at` column
+- no `clients.company` field in the UI; `clients.name` is the canonical display name
+- no second authorization model: one new action and one new descriptor, both in `lib/bloomops/authorization.mjs`
+- no change to the A5 shell, navigation, or portal, and no new portal destination
+- no edit to any inherited prospecting route, component, or the Pages/editor system; `app/globals.css` is untouched (the date-field fix is in `app/bloomops.css`)
+- no staging deploy from the branch and no production provisioning; no staging data was created or seeded, and no workflow trigger was changed
+- no removal of inherited code
 
 ## Intentionally Not Done in A5
 
@@ -671,15 +904,17 @@ For the next phase, read:
 
 1. `CLAUDE.md`
 2. this file
-3. `docs/phases/A6.md`, `docs/PRODUCT_SPEC.md`, `docs/DOMAIN_MODEL.md`, `docs/DESIGN_SYSTEM.md`, and `docs/DESIGN_CHECKLIST.md`
+3. `docs/phases/A7.md`, `docs/PRODUCT_SPEC.md`, and `docs/DOMAIN_MODEL.md`
 
 Read additional canonical planning docs only when the phase file or `docs/INDEX.md` calls for them.
 
 ## Next Planned Phase
 
-A6, Clients. Not started. It grows into the Clients destination A5 left: `app/(internal)/clients/page.jsx` (today a read-only name-and-status list through `lib/bloomops/overview.mjs#visibleClients`), a `/clients/:clientId` detail route inside the same `(internal)` group (every page calls `requireShell('internal')` and then asks the engine with `evaluate(actor, { action: 'client.view' | 'client.manage', resource })` through `loadClientResource`), and routes that use `requireAuthorized(req, { action, resource })`. The primitives to build with are in `components/bloomops/` (rows, `Status`, `Field`, `Dialog`, `Button`, `EmptyState`); semantic objects such as ClientRow and ClientHealth sit above them. `ACTIONS` in `lib/bloomops/authorization.mjs` is where new actions go.
+A7, Services and Departments. Not started. It seeds the four departments and the initial service types, gives one client several purchased service engagements with their own lifecycle, and builds assignment at both the client and the engagement level. The Services and Team tabs of the client detail (`app/(internal)/clients/[id]/page.jsx`) are where its screens land; both say today, honestly, that services and assignments are a later release. `service.view` and `service.manage` already exist in `ACTIONS`, and `loadServiceResource` already builds the descriptor; A7 adds whatever creation action it needs beside `client.create` and may widen `ownerCandidates` in `lib/bloomops/clients.mjs` once a manager can grant client access in the same place they name an owner. The A4 rule that a service assignment reaches the engagement and not the client record is load-bearing and is covered by tests in both `tests/bloomops-authorization.test.mjs` and `tests/bloomops-clients.test.mjs`.
 
 ## Last Verification
+
+2026-09-06, A6 execution. Results are in "Local verification (2026-09-06)" under "Clients (A6)": 2762 tests pass (2715 before A6), `npm run build` and `npm run cf:build` exit 0, the end-to-end smoke passes 89 of 89 and the external verifier 17 of 17 against the local Worker built from this branch, the browser review passes 353 of 353 structural checks at all five widths, and a local D1 was migrated from an empty simulation through all four domain migrations with a no-op second pass. A6 added migration `0003_a6_primary_contact.sql`, so zero-to-current was re-proved: `node .github/scripts/verify-zero-remote.mjs --local` passed every check including the identical-after-second-run comparison, and `client_contacts_primary_uq` is present on a database built only from the committed migrations. No staging or production resource was touched from this session: no wrangler command was authenticated, and the only wrangler operations run were local (`d1 execute --local`, `d1 migrations apply --local`, `d1 migrations list --local`, `wrangler dev` through `opennextjs-cloudflare preview`, `r2 object get --local`). `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched.
 
 2026-09-06, A5 execution. Results are in "Local verification (2026-09-06)" under "Shell (A5)": 2715 tests pass, `npm run build` and `npm run cf:build` exit 0, the end-to-end smoke passes every check and the external verifier 21 of 21 against the local Worker built from this branch, the browser review passes every structural check at all five widths, and the local D1 was migrated from a fresh simulation with a no-op second pass. No migration was added, so the zero-to-current proof from A3 stands unchanged. No staging or production resource was touched from this session: no wrangler command was authenticated, and the only wrangler operations run were local (`d1 execute --local`, `d1 migrations apply --local`, `d1 migrations list --local`, `wrangler dev` through `opennextjs-cloudflare preview`, `r2 object get --local`). `Beeyach/bloomtrack-pro` and every Leadsthatbloom Cloudflare resource were untouched.
 
