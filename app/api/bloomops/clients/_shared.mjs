@@ -3,8 +3,9 @@
 // body reader that never trusts what it is given.
 import { NextResponse } from 'next/server';
 import { requireAuthorized } from '@/lib/bloomops/access.mjs';
-import { loadInternalClientResource } from '@/lib/bloomops/authorization.mjs';
+import { loadInternalClientResource, loadInternalServiceResource } from '@/lib/bloomops/authorization.mjs';
 import { getClient } from '@/lib/bloomops/clients.mjs';
+import { findServiceEngagement } from '@/lib/bloomops/services.mjs';
 
 // Authorise one action against one client, seen as an internal record.
 //
@@ -27,6 +28,31 @@ export async function requireClient(req, id, action = 'client.manage') {
   // would mean it vanished between the two reads. Answer as absent.
   if (!client) return { response: NextResponse.json({ error: 'Not found.' }, { status: 404 }) };
   return { access, client };
+}
+
+// Authorise one action against one service engagement of one client, seen
+// as an internal record (A7).
+//
+// The route names both ids, and both are part of the lookup rather than a
+// comparison afterwards, so an engagement that belongs to a different
+// client of the same workspace answers exactly as one in another workspace
+// and one that never existed: 404, with the same body.
+//
+// The descriptor is internal for the same reason the client one is. A
+// portal contact may one day be shown a projection of a service their own
+// client bought, so the generic descriptor is client-visible; the package,
+// the scope notes, the lifecycle, and the internal team are not that, so
+// these routes ask about an `internal` record and the engine refuses a
+// Client on visibility.
+export async function requireService(req, clientId, serviceId, action = 'service.manage') {
+  const { access, response } = await requireAuthorized(req, {
+    action,
+    resource: (a) => loadInternalServiceResource(a.db, a.workspace.id, serviceId, { clientId: String(clientId) }),
+  });
+  if (response) return { response };
+  const service = await findServiceEngagement(access.db, access.workspace.id, String(clientId), String(serviceId));
+  if (!service) return { response: NextResponse.json({ error: 'Not found.' }, { status: 404 }) };
+  return { access, service };
 }
 
 // A JSON object body, or null. An array, a string, or a number is not a
@@ -56,7 +82,9 @@ export function pick(body, keys) {
 const STATUS_BY_REASON = {
   invalid: 400,
   status_not_editable: 400,
+  service_type_not_editable: 400,
   duplicate_email: 409,
+  duplicate_service: 409,
   slug_conflict: 409,
   linked: 409,
 };
@@ -64,7 +92,11 @@ const STATUS_BY_REASON = {
 const MESSAGE_BY_REASON = {
   invalid: 'Some of what you entered needs a change.',
   status_not_editable: 'The client’s status is set by activation, not by editing.',
+  service_type_not_editable: 'A service engagement keeps the service it was bought for.',
   duplicate_email: 'Another contact for this client already uses that address.',
+  // Never the database's own words. The per-field message that comes with
+  // this names the service and says what to do about it.
+  duplicate_service: 'That service is already running for this client.',
   slug_conflict: 'That could not be saved just now. Try again.',
   linked: 'This contact can sign in to the client portal, so they cannot be removed here.',
 };
