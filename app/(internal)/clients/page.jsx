@@ -1,60 +1,74 @@
+import { evaluate } from '@/lib/bloomops/authorization.mjs';
 import { requireShell } from '@/lib/bloomops/shell-server.mjs';
-import { visibleClients } from '@/lib/bloomops/overview.mjs';
+import { listClients, normalizeFilter } from '@/lib/bloomops/clients.mjs';
 import { navItem } from '@/lib/bloomops/navigation.mjs';
 import { plural } from '@/lib/bloomops/format.mjs';
-import { EmptyState, PageHeader, Status } from '@/components/bloomops/Primitives';
+import { Button, EmptyState, PageHeader } from '@/components/bloomops/Primitives';
+import { ClientFilters, ClientRow } from '@/components/bloomops/Clients';
 
-// Clients in A5 is the destination and its honest initial state. The
-// list, creation, detail, contacts, status and health editing, and
-// assignments are A6. What renders here is read-only: the name and
-// relationship status of each client the person may see, or nothing.
+// The Clients list (A6): every client this person may see, with the
+// lifecycle filters.
+//
+// The scope is the actor's, resolved by the A4 engine on the server for
+// this request: workspace-wide for Owner, Admin, and Project Manager; only
+// the clients a Team Member holds a client_assignments row for; nothing at
+// all for anyone else. The `status` in the address narrows that list and
+// can never widen it, because listClients rebuilds the scope clause from
+// the actor and adds the filter to it. A Client membership never reaches
+// this page: requireShell sends them to the portal before anything renders.
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Clients' };
 
-const STATUS_TONE = {
-  active: ['success', 'check'],
-  onboarding: ['info', 'clock'],
-  paused: ['warning', 'clock'],
-  draft: ['neutral', 'dot'],
-  completed: ['neutral', 'check'],
-  ended: ['neutral', 'dash'],
-};
-
-export default async function ClientsPage() {
+export default async function ClientsPage({ searchParams }) {
   const { access, actor } = await requireShell('internal');
-  const clients = await visibleClients(access.db, actor);
+  const params = await searchParams;
+  const filter = normalizeFilter(params?.status);
+  const { clients, counts, total } = await listClients(access.db, actor, { filter });
+  const mayCreate = evaluate(actor, { action: 'client.create' }).allowed;
   const assigned = actor.scope?.kind === 'assigned';
+
   return (
     <>
-      <PageHeader title="Clients" subtitle={navItem('clients').purpose} />
-      {clients.length === 0 ? (
-        <EmptyState title={assigned ? 'No clients are assigned to you' : 'No clients yet'}>
+      <PageHeader
+        title="Clients"
+        subtitle={navItem('clients').purpose}
+        actions={
+          mayCreate ? (
+            <Button variant="primary" icon="plus" href="/clients/new">
+              Add client
+            </Button>
+          ) : null
+        }
+      />
+
+      {total === 0 ? (
+        <EmptyState
+          title={assigned ? 'No clients are assigned to you' : 'No clients yet'}
+          actions={mayCreate ? <Button variant="primary" href="/clients/new">Add the first client</Button> : null}
+        >
           {assigned ? (
-            <p>When you are assigned to a client or to one of their services, it will appear here.</p>
+            <p>When you are assigned to a client, they appear here. Being assigned to one of a client’s services does not add the client itself.</p>
           ) : (
-            <p>There are no clients in this workspace yet. Adding clients is not available in BloomOps yet; when it is, each client will appear here with their services, status, and health.</p>
+            <p>Add a client to keep their contacts, status, and history in one place. Adding a client does not invite them to anything.</p>
           )}
         </EmptyState>
       ) : (
         <>
-          <p className="bo-small" style={{ marginBottom: 12 }}>
-            {plural(clients.length, 'client')}
-          </p>
-          <ul className="bo-rows" aria-label="Clients">
-            {clients.map((client) => {
-              const [tone, glyph] = STATUS_TONE[client.relationshipStatus] || ['neutral', 'dot'];
-              return (
-                <li key={client.id} className="bo-row">
-                  <span className="bo-row-text">
-                    <span className="bo-row-title">{client.name}</span>
-                  </span>
-                  <span className="bo-row-end">
-                    <Status label={client.statusLabel} tone={tone} glyph={glyph} />
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
+          <ClientFilters active={filter} counts={counts} />
+          {clients.length === 0 ? (
+            <EmptyState title="Nothing with that status">
+              <p>No client you can see is at this stage right now.</p>
+            </EmptyState>
+          ) : (
+            <>
+              <p className="bo-small bo-list-count">{plural(clients.length, 'client')}</p>
+              <ul className="bo-rows" aria-label="Clients">
+                {clients.map((client) => (
+                  <ClientRow key={client.id} client={client} />
+                ))}
+              </ul>
+            </>
+          )}
         </>
       )}
     </>

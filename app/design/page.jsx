@@ -6,6 +6,7 @@ import { INTERNAL_NAV } from '@/lib/bloomops/navigation.mjs';
 import { NavList } from '@/components/bloomops/InternalNav';
 import { TabBar } from '@/components/bloomops/MobileNav';
 import { Button, EmptyState, Facts, Field, Notice, PageHeader, Status, Surface, fieldAria } from '@/components/bloomops/Primitives';
+import { ActivityRow, ClientFilters, ClientHealth, ClientRow, ClientStatus, ClientTabs, ContactRow } from '@/components/bloomops/Clients';
 
 // The developer design gallery: the primitives A5 introduced, in their
 // states, for review at every width. Developer-only: it renders in
@@ -23,7 +24,26 @@ const SECTIONS = [
   ['forms', 'Forms'],
   ['status', 'Status'],
   ['navigation', 'Navigation'],
+  ['clients', 'Clients'],
   ['states', 'States'],
+];
+
+// Fixtures for the Clients section only, so the components can be seen in
+// isolation. They exist in this developer-only file and nowhere else: no
+// BloomOps screen ever renders a sample client.
+const GALLERY_CLIENTS = [
+  { id: 'gallery-1', name: 'Northwind Studio', relationshipStatus: 'active', health: 'on_track', startDate: '2026-03-02', owner: { name: 'Priya Manel' }, primaryContact: { name: 'Rae Ellis' } },
+  { id: 'gallery-2', name: 'Harbour & Co Physiotherapy', relationshipStatus: 'onboarding', health: 'needs_attention', startDate: null, owner: null, primaryContact: { name: 'Sam Oyelaran' } },
+  { id: 'gallery-3', name: 'Vela', relationshipStatus: 'draft', health: 'at_risk', startDate: null, owner: { name: 'Priya Manel' }, primaryContact: null },
+];
+
+const GALLERY_CONTACT = { id: 'gc-1', name: 'Rae Ellis', title: 'Operations lead', email: 'rae@example.com', phone: '+61 2 5550 0100', isPrimary: true, linked: false };
+const GALLERY_CONTACT_2 = { id: 'gc-2', name: 'Sam Oyelaran', title: null, email: 'sam@example.com', phone: null, isPrimary: false, linked: true };
+
+const GALLERY_EVENTS = [
+  { id: 'ge-1', title: 'Health changed', detail: 'From On Track to Needs Attention.', actor: 'Priya Manel', occurredAt: '2026-09-04T09:12:00.000Z' },
+  { id: 'ge-2', title: 'Primary contact changed', detail: 'Rae Ellis is now the primary contact.', actor: 'Priya Manel', occurredAt: '2026-09-02T14:40:00.000Z' },
+  { id: 'ge-3', title: 'Client created', detail: null, actor: 'Ellen Bright', occurredAt: '2026-08-28T08:00:00.000Z' },
 ];
 
 const PALETTE = [
@@ -220,6 +240,43 @@ export default async function DesignGalleryPage({ searchParams }) {
               </p>
             </div>
           </div>
+        </Section>
+
+        <Section id="clients" title="Clients" only={only}>
+          <p className="bo-small">A client is an ordinary operational record: hairline rows, two independent state markers, and facts. No cards, no material effects.</p>
+          <div className="bo-cluster">
+            <ClientStatus status="draft" />
+            <ClientStatus status="onboarding" />
+            <ClientStatus status="active" />
+            <ClientStatus status="paused" />
+            <ClientStatus status="completed" />
+            <ClientStatus status="ended" />
+          </div>
+          <div className="bo-cluster" style={{ marginTop: 12 }}>
+            <ClientHealth health="on_track" />
+            <ClientHealth health="needs_attention" />
+            <ClientHealth health="at_risk" />
+          </div>
+          <div style={{ marginTop: 24 }}>
+            <ClientFilters active="active" counts={{ all: 12, draft: 2, onboarding: 3, active: 5, paused: 1, completed: 1, ended: 0 }} basePath="/design" />
+            <ul className="bo-rows" aria-label="Clients (gallery)">
+              {GALLERY_CLIENTS.map((client) => (
+                <ClientRow key={client.id} client={client} />
+              ))}
+            </ul>
+          </div>
+          <div style={{ marginTop: 24 }}>
+            <ClientTabs clientId="gallery-1" active="overview" />
+            <ul className="bo-rows" aria-label="Contacts (gallery)">
+              <ContactRow contact={GALLERY_CONTACT} actions={<Button size="sm">Edit</Button>} />
+              <ContactRow contact={GALLERY_CONTACT_2} actions={<Button size="sm">Make primary</Button>} />
+            </ul>
+          </div>
+          <ol className="bo-activity" aria-label="Activity (gallery)" style={{ marginTop: 24 }}>
+            {GALLERY_EVENTS.map((event) => (
+              <ActivityRow key={event.id} event={event} />
+            ))}
+          </ol>
         </Section>
 
         <Section id="states" title="States" only={only}>

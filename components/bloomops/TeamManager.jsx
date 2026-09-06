@@ -67,7 +67,7 @@ export function MemberRow({ member, isSelf, busy, onSuspend, onReinstate, onRemo
           {member.name || member.email}
           {isSelf && <span className="bo-soft"> (you)</span>}
         </span>
-        <span className="bo-row-meta" style={{ display: 'block' }}>
+        <span className="bo-row-meta">
           {member.email} · {member.roleLabel}
           {joined ? ` · ${joined}` : ''}
         </span>
@@ -102,7 +102,7 @@ export function InvitationRow({ invitation, busy, onResend, onRevoke }) {
     <li className="bo-row bo-row-wrap">
       <span className="bo-row-text">
         <span className="bo-row-title">{invitation.inviteeName ? `${invitation.inviteeName} · ${invitation.email}` : invitation.email}</span>
-        <span className="bo-row-meta" style={{ display: 'block' }}>
+        <span className="bo-row-meta">
           {invitation.roleLabel} · {expiry}
         </span>
       </span>

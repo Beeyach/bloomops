@@ -22,6 +22,7 @@ const PATHS = {
   info: <><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></>,
   'chevron-down': <path d="m6 9 6 6 6-6" />,
   'chevron-right': <path d="m9 6 6 6-6 6" />,
+  'chevron-left': <path d="m15 6-6 6 6 6" />,
   'sign-out': <><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4" /><path d="m15 8 4 4-4 4" /><path d="M19 12H9" /></>,
   user: <><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" /></>,
   mail: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></>,
