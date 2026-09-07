@@ -57,19 +57,20 @@ test('a fresh database reaches the A2 schema from the committed migrations alone
   const expected = schema.BLOOMOPS_TABLES.map(getTableName).sort();
   const present = tableNames(db);
   for (const name of expected) assert.ok(present.includes(name), `missing table ${name}`);
-  assert.equal(expected.length, 22, 'Release A creates exactly the 22 A2 tables');
+  assert.equal(expected.length, 23, 'A8 adds relational source-version provenance to the 22 A2 tables');
   const extra = present.filter((n) => !expected.includes(n) && n !== 'sqlite_sequence');
   assert.deepEqual(extra, [], 'no unplanned tables');
 });
 
 test('migrations are additive and ordered, so applying them is deterministic', () => {
   const files = migrationFiles();
-  assert.equal(files.length, 5);
+  assert.equal(files.length, 6);
   assert.match(files[0].tag, /^0000_/);
   assert.match(files[1].tag, /^0001_immutability_triggers$/);
   assert.match(files[2].tag, /^0002_a3_auth_membership$/);
   assert.match(files[3].tag, /^0003_a6_primary_contact$/);
   assert.match(files[4].tag, /^0004_a7_open_service_uq$/);
+  assert.match(files[5].tag, /^0005_a8_onboarding_templates$/);
   for (const { url } of files) {
     const sql = readFileSync(url, 'utf8');
     assert.doesNotMatch(sql, /\bDROP\s+(TABLE|INDEX|TRIGGER)\b/i, 'Release A migrations only create');
@@ -287,8 +288,8 @@ test('template versions are immutable snapshots separate from the template', () 
   assert.throws(() => run(db, "UPDATE template_versions SET definition_json = '{}' WHERE id = 'tv1'"), /immutable/);
   assert.throws(() => run(db, "UPDATE template_versions SET version_number = 5 WHERE id = 'tv1'"), /immutable/);
   // Lifecycle status may still move.
-  run(db, "UPDATE template_versions SET status = 'published', published_at = '2026-09-05T00:00:00.000Z' WHERE id = 'tv2'");
   run(db, "UPDATE template_versions SET status = 'retired' WHERE id = 'tv1'");
+  run(db, "UPDATE template_versions SET status = 'published', published_at = '2026-09-05T00:00:00.000Z' WHERE id = 'tv2'");
   assert.throws(
     () => run(db, "INSERT INTO template_versions (id, workspace_id, template_id, version_number, definition_json, definition_hash) VALUES ('tv_dup', 'ws_a', 't_kajabi', 2, '{}', 'h')"),
     /UNIQUE/,

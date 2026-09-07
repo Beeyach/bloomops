@@ -195,6 +195,12 @@ Overall states:
 - Complete
 - Blocked
 
+### onboarding_instance_templates
+
+Canonical relational provenance for generated onboarding. One instance records every exact immutable template version used to compile it, through unique instance/version relationships with same-workspace foreign keys. These source relationships are append-only. The legacy nullable single `onboarding_instances.template_version_id` field is retained for compatibility and left null by the A8 engine.
+
+Generated items are relational runtime snapshots. They may evolve through their own operational lifecycle, but later master-template edits or publication must not silently rewrite them or their service relationships.
+
 ### onboarding_items
 
 Item states:

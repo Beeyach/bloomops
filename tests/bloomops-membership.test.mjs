@@ -55,7 +55,7 @@ test('the bootstrap plan is literal SQL with quotes escaped and no control chara
   assert.ok(plan.statements.some((s) => s.includes("'Pat O''Brien'")));
   assert.throws(() => bootstrapPlan({ workspaceName: 'X', owner: { email: "o'brien@example.com" }, admin: { email: 'admin@example.com' } }), /Owner email/, 'quotes in an address are refused, never escaped');
   assert.throws(() => bootstrapPlan({ workspaceName: 'X\u0000Y', owner: { email: 'a@b.co' }, admin: { email: 'c@d.co' } }), /control characters/);
-  assert.equal(plan.statements.filter((s) => /NOT EXISTS/.test(s)).length, plan.statements.length, 'every statement is guarded');
+  assert.equal(plan.statements.filter((s) => /NOT EXISTS|ON CONFLICT \([^)]*\) DO NOTHING/.test(s)).length, plan.statements.length, 'every statement is guarded');
 });
 
 test('bootstrap creates one workspace, two identities, Owner and Admin memberships, and is idempotent', async () => {

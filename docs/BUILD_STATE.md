@@ -6,19 +6,19 @@ Release A: Foundation, Auth, Clients, Services, Onboarding, Client Portal
 
 ## Current Phase
 
-A7 complete, A8 next. A0 through A7 are complete and merged. A7 adds service engagements with independent lifecycles and scoped client/service assignments; its architecture and verification evidence are recorded under "Services and Departments (A7)" below. A8 (Onboarding Templates) is not started.
+A8 complete and verified on `codex/a8-onboarding-template-engine`, awaiting independent audit and PR merge. A0 through A7 and the canonical AGENTS handoff are merged. A8 adds immutable onboarding templates, deterministic compilation, exact relational provenance, and atomic runtime generation; see "Onboarding Template Engine (A8)" below. A9 (Client Activation) is next and has not started.
 
-Completed phase specs: `docs/phases/A0.md` through `docs/phases/A7.md`. Next phase spec: `docs/phases/A8.md` (not started).
+Completed phase specs: `docs/phases/A0.md` through `docs/phases/A8.md` (A8 pending merge). Next phase spec: `docs/phases/A9.md` (not started).
 
 Documentation index: `docs/INDEX.md`
 
 ## Branch State
 
-PRs #2 through #8 (A0 through A7) are merged into `main`. Verified main before the agent-instruction handoff: `bb99e9255e1301e2e867b7fa835e820fa39e3b7e` (A7 merge, PR #8). Post-A7 GitHub Actions runs [Deploy staging 34032089586](https://github.com/Beeyach/bloomops/actions/runs/34032089586) and [Verify zero-to-current migration 34032089587](https://github.com/Beeyach/bloomops/actions/runs/34032089587) both completed successfully on that commit.
+PRs #2 through #9 (A0 through A7 and the agent-instruction handoff) are merged into `main`. A8 branched from verified current main `999f2397b5695cb058bc87769e5142c6aa12c016` and remains unmerged on `codex/a8-onboarding-template-engine`. Historical main before the agent-instruction handoff: `bb99e9255e1301e2e867b7fa835e820fa39e3b7e` (A7 merge, PR #8). Post-A7 GitHub Actions runs [Deploy staging 34032089586](https://github.com/Beeyach/bloomops/actions/runs/34032089586) and [Verify zero-to-current migration 34032089587](https://github.com/Beeyach/bloomops/actions/runs/34032089587) both completed successfully on that commit.
 
 ## Repository Agent Instructions
 
-2026-09-07: Repository agent instructions migrated to canonical root `AGENTS.md` before A8. `CLAUDE.md` retained only as a compatibility pointer. No product/runtime/schema behavior changed. A8 remains next and is not started.
+2026-09-07: Repository agent instructions migrated to canonical root `AGENTS.md` before A8. `CLAUDE.md` retained only as a compatibility pointer. No product/runtime/schema behavior changed in that handoff. A8 subsequently proceeded as recorded below; `AGENTS.md` was not modified by A8.
 
 ## Source
 
@@ -45,6 +45,110 @@ BloomOps Git history is fresh. The source commit object does not exist in the Bl
 - A5: the BloomOps application shells — an internal shell with the eleven PRODUCT_SPEC destinations for Owner, Admin, Project Manager, and Team Member, a separate client portal for Client, the boundary decided on the server by the A4 engine on every request, the Bloomlab-derived design system implemented in `app/bloomops.css` and `components/bloomops/`, and the inherited prospecting application moved to `/legacy` for administrators only
 - A6: the Clients domain — a scoped list with lifecycle filters, create (Draft, primary contact, nobody invited), the `/clients/:id` detail with the five Release A tabs, multiple contacts with a database-enforced single primary, an internal owner that grants no access, manually managed health, and immutable operational activity in plain words; one migration, one new action (`client.create`), and an internal client resource descriptor that keeps Client memberships out of the internal surfaces
 - A7: service engagements with independent lifecycles, the default departments and service types, and client-wide/service-specific team assignments; see "Services and Departments (A7)" for implementation and verification evidence
+- A8: five workspace onboarding defaults, immutable version creation and atomic publishing, deterministic logical-key compilation, relational multi-version provenance, and atomic generated onboarding; verified locally and awaiting PR audit/merge
+
+## Onboarding Template Engine (A8)
+
+A8 implements the template and relational generation engine. There is no new route, UI, activation, invitation, mail, identity linkage, project, action, deliverable, or client/service lifecycle write. A9 remains the orchestration boundary.
+
+### Definition language and default configuration
+
+`lib/bloomops/onboarding-definition.mjs` owns schema version 1: `{ schemaVersion, category, items }`. Categories are `common`, `social`, `ads`, `ghl`, `kajabi`; every template has `kind = onboarding`. Each item contains `logicalKey`, `title`, nullable/optional `instructions`, boolean `required` and `verificationRequired`, canonical `responsibleParty` and `visibility`, and integer `position`. Unknown fields (including progress/status/completion or membership identifiers), duplicate logical keys, invalid categories/enums, coercible non-booleans, and malformed values are rejected. Keys use lowercase letters/digits separated by underscores (64 characters maximum); titles are bounded at 200 characters, instructions at 10,000, and each definition at 100 items. Positions are signed 32-bit integers. Runtime assignment of a specific user is deferred; the blueprint can preserve `responsibleParty = user` without embedding mutable membership ids.
+
+Canonical serialization recursively sorts object properties; validation trims text, normalizes missing/empty instructions to null, and orders items by position then logical key. SHA-256 is computed with Web Crypto over UTF-8 canonical JSON; no added package. Default JSON and precomputed SHA-256 constants live together in the sole defaults module, and tests independently recompute them with Node `createHash` over the stored bytes.
+
+`lib/bloomops/onboarding-defaults.mjs` is the single source for the published V1 blueprints:
+
+| Slug / name | Exact logical keys, in source order |
+|---|---|
+| `common` / Common | `agreement`, `brand_assets`, `kickoff_booking` |
+| `social` / Social | `instagram_access`, `meta_business_access` |
+| `ads` / Ads | `meta_business_access` |
+| `ghl` / GHL | `ghl_access` |
+| `kajabi` / Kajabi | `kajabi_access`, `course_videos` |
+
+All defaults are client-visible and client-responsible. All are required except `course_videos`. Access requirements require verification; agreement, assets, kickoff booking, and course videos do not. Social and Ads intentionally share identical Meta instructions. Access wording requests approved business, delegated, or invited access and explicitly says not to send a password. The exact instructions and positions are stored in the canonical defaults module, not separately maintained as SQL or test fixtures.
+
+The A7 `bootstrapPlan` now appends these defaults after the service catalogue. Existing workspaces receive them on the existing bootstrap path, and future workspaces use that same path. Conflict-targeted inserts preserve template metadata (including renamed/inactive templates), existing V1 bytes and state, and any newer published version. A missing V1 beside a newer publication is backfilled as retired with no invented publication timestamp. A second pass inserts nothing; no sample clients or runtime onboarding are seeded. No deployment was performed from the A8 branch; an existing remote workspace receives defaults when its normal bootstrap next runs after approval.
+
+### Immutable versions and publication
+
+`lib/bloomops/onboarding-templates.mjs` provides workspace-scoped template/version reads, current active published selection, validated creation, and publication. Domain primitives take a trusted server-side workspace context; they are not exposed through an HTTP route. A9 must authorize the actor and selected client/services before orchestration; department identity and membership grant nothing here.
+
+Editing creates a new draft. `max(version_number) + 1` is computed inside the INSERT itself under SQLite/D1's write serialization, not selected before inserting. The existing template/version unique index remains the final authority; a matching constraint failure becomes `version_conflict`, while unrelated faults propagate. Concurrent real domain calls prove unique increasing numbers. Creator membership, when supplied, must be active in the same workspace.
+
+Publication validates the stored canonical definition/hash, then atomically retires the old publication and publishes the target draft in one Drizzle D1 batch. Both updates are conditional on the target still being draft: a competing publisher cannot cause a stale request to retire a newer version. Publishing an already published target is a true no-op, and a retired target cannot be republished. There is no API to return published/retired versions to draft. Publication never writes definition fields. A forced second-update failure proves the first retirement rolls back.
+
+### Provenance and migration
+
+`drizzle/0005_a8_onboarding_templates.sql` and the matching Drizzle declaration/snapshot add:
+
+- `onboarding_instance_templates(workspace_id, onboarding_instance_id, template_version_id, created_at)`, unique on instance/version, with same-workspace foreign keys to the instance and immutable version;
+- `template_versions_published_uq`, a partial unique index on `template_id WHERE status = 'published'`;
+- append-only update/delete guards for generated source provenance.
+
+The junction is the canonical source history for composed onboarding. `onboarding_instances.template_version_id` is retained for compatibility and always left null by A8; `service_engagements.source_template_version_id` is untouched. Provenance is relational, not a JSON array or activity metadata. Foreign keys protect referenced versions, and audit guards prevent replacing/removing source relationships. They do not freeze runtime onboarding progress.
+
+The zero-to-current verifier now derives trigger expectations from every journaled migration as it already did for indexes, so the new audit guards and partial index are verified alongside the 23 current domain tables. Historical schema tests now expect six domain migrations and retire a publication before publishing another, matching the new invariant.
+
+### Selection, pure compilation, and merging
+
+`prepareOnboardingPlan` validates the workspace client and the explicitly selected service engagements, then loads current published snapshots. Selection is bounded to 50 engagements to stay below D1's 100 bound-parameter limit. The stable mapping is:
+
+| Service type slug | Template slug |
+|---|---|
+| `social-media-management` | `social` |
+| `ads` | `ads` |
+| `ghl` | `ghl` |
+| `kajabi` | `kajabi` |
+| `content-calendar` or another unmapped type | no service template |
+
+Common is always included once. A required missing/inactive/unpublished template or a hash mismatch fails before runtime writes. Service eligibility/lifecycle policy belongs to A9; A8 checks that explicit selections belong to this client/workspace, without changing their states.
+
+`lib/bloomops/onboarding-compiler.mjs` is pure and returns source version ids, selected service ids, and relational item values. Source precedence is Common, Social, Ads, GHL, Kajabi. Source items sort by position then logical key; services sort by id, and final positions normalize to increments of ten. Database return order does not affect output; caller arrays are not mutated.
+
+Only `logicalKey` deduplicates. The first title by canonical precedence wins. Required flags merge with OR, as do verification flags. Responsible party and visibility must agree. Different meaningful instructions fail with `definition_conflict`; identical instructions survive, and one nonempty instruction wins over an empty one. Links are a sorted union of the engagements that caused each service-template requirement to exist. Common alone has no links. Social + Ads creates five requirements, one Meta item with both links, and an Instagram item linked only to Social. Kajabi course videos stays optional.
+
+### Relational snapshots and atomic persistence
+
+`persistOnboardingPlan` revalidates client/service/source ownership, recomputes source hashes, recompiles exact immutable versions, and compares the entire supplied plan. Caller-tampered fields, links, or provenance are rejected. An exact version selected before a newer publication may now be retired; persistence deliberately retains that captured version rather than silently refreshing the plan.
+
+One Drizzle D1 batch inserts a pre-identified instance (`not_started`, legacy source null), every source junction row, relational items (`pending`), and every item-service link. Each insert stays below D1's parameter limit; the batch is never split. A late failure leaves none of the generated instance, source rows, items, or links. Tests use A7's transactional D1 double, and `scripts/onboarding-smoke-local.mjs` additionally proves actual workerd D1 rollback using a disposable local binding with `remoteBindings: false` and no persisted state.
+
+An existing open instance returns `{ ok: false, reason: 'existing_open_instance', instanceId }` without changing anything. The partial unique open-client index handles concurrency; a losing batch rereads only this workspace/client's winning instance and returns the same safe result. A completed instance permits later generation, with old rows retained. No activation event is recorded.
+
+Publishing Social V2 after generation leaves old item fields, links, and exact V1 provenance byte-for-byte unchanged. A second client uses V2. Separate tests prove runtime items can still evolve operationally while definitions and source provenance remain immutable.
+
+### Verification (2026-09-07)
+
+Baseline was verified on fetched `origin/main` at `999f2397b5695cb058bc87769e5142c6aa12c016` (PR #9 merge): 2826 tests passed, zero failures. The A8 branch was created from that exact commit, and no runtime change existed before the baseline run.
+
+| Check | Result |
+|---|---|
+| `npm ci` | Exit 0 with the unchanged lockfile; no dependency added. npm reported 49 existing dependency vulnerabilities (1 low, 43 moderate, 5 high); dependency remediation is outside A8. |
+| Focused `node --test tests/bloomops-onboarding-*.test.mjs tests/bloomops-schema.test.mjs` | 91 pass, 0 fail: 72 new A8 tests plus 19 existing schema tests. |
+| `npm test` | 2898 pass, 0 fail, 0 skipped on finalized code. |
+| `npm run build` | Exit 0; compile, lint/type validation, static generation, and traces passed. |
+| `npm run cf:build` | Exit 0; OpenNext emitted `.open-next/worker.js`. |
+| `node .github/scripts/verify-zero-remote.mjs --local` | Exit 0: an empty disposable local D1 reached all 60 inherited migrations and six domain migrations; all 23 domain tables, 50 indexes, and five immutable-data triggers present. Second pass applied nothing; schema and both ledgers identical. |
+| Development local schema + inherited/domain migrations | Exit 0; built Worker health reports six domain migrations. |
+| `node scripts/onboarding-smoke-local.mjs` | 12/12 checks on actual disposable workerd D1, including version creation/publication, Meta links, exact provenance, immutable generated fields, existing-open handling, and late-insert rollback. |
+| `node scripts/auth-smoke-local.mjs --url http://localhost:8787` | 132/132 checks against the built local Worker, including internal/client shells, denied access, unchanged client lifecycle, services, assignments, suspension, and sign-out. |
+| External `verify-staging.mjs --url http://127.0.0.1:8787 --expect-env development` | 21/21 checks; actual environment development, mail transport `r2-dev`, six domain migrations. |
+| Diff/syntax checks | `git diff --check` and Node syntax checks passed; no app/UI/editor/config/package/AGENTS changes or tracked generated screenshots. |
+
+The exact new tests are in `tests/bloomops-onboarding-compiler.test.mjs` (definition validation, canonical ordering, category selection, merge flags/conflicts/links, optional semantics, and pure tenant checks) and `tests/bloomops-onboarding-templates.test.mjs` (bootstrap/hash/idempotency, immutable creation, genuine competing publication/generation interleavings, database authority, stored snapshots/provenance, atomicity, safe open-instance handling, plan tampering, and same-workspace FK bypass attempts). Existing membership tests now accept either `NOT EXISTS` or conflict-targeted `DO NOTHING` guards; the separate data-level tests prove both forms insert nothing on a second pass.
+
+Verification used installed Node 22.22.1, matching CI. Initial sandboxed runs hit subprocess/loopback restrictions (`EPERM`); they were rerun with the needed local permissions. The first app-smoke attempt used 127.0.0.1 while the configured magic-link origin was localhost; the successful run uses the explicit matching localhost URL and waits through normal auth rate limits. No production behavior was changed for these environment differences. No visual code changed, so the app/shell smoke replaced an unnecessary screenshot campaign.
+
+No remote Wrangler operation, staging/production deploy/provisioning, real email, payment, DNS change, or Leadsthatbloom resource mutation occurred. Local test mail went only to simulated R2. GitHub publication consists solely of the A8 branch and its review PR; merging is reserved for the independent audit.
+
+### A9 boundary and known limitations
+
+No A9 activation/idempotency orchestration, client Draft → Onboarding write, service state write, invitation/email, `client_contacts.user_id`, onboarding completion/verification logic, portal, template settings/JSON editor, project/action/deliverable, or invented activation event exists. The Client Onboarding tab and both shells are unchanged. No inherited Pages/editor code was edited. No new dependency was added.
+
+The one-published index intentionally fails migration if preexisting data violates publication uniqueness; A8 does not guess which source history to discard. Normal A7/bootstrap data contains no such competing publications. Template-management activity is deferred. Future A9 routes must enforce the existing authorization engine before calling these internal primitives. The standalone generation batch is not an A9 activation transaction; A9 must explicitly design the wider orchestration. The legacy nullable single-version source remains for compatibility only. There is no staging or production verification/deployment in this task: tests use isolated SQLite and local workerd/D1/R2 only.
+
 
 ## Deployment Path Decision (A1)
 
@@ -1141,19 +1245,21 @@ For the next phase, read:
 
 1. `AGENTS.md`
 2. this file
-3. `docs/phases/A8.md`
+3. `docs/phases/A9.md`
 
 Read additional canonical planning docs only when the phase file or `docs/INDEX.md` calls for them.
 
 ## Next Planned Phase
 
-A8, Onboarding Templates. Not started. It builds the template and template-version records, the stable logical keys onboarding requirements deduplicate on, and the generation that turns a template version into real onboarding items. A7 left it everything it needs and none of its work: `service_engagements.source_template_version_id` exists and is never written, the Onboarding tab of the client detail still says onboarding has not started, and `templates`/`template_versions`/`onboarding_instances`/`onboarding_items`/`onboarding_item_services` have been in the schema since A2 with their immutability trigger. The A7 catalogue is what a template will bind to: `lib/bloomops/service-catalog.mjs` owns the service types, and `lib/bloomops/services.mjs` owns the engagements a generated onboarding will be scoped by. A9 then owns activation, and it must reuse the A7 service domain rather than writing engagements around it.
+A9, Client Activation. Not started. After A8 is independently audited and merged, orchestrate the authorized Client, selected Services, Team, A8 generation, lifecycle, invitation, and activity. Reuse the A7 service/assignment domains and the A8 versioned compiler/persistence engine. A8 has no activation endpoint or button, performs no client/service status transition, and sends no invitation. A9 must explicitly design activation retries and the wider transaction/orchestration; A10 still owns the polished client onboarding portal.
 
 ### The A7 phase, for reference
 
 A7, Services and Departments. Complete. It seeds the four departments and the initial service types, gives one client several purchased service engagements with their own lifecycle, and builds assignment at both the client and the engagement level. The Services and Team tabs of the client detail (`app/(internal)/clients/[id]/page.jsx`) are where its screens land; both say today, honestly, that services and assignments are a later release. `service.view` and `service.manage` already exist in `ACTIONS`, and `loadServiceResource` already builds the descriptor; A7 adds whatever creation action it needs beside `client.create` and may widen `ownerCandidates` in `lib/bloomops/clients.mjs` once a manager can grant client access in the same place they name an owner. The A4 rule that a service assignment reaches the engagement and not the client record is load-bearing and is covered by tests in both `tests/bloomops-authorization.test.mjs` and `tests/bloomops-clients.test.mjs`.
 
 ## Last Verification
+
+2026-09-07, A8. Baseline 2826/2826 on `999f2397`; final 2898/2898, focused A8/schema 91/91, both builds and `npm ci` exit 0, fresh/no-op migrations and zero-to-current pass, actual D1 engine smoke 12/12, app Worker smoke 132/132, external verifier 21/21. Full evidence and environment notes are recorded under "Onboarding Template Engine (A8)" above. A9 is not implemented; staging, production, and Leadsthatbloom were untouched.
 
 2026-09-06, A7 correction pass after an independent audit of PR #8. The audit found one blocking problem in `lib/bloomops/assignments.mjs`: `addAssignment` read then inserted, so two concurrent requests assigning the same person to the same parent could both read nothing and the loser would surface a raw unique-constraint failure instead of the documented re-assignment semantics; and the assignment insert and its `*_ASSIGNMENT_ADDED` event were two separate writes, so an assignment could exist without the event that records it. Both are fixed in the shared implementation, so client and service assignments behave identically (see "Assignment, and exactly what each row grants"). Seven regression tests were added, including three that arrange the real interleaving (the pre-read finds nothing, another writer commits through the real domain path, the insert meets the real index) and one that proves the batch rolls back when the event write fails. Each was confirmed to fail against the unfixed code before being kept.
 

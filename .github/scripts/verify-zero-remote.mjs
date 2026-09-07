@@ -115,7 +115,7 @@ const inheritedFiles = readdirSync(join(REPO, 'migrations')).filter((f) => f.end
 const journal = JSON.parse(readFileSync(join(REPO, 'drizzle', 'meta', '_journal.json'), 'utf8'));
 const domainFiles = journal.entries.map((e) => `${e.tag}.sql`);
 const domainTables = BLOOMOPS_TABLES.map(getTableName);
-const triggerNames = [...readFileSync(join(REPO, 'drizzle', '0001_immutability_triggers.sql'), 'utf8')
+const triggerNames = [...domainFiles.map((file) => readFileSync(join(REPO, 'drizzle', file), 'utf8')).join('\n')
   .matchAll(/CREATE\s+TRIGGER\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`]?(\w+)/gi)].map((m) => m[1]);
 // Every index the committed migrations create, read from the migrations
 // themselves rather than listed here, so a migration that adds one is
@@ -209,21 +209,21 @@ try {
     `sqlite_master holds ${initial.length} internal object(s): ${initial.map((r) => `${r.type} ${r.name}`).join(', ') || 'none'}; no user objects`);
 
   const first = migrateAll('first run');
-  record('first run applied both domain migrations', first.domainApplied.length === domainFiles.length, first.domainApplied.join(', '));
+  record('first run applied every domain migration', first.domainApplied.length === domainFiles.length, first.domainApplied.join(', '));
 
   const inheritedLedger = query('SELECT name FROM _migrations ORDER BY name').map((r) => r.name);
   record('inherited ledger is complete', JSON.stringify(inheritedLedger) === JSON.stringify(inheritedFiles),
     `${inheritedLedger.length} of ${inheritedFiles.length} migration files recorded`);
   const domainLedger = query('SELECT name FROM d1_migrations ORDER BY id').map((r) => r.name);
-  record('Drizzle ledger holds both A2 migrations in committed order', JSON.stringify(domainLedger) === JSON.stringify(domainFiles), domainLedger.join(', '));
+  record('Drizzle ledger holds every domain migration in committed order', JSON.stringify(domainLedger) === JSON.stringify(domainFiles), domainLedger.join(', '));
 
   const tables = names('table');
   const missing = domainTables.filter((t) => !tables.includes(t));
-  record('all BloomOps A2 tables exist', missing.length === 0,
+  record('all current BloomOps tables exist', missing.length === 0,
     `${domainTables.length} domain tables present, ${tables.length} tables in total (including _migrations and d1_migrations)`);
   const triggers = names('trigger');
   const missingTriggers = triggerNames.filter((t) => !triggers.includes(t));
-  record('A2 immutability triggers exist', missingTriggers.length === 0 && triggerNames.length > 0, `${triggers.join(', ')}`);
+  record('every migration-defined immutability trigger exists', missingTriggers.length === 0 && triggerNames.length > 0, `${triggers.join(', ')}`);
   const indexes = names('index');
   const missingIndexes = indexNames.filter((i) => !indexes.includes(i));
   record('every index the migrations create exists', missingIndexes.length === 0 && indexNames.length > 0,
