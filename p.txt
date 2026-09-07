@@ -1,0 +1,1 @@
+Read A8_ZERO_VERIFY_FIX_PROMPT.txt completely and execute it exactly. Work on this branch. Do not merge the PR yourself.
