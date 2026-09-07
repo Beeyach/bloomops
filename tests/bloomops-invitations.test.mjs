@@ -220,11 +220,7 @@ test('client-scoped invitations keep their client, and the client must belong to
   run(t.raw, "INSERT INTO workspaces (id, name, slug) VALUES ('ws_other', 'Other', 'other')");
   run(t.raw, "INSERT INTO bloomops_clients (id, workspace_id, name, slug) VALUES ('c_other', 'ws_other', 'Other Client', 'other-client')");
 
-  await assert.rejects(
-    () => createInvitation(t.db, { workspaceId: t.ws.id, email: 'james@example.com', role: 'client', clientId: 'c_other' }),
-    (err) => /FOREIGN KEY/.test(`${err.message} ${err.cause?.message || ''}`),
-    'a client from another workspace cannot be named',
-  );
+  assert.equal((await createInvitation(t.db, { workspaceId: t.ws.id, email: 'james@example.com', role: 'client', clientId: 'c_other' })).reason, 'conflict', 'foreign clients are refused without raw database text');
   const r = await createInvitation(t.db, { workspaceId: t.ws.id, email: 'james@example.com', role: 'client', clientId: 'c_james' });
   assert.ok(r.ok);
   assert.equal(r.invitation.clientId, 'c_james');

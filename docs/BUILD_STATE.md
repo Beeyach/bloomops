@@ -6,15 +6,15 @@ Release A: Foundation, Auth, Clients, Services, Onboarding, Client Portal
 
 ## Current Phase
 
-A8 is audited and merged through PR #10 at `adcdec226f75b81969d510ac21a4d772a1cf5371`; staging deployment passed. A0 through A7 and the canonical AGENTS handoff are also merged. A8 adds immutable onboarding templates, deterministic compilation, exact relational provenance, and atomic runtime generation; see "Onboarding Template Engine (A8)" below. A post-merge zero-to-current cleanup race is corrected on `codex/a8-zero-verify-race-fix`, pending review/merge and a passing remote run on the resulting main. A9 (Client Activation) must not begin before that remote verification passes.
+A9 Client Activation is implemented and locally verified on `codex/a9-client-activation`, pending independent PR audit and merge. It composes the A8 onboarding engine with one atomic initial activation, recoverable invitation delivery, and explicit contact linkage on acceptance. A0 through A8 and the A8 verifier correction (PR #11) are merged. Both post-correction main workflows passed before A9 began.
 
-Completed phase specs: `docs/phases/A0.md` through `docs/phases/A8.md`. Next phase spec: `docs/phases/A9.md` (gated by the post-merge verifier run; not implemented in this branch).
+Completed phase specs: `docs/phases/A0.md` through `docs/phases/A9.md`. Next phase spec: `docs/phases/A10.md`, the client onboarding portal; not implemented here.
 
 Documentation index: `docs/INDEX.md`
 
 ## Branch State
 
-PRs #2 through #10 (A0 through A8 and the agent-instruction handoff) are merged into `main`. This verifier-only correction uses `codex/a8-zero-verify-race-fix`, based on verified main `adcdec226f75b81969d510ac21a4d772a1cf5371`. A8 originally branched from `999f2397b5695cb058bc87769e5142c6aa12c016`. Historical main before the agent-instruction handoff: `bb99e9255e1301e2e867b7fa835e820fa39e3b7e` (A7 merge, PR #8). Post-A7 GitHub Actions runs [Deploy staging 34032089586](https://github.com/Beeyach/bloomops/actions/runs/34032089586) and [Verify zero-to-current migration 34032089587](https://github.com/Beeyach/bloomops/actions/runs/34032089587) both completed successfully on that commit.
+PRs #2 through #11 are merged into `main`. A9 uses `codex/a9-client-activation`, updated by merge from current main `420b1451a8e22d8b7bef39dc052263a176bcfa2d` before implementation. [Deploy staging 34093902305](https://github.com/Beeyach/bloomops/actions/runs/34093902305) and [Verify zero-to-current migration 34093902316](https://github.com/Beeyach/bloomops/actions/runs/34093902316) both succeeded on that base. This branch is for review, not self-merge.
 
 ## Repository Agent Instructions
 
@@ -46,6 +46,7 @@ BloomOps Git history is fresh. The source commit object does not exist in the Bl
 - A6: the Clients domain — a scoped list with lifecycle filters, create (Draft, primary contact, nobody invited), the `/clients/:id` detail with the five Release A tabs, multiple contacts with a database-enforced single primary, an internal owner that grants no access, manually managed health, and immutable operational activity in plain words; one migration, one new action (`client.create`), and an internal client resource descriptor that keeps Client memberships out of the internal surfaces
 - A7: service engagements with independent lifecycles, the default departments and service types, and client-wide/service-specific team assignments; see "Services and Departments (A7)" for implementation and verification evidence
 - A8: five workspace onboarding defaults, immutable version creation and atomic publishing, deterministic logical-key compilation, relational multi-version provenance, and atomic generated onboarding; audited and merged as PR #10, staging deployed successfully
+- A9: authorized Draft → Onboarding activation, atomic A8 generation and core activity, durable initial-activation identity, recoverable invitation delivery, explicit portal contact linkage, and minimal internal activation/retry UX; locally verified, pending independent PR audit
 
 ## Post-merge A8 verifier cleanup correction (2026-09-07)
 
@@ -55,7 +56,74 @@ The cleanup now compares stable staging UUID and creation time; before/after tab
 
 `tests/zero-verify-safety.test.mjs` adds 20 local regression tests covering the observed 58-to-59 race, changed/missing staging identity, wrong disposable deletion ID, extra/missing/changed inventory entries, protected names and IDs, valid scoped commands, and refused target/config overrides. The workflow runs these tests before account operations and watches the helper/test paths. Focused tests pass 20/20 and the full suite passes 2918/2918 under Node 22.22.1. The local zero-to-current verifier exits 0: all 60 inherited migrations, six domain migrations, 23 domain tables, 50 indexes, and five immutable-data triggers are present; the second pass applies nothing and preserves the schema and both ledgers exactly. Node syntax, workflow YAML parsing, and diff checks pass. Application builds are not rerun for this verifier/workflow/test/docs-only change; no application, dependency, schema, or migration changed, including migration 0005.
 
-The temporary task prompt is removed before the implementation commit, leaving no net prompt-file diff against main. No remote Wrangler command or manual staging mutation is performed in this correction. Production, DNS, and Leadsthatbloom remain untouched. After independent review and merge, the remote zero-to-current workflow must run on the new main and pass before A9 begins; local verification does not replace that acceptance gate.
+The temporary task prompt is removed before the implementation commit, leaving no net prompt-file diff against main. No remote Wrangler command or manual staging mutation is performed in this correction. Production, DNS, and Leadsthatbloom remain untouched. That acceptance gate was subsequently satisfied after PR #11 merged: remote zero-to-current run 34093902316 passed on main `420b1451a8e22d8b7bef39dc052263a176bcfa2d` before A9 began.
+
+## Client Activation (A9)
+
+Implementation on `codex/a9-client-activation`, updated by merge from current main `420b1451a8e22d8b7bef39dc052263a176bcfa2d`. This is the expected PR #11 verifier correction, not unrelated base movement. Its post-merge [Deploy staging 34093902305](https://github.com/Beeyach/bloomops/actions/runs/34093902305) and [zero-to-current 34093902316](https://github.com/Beeyach/bloomops/actions/runs/34093902316) both passed before A9 implementation. They satisfy the replacement acceptance gate established by the verifier correction; the historical failed run named in the temporary A9 prompt remains historical.
+
+### A9 audit correction: generic invitation revoke
+
+The audit of PR #12 at `b0e4d3f8c2154de40e1eddb7a30dbe87e73de755` found that generic revoke could invalidate a delivered activation invitation while leaving delivery status `sent`. The correction adds resend's existing workspace-scoped `invitationContact` guard to `revokeInvitation`, before any status write or activity. The unchanged route returns the existing `activation_managed` HTTP 409 response. Ordinary invitations, including Client-role invitations without a contact association, remain revocable.
+
+Two regressions were confirmed to fail against the reviewed implementation: the domain primitive returned success and the real HTTP route returned 200. They now prove refusal preserves the pending invitation and association, usable original token (including successful acceptance), `sent` delivery status, all core A9 rows, client lifecycle and activity; no `INVITATION_REVOKED` is appended. Real-session HTTP coverage checks Owner/Admin refusal, missing/foreign invitation equivalence, unauthenticated/cross-origin/suspended denial, and ordinary Client invitation revocation. Existing generic resend/retarget and ordinary team invitation lifecycle tests remain passing.
+
+Correction verification on Node 22.22.1: focused A9 44/44, invitations 13/13, auth/authorization 34/34 (91/91 combined); `npm test` 2962/2962 with no failures or skips; `npm run build` exits 0 including lint/type checks. `npm run cf:build` exits 0 and emits `.open-next/worker.js` (non-blocking dependency `punycode` deprecation warning); `git diff --check` passes. No migration, UI change, browser screenshot rerun, activation-specific revoke/reinvite, or A10 work is included. Mail uses test transports only. PR #12 remains for independent review against main `420b1451a8e22d8b7bef39dc052263a176bcfa2d`, without merging.
+
+### Core transaction and authorization
+
+`lib/bloomops/client-activation.mjs` implements the distinct `client.activate` action for Owner, Admin, and Project Manager, scoped by the existing internal client descriptor. It reloads active membership through the authorization engine even when called with a previously loaded actor. Department membership and internal ownership grant no access. The POST activation and retry-invitation routes use the existing origin/session/resource checks; body-supplied identities, workspace ids, services, and template ids are not read.
+
+Initial activation requires Draft, one primary contact with a valid normalized invitation address, and at least one open purchased service. The exact database set of Planned/Onboarding/Active/Paused engagements is passed to A8; terminal services are excluded. The canonical docs define no concrete per-service team prerequisite, so none was invented. Content Calendar alone generates Common. A8 still validates publications/hashes, compiles and merges logical keys, and retains exact source versions.
+
+A small A8 refactor exposes `prepareOnboardingWrites`: all the original plan validation plus prepared statements, without writing. The original standalone `persistOnboardingPlan` executes that same batch with unchanged conflict/rollback semantics. A9 composes these statements with `client_activations`, Draft → Onboarding, and CLIENT_ACTIVATED / ONBOARDING_STARTED in one D1 transaction. Mutable contact, service-set, active workspace, and actor membership prerequisites are checked again under the write lock. A stale edit aborts the whole batch through the existing lifecycle CHECK constraint and returns a calm conflict. Late failures cannot leave partial onboarding, lifecycle or core activity.
+
+The open-onboarding unique index and unique initial client activation are the concurrency authority. Competing requests converge to the committed instance or a safe conflict requiring reload. An activation record survives later onboarding completion or client status changes, so a retry cannot mistake a later lifecycle for permission to start another initial activation. Service status, health, ownership, assignments, and source-template bindings are untouched.
+
+### Invitation delivery and recovery
+
+The activation row captures the primary contact, recipient address and display name. The existing invitation module creates/rotates its Client-role invitation, preserves the seven-day TTL and token hashing, and stores an explicit contact association. Initial invitation creation, association and INVITATION_SENT activity are atomic. Activation cannot repurpose an unrelated pending invitation, and generic invitation creation/resend cannot retarget or bypass an activation's delivery claim. Generic revoke also refuses contact-associated invitations with `activation_managed`, using the same ownership check as resend and the existing HTTP 409 mapping. It does not change activation delivery state; intentional portal-access revocation/reinvite remains a future lifecycle workflow.
+
+A conditional database update claims delivery for five minutes. A send is bounded to thirty seconds; crashes leave a lease that another request can recover after expiry. Token creation/rotation checks the same claim at the database mutation, so an old sender cannot supersede a newer retry's token. Delivery finalization and its client-level event are fenced by the attempt id and commit together. No raw token is persisted, returned by the activation routes, or logged; it exists only for the immediate mail send through the existing mailer.
+
+Core success plus mail failure is HTTP 200 with `activated: true` and a delivery warning. The separate retry route requires an already committed activation and never reruns core generation. Failed sends retain a pending invitation; retry rotates its hash and sends a new token. A confirmed successful send becomes a no-op on subsequent activation requests. An invitation accepted after an uncertain prior send proves receipt without sending again. A database failure around delivery also preserves the committed core; a stranded lease is recoverable after expiry.
+
+External delivery is not exactly-once: if a provider accepts a message but the acknowledgement or final database write is lost, a retry may send a replacement. Only the latest pending token remains valid, and core facts and confirmed client invitation activity remain singular. No queue or provider SDK was added. Generic INVITATION_SENT / INVITATION_RESENT retain their existing meaning of token preparation; CLIENT_INVITED means the first confirmed activation invitation delivery. ONBOARDING_STARTED means generated onboarding was established, not that runtime item completion has begun.
+
+### Portal linkage and migration
+
+Additive migration `0006_a9_client_activation.sql` (generated Drizzle snapshot/journal, plus immutability triggers) adds `client_activations` and `client_invitation_contacts`, five unique indexes, and four triggers. No existing table is rebuilt and no prior migration is changed. Composite keys enforce the same workspace/client for activation, onboarding, contact and invitation relationships. The initial activation identity/snapshot and invitation-contact association are immutable; delivery fields remain mutable. The zero verifier derives all new tables, indexes and triggers from the schema/migrations.
+
+`client-invitation-acceptance.mjs` handles only explicit associated invitations. Matching signed-in email, current intended contact address, Client role, active workspace, compatible membership, and absence of another linked client are checked at acceptance. Membership creation/reactivation, invitation acceptance, contact link, and activity are one transaction; a token rotated/revoked or a contact changed between reads and writes aborts the batch. Retry by the same active linked identity is idempotent. A changed primary marker still links the originally invited contact, not the new primary. Existing unlinked Client memberships can accept; internal memberships and conflicting client scope cannot be silently converted. A6's contact payload still exposes only `linked`, never user ids. Contacts referenced by activation/invitations cannot be removed through the address book; the FK refusal is translated to a calm response.
+
+### Internal UX and boundary
+
+The client detail offers the small `ClientActivation` form only when `client.activate` is allowed. Draft activation explains the effects, validation errors name the missing setup, confirmed activation refreshes the lifecycle, and pending/failed delivery remains visible after reload with a retry action when available. Activity renders the new facts in words. The Onboarding tab reports only whether generation occurred. Existing Bloom primitives and tokens are used; the live Bloomlab reference could not be opened in this environment, so no live visual-reference inspection is claimed.
+
+A10's onboarding portal, item completion/verification and upload UX are not implemented. No Projects, Actions, Milestones, Deliverables, Social/Ads/Systems execution, Pages, Finance, payments, notifications beyond this invitation, or sample production/staging clients were added. Explicit contact retargeting/unlinking is deferred; changing the captured recipient address fails safely rather than guessing who should gain access.
+
+### A9 verification
+
+All verification used local development D1/R2 or disposable workerd storage. Cloudflare credentials were removed from local Worker commands; no real invitation email was sent. No staging data, production, DNS, custom domains, or Leadsthatbloom resources were modified.
+
+| Check | Result |
+|---|---|
+| `npm ci` | Exit 0; lockfile/dependencies unchanged |
+| Focused A9 (`tests/bloomops-activation.test.mjs`) | 42/42 pass |
+| Focused A8 regression | 72/72 pass |
+| Affected invitation/auth/authorization/client/service/assignment regression | 158/158 pass |
+| `npm test` (Node 22.22.1, matching CI major) | 2960/2960 pass, zero skipped |
+| `npm run build` | Exit 0, including Next lint/type checks |
+| `npm run cf:build` | Exit 0, Worker built |
+| `node .github/scripts/verify-zero-remote.mjs --local` | Exit 0; 19 checks, all 60 inherited and seven domain migrations; 25 domain tables, 55 migration-defined indexes, nine triggers; second pass applies nothing and preserves schema and both ledgers exactly |
+| `node scripts/activation-smoke-local.mjs` | 14/14 pass on actual disposable workerd D1: activation, repeat, merged Meta links, acceptance/link/repeat, late core rollback |
+| `node scripts/onboarding-smoke-local.mjs` | 12/12 pass on actual disposable workerd D1 |
+| `node scripts/auth-smoke-local.mjs --url http://localhost:8787` | 144/144 pass against the built local Worker, including A9 activation/delivery/repeat/acceptance/link/portal scope and denied requests |
+| `node .github/scripts/verify-staging.mjs --url http://localhost:8787 --expect-env development` | 21/21 pass against local Worker; development mailbox only |
+| `node scripts/activation-review-local.mjs` | 37/37 browser checks at 1440, 1024, 768, 390 and 320px; 16 screenshots captured under `/tmp/bloomops-a9-review`, with phone draft/retry and desktop success inspected; keyboard activation, actionable validation, reload persistence and real recoverable invitation conflict/retry pass |
+| `git diff --check` and new script syntax checks | Pass |
+
+Browser review uses Playwright installed outside the repository and Chromium's local system prerequisites, with no application dependency added. `scripts/activation-review-local.mjs` requires the local smoke workspace and accepts `--playwright` for that external installation. The A9 test double serializes concurrent batches while retaining actual SQLite BEGIN/COMMIT/ROLLBACK; actual workerd smoke independently proves core transaction rollback. No remote A9 deployment was attempted; independent audit/merge and subsequent main verification remain outside this branch's local evidence.
 
 ## Onboarding Template Engine (A8)
 
@@ -1255,19 +1323,21 @@ For the next phase, read:
 
 1. `AGENTS.md`
 2. this file
-3. `docs/phases/A9.md`
+3. `docs/phases/A10.md`
 
 Read additional canonical planning docs only when the phase file or `docs/INDEX.md` calls for them.
 
 ## Next Planned Phase
 
-A9, Client Activation. Not implemented in this branch. A8 is audited and merged, but A9 must wait until the verifier cleanup correction is independently merged and the remote zero-to-current workflow passes on the new main. Then orchestrate the authorized Client, selected Services, Team, A8 generation, lifecycle, invitation, and activity. Reuse the A7 service/assignment domains and the A8 versioned compiler/persistence engine. A8 has no activation endpoint or button, performs no client/service status transition, and sends no invitation. A9 must explicitly design activation retries and the wider transaction/orchestration; A10 still owns the polished client onboarding portal.
+A10, Client Onboarding Portal, after independent audit and merge of A9. Reuse A9's accepted invitation/contact link and A8's generated relational onboarding. A10 owns the client-facing presentation, item completion/verification and upload experience; A9 supplies only activation and invitation entry points. Do not pre-build later operational domains.
 
 ### The A7 phase, for reference
 
 A7, Services and Departments. Complete. It seeds the four departments and the initial service types, gives one client several purchased service engagements with their own lifecycle, and builds assignment at both the client and the engagement level. The Services and Team tabs of the client detail (`app/(internal)/clients/[id]/page.jsx`) are where its screens land; both say today, honestly, that services and assignments are a later release. `service.view` and `service.manage` already exist in `ACTIONS`, and `loadServiceResource` already builds the descriptor; A7 adds whatever creation action it needs beside `client.create` and may widen `ownerCandidates` in `lib/bloomops/clients.mjs` once a manager can grant client access in the same place they name an owner. The A4 rule that a service assignment reaches the engagement and not the client record is load-bearing and is covered by tests in both `tests/bloomops-authorization.test.mjs` and `tests/bloomops-clients.test.mjs`.
 
 ## Last Verification
+
+2026-09-07, A9. Focused A9 42/42, A8 72/72, affected access/domain regressions 158/158, full suite 2960/2960 on Node 22.22.1. Install and both builds exit 0. Fresh/no-op zero verifier passes with seven domain migrations, 25 tables, 55 indexes and nine triggers. Actual D1 A9 smoke 14/14 and A8 smoke 12/12; built local Worker smoke 144/144; external verifier against local Worker 21/21; browser review 37/37. Full evidence and limitations are under "Client Activation (A9)". A10 is next. All mail was fake or local R2; staging, production, DNS and Leadsthatbloom were untouched.
 
 2026-09-07, post-merge A8 verifier correction. Focused safety tests 20/20, full suite 2918/2918, local zero-to-current exit 0 with all six domain migrations and an identical no-op second pass. Syntax, YAML parsing, and diff checks pass. No application build was needed for this verifier/workflow/test/docs-only change. The corrected remote workflow must still pass on main after independent merge before A9 begins. See "Post-merge A8 verifier cleanup correction" above.
 

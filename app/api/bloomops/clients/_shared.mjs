@@ -80,6 +80,7 @@ export function pick(body, keys) {
 }
 
 const STATUS_BY_REASON = {
+  invited_contact: 409,
   invalid: 400,
   status_not_editable: 400,
   service_type_not_editable: 400,
@@ -91,6 +92,7 @@ const STATUS_BY_REASON = {
 };
 
 const MESSAGE_BY_REASON = {
+  invited_contact: 'This contact is part of client activation and cannot be removed here.',
   invalid: 'Some of what you entered needs a change.',
   status_not_editable: 'The client’s status is set by activation, not by editing.',
   service_type_not_editable: 'A service engagement keeps the service it was bought for.',

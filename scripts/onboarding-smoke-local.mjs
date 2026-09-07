@@ -28,7 +28,7 @@ try {
       if (chunk.trim()) await d1.prepare(chunk.trim()).run();
     }
   }
-  check('all six domain migrations apply to disposable workerd D1', journal.entries.length === 6);
+  check('all current domain migrations, including A8, apply to disposable workerd D1', journal.entries.some(e => e.tag === '0005_a8_onboarding_templates'));
   const input = { workspaceName: 'A8 Local', workspaceSlug: 'a8-local', owner: { email: 'a8-owner@example.com' }, admin: { email: 'a8-admin@example.com' } };
   await runBootstrap(d1, input);
   const before = (await d1.prepare('SELECT * FROM template_versions ORDER BY id').all()).results;

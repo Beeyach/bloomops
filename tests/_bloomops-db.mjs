@@ -32,6 +32,7 @@ export function freshSqlite() {
 const returnsRows = (sql) => /^\s*(select|with|pragma)\b/i.test(sql) || /\breturning\b/i.test(sql);
 
 export function d1Binding(raw) {
+  let batchTail = Promise.resolve();
   const statement = (sql, params) => ({
     bind: (...next) => statement(sql, next),
     async run() {
@@ -65,6 +66,10 @@ export function d1Binding(raw) {
     // asserts "the record cannot exist without its activity event" would
     // pass against a double that simply left the first insert behind.
     async batch(statements) {
+      const previous = batchTail;
+      let release;
+      batchTail = new Promise(resolve => { release = resolve; });
+      await previous;
       raw.exec('BEGIN');
       try {
         const out = [];
@@ -74,7 +79,7 @@ export function d1Binding(raw) {
       } catch (err) {
         raw.exec('ROLLBACK');
         throw err;
-      }
+      } finally { release(); }
     },
     async exec(sql) {
       raw.exec(sql);
