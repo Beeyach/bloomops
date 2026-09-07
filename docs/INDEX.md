@@ -1,12 +1,12 @@
 # BloomOps Documentation Index
 
-This repository uses selective context so Claude Code does not need the entire product plan in every session.
+This repository uses selective context so coding agents do not need the entire product plan in every session.
 
 ## Always Read
 
 For every implementation session:
 
-1. `/CLAUDE.md`
+1. `/AGENTS.md`
 2. `/docs/BUILD_STATE.md`
 3. the current phase file under `/docs/phases/`
 
@@ -33,7 +33,7 @@ Current phase file: `docs/phases/A8.md` (A7 is recorded in `docs/BUILD_STATE.md`
 
 ## Phase Reading Matrix
 
-| Phase | Required planning docs beyond CLAUDE.md + BUILD_STATE |
+| Phase | Required planning docs beyond AGENTS.md + BUILD_STATE |
 |---|---|
 | A0 | `phases/A0.md` |
 | A1 | `phases/A1.md` |
@@ -48,17 +48,17 @@ Current phase file: `docs/phases/A8.md` (A7 is recorded in `docs/BUILD_STATE.md`
 | A10 | `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/A10.md` |
 | A11 | `RELEASE_A.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/A11.md` |
 
-## Minimal Claude Code Prompt Pattern
+## Minimal Coding-Agent Prompt Pattern
 
 Use a short prompt like:
 
-> Read CLAUDE.md, docs/BUILD_STATE.md, and docs/phases/A0.md completely. Execute A0 only. Follow the scope boundary and verification requirements. Stop when A0 is complete.
+> Read AGENTS.md, docs/BUILD_STATE.md, and the current phase file completely. Execute only the requested phase. Follow the scope boundary and verification requirements. Stop when that phase is complete.
 
-For later phases, replace A0 with the current phase and let the phase file tell Claude which supporting docs are relevant.
+Use the current phase file identified above and let it tell the coding agent which supporting docs are relevant. Do not load every planning document into every task.
 
 ## Documentation Rules
 
-- `CLAUDE.md` contains permanent repository rules and product invariants.
+- `AGENTS.md` is the canonical source of permanent repository rules and product invariants.
 - `BUILD_STATE.md` contains current factual project state.
 - Phase files contain implementation scope for one bounded task.
 - Product/domain documents contain durable planning truth.

@@ -6,15 +6,19 @@ Release A: Foundation, Auth, Clients, Services, Onboarding, Client Portal
 
 ## Current Phase
 
-A6 (Clients) is implemented and verified locally. BloomOps has its first real business domain: a scoped client list with lifecycle filters, a create flow that makes a Draft client and its primary contact and invites nobody, a `/clients/:id` detail with the five Release A tabs, multiple contacts with a database-enforced single primary, an internal owner that is responsibility and never authorization, manually managed health, and a real append-only activity history in plain words. One migration (a partial unique index for the primary contact), one new authorization action (`client.create`), and one new resource descriptor (`loadInternalClientResource`, which is what keeps a Client membership out of the internal surfaces). A6 deliberately does not write the client lifecycle: moving a client out of Draft is the A9 activation transaction, and `updateClient` refuses the field outright. See "Clients (A6)" below for the architecture, the decisions, and the evidence. Staging has not been redeployed from this branch; the deploy workflow runs on merge to `main`.
+A7 complete, A8 next. A0 through A7 are complete and merged. A7 adds service engagements with independent lifecycles and scoped client/service assignments; its architecture and verification evidence are recorded under "Services and Departments (A7)" below. A8 (Onboarding Templates) is not started.
 
-Completed phase specs: `docs/phases/A1.md`, `docs/phases/A2.md`, `docs/phases/A3.md`, `docs/phases/A4.md`, `docs/phases/A5.md`, `docs/phases/A6.md`. Next phase spec: `docs/phases/A7.md` (not started).
+Completed phase specs: `docs/phases/A0.md` through `docs/phases/A7.md`. Next phase spec: `docs/phases/A8.md` (not started).
 
 Documentation index: `docs/INDEX.md`
 
 ## Branch State
 
-PR #2 (A0 and A1), PR #3 (A2), PR #4 (A3), PR #5 (A4), and PR #6 (A5) are merged into `main` (`0f85c19`). A6 lives on `claude/a6-clients-7p5ras`, branched from that merged `main`, with its own PR. Nothing was stacked on the earlier branches.
+PRs #2 through #8 (A0 through A7) are merged into `main`. Verified main before the agent-instruction handoff: `bb99e9255e1301e2e867b7fa835e820fa39e3b7e` (A7 merge, PR #8). Post-A7 GitHub Actions runs [Deploy staging 34032089586](https://github.com/Beeyach/bloomops/actions/runs/34032089586) and [Verify zero-to-current migration 34032089587](https://github.com/Beeyach/bloomops/actions/runs/34032089587) both completed successfully on that commit.
+
+## Repository Agent Instructions
+
+2026-09-07: Repository agent instructions migrated to canonical root `AGENTS.md` before A8. `CLAUDE.md` retained only as a compatibility pointer. No product/runtime/schema behavior changed. A8 remains next and is not started.
 
 ## Source
 
@@ -40,6 +44,7 @@ BloomOps Git history is fresh. The source commit object does not exist in the Bl
 - A4: one server-side authorization engine over the A2 and A3 tables (role, capability, client and service assignment scope, client-contact scope, internal/client/restricted visibility, leak-safe HTTP answers), member and invitation routes moved onto it, the inherited prospecting surfaces fenced to workspace administrators; verified by an explicit allow/deny matrix over the real schema and Better Auth sessions, the local Worker smoke, and the external verifier
 - A5: the BloomOps application shells — an internal shell with the eleven PRODUCT_SPEC destinations for Owner, Admin, Project Manager, and Team Member, a separate client portal for Client, the boundary decided on the server by the A4 engine on every request, the Bloomlab-derived design system implemented in `app/bloomops.css` and `components/bloomops/`, and the inherited prospecting application moved to `/legacy` for administrators only
 - A6: the Clients domain — a scoped list with lifecycle filters, create (Draft, primary contact, nobody invited), the `/clients/:id` detail with the five Release A tabs, multiple contacts with a database-enforced single primary, an internal owner that grants no access, manually managed health, and immutable operational activity in plain words; one migration, one new action (`client.create`), and an internal client resource descriptor that keeps Client memberships out of the internal surfaces
+- A7: service engagements with independent lifecycles, the default departments and service types, and client-wide/service-specific team assignments; see "Services and Departments (A7)" for implementation and verification evidence
 
 ## Deployment Path Decision (A1)
 
@@ -1134,9 +1139,9 @@ Re-running the workflow is safe. Schema and migrations are idempotent, the provi
 
 For the next phase, read:
 
-1. `CLAUDE.md`
+1. `AGENTS.md`
 2. this file
-3. `docs/phases/A7.md`, `docs/PRODUCT_SPEC.md`, and `docs/DOMAIN_MODEL.md`
+3. `docs/phases/A8.md`
 
 Read additional canonical planning docs only when the phase file or `docs/INDEX.md` calls for them.
 
