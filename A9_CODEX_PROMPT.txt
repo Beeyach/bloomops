@@ -1,1 +1,381 @@
-PLACEHOLDER
+BLOOMOPS A9 IMPLEMENTATION PROMPT
+
+Recommended implementation model: Astra. This line is a recommendation only. It does not force the runtime model.
+
+You are implementing BloomOps Release A, phase A9: Activate Client.
+
+BRANCH / BASE
+
+You are working on branch:
+  codex/a9-client-activation
+
+This branch was created from merged main:
+  adcdec226f75b81969d510ac21a4d772a1cf5371
+
+The branch contains this temporary prompt carrier file. Read it completely before changing code. Delete A9_CODEX_PROMPT.txt before the final implementation commit so the PR has no net prompt-file change.
+
+PRE-FLIGHT GATE
+
+Before editing code:
+1. Read root AGENTS.md.
+2. Read docs/BUILD_STATE.md.
+3. Read docs/INDEX.md.
+4. Read docs/phases/A9.md.
+5. Read the A9-relevant parts of docs/PRODUCT_SPEC.md and docs/DOMAIN_MODEL.md.
+6. Inspect the existing A3/A4/A6/A7/A8 implementation instead of inventing parallel patterns. At minimum inspect:
+   - lib/bloomops/clients.mjs
+   - lib/bloomops/client-contacts.mjs
+   - lib/bloomops/services.mjs or the current service-engagement domain files
+   - lib/bloomops/assignments.mjs
+   - lib/bloomops/onboarding-generation.mjs
+   - lib/bloomops/onboarding-templates.mjs
+   - lib/bloomops/invitations.mjs
+   - lib/bloomops/activity.mjs
+   - lib/bloomops/mail.mjs
+   - lib/bloomops/authorization.mjs
+   - relevant internal client routes/server actions/components
+   - relevant tests and D1 test double
+7. Verify current main is still adcdec226f75b81969d510ac21a4d772a1cf5371 unless main has moved only by an expected user-approved change. Do not silently rebase onto unrelated movement.
+8. Verify A8 post-merge workflows on that SHA before implementation:
+   - Deploy staging run 34078492009 must be success.
+   - Verify zero-to-current migration run 34078492054 must be success.
+   If either is failed, cancelled, or still running, do not implement A9. Report the exact status and stop.
+
+Do not modify production, DNS, Cloudflare production resources, or Leadsthatbloom. Do not send a real invitation email during tests or local verification.
+
+A9 OBJECTIVE
+
+Wire the existing Client, Service Engagements, Team assignments/setup, A8 onboarding engine, client portal invitation foundation, lifecycle, and activity into one coherent, retry-safe activation flow.
+
+Canonical concept:
+
+Draft Client
+-> validate
+-> select the Client's purchased/open Service Engagements
+-> prepare deterministic onboarding through A8
+-> persist exactly one onboarding instance/items/provenance/service links
+-> move Client from Draft to Onboarding
+-> prepare Client portal invitation for the primary contact
+-> send the invitation
+-> record significant activity
+
+A9 must be safe under double-clicks, browser retries, concurrent activation attempts, mail retries, and future queue/retry duplication.
+
+A9 OWNS
+
+- a first-class Client activation domain operation
+- activation authorization using the existing authorization engine/pattern
+- precondition validation
+- selecting the correct Service Engagements for activation
+- orchestration with the A8 prepare/persist engine
+- the Draft -> Onboarding transition
+- creation/reuse/recovery of the Client-role invitation for the primary contact
+- actual invitation delivery through the existing mail interface in deployed runtime
+- retry behavior after mail failure
+- activity for activation/onboarding/invitation facts
+- minimal internal activation entry point and calm result/error UX where needed
+- the Client contact portal-identity link on invitation acceptance if required by the existing A4 scope model, because client_contacts.user_id is explicitly owned by A9/A10 and A4 uses it as the durable Client-to-portal identity relationship
+- tests and docs proving all of the above
+
+A9 DOES NOT OWN
+
+- polished Client onboarding portal UI. That is A10.
+- onboarding item completion/verification UX. That is A10.
+- Projects, Actions, Milestones, Deliverables, Social execution, Ads execution, Systems execution, Pages, Finance, payments, queues, or notifications beyond the one invitation delivery needed for activation
+- built-in chat
+- production provisioning/deployment
+- staging custom-domain work
+- changing the A8 template-definition semantics
+- pre-building Projects
+- sample/demo runtime Clients or Services
+
+PERMANENT INVARIANTS TO PRESERVE
+
+- BloomOps is post-sale only.
+- One Client can have multiple Service Engagements.
+- Departments are organizational structure, never authorization.
+- owner_membership_id is operational responsibility, never authorization.
+- Client assignment grants the Client plus its Services. Service assignment grants exactly that Service, not Client or siblings.
+- A Client's relationship status, Client health, Service status, onboarding status, Project status, and Action status remain separate facts.
+- activity is append-only.
+- no raw platform passwords.
+- environments remain isolated.
+- A8 template definitions/provenance are immutable snapshots, while generated runtime onboarding records remain operationally mutable.
+- master template changes never silently rewrite an existing generated onboarding instance.
+- same-workspace foreign-key protections must remain intact.
+
+ACTIVATION AUTHORIZATION
+
+Use the existing server-side authorization model. Do not make UI visibility equal authorization.
+
+Prefer a distinct internal action such as client.activate if that fits the existing action registry and tests. Follow existing action naming and role/capability conventions rather than adding role checks ad hoc.
+
+Activation must never be available to Client-role users. It must remain workspace-scoped and Client-scoped. A caller handed a foreign Client id must receive the same safe not-found/denied semantics used elsewhere.
+
+Do not widen access because someone is in a Department or is owner_membership_id.
+
+ACTIVATABLE STATE
+
+The canonical first activation transition is Draft -> Onboarding.
+
+A fresh activation request against a Draft Client may proceed if all required validation passes.
+
+A request against a Client that has already completed the A9 core activation must be handled idempotently. It must not create another onboarding instance, duplicate activation activity, duplicate the lifecycle transition, or duplicate core business records.
+
+Do not treat an arbitrary non-Draft lifecycle as permission to activate. Active, Paused, Completed, or Ended should not be silently rewritten to Onboarding.
+
+If the implementation needs to distinguish a legitimate prior A9 activation from an unrelated impossible/legacy state, use durable relational facts and existing invariants. Do not use client-supplied flags. Do not make append-only activity the only database authority if a stronger relational invariant is available.
+
+PRECONDITION VALIDATION
+
+Validate before the first core write.
+
+At minimum:
+- Client exists in the actor's workspace/scope.
+- Client is Draft for a first activation.
+- exactly one primary contact exists by the existing DB invariant.
+- the primary contact has a valid normalized email suitable for an invitation.
+- purchased/open Service Engagements are configured for the Client.
+- select the Client's real open/non-terminal Service Engagements from the database. Do not trust a caller-supplied subset that could omit a purchased service.
+- feed those exact engagement ids to A8 preparation.
+- Content Calendar alone must still produce Common-only onboarding because that is A8's mapping.
+- if a required published onboarding template is missing/corrupt, activation fails before lifecycle change.
+- if team assignment/setup is explicitly required by the current product/domain docs for a service, validate it. Do not invent a blanket per-service assignment requirement if the canonical docs do not define one.
+
+Return structured domain reasons that the server action can map to calm user-facing errors. Do not leak raw SQLite/D1 constraint text.
+
+A8 ORCHESTRATION
+
+Reuse the A8 engine. Do not rebuild template selection/merge logic inside A9.
+
+A8 already owns:
+- current published template selection
+- Service Type -> onboarding-template mapping
+- exact source-version provenance
+- logical-key dedupe
+- Social + Ads meta_business_access merge with both service links
+- runtime snapshot fields
+- open-instance protection
+- atomic onboarding persistence
+
+A9 should call/compose those primitives safely.
+
+If A9 needs a small A8 refactor to participate in a larger atomic orchestration, make the smallest clean refactor and preserve every A8 invariant/test. Do not duplicate the compiler or loosen A8 validation.
+
+CORE CONSISTENCY AND IDEMPOTENCY
+
+Design for retries first, not as an afterthought.
+
+The durable core facts are:
+- exactly one open onboarding instance per Client, enforced by the database
+- exact A8 provenance and item/service links
+- Client lifecycle reaches Onboarding exactly once for initial activation
+- activation activity is not duplicated
+
+The database must remain the final concurrency authority.
+
+Two concurrent first activations must converge to one valid activated Client, one open onboarding instance, one set of generated onboarding rows, and one set of core activation activity. The loser must receive a safe idempotent/conflict result, never a raw constraint error.
+
+Do not use a check-then-insert sequence as the only protection.
+
+Where one fact and its activity must be inseparable, use the established db.batch/transaction pattern so a late DB failure cannot leave a lifecycle change without its corresponding core activity, or vice versa.
+
+Do not fake atomicity in the test double. If the implementation extends batch behavior, keep BEGIN/COMMIT/ROLLBACK semantics consistent with actual D1.
+
+INVITATION AND MAIL BOUNDARY
+
+Reuse the existing invitation token, hash, TTL, Client-role invitation, acceptance, and mail infrastructure. Do not invent another token system.
+
+The activation invitation targets the current primary contact:
+- role = client
+- clientId = activated Client
+- email = normalized primary contact email
+- inviteeName from that contact when appropriate
+- invitedByMembershipId = authenticated activating actor when the existing invitation model expects it
+
+Raw invitation tokens must never be stored in the database or logged.
+
+External email is not part of a D1 transaction. Structure the flow so a mail failure cannot cause core activation records to be duplicated or rolled back into an ambiguous half-state.
+
+Required retry behavior:
+- if core activation commits and invitation delivery fails, return a structured result that makes clear activation succeeded but mail failed
+- preserve enough durable invitation state to retry safely
+- a retry must not create another onboarding instance or another Draft -> Onboarding transition
+- a retry may create/rotate/reuse the pending invitation according to the existing invitation semantics, then attempt delivery again
+- if rotation is required because only a token hash is stored, the new valid token may supersede the previous pending token. Do not expose the raw token anywhere except the immediate send path
+- do not create repeated CLIENT_ACTIVATED or ONBOARDING_STARTED events just because mail is retried
+- invitation-specific resend/sent activity may follow the existing invitation semantics, but avoid duplicate facts for one successful operation
+
+Do not call a real Resend endpoint in unit/integration tests. Inject/stub the mailer/fetch using the existing mail interface.
+
+INVITATION ACCEPTANCE AND CLIENT CONTACT LINK
+
+The current domain explicitly states client_contacts.user_id is the durable relationship A4 uses to decide which Client a Client membership may see, and that A9/A10 own inviting, accepting, linking, and later unlinking.
+
+Implement the minimum correct A9 linkage needed so an invited primary Client contact who accepts can actually be scoped to that Client later.
+
+Requirements:
+- only for Client-role invitations with a clientId
+- the accepting signed-in user's email must already satisfy the existing invitation email check
+- link the intended Client contact, not a random same-email contact from another Client/workspace
+- prefer the primary contact that activation invited, with a durable association if needed so acceptance cannot drift after contact edits
+- never let a foreign workspace invitation link a local contact
+- linking must be idempotent for the same user/contact
+- conflicting attempts to link one contact to a different user, or one Client-role membership to an unintended Client, must fail safely
+- do not expose user ids in internal UI payloads beyond the existing boolean linked fact
+- do not silently infer portal access from email alone outside the invitation acceptance path
+
+If the current schema cannot unambiguously preserve which contact was invited between activation and acceptance, add the smallest relational field/junction needed with same-workspace constraints and a migration. Do not hide this association in JSON metadata.
+
+ACTIVITY
+
+Add canonical activity constants using the existing activity helper/pattern for at least:
+- CLIENT_ACTIVATED
+- ONBOARDING_STARTED
+- CLIENT_INVITED
+
+Be precise about event semantics. Existing invitation primitives already record INVITATION_SENT / INVITATION_RESENT. Do not blindly duplicate semantically identical events. If CLIENT_INVITED is retained as a Client-level activation fact, document/test how it differs from the generic invitation event.
+
+Core retry/no-op behavior must not append duplicate CLIENT_ACTIVATED or ONBOARDING_STARTED events.
+
+Activity should carry the Client id, actor membership where applicable, and stable subject ids. Do not put raw invitation tokens, email bodies, or secrets in metadata.
+
+MINIMAL INTERNAL UX
+
+Provide the smallest useful internal activation surface consistent with the existing Client detail UI.
+
+Expected behavior:
+- authorized internal user can trigger Activate Client from a Draft Client
+- button/form is not shown as a security substitute. Server authorization remains authoritative
+- validation errors are calm and specific enough to fix, e.g. missing primary contact email or missing required template
+- success clearly shows Client is now Onboarding
+- if activation core succeeds but mail fails, show a non-destructive warning and a safe way to retry the invitation without re-running core activation
+- repeated clicks/reloads do not create duplicates
+
+Do not polish/build the A10 Client portal here.
+
+SCHEMA / MIGRATION RULES
+
+Add a migration only if the A9 domain truly needs new durable relational state, such as an unambiguous invitation-to-contact association or an idempotency invariant that cannot be expressed with existing rows.
+
+If adding schema:
+- use Drizzle canonical schema + generated/committed migration/snapshot/journal pattern already in repo
+- same-workspace foreign keys wherever applicable
+- database uniqueness is final concurrency authority
+- additive migration only unless a compelling safe reason exists
+- update zero-to-current verifier expectations automatically/cleanly, not with stale hard-coded assumptions
+- second migration pass must be a no-op
+
+Do not use runtime schema repair.
+
+TEST COVERAGE REQUIRED
+
+Add focused A9 tests that prove behavior, including denied behavior and business invariants.
+
+At minimum cover:
+
+Authorization / tenant safety
+- unauthorized role/action cannot activate
+- foreign Client id cannot activate
+- foreign Service/assignment/template/invitation/contact ids cannot cross workspace
+- Department membership alone grants nothing
+
+Preconditions
+- non-Draft first activation refused
+- no primary contact refused
+- primary contact without usable email refused
+- missing/corrupt required published template refused before lifecycle write
+- real Client services are selected from DB, not a caller-provided subset
+- Content Calendar-only activation gets Common only
+- any explicit canonical team-setup prerequisite is enforced without inventing new policy
+
+Happy path
+- Draft -> Onboarding
+- exactly one open onboarding instance
+- generated A8 item/provenance/service-link rows are correct
+- Social + Ads still produces one Meta item linked to both engagements
+- Client invitation created for primary contact with role=client and correct clientId
+- raw token not persisted
+- CLIENT_ACTIVATED / ONBOARDING_STARTED / Client invitation activity semantics are correct
+- no Projects or later-domain rows created
+
+Idempotency / concurrency
+- second activation click returns safe idempotent result
+- concurrent first activation produces one core result
+- no duplicate onboarding instance/items/provenance/service links
+- no duplicate Client lifecycle transition
+- no duplicate CLIENT_ACTIVATED / ONBOARDING_STARTED activity
+- raw DB unique errors never leak
+
+Atomic DB failure
+- force a late core DB failure and prove lifecycle/onboarding/core activity do not split into an invalid partial state
+- preserve all A8 rollback guarantees
+
+Mail failure / retry
+- fake mail send fails after core activation
+- core activation remains valid and singular
+- pending invitation/recovery state is sane
+- retry attempts mail safely without duplicating core records/events
+- eventual successful retry leaves one activated Client and usable invitation state
+- no real external email is sent in tests
+
+Acceptance / portal identity link
+- invited primary contact acceptance links the correct client_contacts.user_id
+- acceptance retry is idempotent
+- another user/email cannot claim the link
+- same email on another workspace/client cannot cross-link
+- A4 Client resource scope resolves only the linked Client
+- no user id leaks through existing contact list payload
+
+Regression
+- all A8 focused tests still pass
+- existing invitation acceptance/resend/revoke tests still pass
+- A6/A7 client/service/assignment tests still pass
+
+VERIFICATION
+
+Run and report exact results for:
+- npm ci
+- focused A9 tests
+- focused A8 regression tests
+- invitation/auth/client/access regression tests affected by the change
+- npm test
+- npm run build
+- npm run cf:build
+- fresh disposable local D1 from zero through every committed migration
+- second migration pass no-op
+- zero-to-current verifier
+- local Worker smoke relevant to activation/invitation using development/local mail only
+- any existing external verifier that is safe and does not send a real Client invitation
+
+If a verification step cannot safely run, say exactly why. Do not replace it with a claim.
+
+DOCS
+
+Update docs/BUILD_STATE.md with:
+- A9 architecture
+- activation idempotency behavior
+- mail-failure recovery behavior
+- portal-contact linkage decision
+- exact verification evidence
+- A10 as next
+
+Update docs/INDEX.md to A9 complete / A10 next only after the implementation and verification actually pass.
+
+Update docs/DOMAIN_MODEL.md if A9 adds or clarifies durable relational state.
+
+Do not change AGENTS.md unless A9 discovers a genuinely permanent invariant that is not already represented there.
+
+PR / COMPLETION
+
+Before finalizing:
+1. Delete A9_CODEX_PROMPT.txt so it has no net diff in the PR.
+2. Confirm the diff contains only A9-related implementation/tests/docs/migration changes.
+3. Confirm no production, DNS, staging custom-domain, or Leadsthatbloom changes.
+4. Commit the implementation on codex/a9-client-activation.
+5. Push the branch.
+6. Open a PR to main titled clearly for A9.
+7. Include exact head SHA, changed-file summary, verification results, migration notes, idempotency/mail-failure behavior, and explicit statement that A10/later domains were not implemented.
+8. Do not merge the PR yourself. ChatGPT will independently audit the actual GitHub diff, threads, and workflows and will merge only if clean.
+
+Do not rely on this completion report as proof. The PR will be independently audited.
