@@ -11,6 +11,7 @@ import {
   lookupInvitation,
   createInvitation,
   resendInvitation,
+  revokeInvitation,
 } from '../lib/bloomops/invitations.mjs';
 import { listContacts } from '../lib/bloomops/client-contacts.mjs';
 
@@ -360,6 +361,45 @@ test('an unrelated pending invite cannot be taken over for activation', async ()
   assert.equal((await lookupInvitation(t.db, invite.token)).invitation.role, 'team_member');
   assert.equal(count(t, 'client_invitation_contacts'), 0);
 });
+test('generic revoke refuses a delivered activation invitation without changing its token, core or events', async () => {
+  const t = await setup();
+  const activated = await t.activate();
+  assert.equal(activated.ok, true);
+  assert.equal(activated.deliveryStatus, 'sent');
+  const invitation = one(t.raw, 'SELECT * FROM workspace_invitations');
+  const link = one(t.raw, 'SELECT * FROM client_invitation_contacts WHERE invitation_id=?', invitation.id);
+  assert.equal(link.workspace_id, t.ws.id);
+  assert.equal(link.client_id, 'client');
+  assert.equal(link.contact_id, 'contact');
+  const token = t.token();
+  const before = core(t);
+  const beforeEvents = all(t.raw, 'SELECT * FROM activity_events ORDER BY rowid');
+  const beforeClient = one(t.raw, "SELECT * FROM bloomops_clients WHERE id='client'");
+
+  assert.deepEqual(await revokeInvitation(t.db, {
+    workspaceId: t.ws.id,
+    invitationId: invitation.id,
+    actorMembershipId: t.actor.membershipId,
+  }), { ok: false, reason: 'activation_managed' });
+
+  assert.equal(one(t.raw, 'SELECT status FROM workspace_invitations').status, 'pending');
+  assert.deepEqual(one(t.raw, 'SELECT * FROM workspace_invitations'), invitation);
+  assert.deepEqual(one(t.raw, 'SELECT * FROM client_invitation_contacts'), link);
+  assert.equal((await lookupInvitation(t.db, token)).state, 'pending');
+  assert.equal(one(t.raw, 'SELECT delivery_status FROM client_activations').delivery_status, 'sent');
+  assert.equal(events(t, 'INVITATION_REVOKED').length, 0);
+  assert.deepEqual(core(t), before);
+  assert.deepEqual(all(t.raw, 'SELECT * FROM activity_events ORDER BY rowid'), beforeEvents);
+  assert.deepEqual(one(t.raw, "SELECT * FROM bloomops_clients WHERE id='client'"), beforeClient);
+  assert.equal(t.mailer.sent.length, 1);
+
+  // Prove the original delivered token still completes real acceptance.
+  const user = t.user();
+  assert.equal((await acceptInvitation(t.db, { token, user })).ok, true);
+  assert.equal(one(t.raw, "SELECT user_id FROM client_contacts WHERE id='contact'").user_id, user.id);
+  assert.deepEqual(core(t), before);
+});
+
 test('an activation-bound invitation cannot be retargeted by generic creation or resend', async () => {
   const t = await setup();
   await t.activate();
@@ -569,6 +609,54 @@ test('HTTP activation and retry authorize the real session, ignore body scope, a
   run(t.raw, "UPDATE workspace_memberships SET status='suspended' WHERE id=?", t.actor.membershipId);
   assert.equal((await call(retry)).status, 403);
 });
+test('HTTP generic revoke enforces activation ownership for Owner/Admin and still revokes ordinary invitations', async () => {
+  const { POST: revoke } = await import('../app/api/bloomops/invitations/[id]/revoke/route.js');
+  const t = await setup(undefined, true);
+  const ownerCookie = (await t.signIn('owner@example.com')).cookie;
+  const adminCookie = (await t.signIn('admin@example.com')).cookie;
+  const foreignCookie = (await t.signIn('b-owner@example.com')).cookie;
+  assert.equal((await t.activate()).deliveryStatus, 'sent');
+  const invitation = one(t.raw, 'SELECT * FROM workspace_invitations');
+  const before = core(t);
+  const beforeEvents = all(t.raw, 'SELECT * FROM activity_events ORDER BY rowid');
+  const call = (id, session = ownerCookie, origin = APP_URL) => {
+    globalThis[Symbol.for('__cloudflare-context__')] = { env: t.env, cf: {}, ctx: {} };
+    return revoke(new Request(`${APP_URL}/api/bloomops/invitations/${id}/revoke`, {
+      method: 'POST', headers: { cookie: session, origin },
+    }), { params: Promise.resolve({ id }) });
+  };
+  assert.equal((await call(invitation.id, '')).status, 401);
+  assert.equal((await call(invitation.id, ownerCookie, 'https://evil.example')).status, 403);
+  const foreign = await call(invitation.id, foreignCookie);
+  const missing = await call('missing', foreignCookie);
+  assert.equal(foreign.status, 404);
+  assert.equal(missing.status, 404);
+  assert.deepEqual(await foreign.json(), await missing.json());
+  for (const session of [ownerCookie, adminCookie]) {
+    const response = await call(invitation.id, session);
+    assert.equal(response.status, 409);
+    assert.equal((await response.json()).reason, 'activation_managed');
+  }
+  assert.deepEqual(one(t.raw, 'SELECT * FROM workspace_invitations'), invitation);
+  assert.deepEqual(core(t), before);
+  assert.deepEqual(all(t.raw, 'SELECT * FROM activity_events ORDER BY rowid'), beforeEvents);
+  assert.equal((await lookupInvitation(t.db, t.token())).state, 'pending');
+
+  const ordinary = await createInvitation(t.db, {
+    workspaceId: t.ws.id, email: 'ordinary@example.com', role: 'client', clientId: 'client',
+  });
+  assert.equal(ordinary.ok, true);
+  assert.equal(all(t.raw, 'SELECT * FROM client_invitation_contacts WHERE invitation_id=?', ordinary.invitation.id).length, 0);
+  const revoked = await call(ordinary.invitation.id);
+  assert.equal(revoked.status, 200);
+  assert.equal((await revoked.json()).invitation.status, 'revoked');
+  assert.equal((await lookupInvitation(t.db, ordinary.token)).state, 'revoked');
+  assert.deepEqual(events(t, 'INVITATION_REVOKED').map(event => event.subject_id), [ordinary.invitation.id]);
+  assert.deepEqual(core(t), before);
+  run(t.raw, "UPDATE workspace_memberships SET status='suspended' WHERE id=?", t.actor.membershipId);
+  assert.equal((await call(invitation.id)).status, 403);
+});
+
 test('every delivery role may activate, without gaining invitation administration capabilities', async () => {
   for (const role of ['admin', 'project_manager']) {
     const t = await setup();
