@@ -10,6 +10,7 @@ export function publicInvitation(row) {
 }
 
 const REASONS = {
+  activation_managed: [409, 'Retry this invitation from the client’s activation section.'],
   invalid_email: [400, 'Enter a valid email address.'],
   invalid_role: [400, 'Choose a valid role.'],
   client_required: [400, 'A client invitation needs a client.'],

@@ -27,9 +27,9 @@ Do not automatically load every planning document into context.
 
 Release A is the active release.
 
-Current phase: **A8 audited and merged; verifier cleanup correction pending review/merge; A9 gated on a passing remote zero-to-current run on corrected main**
+Current phase: **A9 complete and locally verified, pending independent PR audit/merge; A10 next**
 
-Current phase file: `docs/phases/A9.md` (do not begin before the verifier gate passes; A8 architecture and verification are recorded in `docs/BUILD_STATE.md`)
+Next phase file: `docs/phases/A10.md` (after A9 audit/merge; A9 architecture and exact verification are recorded in `docs/BUILD_STATE.md`). The post-PR #11 remote verifier gate passed before A9 began.
 
 ## Phase Reading Matrix
 

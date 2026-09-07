@@ -290,6 +290,7 @@ test('the role matrix: every role against every representative action, allow and
     // Creating a client names no record: it does not exist yet (A6).
     'client.create': [true, true, true, false, false],
     'client.view': [true, true, true, true, true],
+    'client.activate': [true, true, true, false, false],
     'client.manage': [true, true, true, false, false],
     'service.view': [true, true, true, true, true],
     'service.manage': [true, true, true, false, false],
@@ -306,6 +307,7 @@ test('the role matrix: every role against every representative action, allow and
   // the same descriptor the real routes do rather than a convenient one.
   const RESOURCE_OF = {
     'client.view': jamesClient,
+    'client.activate': jamesClient,
     'client.manage': jamesClient,
     'client.assign': jamesClient,
     'service.create': jamesClient,

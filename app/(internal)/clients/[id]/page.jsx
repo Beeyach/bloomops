@@ -1,3 +1,5 @@
+import ClientActivation from '@/components/bloomops/ClientActivation';
+import { activationSummary } from '@/lib/bloomops/client-activation.mjs';
 import { notFound } from 'next/navigation';
 import { evaluate, loadInternalClientResource } from '@/lib/bloomops/authorization.mjs';
 import { requireShell } from '@/lib/bloomops/shell-server.mjs';
@@ -54,16 +56,19 @@ export default async function ClientDetailPage({ params, searchParams }) {
   if (!client) notFound();
 
   const mayManage = evaluate(actor, { action: 'client.manage', resource }).allowed;
+  const mayActivate = evaluate(actor, { action: 'client.activate', resource }).allowed;
+  const activation = await activationSummary(access.db, access.workspace.id, client.id);
   const tab = isClientTab(query?.tab) ? query.tab : 'overview';
   const contacts = await listContacts(access.db, access.workspace.id, client.id);
 
   return (
     <>
       <ClientDetailHeader client={client} />
+      {mayActivate && <ClientActivation clientId={client.id} draft={client.relationshipStatus === 'draft'} activation={activation} />}
       <ClientTabs clientId={client.id} active={tab} />
       {tab === 'overview' && <OverviewTab access={access} client={client} contacts={contacts} mayManage={mayManage} />}
       {tab === 'services' && <ServicesTab access={access} actor={actor} client={client} mayManage={mayManage} />}
-      {tab === 'onboarding' && <OnboardingTab clientName={client.name} />}
+      {tab === 'onboarding' && <OnboardingTab clientName={client.name} activation={activation} />}
       {tab === 'team' && <TeamTab access={access} actor={actor} client={client} mayManage={mayManage} />}
       {tab === 'activity' && <ActivityTab access={access} client={client} />}
     </>
@@ -139,15 +144,14 @@ async function ServicesTab({ access, actor, client, mayManage }) {
 }
 
 // A8 generates onboarding from templates, A9 creates the instance at
-// activation, and A10 is what the client sees. None of that exists, so this
-// tab says exactly that and invents no progress, checklist, or percentage.
-function OnboardingTab({ clientName }) {
+// activation, and A10 owns client completion and verification. This tab
+// reports only whether the initial onboarding has been created.
+function OnboardingTab({ clientName, activation }) {
   return (
     <Section id="onboarding" title="Onboarding">
       <Surface tone="mist" padding="lg" className="bo-page-narrow">
         <p className="bo-body">
-          Onboarding has not started for {clientName}. What the agency needs from a client is generated when the client is activated, which is part of a later
-          BloomOps release.
+          {activation ? `Onboarding has been created for ${clientName}.` : `Onboarding has not started for ${clientName}. Requirements are generated when the client is activated.`}
         </p>
       </Surface>
     </Section>

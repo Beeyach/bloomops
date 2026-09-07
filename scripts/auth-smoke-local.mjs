@@ -261,14 +261,14 @@ let invitationId = '';
 
   const detail = await call(`/clients/${clientId}`, { cookie: owner.cookie, accept: 'text/html' });
   check('the client detail renders with the five Release A tabs', detail.status === 200 && detail.text.includes(CLIENT_NAME) && /Overview/.test(detail.text) && /Services/.test(detail.text) && /Onboarding/.test(detail.text) && /Team/.test(detail.text) && /Activity/.test(detail.text), `status ${detail.status}`);
-  check('and offers no activation control', !/Activate/.test(detail.text));
+  check('and offers the separate activation control', /Activate Client/.test(detail.text));
 
   const health = await call(`/api/bloomops/clients/${clientId}`, { method: 'PATCH', cookie: owner.cookie, body: { health: 'needs_attention' } });
   check('the Owner changes the health', health.status === 200, `status ${health.status} ${health.text.slice(0, 160)}`);
   const afterHealth = sqlOne(`SELECT relationship_status, health FROM bloomops_clients WHERE id = ${lit(clientId)}`);
   check('and the lifecycle is untouched by it', afterHealth?.health === 'needs_attention' && afterHealth?.relationship_status === 'draft', JSON.stringify(afterHealth));
   const lifecycle = await call(`/api/bloomops/clients/${clientId}`, { method: 'PATCH', cookie: owner.cookie, body: { relationshipStatus: 'active' } });
-  check('the lifecycle cannot be written here: activation is a later phase', lifecycle.status === 400 && lifecycle.json?.reason === 'status_not_editable', `status ${lifecycle.status}`);
+  check('the lifecycle cannot be written through ordinary editing', lifecycle.status === 400 && lifecycle.json?.reason === 'status_not_editable', `status ${lifecycle.status}`);
 
   const second = await call(`/api/bloomops/clients/${clientId}/contacts`, { method: 'POST', cookie: owner.cookie, body: { name: 'Second Contact', email: `second-${randomBytes(3).toString('hex')}@example.com`, title: 'Operations' } });
   must('the Owner adds a second contact', second.status === 201, `status ${second.status} ${second.text.slice(0, 160)}`);
@@ -398,7 +398,7 @@ let invitationId = '';
     clientAfter?.relationship_status === clientBefore?.relationship_status && clientAfter?.health === clientBefore?.health,
     `${clientBefore?.relationship_status}/${clientBefore?.health} -> ${clientAfter?.relationship_status}/${clientAfter?.health}`);
   check('nothing was activated behind it either',
-    countRows('onboarding_instances') === 0 && countRows('workspace_invitations', `email = ${lit(SERVICES_CONTACT)}`) === 0);
+    countRows('onboarding_instances', `client_id = ${lit(clientId)}`) === 0 && countRows('workspace_invitations', `email = ${lit(SERVICES_CONTACT)}`) === 0);
 
   const listed = await call(`/clients/${clientId}?tab=services`, { cookie: owner.cookie, accept: 'text/html' });
   check('the Services tab shows both services with their departments and statuses',
@@ -501,6 +501,29 @@ let invitationId = '';
   check('a cross-site origin cannot change members', foreign.status === 403);
   const removed = await call(`/api/bloomops/members/${invitee.id}`, { method: 'PATCH', cookie: owner.cookie, body: { status: 'removed' } });
   check('the Owner removes the invitee', removed.status === 200 && removed.json?.membership?.status === 'removed');
+}
+
+// A9. Real activation HTTP, development-only invitation, acceptance and A4 scope.
+{
+  const email = `a9-contact-${randomBytes(3).toString('hex')}@example.com`;
+  const made = await call('/api/bloomops/clients', { method: 'POST', cookie: owner.cookie, body: { name: 'Activation smoke', contactName: 'Activation Contact', contactEmail: email } });
+  const clientId = made.json?.clientId || made.json?.client?.id;
+  must('A9 draft client created', made.status === 201 && clientId);
+  const type = sqlOne(`SELECT id FROM service_types WHERE workspace_id=${lit(sqlOne("SELECT id FROM workspaces WHERE slug='smoke-agency'").id)} AND slug='content-calendar'`);
+  must('A9 purchased service configured', (await call(`/api/bloomops/clients/${clientId}/services`, { method:'POST', cookie:owner.cookie, body:{serviceTypeId:type.id} })).status === 201);
+  const activated = await call(`/api/bloomops/clients/${clientId}/activate`, { method:'POST', cookie:owner.cookie });
+  must('A9 activation commits and delivers local invitation', activated.status===200 && activated.json?.deliveryStatus==='sent', JSON.stringify(activated.json));
+  const repeat = await call(`/api/bloomops/clients/${clientId}/activate`, { method:'POST', cookie:owner.cookie });
+  check('A9 activation repeat returns the same instance', repeat.json?.instanceId===activated.json.instanceId && repeat.json?.alreadyActivated);
+  check('A9 core is singular', countRows('onboarding_instances',`client_id=${lit(clientId)}`)===1 && countRows('activity_events',`client_id=${lit(clientId)} AND event_type='CLIENT_ACTIVATED'`)===1);
+  const invitationMail = readDevMail(email); const token = invitationMail.text.match(/\/invite\/([A-Za-z0-9_-]+)/)[1];
+  const contact = await signIn(email, {next:`/invite/${token}`});
+  const accepted = await call('/api/bloomops/invitations/accept', {method:'POST',cookie:contact.cookie,body:{token}});
+  must('A9 client accepts invitation',accepted.status===200,JSON.stringify(accepted.json));
+  check('A9 primary contact is linked', Boolean(sqlOne(`SELECT user_id FROM client_contacts WHERE client_id=${lit(clientId)} AND is_primary=1`)?.user_id));
+  check('A9 client sees their portal', (await call('/portal',{cookie:contact.cookie,accept:'text/html'})).text.includes('Activation smoke'));
+  check('A9 client cannot invoke activation', (await call(`/api/bloomops/clients/${clientId}/activate`,{method:'POST',cookie:contact.cookie})).status===404);
+  check('A9 cross-site activation is refused', (await call(`/api/bloomops/clients/${clientId}/activate`,{method:'POST',cookie:owner.cookie,origin:'https://evil.example'})).status===403);
 }
 
 // 5. Old login gone, sign-out works.

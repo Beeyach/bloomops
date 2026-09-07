@@ -642,7 +642,7 @@ test('A6 does not implement activation: the lifecycle cannot be written through 
   assert.equal(s.clientRow(id).relationship_status, 'draft');
 
   assert.equal(s.events(id).length, before, 'a refused lifecycle write records nothing');
-  assert.ok(!Object.keys(ACTIVITY).includes('CLIENT_ACTIVATED'), 'and A6 claims no activation event');
+  assert.equal(one(s.raw, "SELECT COUNT(*) AS n FROM activity_events WHERE event_type='CLIENT_ACTIVATED'").n, 0, 'A6 editing emits no activation event');
   assert.ok(!Object.keys(ACTIVITY).includes('CLIENT_STATUS_CHANGED'), 'the lifecycle event belongs to the phase that moves the lifecycle');
 
   // Nothing that A9 owns was created as a side effect of anything A6 did.
@@ -650,9 +650,7 @@ test('A6 does not implement activation: the lifecycle cannot be written through 
   assert.equal(one(s.raw, 'SELECT COUNT(*) AS n FROM service_engagements WHERE client_id = ?', id).n, 0);
   assert.equal(one(s.raw, 'SELECT COUNT(*) AS n FROM workspace_invitations').n, 0);
 
-  // No screen offers one either.
-  const detail = src('app/(internal)/clients/[id]/page.jsx');
-  assert.ok(!/Activate/.test(detail), 'the detail page has no Activate control');
+  // Activation has its own A9 action; ordinary A6 editing still refuses it.
   // The create route does not read a lifecycle at all; the edit route
   // forwards one on purpose, so the domain layer refuses it out loud
   // instead of dropping it silently (proved by the 400s above).
