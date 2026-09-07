@@ -27,9 +27,9 @@ Do not automatically load every planning document into context.
 
 Release A is the active release.
 
-Current phase: **A7 complete, A8 next**
+Current phase: **A8 complete (pending PR audit/merge), A9 next**
 
-Current phase file: `docs/phases/A8.md` (A7 is recorded in `docs/BUILD_STATE.md`)
+Current phase file: `docs/phases/A9.md` (not started; A8 architecture and verification are recorded in `docs/BUILD_STATE.md`)
 
 ## Phase Reading Matrix
 
