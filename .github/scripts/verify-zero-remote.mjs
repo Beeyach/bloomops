@@ -19,6 +19,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { getTableName } from 'drizzle-orm';
 import { BLOOMOPS_TABLES } from '../../lib/bloomops/schema.mjs';
+import { assertDisposableName, assertDisposableIdentity, guardWranglerCommand, protectedIdsAreDistinct, sameDatabaseInventory, stagingIdentityUnchanged } from './zero-verify-safety.mjs';
 
 const DB_NAME = 'bloomops-a2-zero-verify';
 const LOCAL = process.argv.includes('--local');
@@ -27,8 +28,7 @@ const REPO = process.cwd();
 
 // Names this script must never address, from the products and environments
 // that own real data. The disposable name is checked against them too.
-const FORBIDDEN = /bloomtrack|leadsthatbloom|bloomwired|412a33ad|staging|production/i;
-if (FORBIDDEN.test(DB_NAME)) throw new Error(`disposable name ${DB_NAME} collides with a protected name`);
+assertDisposableName(DB_NAME);
 
 const results = [];
 function record(step, ok, detail = '') {
@@ -52,19 +52,10 @@ const productionId = committed?.env?.production?.d1_databases?.[0]?.database_id 
 // ── wrangler plumbing ────────────────────────────────────────────────────
 const stripAnsi = (s) => String(s).replace(/\x1b\[[0-9;]*m/g, '');
 
-// Every wrangler call passes through here. A database command must carry the
-// temporary config written by this script. An account command may only name
-// the disposable database, except `d1 info`, which may also read the staging
-// database's metadata to show it did not change.
+// Every Wrangler call is checked before execution. Only the disposable DB
+// binding can be queried/migrated; staging info is explicitly read-only.
 function guard(args) {
-  if (args.includes('--config')) {
-    if (!configPath || args[args.indexOf('--config') + 1] !== configPath) throw new Error('refusing a database command without the temporary config');
-    return;
-  }
-  const [group, command, ...named] = args.filter((a) => !a.startsWith('-'));
-  if (group !== 'd1' || !['list', 'info', 'create', 'delete'].includes(command)) throw new Error(`refusing wrangler ${group} ${command}`);
-  const allowed = command === 'info' ? [DB_NAME, stagingName] : [DB_NAME];
-  for (const n of named) if (!allowed.includes(n)) throw new Error(`refusing to address ${n}`);
+  guardWranglerCommand(args, { configPath, mode: MODE, databaseName: DB_NAME, stagingName });
 }
 function run(args, { quiet = false } = {}) {
   guard(args);
@@ -173,7 +164,7 @@ let tmp = '';
 let exitCode = 0;
 try {
   if (!LOCAL) {
-    record('committed staging id and production id are known and distinct', Boolean(stagingId) && stagingId !== productionId);
+    record('committed staging id and production id are known and distinct', protectedIdsAreDistinct(stagingId, productionId));
     before = inventory();
     record(`no database named ${DB_NAME} exists before this run`, !before.some((d) => d.name === DB_NAME),
       `${before.length} databases on the account: ${namesOf(before)}`);
@@ -247,16 +238,17 @@ try {
   try {
     if (created) {
       const info = account(['d1', 'info', DB_NAME]);
-      if (info.uuid !== createdId) throw new Error(`${DB_NAME} resolves to ${info.uuid}, not the id created here (${createdId}); leaving it alone`);
+      assertDisposableIdentity(info, createdId, DB_NAME);
       run(['d1', 'delete', DB_NAME, '--skip-confirmation']);
       const after = inventory();
       record(`${DB_NAME} deleted`, !after.some((d) => d.name === DB_NAME || d.uuid === createdId));
-      record('the account holds exactly the databases it held before', JSON.stringify(after) === JSON.stringify(before),
+      record('the account holds exactly the databases it held before', sameDatabaseInventory(before, after),
         `${after.length} databases: ${namesOf(after)}`);
       if (stagingBefore) {
         const stagingAfter = account(['d1', 'info', stagingName]);
-        record(`${stagingName} untouched`, stagingAfter.uuid === stagingBefore.uuid && stagingAfter.num_tables === stagingBefore.num_tables && stagingAfter.created_at === stagingBefore.created_at,
-          `${stagingAfter.num_tables} tables before and after`);
+        record(`${stagingName} identity unchanged`, stagingIdentityUnchanged(stagingBefore, stagingAfter),
+          `uuid ${stagingAfter.uuid}; created_at ${stagingAfter.created_at}`);
+        console.log(`${stagingName} table count (informational): ${stagingBefore.num_tables} before, ${stagingAfter.num_tables} after; concurrent staging migrations are allowed. Isolation is enforced by the disposable command/config guards.`);
       }
     }
   } catch (err) {
