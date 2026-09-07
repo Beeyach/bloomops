@@ -6,15 +6,15 @@ Release A: Foundation, Auth, Clients, Services, Onboarding, Client Portal
 
 ## Current Phase
 
-A9 Client Activation is implemented and locally verified on `codex/a9-client-activation`, pending independent PR audit and merge. It composes the A8 onboarding engine with one atomic initial activation, recoverable invitation delivery, and explicit contact linkage on acceptance. A0 through A8 and the A8 verifier correction (PR #11) are merged. Both post-correction main workflows passed before A9 began.
+A10 Client Onboarding Portal is implemented and locally verified on `codex/a10-client-onboarding-portal`, pending independent PR audit and merge. A0–A9 are merged, including PR #12's activation-managed revoke correction. A10 completes the Release A onboarding interaction and coordination flow; A11 hardening is next after independent audit/merge and successful merged-main staging/zero-to-current verification.
 
-Completed phase specs: `docs/phases/A0.md` through `docs/phases/A9.md`. Next phase spec: `docs/phases/A10.md`, the client onboarding portal; not implemented here.
+Completed implementation specs: `docs/phases/A0.md` through `docs/phases/A10.md`. Next: `docs/phases/A11.md`, Release A hardening, after the merged-A10 verification gate.
 
 Documentation index: `docs/INDEX.md`
 
 ## Branch State
 
-PRs #2 through #11 are merged into `main`. A9 uses `codex/a9-client-activation`, updated by merge from current main `420b1451a8e22d8b7bef39dc052263a176bcfa2d` before implementation. [Deploy staging 34093902305](https://github.com/Beeyach/bloomops/actions/runs/34093902305) and [Verify zero-to-current migration 34093902316](https://github.com/Beeyach/bloomops/actions/runs/34093902316) both succeeded on that base. This branch is for review, not self-merge.
+PRs #2 through #12 are merged. A10 starts from main `de510d7473fec1b27692b3d9b7f3e6240a0dc699`. Read-only preflight verified [Deploy staging 34100048733](https://github.com/Beeyach/bloomops/actions/runs/34100048733) and [Verify zero-to-current 34100593565](https://github.com/Beeyach/bloomops/actions/runs/34100593565) both completed successfully on that exact SHA. Main was unchanged at preflight. This branch is for independent review, not self-merge.
 
 ## Repository Agent Instructions
 
@@ -46,7 +46,58 @@ BloomOps Git history is fresh. The source commit object does not exist in the Bl
 - A6: the Clients domain — a scoped list with lifecycle filters, create (Draft, primary contact, nobody invited), the `/clients/:id` detail with the five Release A tabs, multiple contacts with a database-enforced single primary, an internal owner that grants no access, manually managed health, and immutable operational activity in plain words; one migration, one new action (`client.create`), and an internal client resource descriptor that keeps Client memberships out of the internal surfaces
 - A7: service engagements with independent lifecycles, the default departments and service types, and client-wide/service-specific team assignments; see "Services and Departments (A7)" for implementation and verification evidence
 - A8: five workspace onboarding defaults, immutable version creation and atomic publishing, deterministic logical-key compilation, relational multi-version provenance, and atomic generated onboarding; audited and merged as PR #10, staging deployed successfully
-- A9: authorized Draft → Onboarding activation, atomic A8 generation and core activity, durable initial-activation identity, recoverable invitation delivery, explicit portal contact linkage, and minimal internal activation/retry UX; locally verified, pending independent PR audit
+- A9: authorized Draft → Onboarding activation, atomic A8 generation and core activity, durable initial-activation identity, recoverable invitation delivery, explicit portal contact linkage, and minimal internal activation/retry UX; merged with generic revoke ownership correction as PR #12
+- A10: scoped onboarding portal and internal operational tab, durable Client submission, coordinator verification/completion, reasoned waiver/N/A, atomic onboarding completion and Client Active transition; locally verified, pending independent audit
+
+## Client Onboarding Portal (A10)
+
+### Runtime and privacy
+
+`onboarding-views.mjs` supplies a dedicated Client allowlist through the portal page and no-store GET APIs. It reloads active membership/contact scope and prefers the exact A9 activation instance, with a latest-instance fallback for existing generated work. It projects each reachable client into its own named section. Only visibility `client` items are read for the portal. Logical keys, template provenance, service relationships, membership/actor ids, raw invitations, and resolution rationale never reach Client props or API JSON. Internal views use the same A4 resource policy and omit restricted items for unnamed managers/team members; item activity follows that visibility too.
+
+“Your steps” counts only client-visible, client-responsible required items. Completed/Waived/Not Applicable and durable verification submissions count as the Client having done their part. Optional items do not enter the denominator. A Client can reach 100% while overall onboarding still awaits agency verification or hidden work; the portal says they are all set for now without exposing hidden counts. Visible agency-owned work remains read-only.
+
+### Mutations, durable facts, and completion
+
+`onboarding-runtime.mjs` is the canonical mutation engine. `onboarding.submit` is Client-only and requires contact scope plus client visibility/responsibility. Non-verification work becomes Completed with completion actor/time; verification work becomes In Progress with an immutable submission and no completion/verification fields. Repeated submissions/completions are no-ops. There is no Client undo or arbitrary-status API.
+
+`onboarding.verify` and `onboarding.manage` are Owner/Admin/Project Manager actions. Existing restricted-record policy still applies. A Team Member's assignment, department, or internal owner designation grants no write. Verification requires actual submission and records verified/completed actor/time together. Internal users can complete non-client work (including verification when configured). Waived/Not Applicable require a bounded non-empty reason, retained both operationally and in append-only activity; a terminal resolution cannot be overwritten. Client UI shows “No action needed” without the internal rationale.
+
+The first real item mutation starts a Not Started instance; viewing does not. One D1 batch owns the item, durable fact, semantic event, instance lifecycle, and optional Client lifecycle transition. A compare-and-set guard rechecks membership, workspace, role, Client contact, item visibility/responsibility/verification and current status under the write lock. Contenders reload boundedly and converge to a no-op or safe refusal. Final predicates run after the item write against ALL required items, not the portal count. Completion records ONBOARDING_COMPLETED once and activates the Client only if this is A9's initial instance and relationship status is still Onboarding; a distinct CLIENT_ONBOARDING_COMPLETED event records that transition. Service status and unexpected Client lifecycle states are untouched. Late event failures roll back the whole batch; API errors never expose database details.
+
+### Additive migration and UX boundary
+
+Migration `0007_a10_onboarding_progress.sql` adds `onboarding_item_submissions` and `onboarding_item_resolutions`, their primary-key uniqueness and same-workspace item/member foreign keys, a bounded-reason CHECK, and four immutable-fact update/delete triggers. Drizzle schema, snapshot and journal match. There is no prior migration edit, table rebuild, or runtime schema repair. The item remains the canonical owner of outcome/status; its instance supplies the client relationship.
+
+The portal and internal Client > Onboarding tab use existing Bloom components, an ordered list, accessible text progress, keyboard actions and status announcements. Internal resolution controls require reasons and show the stored rationale. Schema-v1 defines no input type/upload flag/URL: A10 acknowledges externally described steps, provides no file uploader, invents no links, and does not claim a Files module. No master definition or generated template snapshot is silently rewritten. No Release B features, payments, queues or additional notifications are included.
+
+### A10 verification
+
+Verification is local only, using memory or development R2 mail. No real email or staging, production, DNS/custom-domain, or Leadsthatbloom resource was modified. The live design reference could not be opened; repository design guidance was used. Final verification evidence follows. All Node checks use 22.22.1. No application dependency, AGENTS.md, deployment configuration, or workflow was changed.
+
+| Check | Result |
+|---|---|
+| `npm ci` | Exit 0; lockfile/dependencies unchanged |
+| A10 focused | 39/39 |
+| A9 regression | 44/44 |
+| A8 template/compiler regression | 72/72 |
+| Affected authorization/client/service/assignment/invitation | 141/141 |
+| Shell/schema | 36/36; combined regression invocation 332/332 |
+| `npm test`, Node 22.22.1 | 3001/3001, no failures or skipped tests |
+| `npm run build` | Exit 0, including lint/type checks |
+| `npm run cf:build` | Exit 0; `.open-next/worker.js` emitted; non-blocking dependency `punycode` deprecation warning |
+| Disposable workerd A10 smoke | 27/27, including canonical Lawrence/Kajabi/assignment/activation/acceptance/completion and late final-event rollback |
+| Local zero-to-current and no-op pass | 19/19: fresh disposable local D1, all 60 inherited/eight domain migrations, 27 domain tables, 55 explicit indexes, 13 immutable-data triggers; second pass applies nothing and schema/both ledgers stay identical |
+| Existing actual D1 regression smoke | A9 14/14; A8 12/12 |
+| Built Worker HTTP smoke (`auth-smoke-local.mjs`) | 144/144 |
+| External verifier against local Worker | 21/21; development R2 mail only |
+| A10 built Worker HTTP/browser/Release A acceptance (`onboarding-portal-review-local.mjs`) | 95/95, including complete Story 1, Story 2 merged Meta and Client isolation, keyboard completion, reload persistence, internal verification, waiver/N/A and safe denials |
+| Browser viewports | 1440/1024/768/390/320px; 20 screenshots in `/tmp/bloomops-a10-review`; representative phone todo/waiting/complete, phone internal, and desktop internal/complete inspected |
+| Syntax and `git diff --check` | Pass |
+
+One intermediate rebuild received SIGTERM without a compiler diagnostic while the preview was running; both final builds passed sequentially after stopping that preview. The first browser pass found that the touch-size assertion measured hidden buttons inside closed resolution panels; the corrected check measures visible controls and separately tests the opened resolution buttons. No production behavior was changed to satisfy that test. Formatting tooling and Playwright/Chromium are external to application dependencies.
+
+The temporary `A10_CODEX_PROMPT.txt` is removed before the implementation commit, with no net prompt diff against main. No remote deployment is claimed. A11 must wait for independent A10 audit/merge, green staging on the merge SHA, and green remote zero-to-current on that same SHA (manually dispatch if the existing path filters do not trigger it).
 
 ## Post-merge A8 verifier cleanup correction (2026-09-07)
 
@@ -1323,19 +1374,21 @@ For the next phase, read:
 
 1. `AGENTS.md`
 2. this file
-3. `docs/phases/A10.md`
+3. `docs/phases/A11.md`
 
 Read additional canonical planning docs only when the phase file or `docs/INDEX.md` calls for them.
 
 ## Next Planned Phase
 
-A10, Client Onboarding Portal, after independent audit and merge of A9. Reuse A9's accepted invitation/contact link and A8's generated relational onboarding. A10 owns the client-facing presentation, item completion/verification and upload experience; A9 supplies only activation and invitation entry points. Do not pre-build later operational domains.
+A11, Release A Hardening, after independent A10 audit/merge and successful staging plus remote zero-to-current verification on the A10 merge SHA. A11 adds no product features. A10 supplies the Client onboarding interactions, internal verification/completion and reasoned waiver/N/A capability; schema-v1 file uploads remain explicitly outside this implementation.
 
 ### The A7 phase, for reference
 
 A7, Services and Departments. Complete. It seeds the four departments and the initial service types, gives one client several purchased service engagements with their own lifecycle, and builds assignment at both the client and the engagement level. The Services and Team tabs of the client detail (`app/(internal)/clients/[id]/page.jsx`) are where its screens land; both say today, honestly, that services and assignments are a later release. `service.view` and `service.manage` already exist in `ACTIONS`, and `loadServiceResource` already builds the descriptor; A7 adds whatever creation action it needs beside `client.create` and may widen `ownerCandidates` in `lib/bloomops/clients.mjs` once a manager can grant client access in the same place they name an owner. The A4 rule that a service assignment reaches the engagement and not the client record is load-bearing and is covered by tests in both `tests/bloomops-authorization.test.mjs` and `tests/bloomops-clients.test.mjs`.
 
 ## Last Verification
+
+2026-09-07, A10. Focused A10 39/39; A9 44/44; A8 72/72; affected domain/access 141/141; shell/schema 36/36, combined 332/332. Full suite 3001/3001 on Node 22.22.1. Install and both final builds exit 0. Fresh/no-op local verifier 19/19; A10/A9/A8 disposable D1 smoke 27/14/12; built Worker HTTP smoke 144/144; external verifier against local Worker 21/21; A10 HTTP/browser/Release A acceptance 95/95 with 20 screenshots at five widths. Exact architecture, evidence and limitations are above. All email used memory/development R2, and no staging, production, DNS or Leadsthatbloom resources were modified. A11 is next after independent audit/merge and the merged-main gate.
 
 2026-09-07, A9. Focused A9 42/42, A8 72/72, affected access/domain regressions 158/158, full suite 2960/2960 on Node 22.22.1. Install and both builds exit 0. Fresh/no-op zero verifier passes with seven domain migrations, 25 tables, 55 indexes and nine triggers. Actual D1 A9 smoke 14/14 and A8 smoke 12/12; built local Worker smoke 144/144; external verifier against local Worker 21/21; browser review 37/37. Full evidence and limitations are under "Client Activation (A9)". A10 is next. All mail was fake or local R2; staging, production, DNS and Leadsthatbloom were untouched.
 
