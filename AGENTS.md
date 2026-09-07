@@ -163,7 +163,7 @@ Instantiating a template creates real operational records.
 
 Existing client work must not silently mutate when a master template changes.
 
-Templates must be versionable or snapshot their relevant definition at instantiation. Template versions and instantiated snapshots are immutable.
+Templates must be versionable or snapshot their relevant definition at instantiation. Template versions and stored definition snapshots are immutable. Instantiation creates relational runtime records; those records may evolve operationally, but must not silently change when the master template changes later.
 
 Stable logical keys should be used where template-generated onboarding requirements need deduplication.
 
