@@ -293,8 +293,8 @@ test('the portal shell is not the internal shell with parts hidden: no navigatio
   assert.doesNotMatch(unlinked, /client_contacts|user_id|scope|A4|A9|linked/i, 'plain words, no implementation detail');
   const linked = render(PortalHome, { workspaceName: 'Agency A', user: { name: 'James Client', email: 'client@example.com' }, clients: [{ id: 'c', name: 'James Ltd', statusLabel: 'Active' }] });
   assert.match(linked, /James Ltd/);
-  assert.match(linked, /Your portal is ready/);
-  assert.match(linked, /When Agency A shares requests, updates, or work with you through BloomOps, it will appear here/);
+  assert.match(linked, /Your onboarding/);
+  assert.match(linked, /Your onboarding steps will appear here when the agency is ready/);
   // No requests, approvals, or deliverables exist yet to read, so the portal
   // never claims to know what the agency needs from the person.
   for (const html of [linked, unlinked]) assert.doesNotMatch(html, /needs your attention|waiting on you|nothing new has been shared|nothing is waiting/i, 'no inferred operational state');

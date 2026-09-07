@@ -244,6 +244,24 @@ Completion rule:
 
 Required items must be Completed, Waived, or Not Applicable before onboarding can complete, unless an authorized override with reason is recorded.
 
+### onboarding_item_submissions (A10)
+
+One immutable submission per onboarding item, keyed by item id, with workspace id, submitting membership and timestamp. Composite foreign keys keep the item and actor in the same workspace; the item reaches its client through the existing instance relationship. A submission is a durable Client confirmation of the described external step, with no payload or credentials. Verification-required Client work remains In Progress with completion/verification fields unset until an authorized coordinator verifies it. Repeated submission is a no-op.
+
+### onboarding_item_resolutions (A10)
+
+One immutable resolution reason per item, with workspace id, resolving membership and timestamp. Composite foreign keys retain workspace isolation. The canonical outcome remains the item's Waived or Not Applicable status; this relation owns the non-empty reason (maximum 1000 characters). An append-only activity event records the outcome and rationale in the same transaction. Terminal resolutions cannot be silently overwritten, and the Client projection never includes internal rationale.
+
+### Runtime actions, progress, and completion (A10)
+
+`onboarding.view` follows the existing resource visibility and client scope. `onboarding.submit` permits only an active Client contact to fulfill client-visible, client-responsible work. `onboarding.verify` and `onboarding.manage` are Owner/Admin/Project Manager coordination actions; Department membership, internal ownership and Team Member assignment confer no write authority. Restricted visibility still denies unnamed Project Managers. Internal users can complete non-client work or resolve a requirement as Waived/Not Applicable with reason. Client-owned verification requires a prior Client submission; Clients cannot self-verify, waive, or reopen work.
+
+The first real item progress mutation starts a Not Started instance. Each mutation, its semantic activity, optional instance completion, and initial Client Onboarding → Active transition share one transaction. Compare-and-set guards reload after concurrent writes; final completion predicates read all required items under the database write lock. Only Completed, Waived and Not Applicable satisfy overall completion. Optional work never blocks it. Completion does not change Service status and never changes an unexpected Client lifecycle to Active. Only the A9 activation's initial instance may cause the automatic Client transition.
+
+Client-facing “your steps” counts only client-visible, client-responsible required items. Durable submission counts as the Client having done their part, while awaiting internal verification still blocks overall completion. Hidden agency requirements never appear in Client counts. One account can reach several clients through A4 contact links; each is rendered in its own named context. The dedicated portal allowlist excludes logical keys, actor ids, template provenance, service relationships, hidden items, and internal resolution reasons.
+
+Schema-v1 templates define no input type, upload flag or external URL. A10 supports confirmation of externally described steps; it neither infers file upload from labels nor invents links. File storage/upload workflows and a general Files module remain outside A10.
+
 ## Projects
 
 ### projects

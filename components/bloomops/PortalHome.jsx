@@ -1,11 +1,7 @@
+import Onboarding from './Onboarding';
 import { Surface } from './Primitives';
 
-// The portal's one page in Release A. Calm, short, and only what is true:
-// which client this account is for (when it is linked), that nothing is
-// available to view yet, and what to do if they expected more.
-// No claim about what the agency needs from the person: no requests,
-// approvals, or deliverables exist yet to read, so none is inferred. No
-// internal vocabulary, no counts, no empty modules.
+// The server supplies only the dedicated Client-safe onboarding projection.
 
 function firstName(user) {
   const name = String(user?.name || '').trim();
@@ -38,32 +34,14 @@ export function PortalHome({ workspaceName, user, clients = [] }) {
   const single = clients.length === 1 ? clients[0] : null;
   return (
     <>
-      <h1 className="bo-display bo-display-lg">{single ? single.name : first ? `Hello, ${first}` : 'Hello'}</h1>
+      <h1 className="bo-display bo-display-lg">{first ? `Hello, ${first}` : 'Hello'}</h1>
       <p className="bo-lede" style={{ marginTop: 12 }}>
-        {single ? `Your work with ${workspaceName}.` : `Your work with ${workspaceName}, across ${clients.length} accounts.`}
+        {single ? `${single.name} · Your work with ${workspaceName}.` : `Your work with ${workspaceName}, across ${clients.length} accounts.`}
       </p>
-      {!single && (
-        <ul className="bo-rows" style={{ marginTop: 32 }} aria-label="Your accounts">
-          {clients.map((client) => (
-            <li key={client.id} className="bo-row">
-              <span className="bo-row-text">
-                <span className="bo-row-title">{client.name}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-      <Surface padding="lg" style={{ marginTop: 32 }}>
-        <h2 className="bo-h2" style={{ marginBottom: 8 }}>
-          Your portal is ready
-        </h2>
-        <p className="bo-body">
-          There isn't anything available to view here yet. When {workspaceName} shares requests, updates, or work with you through BloomOps, it will appear here.
-        </p>
-        <p className="bo-body" style={{ marginTop: 12 }}>
-          Need something in the meantime? Reply to the person at {workspaceName} you usually talk to.
-        </p>
-      </Surface>
+      {clients.map(client => <section key={client.id} className="bo-section" aria-labelledby={`onboarding-${client.id}`}>
+        <h2 id={`onboarding-${client.id}`} className="bo-h2">{single ? 'Your onboarding' : `${client.name} · Onboarding`}</h2>
+        <Onboarding clientId={client.id} onboarding={client.onboarding} portal />
+      </section>)}
     </>
   );
 }

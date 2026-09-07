@@ -27,9 +27,9 @@ Do not automatically load every planning document into context.
 
 Release A is the active release.
 
-Current phase: **A9 complete and locally verified, pending independent PR audit/merge; A10 next**
+Current phase: **A10 complete and locally verified, pending independent PR audit/merge; A11 next**
 
-Next phase file: `docs/phases/A10.md` (after A9 audit/merge; A9 architecture and exact verification are recorded in `docs/BUILD_STATE.md`). The post-PR #11 remote verifier gate passed before A9 began.
+Next phase file: `docs/phases/A11.md`, Release A Hardening. A10 architecture and exact verification are in `docs/BUILD_STATE.md`. Start A11 only after independent A10 audit/merge and successful staging plus remote zero-to-current verification on the merge SHA. The post-A9 gate passed on `de510d7473fec1b27692b3d9b7f3e6240a0dc699` before A10 began.
 
 ## Phase Reading Matrix
 

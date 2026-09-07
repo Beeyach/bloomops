@@ -1,3 +1,5 @@
+import Onboarding from '@/components/bloomops/Onboarding';
+import { onboardingView } from '@/lib/bloomops/onboarding-views.mjs';
 import ClientActivation from '@/components/bloomops/ClientActivation';
 import { activationSummary } from '@/lib/bloomops/client-activation.mjs';
 import { notFound } from 'next/navigation';
@@ -68,9 +70,9 @@ export default async function ClientDetailPage({ params, searchParams }) {
       <ClientTabs clientId={client.id} active={tab} />
       {tab === 'overview' && <OverviewTab access={access} client={client} contacts={contacts} mayManage={mayManage} />}
       {tab === 'services' && <ServicesTab access={access} actor={actor} client={client} mayManage={mayManage} />}
-      {tab === 'onboarding' && <OnboardingTab clientName={client.name} activation={activation} />}
+      {tab === 'onboarding' && <OnboardingTab access={access} actor={actor} client={client} />}
       {tab === 'team' && <TeamTab access={access} actor={actor} client={client} mayManage={mayManage} />}
-      {tab === 'activity' && <ActivityTab access={access} client={client} />}
+      {tab === 'activity' && <ActivityTab access={access} actor={actor} client={client} />}
     </>
   );
 }
@@ -146,16 +148,9 @@ async function ServicesTab({ access, actor, client, mayManage }) {
 // A8 generates onboarding from templates, A9 creates the instance at
 // activation, and A10 owns client completion and verification. This tab
 // reports only whether the initial onboarding has been created.
-function OnboardingTab({ clientName, activation }) {
-  return (
-    <Section id="onboarding" title="Onboarding">
-      <Surface tone="mist" padding="lg" className="bo-page-narrow">
-        <p className="bo-body">
-          {activation ? `Onboarding has been created for ${clientName}.` : `Onboarding has not started for ${clientName}. Requirements are generated when the client is activated.`}
-        </p>
-      </Surface>
-    </Section>
-  );
+async function OnboardingTab({ access, actor, client }) {
+  const onboarding = await onboardingView(access.db, actor, client.id);
+  return <Section id="onboarding" title="Onboarding"><Onboarding clientId={client.id} onboarding={onboarding} /></Section>;
 }
 
 // Who is responsible for this client (A6), and who has access to it (A7).
@@ -262,8 +257,8 @@ function OwnerSection({ client, mayManage }) {
 // Real history, from the append-only activity_events table, in words. The
 // event codes, the ids, and the metadata stay on the server. This is
 // internal: the client portal never receives any of it.
-async function ActivityTab({ access, client }) {
-  const events = await clientActivity(access.db, access.workspace.id, client.id);
+async function ActivityTab({ access, actor, client }) {
+  const events = await clientActivity(access.db, access.workspace.id, client.id, { actor });
   return (
     <Section id="activity" title="Activity">
       {events.length === 0 ? (
