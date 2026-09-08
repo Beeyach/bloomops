@@ -1,3 +1,4 @@
+import { withApiErrors } from '@/lib/bloomops/api-handler.mjs';
 import { NextResponse } from 'next/server';
 import { addServiceAssignment } from '@/lib/bloomops/assignments.mjs';
 import { domainProblem, pick, readBody, requireService } from '../../../../_shared.mjs';
@@ -15,7 +16,7 @@ export const dynamic = 'force-dynamic';
 // `service.assign` names the engagement, which `requireService` loads as an
 // internal record scoped to both the client and the engagement in the
 // route, so an engagement under a different client is 404.
-export async function POST(req, { params }) {
+async function handlePOST(req, { params }) {
   const { id, serviceId } = await params;
   const { access, service, response } = await requireService(req, id, serviceId, 'service.assign');
   if (response) return response;
@@ -39,3 +40,5 @@ export async function POST(req, { params }) {
     { status: result.created ? 201 : 200 },
   );
 }
+
+export const POST = withApiErrors(handlePOST);

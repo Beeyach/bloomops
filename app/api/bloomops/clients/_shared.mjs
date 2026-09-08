@@ -1,3 +1,4 @@
+import { InvalidBodyError } from '@/lib/bloomops/api-handler.mjs';
 // What every A6 client route needs: the internal-visibility resource
 // loader, one place that turns a domain refusal into an HTTP answer, and a
 // body reader that never trusts what it is given.
@@ -55,14 +56,15 @@ export async function requireService(req, clientId, serviceId, action = 'service
   return { access, service };
 }
 
-// A JSON object body, or null. An array, a string, or a number is not a
-// body this API accepts.
+// Require a JSON object. The route boundary turns malformed, null, array,
+// or scalar input into a safe 400 response.
 export async function readBody(req) {
   try {
     const body = await req.json();
-    return body && typeof body === 'object' && !Array.isArray(body) ? body : null;
+    if (!body || typeof body !== 'object' || Array.isArray(body)) throw new InvalidBodyError();
+    return body;
   } catch {
-    return null;
+    throw new InvalidBodyError();
   }
 }
 

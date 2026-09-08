@@ -106,6 +106,17 @@ const inheritedFiles = readdirSync(join(REPO, 'migrations')).filter((f) => f.end
 const journal = JSON.parse(readFileSync(join(REPO, 'drizzle', 'meta', '_journal.json'), 'utf8'));
 const domainFiles = journal.entries.map((e) => `${e.tag}.sql`);
 const domainTables = BLOOMOPS_TABLES.map(getTableName);
+// Derive the complete final table inventory, including inherited tables and
+// their rename migration, rather than accepting arbitrary extra tables.
+const expectedTables = new Set(['_migrations', 'd1_migrations']);
+for (const file of ['schema.sql', ...inheritedFiles.map(f => `migrations/${f}`), ...domainFiles.map(f => `drizzle/${f}`)]) {
+  const source = readFileSync(join(REPO, file), 'utf8');
+  for (const match of source.matchAll(/^\s*(?:CREATE TABLE(?: IF NOT EXISTS)?\s+["'`]?([\w]+)|DROP TABLE(?: IF EXISTS)?\s+["'`]?([\w]+)|ALTER TABLE\s+["'`]?([\w]+)["'`]?\s+RENAME TO\s+["'`]?([\w]+))/gmi)) {
+    if (match[1]) expectedTables.add(match[1]);
+    if (match[2]) expectedTables.delete(match[2]);
+    if (match[3]) { expectedTables.delete(match[3]); expectedTables.add(match[4]); }
+  }
+}
 const triggerNames = [...domainFiles.map((file) => readFileSync(join(REPO, 'drizzle', file), 'utf8')).join('\n')
   .matchAll(/CREATE\s+TRIGGER\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`]?(\w+)/gi)].map((m) => m[1]);
 // Every index the committed migrations create, read from the migrations
@@ -209,6 +220,7 @@ try {
   record('Drizzle ledger holds every domain migration in committed order', JSON.stringify(domainLedger) === JSON.stringify(domainFiles), domainLedger.join(', '));
 
   const tables = names('table');
+  record('only migration-defined tables and ledgers exist', JSON.stringify(tables) === JSON.stringify([...expectedTables].sort()), `${tables.length} expected tables`);
   const missing = domainTables.filter((t) => !tables.includes(t));
   record('all current BloomOps tables exist', missing.length === 0,
     `${domainTables.length} domain tables present, ${tables.length} tables in total (including _migrations and d1_migrations)`);
@@ -220,6 +232,8 @@ try {
   record('every index the migrations create exists', missingIndexes.length === 0 && indexNames.length > 0,
     missingIndexes.length === 0 ? `${indexNames.length} indexes, including the partial unique ones` : `missing: ${missingIndexes.join(', ')}`);
 
+  record('fresh database has no foreign-key violations', query('PRAGMA foreign_key_check').length === 0);
+  record('fresh database passes SQLite integrity check', query('PRAGMA quick_check').every(row => Object.values(row)[0] === 'ok'));
   const snapA = snapshot();
   const second = migrateAll('second run');
   record('second run changed nothing in the inherited ledger', second.inherited.applied === 0 && second.inherited.satisfied === 0 && second.inherited.skipped === inheritedFiles.length);

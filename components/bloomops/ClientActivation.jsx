@@ -47,8 +47,10 @@ export default function ClientActivation({ clientId, draft, activation }) {
       )}
       {activated && (
         <div role="status">
-          <Notice tone={current.deliveryStatus === 'sent' ? 'success' : 'warning'}>
-            {current.deliveryStatus === 'sent'
+          <Notice tone={current.deliveryStatus === 'sent' && !current.retryAvailable ? 'success' : 'warning'}>
+            {current.deliveryStatus === 'sent' && current.retryAvailable
+              ? 'Client activated. The portal invitation has expired. Retry to send a new invitation.'
+              : current.deliveryStatus === 'sent'
               ? 'Client activated. The portal invitation has been sent.'
               : current.deliveryStatus === 'sending'
                 ? 'Client activated. The invitation is being sent. Reload to check its progress.'

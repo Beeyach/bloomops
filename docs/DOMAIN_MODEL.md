@@ -76,6 +76,8 @@ Invitation lifecycle:
 - Expired
 - Revoked
 
+Acceptance, membership changes, and their activity commit atomically. A pending acceptance must still hold the current unexpired token under the database write lock. Retrying an accepted invitation succeeds only for its accepted identity with active workspace access. Generic resend, revoke, and expiry commit with their activity; a stale expiry lookup cannot invalidate a replacement token.
+
 ### client_invitation_contacts (A9)
 
 An immutable invitation-to-contact association for portal activation. It names the workspace, client, invitation, and intended contact, with composite foreign keys enforcing the same client and workspace on both parents. A primary-contact change cannot retarget an existing invitation. Acceptance checks the signed-in email against the invitation and the intended contact's current address, then atomically accepts the invitation, creates/reactivates the Client membership, links `client_contacts.user_id`, and records activity. A different linked user, an internal-role membership, or a Client identity already linked to another client in this workspace is refused. Legacy invitations without this explicit association do not infer access from email.
@@ -192,7 +194,7 @@ This is important for contractor scope.
 
 One immutable initial activation record per client, pointing to the exact generated onboarding instance and the primary contact invited at activation. It snapshots recipient email and name for safe retry, retains the activating membership, and uses same-workspace/same-client foreign keys. Client lifecycle and onboarding lifecycle remain their own facts; this record proves that the initial A9 operation already committed, even after those lifecycles advance.
 
-The mutable invitation delivery fields are `pending`, `sending`, `sent`, or `failed`, with an attempt id, lease expiry, invitation reference, and confirmed-delivery timestamp. A database claim coordinates retries; it is not a notification or queue subsystem. Mail runs outside the core transaction. Retry can rotate a pending token, but cannot regenerate onboarding or repeat the initial lifecycle transition. Editing a contact address never silently retargets this activation: delivery/acceptance fail safely if the intended address no longer matches. Deliberate retargeting/unlinking UI is deferred.
+The mutable invitation delivery fields are `pending`, `sending`, `sent`, or `failed`, with an attempt id, lease expiry, invitation reference, and confirmed-delivery timestamp. A database claim coordinates retries; it is not a notification or queue subsystem. Mail runs outside the core transaction. Retry can rotate a pending token, but cannot regenerate onboarding or repeat the initial lifecycle transition. Editing a contact address never silently retargets this activation: delivery/acceptance fail safely if the intended address no longer matches. Deliberate retargeting/unlinking UI is deferred. An expired, unaccepted activation invitation can be renewed through this same retry path even after its first delivery succeeded. Renewal retains the first confirmed-delivery timestamp and does not repeat activation, onboarding, or the initial Client-invited event. Generic invitation management still refuses activation-bound resend, revoke, and retargeting; accepted or deliberately withdrawn invitations are not renewed by expiry recovery.
 
 ### onboarding_instances
 
@@ -576,7 +578,7 @@ Finance is capability-protected.
 
 ### activity_events
 
-Immutable significant operational events.
+Immutable significant operational events. Client, service, contact, assignment, membership-status, and invitation changes commit with their semantic events, conditional on the same stored state, so concurrent duplicate edits cannot append history for a change that did not occur.
 
 Possible fields:
 - actor

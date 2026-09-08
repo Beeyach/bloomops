@@ -1,3 +1,4 @@
+import { withApiErrors } from '@/lib/bloomops/api-handler.mjs';
 import { NextResponse } from 'next/server';
 import { getAccessOrProblem, getActor, notConfigured, unauthenticated } from '@/lib/bloomops/access.mjs';
 import { hasCapability, listCapabilities } from '@/lib/bloomops/authorization.mjs';
@@ -13,7 +14,7 @@ export const dynamic = 'force-dynamic';
 // route refuses such a caller with 403. Nothing about scope (assignments,
 // client links) is listed: a screen learns what it may show by asking for
 // it and being refused, never from a list it could use to enumerate.
-export async function GET(req) {
+async function handleGET(req) {
   const { access, configured } = await getAccessOrProblem(req);
   if (!configured) return notConfigured();
   if (!access) return unauthenticated();
@@ -38,3 +39,5 @@ export async function GET(req) {
     { headers: { 'Cache-Control': 'no-store' } },
   );
 }
+
+export const GET = withApiErrors(handleGET);

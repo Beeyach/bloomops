@@ -1,3 +1,4 @@
+import { withApiErrors } from '@/lib/bloomops/api-handler.mjs';
 import { NextResponse } from 'next/server';
 import { requireIdentity } from '@/lib/bloomops/access.mjs';
 import { acceptInvitation } from '@/lib/bloomops/invitations.mjs';
@@ -18,7 +19,7 @@ const REASONS = {
 // POST { token } -> the signed-in identity becomes (or is confirmed as) an
 // active member of the invited workspace. Only identity is required here:
 // this is the one route a person with no membership yet may call.
-export async function POST(req) {
+async function handlePOST(req) {
   const { access, response } = await requireIdentity(req);
   if (response) return response;
   let body;
@@ -36,3 +37,5 @@ export async function POST(req) {
     membership: { id: result.membership.id, role: result.membership.role, roleLabel: ROLE_LABELS[result.membership.role], status: result.membership.status },
   });
 }
+
+export const POST = withApiErrors(handlePOST);

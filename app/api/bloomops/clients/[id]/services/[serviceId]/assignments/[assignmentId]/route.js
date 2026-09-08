@@ -1,3 +1,4 @@
+import { withApiErrors } from '@/lib/bloomops/api-handler.mjs';
 import { NextResponse } from 'next/server';
 import { removeServiceAssignment, updateServiceAssignment } from '@/lib/bloomops/assignments.mjs';
 import { domainProblem, pick, readBody, requireService } from '../../../../../_shared.mjs';
@@ -5,7 +6,7 @@ import { domainProblem, pick, readBody, requireService } from '../../../../../_s
 export const dynamic = 'force-dynamic';
 
 // PATCH -> change the role somebody holds on this engagement.
-export async function PATCH(req, { params }) {
+async function handlePATCH(req, { params }) {
   const { id, serviceId, assignmentId } = await params;
   const { access, service, response } = await requireService(req, id, serviceId, 'service.assign');
   if (response) return response;
@@ -31,7 +32,7 @@ export async function PATCH(req, { params }) {
 // exists: somebody who is also assigned to the client as a whole keeps this
 // engagement through that row. The engine works it out from the rows on the
 // next request; nothing here cascades.
-export async function DELETE(req, { params }) {
+async function handleDELETE(req, { params }) {
   const { id, serviceId, assignmentId } = await params;
   const { access, service, response } = await requireService(req, id, serviceId, 'service.assign');
   if (response) return response;
@@ -47,3 +48,6 @@ export async function DELETE(req, { params }) {
   if (!result.ok) return domainProblem(result);
   return NextResponse.json({ ok: true, removed: result.removed });
 }
+
+export const PATCH = withApiErrors(handlePATCH);
+export const DELETE = withApiErrors(handleDELETE);

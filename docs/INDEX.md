@@ -27,9 +27,11 @@ Do not automatically load every planning document into context.
 
 Release A is the active release.
 
-Current phase: **A10 complete and locally verified, pending independent PR audit/merge; A11 next**
+Current phase: **A11 complete; Release A complete and audited locally, pending independent PR review/merge and post-merge release gates**
 
-Next phase file: `docs/phases/A11.md`, Release A Hardening. A10 architecture and exact verification are in `docs/BUILD_STATE.md`. Start A11 only after independent A10 audit/merge and successful staging plus remote zero-to-current verification on the merge SHA. The post-A9 gate passed on `de510d7473fec1b27692b3d9b7f3e6240a0dc699` before A10 began.
+Current phase file: `docs/phases/A11.md`, Release A Hardening. All required local checks and both Release A browser acceptance stories passed before this index was updated; exact defects, commands, counts, file manifest, and limitations are in `docs/BUILD_STATE.md`. A11 began from A10 merge `b7d65ee6bd998fe3b04bdec60860f447cd2452d1` after staging run 34108338874 and remote zero-to-current run 34108461749 passed on that SHA.
+
+Next: independent A11 audit and user-controlled merge, then successful staging deployment plus remote zero-to-current verification on the actual merge SHA before final Release A closure. Those post-merge results are not claimed here. No Release B work is included or automatically started.
 
 ## Phase Reading Matrix
 

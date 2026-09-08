@@ -752,33 +752,16 @@ test('an expired sender cannot rotate the winning retry token after its lease wa
       },
     },
   });
-  const { workspaceInvitations } = await import('../lib/bloomops/schema.mjs');
-  const update = t.db.update.bind(t.db);
+  const batch = t.db.batch.bind(t.db);
   let intercept = true;
   const now = new Date();
-  t.db.update = (table) => {
-    const builder = update(table);
-    if (table !== workspaceInvitations) return builder;
-    const set = builder.set.bind(builder);
-    builder.set = (values) => {
-      const configured = set(values),
-        where = configured.where.bind(configured);
-      configured.where = (predicate) => {
-        const query = where(predicate),
-          returning = query.returning.bind(query);
-        query.returning = async () => {
-          if (intercept) {
-            intercept = false;
-            const winner = await t.activate({ now: new Date(now.getTime() + DELIVERY_LEASE_MS + 1) });
-            assert.equal(winner.deliveryStatus, 'sent');
-          }
-          return returning();
-        };
-        return query;
-      };
-      return configured;
-    };
-    return builder;
+  t.db.batch = async (writes) => {
+    if (intercept && writes.some(q => /^update "workspace_invitations"/.test(q.toSQL().sql))) {
+      intercept = false;
+      const winner = await t.activate({ now: new Date(now.getTime() + DELIVERY_LEASE_MS + 1) });
+      assert.equal(winner.deliveryStatus, 'sent');
+    }
+    return batch(writes);
   };
   assert.equal((await t.activate({ now })).deliveryStatus, 'sent');
   assert.equal(t.mailer.sent.length, 1);

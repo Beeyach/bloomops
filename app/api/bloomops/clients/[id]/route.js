@@ -1,3 +1,4 @@
+import { withApiErrors } from '@/lib/bloomops/api-handler.mjs';
 import { NextResponse } from 'next/server';
 import { updateClient } from '@/lib/bloomops/clients.mjs';
 import { domainProblem, pick, readBody, requireClient } from '../_shared.mjs';
@@ -12,7 +13,7 @@ export const dynamic = 'force-dynamic';
 // updateClient refuses it explicitly if one arrives, because moving a
 // client through its lifecycle is A9's activation transaction and not a
 // field edit. See lib/bloomops/clients.mjs.
-export async function PATCH(req, { params }) {
+async function handlePATCH(req, { params }) {
   const { id } = await params;
   const { access, client, response } = await requireClient(req, id);
   if (response) return response;
@@ -28,3 +29,5 @@ export async function PATCH(req, { params }) {
   if (!result.ok) return domainProblem(result);
   return NextResponse.json({ ok: true, unchanged: Boolean(result.unchanged), changed: result.changed || null });
 }
+
+export const PATCH = withApiErrors(handlePATCH);

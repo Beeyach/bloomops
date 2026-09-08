@@ -1,3 +1,4 @@
+import { withApiErrors } from '@/lib/bloomops/api-handler.mjs';
 import { NextResponse } from 'next/server';
 import { updateServiceEngagement } from '@/lib/bloomops/services.mjs';
 import { domainProblem, pick, readBody, requireService } from '../../../_shared.mjs';
@@ -15,7 +16,7 @@ export const dynamic = 'force-dynamic';
 // different one is a different engagement. A status change here changes the
 // service and nothing else; the client's own lifecycle is a separate
 // canonical fact and no code path below touches it.
-export async function PATCH(req, { params }) {
+async function handlePATCH(req, { params }) {
   const { id, serviceId } = await params;
   const { access, service, response } = await requireService(req, id, serviceId);
   if (response) return response;
@@ -32,3 +33,5 @@ export async function PATCH(req, { params }) {
   if (!result.ok) return domainProblem(result);
   return NextResponse.json({ ok: true, unchanged: Boolean(result.unchanged), changed: result.changed || null });
 }
+
+export const PATCH = withApiErrors(handlePATCH);

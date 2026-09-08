@@ -58,7 +58,7 @@ test('with a session cookie the request passes, and the cookie names are exactly
   for (const name of ['bloomops.session_token', '__Secure-bloomops.session_token']) {
     const r = await run(req('/api/infra', { headers: { cookie: `${name}=abc.def` } }));
     assert.equal(r.status, 200, name);
-    assert.equal(r.headers.get('cache-control'), 'no-cache, must-revalidate');
+    assert.equal(r.headers.get('cache-control'), 'no-store');
   }
   assert.equal(hasSessionCookie(req('/', { headers: { cookie: 'better-auth.session_token=x' } })), false, 'the default Better Auth prefix is not ours');
   assert.equal(hasSessionCookie(req('/', { headers: { cookie: 'bloomops.session_token=' } })), false, 'an empty value is no cookie');

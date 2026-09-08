@@ -1,3 +1,4 @@
+import { withApiErrors } from '@/lib/bloomops/api-handler.mjs';
 import { NextResponse } from 'next/server';
 import { addClientAssignment } from '@/lib/bloomops/assignments.mjs';
 import { domainProblem, pick, readBody, requireClient } from '../../_shared.mjs';
@@ -19,7 +20,7 @@ export const dynamic = 'force-dynamic';
 //
 // Assigning somebody does not make them the client's internal owner. The
 // two are different facts (A6) and neither writes the other.
-export async function POST(req, { params }) {
+async function handlePOST(req, { params }) {
   const { id } = await params;
   const { access, client, response } = await requireClient(req, id, 'client.assign');
   if (response) return response;
@@ -41,3 +42,5 @@ export async function POST(req, { params }) {
     { status: result.created ? 201 : 200 },
   );
 }
+
+export const POST = withApiErrors(handlePOST);
