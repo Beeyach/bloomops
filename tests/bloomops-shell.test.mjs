@@ -106,7 +106,7 @@ test('the internal navigation is the eleven PRODUCT_SPEC destinations, in order,
     assert.ok(['now', 'later'].includes(item.availability), item.key);
     assert.ok(NAV_GROUPS.some((g) => g.key === item.group), `${item.key} belongs to a group`);
   }
-  assert.deepEqual(INTERNAL_NAV.filter((i) => i.availability === 'now').map((i) => i.key), ['home', 'clients', 'onboarding', 'team', 'settings'], 'exactly the Release A areas are live');
+  assert.deepEqual(INTERNAL_NAV.filter((i) => i.availability === 'now').map((i) => i.key), ['home', 'clients', 'onboarding', 'work', 'team', 'settings'], 'Release A areas and B1 Projects are live');
   assert.equal(JSON.stringify(INTERNAL_NAV).match(/prospect|leads?that|outreach|gmail/i), null, 'no prospecting destination in BloomOps navigation');
   assert.equal(navGroups().reduce((n, g) => n + g.items.length, 0), 11, 'every destination is in exactly one group');
 });
@@ -314,8 +314,8 @@ test('Home tells the truth about zero, by scope, and maps every area with its av
   assert.match(some, /3 service engagements in delivery/);
   assert.match(some, /1 client with onboarding still open/);
   const map = render(AreaMap);
-  assert.equal((map.match(/Available now/g) || []).length, 4, 'Clients, Onboarding, Team, Settings');
-  assert.equal((map.match(/Not available yet/g) || []).length, 6, 'Work, Social, Ads, Systems, Pages, Finance');
+  assert.equal((map.match(/Available now/g) || []).length, 5, 'Clients, Onboarding, Work, Team, Settings');
+  assert.equal((map.match(/Not available yet/g) || []).length, 5, 'Social, Ads, Systems, Pages, Finance');
   assert.doesNotMatch(map, /Welcome back/i);
 });
 
@@ -390,7 +390,7 @@ test('the inherited application is no longer the root, and every shell page re-c
   };
   walk(new URL('app/(internal)', root).pathname, 'internal');
   walk(new URL('app/portal', root).pathname, 'portal');
-  assert.equal(pages.filter(([, a]) => a === 'internal').length, 14, 'eleven destinations plus the A6 create and detail pages, and one layout');
+  assert.equal(pages.filter(([, a]) => a === 'internal').length, 16, 'eleven destinations, Client and Project create/detail pages, and one layout');
   assert.equal(pages.filter(([, a]) => a === 'portal').length, 2);
   for (const [file, area] of pages) {
     const text = readFileSync(file, 'utf8');

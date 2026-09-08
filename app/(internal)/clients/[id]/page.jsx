@@ -18,6 +18,8 @@ import ClientOverview, { ClientFactsList } from '@/components/bloomops/ClientOve
 import ClientContacts from '@/components/bloomops/ClientContacts';
 import ClientServices from '@/components/bloomops/ClientServices';
 import ClientTeam from '@/components/bloomops/ClientTeam';
+import { listProjects } from '@/lib/bloomops/projects.mjs';
+import { ProjectList } from '@/components/bloomops/Projects';
 
 // One client (A6). The canonical route is /clients/:id; the five Release A
 // tabs are `?tab=`, so every section is an address that can be shared and
@@ -60,14 +62,17 @@ export default async function ClientDetailPage({ params, searchParams }) {
   const mayManage = evaluate(actor, { action: 'client.manage', resource }).allowed;
   const mayActivate = evaluate(actor, { action: 'client.activate', resource }).allowed;
   const activation = await activationSummary(access.db, access.workspace.id, client.id);
-  const tab = isClientTab(query?.tab) ? query.tab : 'overview';
+  const projects = await listProjects(access.db, actor, { clientId: client.id });
+  const hasProjects = projects.items.length > 0;
+  const tab = isClientTab(query?.tab, hasProjects) ? query.tab : 'overview';
   const contacts = await listContacts(access.db, access.workspace.id, client.id);
 
   return (
     <>
       <ClientDetailHeader client={client} />
       {mayActivate && <ClientActivation clientId={client.id} draft={client.relationshipStatus === 'draft'} activation={activation} />}
-      <ClientTabs clientId={client.id} active={tab} />
+      <ClientTabs clientId={client.id} active={tab} hasProjects={hasProjects} />
+      {tab === 'projects' && <Section id="projects" title="Projects"><ProjectList projects={projects.items} hasMore={projects.hasMore} /></Section>}
       {tab === 'overview' && <OverviewTab access={access} client={client} contacts={contacts} mayManage={mayManage} />}
       {tab === 'services' && <ServicesTab access={access} actor={actor} client={client} mayManage={mayManage} />}
       {tab === 'onboarding' && <OnboardingTab access={access} actor={actor} client={client} />}

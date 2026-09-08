@@ -15,6 +15,7 @@ For every implementation session:
 - `PRODUCT_SPEC.md` — product behavior, users, navigation, client experience
 - `DOMAIN_MODEL.md` — entities, lifecycle, permissions, canonical data rules
 - `RELEASE_A.md` — Release A scope and release-level acceptance
+- `RELEASE_B.md` — Work Core scope and the B1–B7 implementation sequence
 - `ROADMAP.md` — later releases and sequencing
 - `DESIGN_SYSTEM.md` — Bloomlab-derived visual language, tokens, component behavior, accessibility, and BloomOps adaptation rules
 - `DESIGN_CHECKLIST.md` — per-screen visual QA and responsive/accessibility acceptance checklist
@@ -25,13 +26,13 @@ Do not automatically load every planning document into context.
 
 ## Current Build
 
-Release A is the active release.
+Release B — Work Core is the active release.
 
-Current phase: **A11 complete; Release A complete and audited locally, pending independent PR review/merge and post-merge release gates**
+Current phase: **B1 — Projects Core implemented and locally verified; independent review and post-merge gates pending**
 
-Current phase file: `docs/phases/A11.md`, Release A Hardening. All required local checks and both Release A browser acceptance stories passed before this index was updated; exact defects, commands, counts, file manifest, and limitations are in `docs/BUILD_STATE.md`. A11 began from A10 merge `b7d65ee6bd998fe3b04bdec60860f447cd2452d1` after staging run 34108338874 and remote zero-to-current run 34108461749 passed on that SHA.
+Release A closed after A11 PR #14 merged as `3deed08d8db2a92fcf4dc29a6a879a9945260049`. Read-only preflight verified [Deploy staging 34175768644](https://github.com/Beeyach/bloomops/actions/runs/34175768644) and [remote zero-to-current 34175768643](https://github.com/Beeyach/bloomops/actions/runs/34175768643) completed successfully on that exact SHA.
 
-Next: independent A11 audit and user-controlled merge, then successful staging deployment plus remote zero-to-current verification on the actual merge SHA before final Release A closure. Those post-merge results are not claimed here. No Release B work is included or automatically started.
+Current phase file: `docs/phases/B1.md`; release sequence: `docs/RELEASE_B.md`. B1 establishes Projects only. Evidence and limitations are in `docs/BUILD_STATE.md`. Independent B1 audit and user-controlled merge, then successful staging and remote zero-to-current on its actual merge SHA, are required before B1 closure. B2 — Milestones is next, and has not started.
 
 ## Phase Reading Matrix
 
@@ -49,6 +50,7 @@ Next: independent A11 audit and user-controlled merge, then successful staging d
 | A9 | `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `phases/A9.md` |
 | A10 | `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/A10.md` |
 | A11 | `RELEASE_A.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/A11.md` |
+| B1 | `RELEASE_B.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/B1.md` |
 
 ## Minimal Coding-Agent Prompt Pattern
 

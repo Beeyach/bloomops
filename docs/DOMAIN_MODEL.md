@@ -268,35 +268,41 @@ Schema-v1 templates define no input type, upload flag or external URL. A10 suppo
 
 ### projects
 
-Possible states:
-- Planned
-- Ready
-- In Progress
-- Waiting
-- Blocked
-- Review
-- Completed
-- Cancelled
-- Archived
+Implemented in B1 by additive migration `0008_b1_projects_core.sql`.
 
-Useful fields:
-- client
-- service engagement
-- department
-- name
-- owner
-- health
-- start/target/completed
-- client visibility
-- client-facing label
+A Project belongs to exactly one workspace and Client. Its optional Service Engagement must belong to that same workspace **and Client**, enforced by a composite foreign key. The migration adds a unique `(workspace_id, client_id, id)` Service index to support this relationship; it does not rebuild any Release A table. Parents are fixed through B1 application operations. Creation may select an open Service; closing the Service later does not rewrite or disable its existing Projects.
 
-Waiting means expected dependency/person.
+Service-specific Projects derive Department through the Service Type. They store no competing Department value. Client-level Projects may name an active Department in their workspace. Department organizes work and never grants access.
 
-Blocked means unexpected impediment.
+The bounded name is required; the optional client-facing label defaults to the name only for explicitly client-visible presentation. Optional responsibility is an active internal workspace membership when assigned or changed. Ownership grants no access; a later inactive owner remains recorded until deliberately reassigned. Dates are optional valid calendar dates with target on or after start. Completion is a server-recorded timestamp. Created/updated timestamps and a positive `revision` support history and optimistic concurrency.
+
+Status and health are independent Project facts. Neither changes Client relationship/health, Service lifecycle, or onboarding. Health is On Track, Needs Attention, or At Risk. Every Project starts Planned. The explicit status matrix is:
+
+| From | Allowed next states |
+|---|---|
+| Planned | Ready, Cancelled |
+| Ready | In Progress, Cancelled |
+| In Progress | Waiting, Blocked, Review, Cancelled |
+| Waiting | In Progress, Cancelled |
+| Blocked | In Progress, Cancelled |
+| Review | In Progress, Completed, Cancelled |
+| Completed | Archived |
+| Cancelled | Archived |
+| Archived | None |
+
+Waiting records the expected dependency/person; Blocked records the unexpected impediment. Entering either requires a bounded explanation. Leaving clears that explanation. Completion is irreversible in B1 and its timestamp survives archiving. An identical retry changes neither revision nor history; competing stale changes return a conflict. Concurrent identical completion accepts the winner's timestamp.
+
+Details, health, owner, lifecycle and assignments use conditional D1 batches with their semantic events. The write rechecks live membership, workspace, scope, visibility, revision, and changed relationship prerequisites. A late activity failure rolls back the mutation. Names are not a natural unique key: two intentional creates may have the same name and get separate IDs and creation events.
+
+Visibility defaults to internal and may be internal, client, or restricted. Owner/Admin/Project Manager coordinate Projects, subject to A4 restricted visibility. Owner/Admin can see restricted work; Project Managers and Team Members require an explicit Project assignment for it. Project Managers can restrict an existing Project when explicitly assigned; Owner/Admin can create restricted Projects. Client-wide assignment covers ordinary Projects under that Client; Service assignment covers only Projects tied to that Service; explicit Project assignment covers only that Project. Client/Service siblings and parents never become reachable merely from a Project assignment.
+
+Project history uses canonical `activity_events` with `subject_type='project'`, Project subject ID, and existing Client/Service context. Creation, changed details/health/owner/status, and added/updated/removed assignments have distinct semantic events. Internal Client history filters Project events by **current** Project scope and visibility, including after a Project becomes restricted. Clients never receive Project history.
+
+The portal selects a dedicated allowlist: `id`, `label`, `statusLabel`, `targetDate`, `completedAt`, `clientId`, `clientName`. It requires a current contact link and explicit client visibility, including for guessed IDs. It selects no owner, assignments, health, internal explanation, revision, or Service/Department IDs. Portal Home renders only relevant Project sections, separated by reachable Client. Internal list reads use relational assignment predicates and show at most 200 rows with an explicit overflow notice and status/Client narrowing.
 
 ### project_assignments
 
-Maps users to project work.
+Maps a Project to an internal workspace membership with Lead or Member responsibility. A unique `(project_id, membership_id)` prevents duplicates; composite foreign keys protect both workspace relationships. Assigning requires an active internal member. Inactive historical assignments remain visible internally but grant no authorization, and may be removed. Assignment removal leaves ownership unchanged. There is no new workspace role or department-wide grant.
 
 ## Milestones
 

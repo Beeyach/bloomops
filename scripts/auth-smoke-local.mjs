@@ -92,7 +92,17 @@ async function call(path, { method = 'GET', body = null, cookie = '', accept = '
 }
 
 function wrangler(args) {
-  return execFileSync('npx', ['--no-install', 'wrangler', ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, WRANGLER_SEND_METRICS: 'false' } });
+  const command = args[args.indexOf('--command') + 1] || '';
+  const readOnly = args.includes('--command') && /^\s*(SELECT|PRAGMA)\b/i.test(command);
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return execFileSync('npx', ['--no-install', 'wrangler', ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, WRANGLER_SEND_METRICS: 'false' } });
+    } catch (error) {
+      // The independent local connection can meet the live Worker's lock.
+      // Replay only reads after an explicit lock error, never a mutation.
+      if (!readOnly || attempt === 2 || !/SQLITE_BUSY|database is locked/.test(String(error.stderr))) throw error;
+    }
+  }
 }
 
 // Local D1 only, for the two things HTTP cannot do: seed a role the smoke

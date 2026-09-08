@@ -114,10 +114,11 @@ test('activation selects all real open services, merges Meta, commits once, and 
   assert.equal(again.alreadyActivated, true);
   assert.deepEqual(core(t), before);
   assert.equal(t.mailer.sent.length, 1);
+  assert.equal(count(t, 'projects'), 0, 'activation never creates Projects automatically');
   assert.equal(
     all(
       t.raw,
-      "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('projects','actions','deliverables')",
+      "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('actions','deliverables')",
     ).length,
     0,
   );
