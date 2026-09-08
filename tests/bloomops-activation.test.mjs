@@ -116,13 +116,7 @@ test('activation selects all real open services, merges Meta, commits once, and 
   assert.equal(t.mailer.sent.length, 1);
   assert.equal(count(t, 'projects'), 0, 'activation never creates Projects automatically');
   assert.equal(count(t, 'actions'), 0, 'activation never creates Actions automatically');
-  assert.equal(
-    all(
-      t.raw,
-      "SELECT name FROM sqlite_master WHERE type='table' AND name='deliverables'",
-    ).length,
-    0,
-  );
+  assert.equal(count(t, 'deliverables'), 0, 'activation never creates Deliverables automatically');
 });
 
 test('mail failure leaves a singular core and retries only invitation delivery', async () => {

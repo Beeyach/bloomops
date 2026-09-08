@@ -2120,6 +2120,17 @@ select.bo-control {
 .bo-portal-project { flex-wrap: wrap; }
 .bo-portal-milestones { flex: 0 0 100%; min-width: 0; padding-top: 8px; }
 .bo-portal-milestones .bo-milestone { padding: 12px 0; }
+/* B4: client-receivable outputs alongside the Project's internal work. */
+.bo-deliverables { list-style: none; margin: 0; padding: 0; }
+.bo-deliverable { padding: 20px 0; border-bottom: 1px solid var(--bo-border); min-width: 0; }
+.bo-deliverable:last-child { border-bottom: 0; }
+.bo-deliverable-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.bo-deliverable-heading .bo-row-title { overflow-wrap: anywhere; min-width: 0; }
+.bo-deliverable .bo-small, .bo-deliverable .bo-body { margin-top: 8px; overflow-wrap: anywhere; }
+.bo-deliverable-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.bo-portal-deliverables { flex: 0 0 100%; min-width: 0; padding-top: 16px; }
+.bo-portal-deliverables .bo-deliverable { padding: 12px 0; }
 @media (max-width: 389px) {
   .bo-milestone-controls > .bo-btn { flex-grow: 1; }
+  .bo-deliverable-controls > .bo-btn { flex-grow: 1; }
 }
