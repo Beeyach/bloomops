@@ -1,0 +1,70 @@
+Implement B5 Files on this branch exactly according to `docs/phases/B5.md` and the current repository truth.
+
+Start by reading, in full:
+- `AGENTS.md`
+- `docs/RELEASE_B.md`
+- `docs/PRODUCT_SPEC.md`
+- `docs/DOMAIN_MODEL.md`
+- `docs/DESIGN_SYSTEM.md`
+- `docs/DESIGN_CHECKLIST.md`
+- `docs/BUILD_STATE.md`
+- `docs/phases/B1.md`
+- `docs/phases/B2.md`
+- `docs/phases/B3.md`
+- `docs/phases/B4.md`
+- `docs/phases/B5.md`
+
+Then inspect the actual current Cloudflare configuration, R2 bindings, local development/test harnesses, staging workflow, request/body-size conventions, authorization helpers, activity patterns, Project/Milestone/Action/Deliverable implementations, and portal patterns. Do not assume a binding name, bucket name, upload limit, or R2 API shape from this prompt. Derive them from the repository and Cloudflare runtime evidence.
+
+Verified B5 base is B4 merge SHA:
+`ac71b358f27894af8dd8108f004499cd765fca69`
+
+Before substantial implementation, reconfirm this branch descends from that exact base and that remote `main` has not unexpectedly moved. If `main` moved for an unrelated reason, stop and report it rather than silently rebasing or mixing work.
+
+Implement the complete B5 contract, including:
+- additive File/Asset metadata and attachment-link schema, expected migration `0012_b5_files.sql` unless the journal proves otherwise
+- D1 metadata as canonical auth/state, R2 as canonical bytes
+- server-owned opaque workspace-separated R2 keys
+- bounded filename/MIME/size validation
+- deliberate Uploading/Ready/Failed/Archived lifecycle
+- a recoverable D1/R2 upload-finalization protocol with response-loss idempotency
+- no false Ready row when R2 put/finalize fails
+- safe orphan cleanup/recovery behavior
+- current-subject attachment links only, without future Content/Requests/Pages/Finance placeholders
+- exact same-workspace/parent relationship checks
+- Internal/Client/Restricted visibility and parent-capped scope
+- no Action-assignment scope widening into unrelated Files
+- authenticated, D1-authorized downloads that never accept raw R2 keys as authority
+- safe Content-Disposition and private/no-store behavior where appropriate
+- internal Project/Deliverable Files UX and conditional Client portal exposure only when coherent
+- immutable significant activity with current visibility filtering
+- stale membership/contact/role/assignment/visibility revocation for both metadata and bytes
+- prior Release A/B1/B2/B3/B4 behavior preserved
+
+Use the existing repository patterns for optimistic concurrency, conditional D1 batches, safe DTOs, sanitized errors, Origin checks, no-store, relational predicates, bounded lists, responsive Bloom UI, focus restoration, and pre-hydration control safety.
+
+B5 must NOT implement B6 dashboards, B7 hardening-only work, Deliverable versions, formal approvals/history, comments, notifications, templates, specialist pipelines, Requests/Pages/Finance placeholders, or production cleanup policy.
+
+Security requirements are non-negotiable:
+- no arbitrary bucket/key access
+- no caller-provided workspace/object key authority
+- no cross-workspace or cross-parent links
+- no Client access to Internal/Restricted files or hidden parents
+- no leaked R2 key/bucket name through DTOs/errors/activity
+- no production R2 mutation during verification
+- no production deployment, DNS change, real email, staging business-data mutation, or Leadsthatbloom work
+
+Verification must be strong and evidence-based. Run the strongest current equivalents of the B5 phase contract, including focused B5 tests, B1/B2/B3/B4 regressions, Release A/core regressions, full suite, both builds, fresh/no-op migration verification, local zero-to-current, actual workerd+D1+isolated local/development R2 smoke, built Worker HTTP, local external verifier, and browser/HTTP acceptance at 1440/1024/768/390/320 with keyboard/focus/touch/reduced-motion checks.
+
+Attack failure boundaries explicitly: R2 put failure, D1 reserve/finalize failure, cleanup failure, missing R2 object, duplicate response-loss retry, incompatible retry key, stale authorization during finalize/download, archived/failed/uploading download refusal, filename/header injection, guessed IDs, hidden parent, and cross-workspace/subject linking.
+
+Document the exact chosen upload limit, R2 binding/runtime behavior, lifecycle/recovery decisions, schema/indexes, verification counts, and known advisories in `docs/BUILD_STATE.md` and durable model docs as appropriate.
+
+Before finalizing:
+1. Remove `B5_CODEX_PROMPT.txt` so it has no net diff against `main`.
+2. Ensure working tree is clean.
+3. Open a PR against `main`.
+4. Leave the PR OPEN AND UNMERGED for independent ChatGPT audit.
+5. Report verified base SHA, final head SHA, changed-file inventory, exact verification counts, upload limit/recovery decisions, and remaining post-merge gates.
+
+Do not self-merge. B6 is unimplemented until B5 is independently audited, merged, and both post-merge gates succeed.
