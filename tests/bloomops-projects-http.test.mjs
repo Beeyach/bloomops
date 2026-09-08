@@ -63,11 +63,11 @@ for(const change of ['suspended','removed','workspace','visibility'])test(`an is
   else run(t.raw,"UPDATE workspace_memberships SET status=? WHERE id='m-james'",change);
   assert.equal((await t.call('portal/projects/[id]','GET',{user:'james'})).status,change==='visibility'?404:403);
 });
-test('server-owned workspace, parent and actor resist body/query smuggling',async()=>{
-  const t=await http();const r=await t.call('clients/[id]/projects','POST',{params:{id:'james'},body:{name:'Safe create',workspaceId:'b',clientId:'foreign-client',actorMembershipId:'m-foreign',status:'completed'}});
-  assert.equal(r.status,201);const {projectId}=await r.json(),p=await t.get(projectId);assert.equal(p.workspaceId,'a');assert.equal(p.clientId,'james');assert.equal(p.status,'planned');
-  assert.ok(t.events(projectId).every(e=>e.actor_membership_id==='m-ellen'));
-  assert.equal((await t.call('projects','GET',{query:'?workspaceId=b&clientId=foreign-client'}).then(r=>r.json())).items.length,0);
+test('server-owned workspace, parent and actor smuggling rejects the entire request',async()=>{
+  const t=await http(), before=all(t.raw,'SELECT * FROM projects');
+  const r=await t.call('clients/[id]/projects','POST',{params:{id:'james'},body:{name:'Safe create',workspaceId:'b',clientId:'foreign-client',actorMembershipId:'m-foreign',status:'completed'}});
+  assert.equal(r.status,400);assert.deepEqual(all(t.raw,'SELECT * FROM projects'),before);
+  assert.equal((await t.call('projects','GET',{query:'?workspaceId=b&clientId=foreign-client'})).status,400);
 });
 test('status errors use safe 400/409 responses and response-loss retry is a no-op',async()=>{
   const t=await http(),body={toStatus:'ready',expectedRevision:1};

@@ -6,15 +6,15 @@ Release B: Work Core. Release A is closed on A11 merge `3deed08d8db2a92fcf4dc29a
 
 ## Current Phase
 
-B6 Work + Home Projections is implemented and locally verified on `codex/b6-work-home-projections`; independent audit is pending. B1 through B5 are closed. B7 Release B Hardening and all later phases remain unimplemented.
+B7 Release B Hardening is implemented and locally verified, pending independent audit, on `codex/b7-release-b-hardening`. B1 through B6 are closed. Release C and later phases remain unimplemented.
 
-Current implementation spec: `docs/phases/B6.md`; release sequence: `docs/RELEASE_B.md`.
+Current implementation spec: `docs/phases/B7.md`; release sequence: `docs/RELEASE_B.md`.
 
 Documentation index: `docs/INDEX.md`
 
 ## Branch State
 
-PRs #2 through #19 are merged. B6 starts from verified main `4c6dad696d15fac4094b8172788b5c72642ff757`, followed by phase-contract commit `5d888fa3207660ee7d1f88d01c592c0c239c6222` and temporary task carrier `f3e80d1b0ad782bc7c4f6ec62905a372b26e487c`. B5 closed after PR #19 merged on 2026-09-08 at 11:37:44 UTC as `4c6dad696d15fac4094b8172788b5c72642ff757`. Read-only preflight confirmed [Deploy staging 34221696674](https://github.com/Beeyach/bloomops/actions/runs/34221696674) and [remote zero-to-current 34221696667](https://github.com/Beeyach/bloomops/actions/runs/34221696667) succeeded on that exact SHA, verified branch ancestry, and reconfirmed remote main. Those B5 gates do not substitute for B6 post-merge evidence. This branch is for independent review and user-controlled merge.
+PRs #2 through #20 are merged. B7 starts from verified main `58647bda6dd40739b7670e6c0f907b6f33689e5d`, followed by phase-contract commit `9a0691b` and temporary prompt carrier `16fb0f0`. B6 closed after PR #20 merged as `58647bda6dd40739b7670e6c0f907b6f33689e5d`. Read-only preflight verified [Deploy staging 34231285687](https://github.com/Beeyach/bloomops/actions/runs/34231285687) and [remote zero-to-current 34231727327](https://github.com/Beeyach/bloomops/actions/runs/34231727327) succeeded on that exact SHA. The zero verifier was manually dispatched because B6 was schema-free; disposable-database cleanup succeeded. B7 remains separate from those completed B6 gates.
 
 ## Repository Agent Instructions
 
@@ -55,6 +55,100 @@ BloomOps Git history is fresh. The source commit object does not exist in the Bl
 - B3: Actions + Dependencies, merged as PR #17 at `884051d`, with both post-merge gates passed.
 - B4: Deliverables, merged as PR #18 at `ac71b35`, with both post-merge gates passed.
 - B5: Files, merged as PR #19 at `4c6dad6`, with both post-merge gates passed.
+- B6: Work + Home Projections, merged as PR #20 at `58647bd`, with both post-merge gates passed.
+
+## Release B Hardening (B7)
+
+B7 is schema-free and adds no product feature. Its production diff is limited to exact HTTP input validation and modal layer order. `release-b-smoke-local.mjs` extends the existing in-Worker D1/R2 harness; `release-b-review-local.mjs` extends the built-Worker browser harness. Neither is deployed or imported by the application.
+
+### Reproduced gaps and narrow corrections
+
+1. **Project body allowlists:** create, edit, transition and assignment add/edit accepted unknown fields by discarding them and applying recognized fields. This did not grant a foreign workspace or caller identity, but violated B7's exact-input acceptance requirement. Five new cases reproduced successful responses where the full request should be rejected. `projectBody` now rejects unknown fields before invoking a mutation. The prior B1 smuggling test now proves a 400 with no record creation, rather than expecting silent discard.
+2. **Work query allowlists:** 22 internal/portal reads ignored invented filters, and the Project collection silently chose a value from duplicate filters. Twenty-three new cases reproduced 200 responses. A shared, small query validator runs after authorization. Only the documented Project collection filters and existing B3 Action filters are accepted; detail/child/portal routes accept none. Existing denial status and no-store behavior are preserved. Downloads cancel their prepared stream on an invalid query after retaining the existing post-R2 authorization check.
+
+3. **Toast obstruction of mobile dialogs:** real Files browser captures showed a fresh success toast covering the Archive confirmation. An immediate `elementFromPoint` probe, while that actual five-second toast was still present, reproduced the intercepted button at 390px (`/tmp/bloomops-b7-repro-toast.log` and `bloomops-b7-repro-toast-390.png`). The modal token moves from 1100 to 1300 above notifications at 1200. No dialog layout, timer, focus logic or workflow changes. The Files browser harness now checks the real hit target at both 390px and 320px before slow history reads or screenshots can allow the toast to disappear.
+
+The corrected HTTP suite is 28/28. Its pre-fix log is `/tmp/bloomops-b7-repro-http.log` (28 failing assertions on the unchanged runtime). Final focused evidence is `/tmp/bloomops-b7-regression-b7.log`: 29/29 node tests including one shared cross-domain matrix with 34 invariant assertions. The matrix also passes on real workerd D1/R2; it does not substitute a mock for storage acceptance. No lifecycle, scope grant, storage protocol, domain schema, package/lock, Worker configuration or workflow is changed.
+
+### Audit coverage
+
+| Area | Evidence and result |
+|---|---|
+| Identity, tenant, role, scope and visibility | B1–B6 access/HTTP regressions and real D1 smokes attack guessed/foreign IDs, current membership/workspace/role/contact, Client/Service/Project assignment revocation, Action-only scope/reassignment, restricted parent/children, Department/owner non-grants and hidden rows/history. Built B7 acceptance retains issued sessions during revocation. |
+| Projects | B1 domain/schema/HTTP suite plus B7 real edit/edit and edit/status races, request-input rejection and late fact failure rolling back the earlier activity receipt. Health and child lifecycles remain independent. B1 intentionally has no creation request key; same-name creates remain distinct. |
+| Milestones | B2 lifecycle/progress/order/access/HTTP suite, actual 200-row reorder, and B7 overlapping reorder/reorder, reorder/status and reorder/create preserve revisions, complete sets and unique slots. |
+| Actions/dependencies | B3 lifecycle, assignment, seven views/seven filters, Client calendar/DST, cycles/hidden endpoints/Cancelled semantics, 200-row bounds and rollback. B7 adds a twelve-node concurrent cycle, add/remove/recreated-edge fencing, status/dependency and reassignment/progress races with final graph/event assertions. |
+| Deliverables | B4 exact lifecycle, terminal timestamp, retry keys, mixed visibility, Team read-only and exact five-field Client DTO. B7 real edit/status and concurrent Delivered operations verify one winning revision/timestamp/event. |
+| Files | B5 metadata/5 MiB/header/storage/parent ceilings, response loss, D1 uncertainty, missing objects, generation/cleanup fencing, downloads after await and archive retention. B7 repeats those on actual local R2 and adds shared overlapping expired recovery/late PUT/finalizer and visibility/archive races. |
+| Home/Work/history | B6 canonical prefixes, live child counts, deterministic attention/recent names, 200-row bounds, current restriction/archive, read-only snapshots and no R2 binding. Actual 240-assignment D1 proof: 14 Home queries, maximum 64 bindings and 12,918 SQL bytes. |
+| Integrated release | Dedicated local D1/R2 story activates a two-service Client, snapshots Common/Social/GHL, submits and verifies six requirements to Active, creates service-specific and Client-level Projects, children and real attachments, expands to ten Clients, checks Owner/Admin/PM projections and unchanged read snapshots, then runs real races. 86 checks passed. The final built-browser run passed 273 checks with 62 captures after the modal correction. |
+
+### Verification
+
+Use Node `22.22.1` (`PATH=/home/codespace/nvm/versions/node/v22.22.1/bin:$PATH`). Commands run from the repository root. Logs and screenshots are local `/tmp/bloomops-b7-*` artifacts, not committed client data.
+
+| Command | Result |
+|---|---|
+| `npm ci` | 560 installed, 561 audited; package/lock unchanged |
+| `node --test tests/bloomops-release-b-*.test.mjs` | 29/29, including 34 shared race assertions |
+| `node --test tests/bloomops-projects-*.test.mjs` | 97/97 |
+| `node --test tests/bloomops-milestones-*.test.mjs` | 173/173 |
+| `node --test tests/bloomops-actions-*.test.mjs` | 203/203 |
+| `node --test tests/bloomops-deliverables-*.test.mjs` | 197/197 |
+| `node --test tests/bloomops-files-*.test.mjs` | 171/171 |
+| `node --test tests/bloomops-projections-*.test.mjs` | 76/76 |
+| Release A/core command in the B6 section below | 421/421 |
+| `npm test` | 4,030/4,030, zero failures/skips; final post-correction run exited 0 |
+| `npm run build` | Passed, including lint/type checks |
+| `npm run cf:build` | Passed after the modal correction, including nested Next build and lint/type checks; exit 0 |
+| `node .github/scripts/verify-zero-remote.mjs --local` | 22/22 fresh/no-op checks; 60 inherited + 13 domain migrations, 36 domain / 72 total tables, 84 indexes, 21 triggers; disposable local directory cleaned up |
+| `node scripts/projects-smoke-local.mjs` | Actual D1: 25/25 |
+| `node scripts/milestones-smoke-local.mjs` | Actual D1: 28/28 |
+| `node scripts/actions-smoke-local.mjs` | Actual D1: 47/47 |
+| `node scripts/deliverables-smoke-local.mjs` | Actual D1: 38/38 |
+| `node scripts/files-smoke-local.mjs` | Actual D1/R2: 42/42 |
+| `node scripts/projections-smoke-local.mjs` | Actual D1: 34/34; metrics above |
+| `node scripts/release-a-hardening-smoke-local.mjs` | Actual D1: 26/26 |
+| `node scripts/release-b-smoke-local.mjs` | Integrated actual workerd/D1/R2: 86/86 |
+| `node scripts/release-b-review-local.mjs` | 273/273 browser/HTTP assertions, exit 0; 62 captures at 1440/1024/768/390/320 after the modal correction |
+| `node scripts/auth-smoke-local.mjs --url http://localhost:8787` | 144/144, exit 0 |
+| `node .github/scripts/verify-staging.mjs --url http://localhost:8787 --expect-env development` | 21/21, exit 0 |
+| `node scripts/files-review-local.mjs --out /tmp/bloomops-b7-files-review` | 143/143, exit 0; 44 captures plus design reference, including real-toast hit tests at 390/320 |
+| Changed JS syntax checks; `git diff --check` | 21/21 JavaScript paths; CSS verified by both build stages; whitespace clean |
+| `npm audit --json` | Expected advisory exit: 49 entries, 1 low / 43 moderate / 5 high; count/severity delta zero |
+
+The built-application commands use `node scripts/files-preview-local.mjs` in an owned local process, stopped after the browser/HTTP checks. Its unconditional Wrangler dry run does not deploy. Run browser suites sequentially against that development Worker. Changed-file syntax command:
+
+```sh
+node --input-type=module <<'JS'
+import { execFileSync } from 'node:child_process';
+const files = [...new Set([...execFileSync('git',['diff','--name-only','58647bda6dd40739b7670e6c0f907b6f33689e5d'],{encoding:'utf8'}).trim().split('\n'), ...execFileSync('git',['ls-files','--others','--exclude-standard'],{encoding:'utf8'}).trim().split('\n')])].filter(path=>/\.(mjs|js)$/.test(path));
+for (const path of files) execFileSync(process.execPath,['--check',path],{stdio:'pipe'});
+console.log(`${files.length} changed JavaScript syntax checks passed.`);
+JS
+```
+
+### Evidence limits and remaining gates
+
+The high advisory entries remain brace-expansion, Browserslist, nanoid, PostCSS and sharp. Release B accepts bounded metadata and raw File bytes; it does not pass uploaded content to CSS/build configuration/generator/image conversion inputs. No reachable Release B exploit was identified in this scoped review. This is not a zero-advisory dependency tree or a complete audit of the inherited editor and all transitive packages. The lockfile is unchanged; the recorded comparison proves counts/severities and dependency continuity, not a retained historical JSON advisory-by-advisory diff.
+
+Local runtime evidence uses the existing pinned Miniflare/workerd, isolated D1/R2, development R2 mail and external Playwright/Chromium installation. The existing `files-preview-local.mjs` dry-run/Miniflare path is retained because the ordinary Wrangler preview proxy had a previously recorded local startup failure. No compatibility/package/configuration workaround is introduced. In-memory mail in the disposable Worker and local R2 mail in browser acceptance cannot contact a real Client. No production, staging business data, DNS or Leadsthatbloom resources were changed.
+
+Fixture corrections did not change production behavior: the new ten-Client seed must provide each required primary-contact email, and Work row counts use the existing `.bo-project-row` rather than Home-only data attributes. One local Files fixture hit `SQLITE_BUSY` before exercising product behavior; a fresh isolated fixture passed. Verification command processes are isolated, preview ownership is explicit, and only successful completed runs count as final gates. The interrupted build/tracing attempt is superseded by the final rebuild. The new toast probe deliberately checks hit-testing before its five-second notification expires; a later successful click alone had missed this defect.
+
+The live Bloomlab design gallery was loaded and inspected. Populated Home, Work Projects and safe portal captures were visually reviewed at all five widths; File upload/error/archive dialogs were also inspected, including both final 390/320 toast-regression captures with unobstructed confirmation controls. No redesign or new component library was needed.
+
+Independent audit, user-controlled merge, Deploy staging and remote zero-to-current on the **actual B7 merge SHA** remain required. B7's schema-free diff does not match the zero workflow's push path filter; manually dispatch the existing workflow against the actual merge SHA if it does not auto-trigger. Release B is not closed, and Release C is not started.
+
+### Changed files by area
+
+- HTTP boundaries (13): seven Project/File route files, five existing domain API helpers and new `lib/bloomops/work-api-input.mjs`.
+- Shared UI (1): `app/bloomops.css`, modal layer token only.
+- Regression tests (3): existing Project HTTP test and new B7 HTTP/race suites.
+- Local acceptance (5): shared `release-b-races.mjs`, integrated smoke runner/Worker, integrated browser harness and the existing Files browser harness.
+- Documentation (6): this file, `DOMAIN_MODEL.md`, `INDEX.md`, `RELEASE_B.md`, B7 contract/evidence and the minimal B6 closure correction.
+
+Net inventory is 28 paths against verified main. The temporary prompt is deleted with no net diff against main. No migration, schema, package/lock, configuration or workflow changes.
 
 ## Work + Home Projections (B6)
 
@@ -123,7 +217,7 @@ The live Bloomlab reference loaded and was visually inspected, along with popula
 
 ### Remaining gates and scope
 
-B6 remains open for independent audit and user-controlled merge. Deploy staging and remote zero-to-current must both pass on the actual eventual B6 merge SHA. This schema-free diff does not match the zero-verifier push path filter; manually dispatch the existing workflow on that merge SHA if it does not trigger. No new lifecycle, approval history, comments, notifications, queues, specialist pipelines, templates or auto-generation is included. **B7 is unimplemented** and does not start automatically.
+B6 closed after PR #20 merged as `58647bda6dd40739b7670e6c0f907b6f33689e5d`. Read-only preflight verified [Deploy staging 34231285687](https://github.com/Beeyach/bloomops/actions/runs/34231285687) and [remote zero-to-current 34231727327](https://github.com/Beeyach/bloomops/actions/runs/34231727327) succeeded on that exact SHA. The zero verifier was manually dispatched because B6 was schema-free; disposable-database cleanup succeeded. B7 is recorded separately above. B6 added no new lifecycle, approval history, comments, notifications, queues, specialist pipelines, templates or auto-generation.
 
 ### Changed files by area
 
@@ -191,7 +285,7 @@ The completed run wrote logs and browser captures under `/tmp/bloomops-b5-*` and
 
 B5's independent audit, user-controlled merge and both post-merge gates are complete on `4c6dad696d15fac4094b8172788b5c72642ff757`. Local verification did not replace those gates; both successful runs are recorded above.
 
-Deliberate limits are 5 MiB per File, 200 Files including archives per Project, fixed Project/Deliverable attachment, read-only Team, explicit recovery with a five-minute active lease, bounded best-effort orphan cleanup, terminal archive retaining Ready bytes, and no scanning. Client uploads, other subject integrations, relinking, restoration, purge/retention policy, versions, approvals/history, comments, notifications, templates, specialist pipelines and future Request/Page/Finance placeholders are absent. B6 is recorded separately above; B7 and later releases remain unimplemented.
+Deliberate limits are 5 MiB per File, 200 Files including archives per Project, fixed Project/Deliverable attachment, read-only Team, explicit recovery with a five-minute active lease, bounded best-effort orphan cleanup, terminal archive retaining Ready bytes, and no scanning. Client uploads, other subject integrations, relinking, restoration, purge/retention policy, versions, approvals/history, comments, notifications, templates, specialist pipelines and future Request/Page/Finance placeholders are absent. B6 and B7 are recorded separately above; later releases remain unimplemented.
 
 ### Changed-file inventory
 
@@ -1932,13 +2026,13 @@ For the current phase and its audit, read:
 
 1. `AGENTS.md`
 2. this file
-3. `docs/phases/B6.md`
+3. `docs/phases/B7.md`
 
 Read additional canonical planning docs only when the phase file or `docs/INDEX.md` calls for them.
 
 ## Next Planned Phase
 
-B7 — Release B Hardening, after independent B6 audit, user-controlled merge, and successful staging plus remote zero-to-current verification on the actual B6 merge SHA. B7 is unimplemented and does not start automatically. The schema-free B6 diff does not match the zero-verifier push path filter; manually dispatch that existing workflow on the actual merge SHA if it does not trigger automatically.
+Finish B7 independent audit and user-controlled merge, then verify staging and remote zero-to-current on the actual B7 merge SHA. Only then may Release B close. The next roadmap release is Release C — Social; it remains unimplemented and requires a separate instruction.
 
 ### The A7 phase, for reference
 
@@ -1946,7 +2040,9 @@ A7, Services and Departments. Complete. It seeds the four departments and the in
 
 ## Last Verification
 
-2026-09-08, B6. Schema-free canonical Home/Work projections passed 76/76 focused tests, B1/B2/B3/B4/B5 regressions 97/173/203/197/171, Release A/core 421/421 and the full suite 4,001/4,001, all with zero failures/skips. Install, both builds including lint/type validation, 16 JS/JSX syntax checks and diff checks passed. Fresh/no-op verification: 22/22, unchanged 60 inherited + 13 domain migrations, 36 domain / 72 total tables, 84 indexes and 21 triggers. Actual D1 B6: 34/34 with 240 assignments, Home 14 metadata queries and a maximum 64 bindings / 12,918 SQL bytes; no R2 binding. Prior D1/R2 B1/B2/B3/B4/B5/A11: 25/28/47/38/42/26. Final built HTTP: 144/144; external verifier: 21/21; B6 browser/HTTP: 144/144 with 47 captures at 1440/1024/768/390/320, including keyboard/focus, mobile anchor positioning, touch, reduced motion and no-JavaScript Home. Exact commands, the 23-path inventory, query/date/attention rules, fixture/UI corrections, local runtime limitations and unchanged 49 dependency advisories are recorded in the B6 section. B5 is closed on verified base `4c6dad696d15fac4094b8172788b5c72642ff757`; independent B6 audit, user-controlled merge and both post-merge gates remain required. B7 is unimplemented.
+2026-09-08, B7. Schema-free Release B hardening reproduced and corrected exact Project body validation, Work query validation and a mobile toast obstructing a dialog. B7 focused 29/29 (34 shared race assertions), B1–B6 97/173/203/197/171/76, A/core 421/421 and full 4,030/4,030 passed with zero failures/skips. Install, Next/Cloudflare builds including lint/type checks, 21 JavaScript syntax checks and whitespace checks passed. Fresh/no-op zero: 22/22 with unchanged 60 inherited + 13 domain migrations. Actual D1 B1/B2/B3/B4/B6/A11: 25/28/47/38/34/26; actual Files D1/R2: 42; integrated B7 D1/R2: 86. Final built HTTP: 144; external: 21; B7 browser: 273 with 62 captures; Files browser: 143 with 44 captures plus reference. All five required widths passed, including immediate 390/320 toast hit tests. The B7 section records exact commands, the 28-path inventory, audit matrix, local evidence limits and unchanged 49-advisory count/severity baseline. Independent audit, user-controlled merge and both exact-B7-merge-SHA gates remain required. Release B is not closed; Release C has not started.
+
+2026-09-08, B6. Schema-free canonical Home/Work projections passed 76/76 focused tests, B1/B2/B3/B4/B5 regressions 97/173/203/197/171, Release A/core 421/421 and the full suite 4,001/4,001, all with zero failures/skips. Install, both builds including lint/type validation, 16 JS/JSX syntax checks and diff checks passed. Fresh/no-op verification: 22/22, unchanged 60 inherited + 13 domain migrations, 36 domain / 72 total tables, 84 indexes and 21 triggers. Actual D1 B6: 34/34 with 240 assignments, Home 14 metadata queries and a maximum 64 bindings / 12,918 SQL bytes; no R2 binding. Prior D1/R2 B1/B2/B3/B4/B5/A11: 25/28/47/38/42/26. Final built HTTP: 144/144; external verifier: 21/21; B6 browser/HTTP: 144/144 with 47 captures at 1440/1024/768/390/320, including keyboard/focus, mobile anchor positioning, touch, reduced motion and no-JavaScript Home. Exact commands, the 23-path inventory, query/date/attention rules, fixture/UI corrections, local runtime limitations and unchanged 49 dependency advisories are recorded in the B6 section. This is historical B6 local evidence. B6 subsequently closed through PR #20 and both gates on `58647bda6dd40739b7670e6c0f907b6f33689e5d`; current B7 evidence is recorded above.
 
 2026-09-08, B5. Focused Files 171/171, B1/B2/B3/B4 97/173/203/197, Release A/core 421/421 and full suite 3,925/3,925 passed with zero failures/skips. Install, both builds with lint/type checks, 42 JavaScript/JSX syntax checks and diff checks passed. Fresh/no-op verification: 22/22, 60 inherited + 13 domain migrations, 36 domain / 72 total tables, 84 explicit indexes and 21 triggers. Actual D1/R2 B5 42/42; prior D1 B1/B2/B3/B4/A11 25/28/47/38/26; built HTTP 144/144; external verifier 21/21; browser/HTTP 139/139 with 42 screenshots at five widths plus the live design reference, exit 0. The B5 section records the complete 52-path inventory, 5 MiB upload and recovery limits, middleware/input corrections, reproducible local preview alternative and unchanged 49 dependency advisories. This is historical B5 local evidence. B5 is closed through PR #19 and both post-merge gates on `4c6dad696d15fac4094b8172788b5c72642ff757`. Current B6 work is recorded above.
 

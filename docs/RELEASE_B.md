@@ -62,11 +62,13 @@ B5 closed after PR #19 merged as `4c6dad696d15fac4094b8172788b5c72642ff757`. Rea
 
 ### B6 — Work + Home Projections
 
-B6 on `codex/b6-work-home-projections` replaces orientation Home with bounded operational sections and adds readable Milestone/Action/Deliverable/Ready File summaries to Work Projects. It reuses B3's exact views, filters, timezone and dependency rules. All facts remain canonical; B6 is schema-free and dashboard File composition uses D1 metadata only. Current implementation, deterministic attention/date rules and verification are in `DOMAIN_MODEL.md`, `phases/B6.md` and `BUILD_STATE.md`. Independent audit, user-controlled merge and both gates on the actual B6 merge SHA remain required. The schema-free diff does not match the zero-verifier's push path filter, so dispatch that existing workflow manually on the merge SHA if it does not run automatically.
+B6 closed after PR #20 merged as `58647bda6dd40739b7670e6c0f907b6f33689e5d`. Read-only preflight verified [Deploy staging 34231285687](https://github.com/Beeyach/bloomops/actions/runs/34231285687) and [remote zero-to-current 34231727327](https://github.com/Beeyach/bloomops/actions/runs/34231727327) succeeded on that exact SHA. The zero verifier was manually dispatched because B6 was schema-free; disposable-database cleanup succeeded.
+
+B6 composes bounded Home and Work summaries from canonical records, with current child permissions, exact B3 Action/date/dependency semantics and D1-only File presence. Its historical local evidence remains in `BUILD_STATE.md`.
 
 ### B7 — Release B Hardening
 
-Unimplemented. After B6 closes, attack tenant isolation, assignment scope, visibility, lifecycle, dependency cycles, file authorization, retries, concurrency, responsive UX, and Release B acceptance stories. No new product features and no automatic start.
+B7 hardening is implemented and locally verified, pending independent audit, on `codex/b7-release-b-hardening`. The audit closes exact HTTP input-contract gaps, fixes a notification covering a mobile dialog control, and adds integrated activation-to-delivery, session, concurrency and storage acceptance. No new product feature or migration. Evidence and final audit/merge gates are recorded in `phases/B7.md` and `BUILD_STATE.md`.
 
 This sequence is implementation guidance. If repository evidence requires a smaller safe split, preserve the same product boundaries rather than pulling later Release features forward.
 

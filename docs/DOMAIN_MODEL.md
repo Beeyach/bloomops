@@ -527,6 +527,12 @@ Recent output uses only `DELIVERABLE_STATUS_CHANGED` events to Delivered for cur
 
 Queries use relational assignment predicates rather than binding a materialized list of assigned IDs. B6 verification covers 240 assigned Projects and checks each generated statement against D1's 100-binding/100 KB statement bounds. The actual D1 Home composition uses fourteen metadata queries, with no R2 binding supplied in its disposable runtime proof.
 
+## Work HTTP input boundary (B7)
+
+Project create/edit/status/assignment JSON accepts only its named fields; unknown keys reject the whole request with a sanitized 400 instead of silently applying the recognized subset. Existing valid forms and lifecycle operations are unchanged. Other Work JSON and upload metadata retain their existing exact allowlists.
+
+Work resource and portal endpoints accept no query inputs. The internal Project collection accepts one `status` and one `clientId`; the Action collection retains its B3 filter allowlist. Unknown or duplicate query keys return a sanitized, uncached 400 after authorization. Unauthenticated or inaccessible resources keep their existing 401/403/404 behavior. Downloads preserve their post-R2 authorization check and cancel any prepared stream before rejecting unsupported query input. This adds no domain field, lifecycle, permission grant or migration.
+
 ## Approvals
 
 Approval history is append-only by round.

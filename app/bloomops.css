@@ -142,7 +142,8 @@
   /* z */
   --bo-z-sticky: 100;
   --bo-z-overlay: 1000;
-  --bo-z-modal: 1100;
+  /* A pending notification must never cover an active dialog's controls. */
+  --bo-z-modal: 1300;
   --bo-z-toast: 1200;
 }
 
