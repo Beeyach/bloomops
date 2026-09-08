@@ -6,19 +6,87 @@ Release C: Social. Release B is closed on `c6509aa395a5db58310e2a0ae22a8a808082f
 
 ## Current Phase
 
-C1 Content Items Core is implemented and locally verified on `codex/c1-content-core`, pending independent ChatGPT audit. B1 through B7 are closed. C2+ remains unimplemented.
+C2 Production Pipeline is implemented and locally verified on `codex/c2-production-pipeline`, pending independent ChatGPT audit. C1 and B1 through B7 are closed. C3+ remains unimplemented.
 
-Current implementation spec: `docs/phases/C1.md`; release sequence: `docs/RELEASE_C.md`.
+Current implementation spec: `docs/phases/C2.md`; release sequence: `docs/RELEASE_C.md`.
 
 Documentation index: `docs/INDEX.md`
 
 ## Branch State
 
-PRs #2 through #21 are merged. C1 starts from exact closed Release B main `c6509aa395a5db58310e2a0ae22a8a808082f77b`, followed by Release C sequence `a6563c9`, C1 contract `3942e3a` and temporary prompt carrier `6f3ab54`. Preflight verified branch ancestry and remote main equality before implementation. Read-only checks confirm [Deploy staging 34269402296](https://github.com/Beeyach/bloomops/actions/runs/34269402296) and [Verify zero-to-current 34269544255](https://github.com/Beeyach/bloomops/actions/runs/34269544255), including disposable D1 cleanup, succeeded on that exact B7 merge SHA. This closes Release B. C1 has its own independent audit, user-controlled merge and exact-merge-SHA post-merge gates.
+PRs #2 through #22 are merged. C2 starts from exact C1 merge/main `f1003c236cbce5102efcddd1bf7cda20e4f8ed8b`, followed by C2 contract `c3369ac` and temporary prompt carrier `cb07fb7`. Preflight verified requested branch, ancestry and exact remote main before implementation; remote main was checked again during verification. No rebase or merge was performed.
+
+C1 closed through PR #22. Read-only checks confirm [Deploy staging 34276571767](https://github.com/Beeyach/bloomops/actions/runs/34276571767) and [Verify zero-to-current 34276571760](https://github.com/Beeyach/bloomops/actions/runs/34276571760), including disposable-database cleanup, completed successfully on that exact C1 merge SHA. C2 requires independent ChatGPT audit, user-controlled merge and both workflows successful on its actual merge SHA before C3.
+
+## Production Pipeline (C2)
+
+C2 implementation and local verification are complete; independent ChatGPT audit, user-controlled merge and exact-merge-SHA gates remain outstanding. The narrow additive migration is `0014_c2_content_pipeline.sql`. It adds nullable current `stage_context` and one stage-filter index to canonical Content: 24 columns and five Content indexes. There is no new table, duplicate status, identity key or approval model. Historical migrations, C1 triggers, package/lock and Worker configuration remain unchanged.
+
+### Implementation decisions
+
+- The shared pure resolver derives the exact next applicable forward stage from current Content stage and flags. Recording, internal review and Client review are skipped only when their corresponding flag is false. Disabling a flag in its current stage preserves that stage and changes future resolution only.
+- Only Internal Review/Client Review may request revision; Revision Requested returns only to Editing. Both waiting and revision entry require NFC/line-ending-normalized, nonempty context, bounded to 2,000 UTF-16 units with controls/bidi/malformed-Unicode rejection. Context lives on Content and clears when leaving the contextual stage. Historical C1 null context remains valid; there is no invented backfill.
+- Published is terminal and receives its server timestamp only in the winning commit. Detail edits and retries cannot rewrite it. Approved is production state, not formal Client approval; Scheduled adds no calendar/platform behavior. C1-assigned Team fulfillment remains valid for all legal steps, including Approved; coordinator wording does not invent a new role restriction.
+- The dedicated `content.transition` policy and POST endpoint retain C1 Identity → Role → Scope → Visibility. Owner/Admin coordinate; PM restricted and Team fulfillment require exact current Client/Service assignment. Owner, Department, Project and Action-only responsibility never grant Content access. Clients receive no internal Content or stage history.
+- Every committing condition rechecks active workspace, membership/user/role identity, canonical same-workspace Client/optional Social Service, assignment, visibility, expected revision, source stage, three current flags and absent publication. Conditional activity and fact update use one atomic D1 batch; revocation or stale facts prevent both, and a late failure rolls both back.
+- Content ID + consumed expected revision identify an operation without another request-key column. One immutable `CONTENT_STAGE_CHANGED` event records small from/to/context/revision facts. Exact retry under current read authorization acknowledges the operation, even after later edits or revision passes, without rewriting current state. Different target/context or an edit-consumed revision conflicts. Merely matching the current stage never proves a retry. Two identical concurrent transitions create one fact/revision/event; different transition/transition or transition/edit races have one winner.
+- A reproduced C1 eligibility-window race needed one narrow correction: an edit whose revision is consumed after its initial read now returns conflict instead of a field-validation error. Owner/visibility validation remains unchanged when the revision is current. The regression injects a real transition between the detail read and eligibility query.
+- Ordinary detail payloads still reject stage, publication and current context. The transition endpoint accepts exactly targetStage/expectedRevision/optional context, rejects all query keys and malformed/non-object JSON, authorizes first, and preserves Origin/no-store/sanitized 400/401/403/404/409/500 boundaries.
+- Social detail exposes only legal controls with the existing Bloom dialog, required context, keyboard focus restoration and safe conflict/revocation reload. The existing list gains exact stage filtering over canonical facts with its bounded 200+1 pagination. No drag/drop or future-phase controls were added.
+
+### Verification evidence
+
+Node `22.22.1`; final completed runs alone count. Interrupted development checks were restarted and are not counted as passes. The shared HTTP verifier initially met a magic-link 429 after browser sign-ins; after the existing 60-second limiter expired, its complete rerun passed. No auth behavior or limits were changed.
+
+| Command / check | Result |
+|---|---|
+| `npm ci` | 560 installed / 561 audited; package/lock unchanged |
+| `node --test tests/bloomops-content-pipeline-*.test.mjs` | 105/105: access 49, domain 35, HTTP 10, schema 2, UI 9 |
+| `node --test tests/bloomops-content-{schema,domain,access,http,ui}.test.mjs` | C1 133/133 |
+| Separate B7/B1/B2/B3/B4/B5/B6 regression runs | 29/97/173/203/197/171/76, all passed |
+| Exact Release A/core command retained in B6 below | 421/421 |
+| `npm test` | Final 4,268/4,268; zero failures, cancellations or skips; exit 0 |
+| `npm run build` | Passed including lint/type checks; final CF build reruns it |
+| `npm run cf:build` | Final source passed with nested Next/lint/type checks; exit 0 |
+| `node .github/scripts/verify-zero-remote.mjs --local` | 22/22 fresh/no-op, cleanup complete |
+| `node scripts/content-pipeline-smoke-local.mjs` | Final actual disposable workerd/D1 54/54 |
+| `node scripts/content-smoke-local.mjs` | Final actual C1 workerd/D1 43/43 |
+| Prior B1/B2/B3/B4/B5/B6/B7/A11 D1/R2 smokes | 25/28/47/38/42/34/86/26, all passed |
+| `node scripts/auth-smoke-local.mjs --url http://localhost:8787` | Final built Worker HTTP 144/144; exit 0 |
+| `node .github/scripts/verify-staging.mjs --url http://localhost:8787 --expect-env development` | Local external verifier 21/21; exit 0 |
+| `node scripts/content-pipeline-review-local.mjs --out /tmp/bloomops-c2-review-final` | C2 128/128, 43 captures across 1440/1024/768/390/320; exit 0 |
+| `node scripts/content-review-local.mjs --out /tmp/bloomops-c2-c1-review-final` | C1 96/96, 33 captures across the same five widths; exit 0 |
+| Changed JS/JSX syntax / `git diff --check` | 23 paths passed Node/esbuild parsing; whitespace clean |
+| `npm audit --json` vs saved C1 and contemporaneous exact base | 49 advisories; identity/range/severity/count delta zero; two dependency effects-link differences described below |
+
+Fresh/no-op verification: 60 inherited + 15 domain migrations, 37 domain / 73 total tables, 89 explicit indexes, 23 triggers, clean integrity/foreign-key checks and identical schema/ledgers after replay. The local disposable directory was cleaned up. C1 schema/runtime assertions now preserve their 23-column prefix while C2 asserts the current 24-column model.
+
+The actual C2 D1 smoke covers all flag paths, Published terminal/retry, both revision branches, context bounds, current-stage flag edits, exact restricted scope, three race shapes, response-loss after edits, late fact/activity rollback, assignment/membership/role/workspace/Social-parent/visibility commit fencing, ordinary-edit authority, parent lifecycle isolation, stage filtering and 240 assignments inside actual D1 limits. Node tests additionally exhaust the source/target matrix, Unicode/JSON/revision bounds, all responsibility non-grants, identity/flag/source-stage fencing, exact restricted PM/Team scopes, current history filtering and the eligibility-window race. No Release A/B parent lifecycle changes.
+
+Dependency audit remains 49 (1 low, 43 moderate, 5 high; zero critical). The audit command exits 1 for these existing advisories. Compared with retained `/tmp/bloomops-c1-audit.json` and a contemporaneous audit of exact-base package/lock in an external temporary directory, advisory package identities, source/ranges, severity and counts are unchanged. npm reports two transitive `effects` attribution changes: the drag-handle-react edge moves from `@tiptap/extension-drag-handle` to `@tiptap/react`. All other vulnerability-entry fields match. This is a zero-advisory delta, not a zero-advisory tree or byte-identical graph report. No dependency or lockfile was changed.
+
+### Changed-file inventory
+
+Net against exact C1 base: **32 paths**, including the supplied C2 contract and excluding the removed temporary prompt.
+
+- Schema (4): `lib/bloomops/schema.mjs`, `drizzle/0014_c2_content_pipeline.sql`, `drizzle/meta/0014_snapshot.json`, `drizzle/meta/_journal.json`.
+- Domain/boundaries (7): `lib/bloomops/content-pipeline-values.mjs`, `content-pipeline.mjs`, `content-values.mjs`, `content.mjs`, `authorization.mjs`, `activity.mjs`, `client-activity.mjs`.
+- API (1): `app/api/bloomops/content/[contentId]/transition/route.js`.
+- UI (2): `components/bloomops/ContentPipeline.jsx`, `ContentViews.jsx`.
+- Verification (12): three `scripts/content-pipeline-*.mjs`, `scripts/content-smoke-worker.mjs`, five `tests/bloomops-content-pipeline-*.test.mjs`, and existing authorization, Content schema and global schema tests.
+- Documentation (6): this build state, domain model, index, Release C, C1 closure and C2 contract/evidence.
+
+### Limits and handoff
+
+All runtime verification is local: pinned Miniflare/workerd, disposable smoke D1/R2, and isolated development D1/R2 with example.com/R2 development mail for the built Worker. Playwright/Chromium stays outside the repository at `/tmp/bloomops-a11-browser`; session logs/captures are under `/tmp/bloomops-c2-*`. The owned loopback preview was stopped after acceptance. The live Bloomlab Design gallery loaded and was visually inspected. C2 browser acceptance covers all eight flag paths, both revision branches, context persistence, legal controls, terminal publication, safe conflicts, stage filtering, exact Team/restricted PM scope, Client denial, competing writes, current-session assignment/membership/role/workspace revocation, real touch and reduced motion. Long waiting/revision dialogs and detail, Published, conflict and filtered-list views passed geometry/controls at every required width. Mobile dialog/conflict and desktop revision captures were visually inspected. C1 create/edit/list/overflow acceptance also remains green. Browser fixture corrections used the canonical Client relationship-status column and awaited the actual transition response/reload link instead of the unrelated global toast alert. These checks do not replace exact-merge-SHA staging gates or constitute production/load certification. Existing offset pagination can shift with concurrent insertions; current null context on historical C1 stage rows remains possible. Retry provenance is bounded per event but retained in existing append-only activity, not a new approval-history model.
+
+Temporary `C2_CODEX_PROMPT.txt` deleted with zero net diff against exact main. C3+ remains intentionally unimplemented: calendar/platforms, recording/File subjects, formal approval rounds, revision-history UI, Client Content portal, comments, notifications, templates and Ads behavior. No production, staging business data, DNS, real communication or Leadsthatbloom resources changed. Open PR must remain unmerged for independent ChatGPT audit; only user-controlled merge and both successful post-merge workflows on the actual C2 merge SHA unlock C3.
+
+The C1 and earlier sections below retain historical implementation evidence; their earlier pre-merge scope/status language is superseded by current closure and C2 state above.
 
 ## Content Items Core (C1)
 
-C1 implementation and local verification are complete; independent audit and post-merge gates remain outstanding. Migration `0013_c1_content.sql` adds one canonical `content_items` table: 23 columns, four justified indexes, four foreign keys and two narrow triggers. No historical migration, package/lock, Worker binding/configuration or A/B lifecycle is changed. The migration/snapshot chain remains additive.
+C1 is closed on exact merge `f1003c236cbce5102efcddd1bf7cda20e4f8ed8b` with both successful post-merge gates recorded above. The following is retained C1 implementation evidence. Migration `0013_c1_content.sql` adds one canonical `content_items` table: 23 columns, four justified indexes, four foreign keys and two narrow triggers. No historical migration, package/lock, Worker binding/configuration or A/B lifecycle is changed. The migration/snapshot chain remains additive.
 
 ### Implementation decisions
 

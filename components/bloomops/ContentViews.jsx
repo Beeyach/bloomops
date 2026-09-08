@@ -1,3 +1,4 @@
+import ContentPipeline from './ContentPipeline';
 import { Button, EmptyState, Facts, Field, Notice, PageHeader, Section, Status } from './Primitives';
 import { CONTENT_STAGE_LABELS, CONTENT_TYPE_LABELS, CONTENT_VISIBILITY_LABELS } from '@/lib/bloomops/content-values.mjs';
 export function ContentList({ result, query = {}, options }) {
@@ -6,7 +7,7 @@ export function ContentList({ result, query = {}, options }) {
   return <>
     <PageHeader title="Social" subtitle="Ideas and editorial details for your clients." actions={<Button href="/social/new" variant="primary">Create Content</Button>} />
     <form className="bo-content-filters" action="/social" aria-label="Filter Content">
-      {[['clientId', 'Client', choices('clientId', 'clientName')], ['serviceEngagementId', 'Social service', choices('serviceEngagementId', 'serviceName')], ['type', 'Content type', Object.entries(CONTENT_TYPE_LABELS)], ['ownerMembershipId', 'Owner', [...new Map([...options.members.map(m => [m.membershipId, m.name]), ...result.items.filter(i => i.ownerMembershipId).map(i => [i.ownerMembershipId, i.ownerName])])]]].map(([key, label, rows]) => <Field key={key} id={`filter-${key}`} label={label}><select id={`filter-${key}`} name={key} className="bo-control" defaultValue={query[key] || ''}><option value="">All</option>{query[key] && !rows.some(([id]) => id === query[key]) && <option value={query[key]}>Selected filter</option>}{rows.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></Field>)}
+      {[['clientId', 'Client', choices('clientId', 'clientName')], ['serviceEngagementId', 'Social service', choices('serviceEngagementId', 'serviceName')], ['stage', 'Stage', Object.entries(CONTENT_STAGE_LABELS)], ['type', 'Content type', Object.entries(CONTENT_TYPE_LABELS)], ['ownerMembershipId', 'Owner', [...new Map([...options.members.map(m => [m.membershipId, m.name]), ...result.items.filter(i => i.ownerMembershipId).map(i => [i.ownerMembershipId, i.ownerName])])]]].map(([key, label, rows]) => <Field key={key} id={`filter-${key}`} label={label}><select id={`filter-${key}`} name={key} className="bo-control" defaultValue={query[key] || ''}><option value="">All</option>{query[key] && !rows.some(([id]) => id === query[key]) && <option value={query[key]}>Selected filter</option>}{rows.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></Field>)}
       <Button type="submit">Apply filters</Button><Button href="/social" variant="ghost">Clear filters</Button>
     </form>
     {(options.parentsOverflow || options.membersOverflow) && <Notice>Filter choices show the first available Clients, services and owners. All accessible Content remains available through the pages below.</Notice>}
@@ -25,6 +26,7 @@ export function ContentDetail({ item }) {
       ['Type', CONTENT_TYPE_LABELS[item.type]], ['Stage', <Status key="stage" label={CONTENT_STAGE_LABELS[item.stage]} />], ['Pillar', item.pillar || 'Not set'], ['Owner', item.ownerName || 'Nobody yet'], ['Target publish date', item.targetPublishDate || 'Not set'], ['Visibility', CONTENT_VISIBILITY_LABELS[item.visibility]],
       ['Recording required', item.recordingRequired ? 'Yes' : 'No'], ['Internal review required', item.internalReviewRequired ? 'Yes' : 'No'], ['Client approval required', item.clientApprovalRequired ? 'Yes' : 'No'],
     ]} />
+    <ContentPipeline item={item} />
     {item.visibility === 'client' && <p className="bo-hint">Client eligible. This item is not shared in the client portal yet.</p>}
     {[['hook', 'Hook'], ['script', 'Script'], ['caption', 'Caption'], ['cta', 'Call to action']].map(([key, label]) => <Section key={key} id={`content-${key}`} title={label}><p className="bo-content-copy">{item[key] || 'Not written yet.'}</p></Section>)}
   </div>;

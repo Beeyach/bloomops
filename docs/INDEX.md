@@ -29,7 +29,7 @@ Do not automatically load every planning document into context.
 
 Release C — Social is the active release.
 
-Current phase: **C1 — Content Items Core implemented and locally verified; independent audit pending**
+Current phase: **C2 — Production Pipeline implemented and locally verified; independent audit pending**
 
 Release A closed after A11 PR #14 merged as `3deed08d8db2a92fcf4dc29a6a879a9945260049`. Read-only preflight verified [Deploy staging 34175768644](https://github.com/Beeyach/bloomops/actions/runs/34175768644) and [remote zero-to-current 34175768643](https://github.com/Beeyach/bloomops/actions/runs/34175768643) completed successfully on that exact SHA.
 
@@ -47,7 +47,9 @@ B6 closed after PR #20 merged as `58647bda6dd40739b7670e6c0f907b6f33689e5d`. Rea
 
 Release B closed with PR #21 on `c6509aa395a5db58310e2a0ae22a8a808082f77b`. [Deploy staging 34269402296](https://github.com/Beeyach/bloomops/actions/runs/34269402296) and [Verify zero-to-current 34269544255](https://github.com/Beeyach/bloomops/actions/runs/34269544255), including disposable cleanup, succeeded on that exact SHA.
 
-Current phase file: `docs/phases/C1.md`; release sequence: `docs/RELEASE_C.md`. `BUILD_STATE.md` records C1 evidence. Independent audit, user-controlled merge and both exact-merge-SHA gates are required before C2.
+C1 closed through PR #22 on `f1003c236cbce5102efcddd1bf7cda20e4f8ed8b`. Read-only checks verified [Deploy staging 34276571767](https://github.com/Beeyach/bloomops/actions/runs/34276571767) and [Verify zero-to-current 34276571760](https://github.com/Beeyach/bloomops/actions/runs/34276571760), including disposable-database cleanup, succeeded on that exact merge SHA.
+
+Current phase file: `docs/phases/C2.md`; release sequence: `docs/RELEASE_C.md`. `BUILD_STATE.md` records C2 decisions and verification. Independent audit, user-controlled merge and both exact-merge-SHA gates are required before C3.
 
 ## Phase Reading Matrix
 
@@ -73,6 +75,7 @@ Current phase file: `docs/phases/C1.md`; release sequence: `docs/RELEASE_C.md`. 
 | B6 | `RELEASE_B.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/B3.md`, `phases/B4.md`, `phases/B5.md`, canonical B1–B5 reads/authorization/UI and current test harnesses |
 | B7 | `RELEASE_B.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/B2.md` through `phases/B7.md`, merged A/B implementations and strongest local Worker/D1/R2/browser harnesses |
 | C1 | `RELEASE_C.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/B7.md`, `phases/C1.md`, current schema/migrations, Client/Service authorization, activity, exact HTTP boundaries and Worker/browser harnesses |
+| C2 | `RELEASE_C.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/C1.md`, `phases/C2.md` |
 
 ## Minimal Coding-Agent Prompt Pattern
 

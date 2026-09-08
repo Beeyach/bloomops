@@ -11,7 +11,7 @@ export default {async fetch(request,env){
  try{
  const run=(q,...v)=>env.DB.prepare(q).bind(...v).run(),one=(q,...v)=>env.DB.prepare(q).bind(...v).first(),all=async(q,...v)=>(await env.DB.prepare(q).bind(...v).all()).results;
  for(const q of C1_MIGRATIONS)await run(q);const db=drizzle(env.DB,{schema});
- check('fourteen migrations create canonical Content',(await all('PRAGMA table_info(content_items)')).length===23);
+ check('C1 canonical Content columns survive current migrations',(await all('PRAGMA table_info(content_items)')).filter(c=>c.name!=='stage_context').length===23);
  for(const ws of['a','b'])await run('INSERT INTO workspaces(id,name,slug) VALUES(?,?,?)',ws,ws,ws);
  for(const[id,role,ws]of[['ellen','owner','a'],['ary','admin','a'],['pm','project_manager','a'],['sam','team_member','a'],['james','client','a'],['foreign','owner','b']]){await run('INSERT INTO user(id,name,email) VALUES(?,?,?)',id,id,`${id}@example.com`);await run("INSERT INTO workspace_memberships(id,workspace_id,user_id,role,status) VALUES(?,?,?,?,'active')",`m-${id}`,ws,id,role);}
  for(const[id,ws]of[['james','a'],['lawrence','a'],['foreign','b']])await run('INSERT INTO bloomops_clients(id,workspace_id,name,slug) VALUES(?,?,?,?)',id,ws,id,id);

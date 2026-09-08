@@ -2,7 +2,7 @@
 
 ## Current state
 
-Release B closed on `c6509aa395a5db58310e2a0ae22a8a808082f77b` with successful Deploy staging `34269402296` and Verify zero-to-current `34269544255`. C1 Content Items Core is implemented and locally verified on `codex/c1-content-core`, pending independent ChatGPT audit, user-controlled merge and both exact-merge-SHA gates. C2+ remains unimplemented. See `BUILD_STATE.md` for evidence and outstanding gates.
+C1 closed through PR #22 on `f1003c236cbce5102efcddd1bf7cda20e4f8ed8b`. Read-only checks verified [Deploy staging 34276571767](https://github.com/Beeyach/bloomops/actions/runs/34276571767) and [Verify zero-to-current 34276571760](https://github.com/Beeyach/bloomops/actions/runs/34276571760), including disposable-database cleanup, succeeded on that exact merge SHA. C2 Production Pipeline is implemented and locally verified on `codex/c2-production-pipeline`, pending independent ChatGPT audit. Independent audit, user-controlled merge and both exact-C2-merge-SHA gates precede C3. C3+ remains unimplemented. See `BUILD_STATE.md`.
 
 ## Goal
 
@@ -63,7 +63,7 @@ Default production stages:
 - Scheduled
 - Published
 
-Stages are conditional. Content-specific workflow flags decide which steps apply. A later phase must define exact legal transitions instead of allowing arbitrary stage writes.
+Stages are conditional. Content-specific workflow flags decide which steps apply. C2 defines exact legal transitions through a dedicated operation; ordinary detail edits cannot write stage or publication authority.
 
 ## Phase Sequence
 
