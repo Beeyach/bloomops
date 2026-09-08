@@ -257,8 +257,23 @@ try {
   for (const width of widths) await layout('file-retry', owner.page, width);
   await dialog.locator('#file-upload').setInputFiles(file('Retry handoff.txt')); await dialog.getByRole('button', { name: 'Upload', exact: true }).click(); await dialog.waitFor({ state: 'hidden' }); await row(failedId).getByText('Ready', { exact: true }).waitFor();
   await owner.page.waitForFunction(id => document.querySelector(`[data-file-id="${id}"]`)?.contains(document.activeElement), failedId);
-  check('retry restores focus to a surviving File control and records one Ready event', history().filter(event => event.subject_id === failedId && event.event_type === 'FILE_UPLOADED').length === 1);
   await keyboardActivate(owner.page, row(failedId).getByRole('button', { name: 'Archive file', exact: true })); dialog = owner.page.getByRole('dialog');
+  // B7: inspect immediately, before CLI history reads or five-width captures
+  // can let the real five-second success toast expire and hide an obstruction.
+  for (const width of [390, 320]) {
+    await owner.page.setViewportSize({ width, height: 900 });
+    await dialog.evaluate(async panel => {
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      await Promise.all(panel.getAnimations({ subtree: true }).map(animation => animation.finished.catch(() => {})));
+    });
+    check(`fresh upload toast remains present during ${width}px archive confirmation`, await owner.page.locator('.bo-toast').count() > 0);
+    await owner.page.screenshot({ path: join(out, `file-toast-${width}.png`), animations: 'disabled' }); screenshots++;
+    check(`upload toast cannot intercept the ${width}px Archive button`, await dialog.getByRole('button', { name: 'Archive file', exact: true }).evaluate(button => {
+      const rect = button.getBoundingClientRect(), hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+      return hit === button || button.contains(hit);
+    }));
+  }
+  check('retry restores focus to a surviving File control and records one Ready event', history().filter(event => event.subject_id === failedId && event.event_type === 'FILE_UPLOADED').length === 1);
   for (const width of widths) await layout('file-archive', owner.page, width);
   await dialog.getByRole('button', { name: 'Archive file', exact: true }).click(); await dialog.waitFor({ state: 'hidden' }); await row(failedId).waitFor({ state: 'detached' });
   await owner.page.waitForFunction(() => document.activeElement?.id === 'upload-file'); check('archive restores focus after removing the row and denies downloads', stored().find(file => file.id === failedId).status === 'archived' && (await client.context.request.get(base + itemPath(failedId) + '/download')).status() === 404);
