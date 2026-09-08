@@ -4,6 +4,7 @@ import { EmptyState, Facts, Status } from './Primitives';
 import { PortalMilestones } from './Milestones';
 import { PortalDeliverables } from './Deliverables';
 import { PortalFiles } from './Files';
+import { WorkSummary } from './WorkSummary';
 
 export function ProjectStatus({ status }) {
   return <Status label={PROJECT_STATUS_LABELS[status]} tone={PROJECT_STATUS_TONES[status]} glyph={status === 'completed' ? 'check' : ['waiting', 'blocked'].includes(status) ? 'clock' : 'dot'} />;
@@ -26,6 +27,7 @@ export function ProjectList({ projects, filtered = false, hasMore = false }) {
         </div>
         <div className="bo-project-state"><ProjectStatus status={project.status} /><ProjectHealth health={project.health} /></div>
         <div className="bo-project-meta"><span>{project.targetDate ? `Target ${formatDate(project.targetDate)}` : 'No target date'}</span><span className="bo-small">{project.ownerName || 'No owner yet'}</span></div>
+        <WorkSummary project={project} />
       </li>)}
     </ul>
     {hasMore && <p className="bo-small">Showing the first {projects.length} projects. Choose a status or open a client’s Projects tab to narrow the view.</p>}

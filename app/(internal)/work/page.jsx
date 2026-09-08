@@ -1,6 +1,6 @@
 import { requireShell } from '@/lib/bloomops/shell-server.mjs';
 import { ACTIONS } from '@/lib/bloomops/authorization.mjs';
-import { listProjects } from '@/lib/bloomops/projects.mjs';
+import { listProjectSummaries } from '@/lib/bloomops/work-projections.mjs';
 import { PROJECT_STATUSES, PROJECT_STATUS_LABELS } from '@/lib/bloomops/project-values.mjs';
 import { Button, Field, PageHeader } from '@/components/bloomops/Primitives';
 import { ProjectList } from '@/components/bloomops/Projects';
@@ -30,7 +30,7 @@ export default async function WorkPage({ searchParams }) {
     </>;
   }
   const status = PROJECT_STATUSES.includes(query?.status) ? query.status : 'all';
-  const projects = await listProjects(access.db, actor, { status });
+  const projects = await listProjectSummaries(access.db, actor, { status });
   return <>
     <PageHeader title="Projects" subtitle="Work · Delivery across your clients and services." actions={ACTIONS['project.create'].roles.includes(actor.role) && <Button href="/work/projects/new" variant="primary">Create project</Button>} />
     <WorkTabs active="projects" />

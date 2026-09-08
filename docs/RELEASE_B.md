@@ -58,15 +58,15 @@ Separate Deliverables, exact lifecycle, Project coordination, visibility, Client
 
 ### B5 — Files
 
-Implemented and locally verified on `codex/b5-files`: D1 asset metadata and fixed Project/Deliverable links, the existing R2 binding, a 5 MiB upload limit, recoverable upload generations, current authorization for metadata/downloads, visibility/archive, filtered activity and internal/conditional Client Files UI. Model and limits are in `DOMAIN_MODEL.md`; evidence is in `BUILD_STATE.md`. Independent audit, user-controlled merge and both post-merge gates are required before B6 starts.
+B5 closed after PR #19 merged as `4c6dad696d15fac4094b8172788b5c72642ff757`. Read-only preflight confirmed [Deploy staging 34221696674](https://github.com/Beeyach/bloomops/actions/runs/34221696674) and [remote zero-to-current 34221696667](https://github.com/Beeyach/bloomops/actions/runs/34221696667) succeeded on that exact SHA. D1 asset metadata, fixed Project/Deliverable links, bounded R2 upload/recovery, current download authorization and conditional Client Files remain defined in `DOMAIN_MODEL.md`; historical evidence is in `BUILD_STATE.md`.
 
 ### B6 — Work + Home Projections
 
-Extend B3’s working Mine/Today/Upcoming/Waiting/Review/Overdue/All Action views with later canonical Deliverable/File and Project summaries, plus a useful Home dashboard. B3 does not implement that later composition.
+B6 on `codex/b6-work-home-projections` replaces orientation Home with bounded operational sections and adds readable Milestone/Action/Deliverable/Ready File summaries to Work Projects. It reuses B3's exact views, filters, timezone and dependency rules. All facts remain canonical; B6 is schema-free and dashboard File composition uses D1 metadata only. Current implementation, deterministic attention/date rules and verification are in `DOMAIN_MODEL.md`, `phases/B6.md` and `BUILD_STATE.md`. Independent audit, user-controlled merge and both gates on the actual B6 merge SHA remain required. The schema-free diff does not match the zero-verifier's push path filter, so dispatch that existing workflow manually on the merge SHA if it does not run automatically.
 
 ### B7 — Release B Hardening
 
-No new product features. Attack tenant isolation, assignment scope, visibility, lifecycle, dependency cycles, file authorization, retries, concurrency, responsive UX, and Release B acceptance stories.
+Unimplemented. After B6 closes, attack tenant isolation, assignment scope, visibility, lifecycle, dependency cycles, file authorization, retries, concurrency, responsive UX, and Release B acceptance stories. No new product features and no automatic start.
 
 This sequence is implementation guidance. If repository evidence requires a smaller safe split, preserve the same product boundaries rather than pulling later Release features forward.
 

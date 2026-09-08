@@ -2071,6 +2071,33 @@ select.bo-control {
   .bo-project-dates { grid-template-columns: minmax(0, 1fr); gap: 0; }
 }
 
+/* B6: compact summaries and editorial Home sections over canonical work. */
+.bo-work-summary { grid-column: 1 / -1; list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 4px 24px; font-size: 13px; color: var(--bo-text-soft); }
+.bo-work-summary li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; min-width: 0; }
+.bo-work-summary a { display: inline-flex; align-items: center; min-height: 44px; overflow-wrap: anywhere; }
+.bo-home-action-sections { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 40px; }
+.bo-home-action-sections .bo-action-row { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+.bo-home-action-sections .bo-action-meta { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; gap: 8px 16px; }
+.bo-home-projects, .bo-home-outputs { list-style: none; padding: 0; margin: 0; }
+.bo-home-projects > li { padding: 16px 0; border-bottom: 1px solid var(--bo-border); }
+.bo-home-project-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
+.bo-home-project-head > div, .bo-home-outputs > li > div { min-width: 0; }
+.bo-home-reason { color: var(--bo-text-soft); font-size: 14px; flex-shrink: 0; }
+.bo-home-outputs > li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px 24px; padding: 16px 0; border-bottom: 1px solid var(--bo-border); overflow-wrap: anywhere; }
+.bo-home-output-state { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; font-size: 14px; }
+.bo-home .bo-project-name { min-height: 44px; }
+@media (max-width: 767px) {
+  #project-milestones-title, #project-actions-title, #project-deliverables-title, #project-files-title { scroll-margin-top: calc(var(--bo-topbar) + var(--bo-s4)); }
+}
+@media (min-width: 1200px) { .bo-home-action-sections { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+@media (max-width: 639px) {
+  .bo-home-project-head { flex-direction: column; }
+  .bo-home-reason { flex-shrink: 1; overflow-wrap: anywhere; }
+  .bo-home-outputs > li, .bo-home-action-sections .bo-action-row { grid-template-columns: minmax(0, 1fr); }
+  .bo-home-output-state { flex-direction: row; flex-wrap: wrap; gap: 8px 16px; }
+  .bo-work-summary { flex-direction: column; gap: 0; }
+}
+
 /* B2: ordered delivery steps in the Project, with quieter portal detail. */
 .bo-milestones { list-style: none; margin: 0; padding: 0; }
 .bo-milestone { padding: 20px 0; border-bottom: 1px solid var(--bo-border); min-width: 0; }
