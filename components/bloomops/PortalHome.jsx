@@ -1,5 +1,6 @@
 import Onboarding from './Onboarding';
 import { Surface } from './Primitives';
+import { PortalProjects } from './Projects';
 
 // The server supplies only the dedicated Client-safe onboarding projection.
 
@@ -41,6 +42,10 @@ export function PortalHome({ workspaceName, user, clients = [] }) {
       {clients.map(client => <section key={client.id} className="bo-section" aria-labelledby={`onboarding-${client.id}`}>
         <h2 id={`onboarding-${client.id}`} className="bo-h2">{single ? 'Your onboarding' : `${client.name} · Onboarding`}</h2>
         <Onboarding clientId={client.id} onboarding={client.onboarding} portal />
+      </section>)}
+      {clients.filter(client => client.projects?.length).map(client => <section key={`projects-${client.id}`} className="bo-section" aria-labelledby={`projects-${client.id}`}>
+        <h2 id={`projects-${client.id}`} className="bo-h2">{single ? 'Your projects' : `${client.name} · Projects`}</h2>
+        <PortalProjects projects={client.projects} />
       </section>)}
     </>
   );

@@ -123,19 +123,20 @@ export const CLIENT_TABS = [
   ['activity', 'Activity'],
 ];
 
-export function isClientTab(key) {
-  return CLIENT_TABS.some(([id]) => id === key);
+export function isClientTab(key, hasProjects = false) {
+  return CLIENT_TABS.some(([id]) => id === key) || (hasProjects && key === 'projects');
 }
 
 // The five Release A tabs. Links again, so each tab is an address a person
 // can share and return to, and so the browser's own back behaviour works.
 // The strip scrolls inside itself on a narrow screen rather than shrinking
 // five labels into something unreadable or pushing the page sideways.
-export function ClientTabs({ clientId, active }) {
+export function ClientTabs({ clientId, active, hasProjects = false }) {
+  const tabs = hasProjects ? [...CLIENT_TABS.slice(0, 3), ['projects', 'Projects'], ...CLIENT_TABS.slice(3)] : CLIENT_TABS;
   return (
     <nav className="bo-tabs" aria-label="Client sections">
       <ul className="bo-tab-strip">
-        {CLIENT_TABS.map(([key, label]) => (
+        {tabs.map(([key, label]) => (
           <li key={key}>
             <a
               className="bo-client-tab"

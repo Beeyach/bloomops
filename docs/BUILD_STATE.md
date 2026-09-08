@@ -2,19 +2,19 @@
 
 ## Current Release
 
-Release A: Foundation, Auth, Clients, Services, Onboarding, Client Portal
+Release B: Work Core. Release A is closed on A11 merge `3deed08d8db2a92fcf4dc29a6a879a9945260049` with both post-merge gates verified successfully.
 
 ## Current Phase
 
-A11 Release A hardening is complete on `codex/a11-release-a-hardening`. Release A is complete and audited locally, pending independent PR review/merge and successful post-merge staging plus remote zero-to-current verification on the actual merge SHA before final release closure. A0–A10 are merged, including A10 PR #13 and the A9 activation-managed revoke correction. No Release B work is included.
+B1 Projects Core is implemented and locally verified on `codex/b1-projects-core`, ready for independent PR audit. Independent review/merge and successful post-merge staging plus remote zero-to-current on the actual merge SHA remain required before B1 closure. No B2 or later work is included.
 
-Current implementation spec: `docs/phases/A11.md`.
+Current implementation spec: `docs/phases/B1.md`; release sequence: `docs/RELEASE_B.md`.
 
 Documentation index: `docs/INDEX.md`
 
 ## Branch State
 
-PRs #2 through #13 are merged. A11 starts from main `b7d65ee6bd998fe3b04bdec60860f447cd2452d1`, verified against successful staging and remote zero-to-current runs on that exact SHA (see A11 evidence below). This branch is for independent review, not self-merge.
+PRs #2 through #14 are merged. B1 starts from main `3deed08d8db2a92fcf4dc29a6a879a9945260049`, followed by Release B/B1 planning commits and task carrier `8681479`. Read-only preflight verified successful [Deploy staging 34175768644](https://github.com/Beeyach/bloomops/actions/runs/34175768644) and [remote zero-to-current 34175768643](https://github.com/Beeyach/bloomops/actions/runs/34175768643) on that exact main SHA. This branch remains for independent review and user-controlled merge.
 
 ## Repository Agent Instructions
 
@@ -48,7 +48,64 @@ BloomOps Git history is fresh. The source commit object does not exist in the Bl
 - A8: five workspace onboarding defaults, immutable version creation and atomic publishing, deterministic logical-key compilation, relational multi-version provenance, and atomic generated onboarding; audited and merged as PR #10, staging deployed successfully
 - A9: authorized Draft → Onboarding activation, atomic A8 generation and core activity, durable initial-activation identity, recoverable invitation delivery, explicit portal contact linkage, and minimal internal activation/retry UX; merged with generic revoke ownership correction as PR #12
 - A10: scoped onboarding portal and internal operational tab, durable Client submission, coordinator verification/completion, reasoned waiver/N/A, atomic onboarding completion and Client Active transition; merged as PR #13
-- A11: twelve reproduced hardening corrections, 82 new adversarial regressions, fresh/no-op migration proof, actual workerd/D1 and built-Worker verification, and both Release A browser acceptance stories; complete and audited locally, with independent review/merge and both post-merge gates still required
+- A11: twelve reproduced hardening corrections, 82 new adversarial regressions, fresh/no-op migration proof, actual workerd/D1 and built-Worker verification, and both Release A browser acceptance stories; merged as PR #14 with both post-merge gates passed on `3deed08`. Release A is closed. The following A11 section preserves its historical pre-merge evidence.
+
+## Projects Core (B1)
+
+B1 adds the canonical Project model, Project assignments, scoped internal APIs and Work screens, conditional Client Projects tab, and minimal safe Project summaries in the existing portal. The detailed lifecycle matrix and access rules are recorded in `DOMAIN_MODEL.md` under Projects. There are no Milestone/Action/Deliverable/File placeholders, automatic Project generation, notifications, or later Release B features.
+
+### Implementation decisions
+
+- Additive Drizzle migration `0008_b1_projects_core.sql` creates `projects` and `project_assignments` and the Service composite unique index needed for workspace-and-Client foreign-key enforcement. Historical migrations and Release A tables are preserved. There are now 29 domain tables.
+- Parent Client and optional Service stay fixed in B1. Service-specific Department is derived; client-level Department is optional. New relationships validate active members/departments and open Services, with guards rechecked inside the committing batch.
+- Explicit Project assignments add only Project scope. Client-wide and Service-specific assignments apply to their ordinary child Projects; Department and ownership grant nothing. Restricted Projects preserve A4's narrower visibility, including Project Manager restrictions.
+- Status, health, responsibility and Client/Service lifecycles remain separate. A revision-based conditional batch atomically writes each change and its semantic activity. Retries converge without duplicate events; completion and its winning timestamp survive archiving. No natural name uniqueness is invented.
+- Protected API routes retain A11 origin protection, body allowlists, sanitized failures, and `no-store`. SQL reads recheck live membership/scope/visibility; large assignment scopes use relational predicates. Portal selects only label/status/dates and Client context. Internal Client history also respects current Project restrictions.
+- UI reuses Bloom's primitives, dialogs, field labels, toasts, typography and semantic colors. Work is now available; its list shows status, health, client/service context, owner and target date. Client and portal Project sections appear only for relevant records. Lists cap at 200 with an explicit notice and status/Client narrowing.
+
+### Verification
+
+All verification uses Node 22.22.1, isolated local D1/R2 and example.com identities. No production deployment, staging business-data mutation, real email, DNS, or Leadsthatbloom action was performed.
+
+| Check | Result |
+|---|---|
+| `npm ci` | Passed; dependency manifests and lockfile unchanged. |
+| `node --test tests/bloomops-projects-*.test.mjs` | 97/97 passed: lifecycle, relational/tenant constraints, real-session API denials, stale state, retries/concurrency, activity rollback, visibility, large scope, and conditional UI/portal projection. |
+| Auth/authorization/membership/invitation/mail/middleware/Client/Service/assignment regressions plus A8/A9/A10/A11 | 421/421 passed. Includes A8 72, A9 44, A10 39 and A11 82. |
+| `npm test` | 3,180/3,180 passed; zero failures/skips. |
+| `npm run build`; `npm run cf:build` | Both passed, including Next lint/type checks and OpenNext Worker generation. |
+| `node .github/scripts/verify-zero-remote.mjs --local` | 22/22 passed: empty disposable database, all 60 inherited and 9 domain migrations, 65 total migration-defined tables including ledgers / 29 domain tables, 64 domain indexes, 13 immutability triggers, foreign-key/integrity checks, identical complete schema and both ledgers after a no-op second pass. |
+| `node scripts/projects-smoke-local.mjs` | 25/25 passed on actual disposable workerd/D1, including transaction rollback, conflicting transitions, assignments, immediate revocation and 230 assigned Projects. |
+| `node scripts/release-a-hardening-smoke-local.mjs` | 26/26 A11 actual workerd/D1 checks passed against the new schema. |
+| `node scripts/auth-smoke-local.mjs --url http://localhost:8787` | 144/144 built-Worker HTTP checks passed. |
+| `node .github/scripts/verify-staging.mjs --url http://localhost:8787 --expect-env development` | 21/21 passed; local target only. |
+| `node scripts/projects-review-local.mjs --url http://localhost:8787 --out /tmp/bloomops-b1-review --playwright /tmp/bloomops-a11-browser` | 124/124 browser/HTTP checks passed, 42 screenshots at 1440/1024/768/390/320px. Covers create/double-click/validation, modal keyboard focus, lifecycle and independent health, assignment edit/removal, Team read-only scope, parent/sibling denials, conditional Client tab, safe single/multi-client portal, sanitized rollback, visibility revocation and suspended sessions. |
+| `node --check` on changed/new JavaScript; `git diff --check` | 32 modules/scripts passed syntax checks; diff check passed. JSX is verified by both application builds. |
+
+The local Worker received migration 0008 and runs via `npx --no-install opennextjs-cloudflare preview -- --log-level error`. This is separate from the fresh disposable migration proof. The live Bloomlab design gallery was successfully rendered and inspected; its capture is `/tmp/bloomops-b1-review/design-reference.png`. Creation, detail, Work list, portal and status-dialog captures were visually reviewed in addition to the automated geometry/keyboard assertions. Screenshots and command logs remain local `/tmp/bloomops-b1-*` evidence, not repository assets. Existing Playwright 1.63.0 / Chromium 153 tooling lives outside the repository at `/tmp/bloomops-a11-browser`; no browser dependency was added.
+
+Verification corrections: the A4 action matrix now explicitly includes all four Project actions; shell/schema expectations account for B1. The old A9 assertion that Projects did not exist is replaced with the stronger current invariant that activation creates zero Project records. A11's disposable smoke still verifies the complete Release A migration prefix while accepting the additive B1 migration. The B1 D1 fixture now explicitly seeds active memberships and uses D1's supported `quick_check`. An existing Worker HTTP smoke `SELECT` met `SQLITE_BUSY` through its independent local Wrangler connection; its helper now retries at most three times, only for read-only queries and an explicit lock error. No application mutation or uncertain failure is retried by that correction. The SQLite/D1 transaction double is unchanged.
+
+The initial Project browser run successfully created and assigned work, but its parent-denial check used GET on the existing PATCH-only Client endpoint. The harness now checks the real protected Client Projects GET instead and independently asserts both Project access and parent denial. A subsequent injected-failure check proved sanitized HTTP 500 plus unchanged Project/revision but rejected Next's additional `private, no-cache, max-age=0, must-revalidate` cache directives. The assertion now checks for the required `no-store` directive without rejecting stronger accompanying directives. Modal captures disable finite animations and use the actual viewport so fixed overlays are inspected after settling. Local magic-link rate-limit refusals are waited out; no general application failure is replayed.
+
+A later browser attempt was interrupted when the local preview process exited with SIGTERM (143), causing a socket failure. The same verified bundle was restarted for final acceptance; no application change was made. Browser transport diagnostics now omit cookie/authorization/token lines, and sessions for the disposable B1 fixture identities were revoked before restarting that run.
+
+An intermittent portal geometry assertion was isolated against the real page: its account control measured 44px after settling. Responsive measurements now wait for fonts, two animation frames and finite animations, and print exact geometry on a failure. The final preview runs in a separate local process so the verification terminal lifecycle does not own it. These are harness changes; the application builds and invariant-test evidence remain unchanged.
+
+### Scope and next phase
+
+B1 is subject to independent review and user-controlled merge. Successful staging deployment and remote zero-to-current on that actual merge SHA are still required before closure. B2 — Milestones is next and is not implemented. The internal list limit and fixed Project parents are deliberate B1 boundaries.
+
+### Changed files by area
+
+Paths below are relative to the repository root and cover the final B1 diff against verified main, including the supplied Release B/B1 planning commits. The temporary `B1_CODEX_PROMPT.txt` is removed with no net prompt-file diff against main.
+
+- Domain: `lib/bloomops/project-values.mjs`, `projects.mjs`, `project-access.mjs`, `project-assignments.mjs`, `project-activity.mjs`, `authorization.mjs`, `activity.mjs`, `client-activity.mjs`.
+- API: `lib/bloomops/project-api.mjs`; `app/api/bloomops/projects/route.js`, `projects/[id]/route.js`, `projects/[id]/transition/route.js`, `projects/[id]/assignments/route.js`, `projects/[id]/assignments/[assignmentId]/route.js`, `clients/[id]/projects/route.js`, `portal/projects/route.js`, `portal/projects/[id]/route.js` (all route paths under `app/api/bloomops/`).
+- UI: `app/(internal)/work/page.jsx`, `work/projects/new/page.jsx`, `work/projects/[id]/page.jsx`, `clients/[id]/page.jsx` (under `app/(internal)/`); `app/portal/page.jsx`, `app/bloomops.css`; `components/bloomops/Projects.jsx`, `ProjectForm.jsx`, `ProjectControls.jsx`, `ProjectTeam.jsx`, `Clients.jsx`, `PortalHome.jsx`; `lib/bloomops/navigation.mjs`.
+- Schema/migrations: `lib/bloomops/schema.mjs`, `drizzle/0008_b1_projects_core.sql`, `drizzle/meta/0008_snapshot.json`, `drizzle/meta/_journal.json`.
+- Tests/verification: `tests/_projects.mjs`, `bloomops-projects-domain.test.mjs`, `bloomops-projects-http.test.mjs`, `bloomops-projects-schema.test.mjs`, `bloomops-projects-ui.test.mjs`, `bloomops-activation.test.mjs`, `bloomops-authorization.test.mjs`, `bloomops-schema.test.mjs`, `bloomops-shell.test.mjs` (under `tests/`); `scripts/projects-smoke-local.mjs`, `projects-review-local.mjs`, `auth-smoke-local.mjs`, `release-a-hardening-smoke-local.mjs` (under `scripts/`).
+- Docs: `docs/BUILD_STATE.md`, `docs/DOMAIN_MODEL.md`, `docs/INDEX.md`, `docs/RELEASE_B.md`, `docs/phases/B1.md`.
 
 ## Release A Hardening (A11)
 

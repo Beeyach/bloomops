@@ -11,6 +11,7 @@
 // client in Agency B), and one person who is a Team Member in A and the
 // Owner of B. Agency B has its own Owner, Admin, and client.
 import { test } from 'node:test';
+import { projectResource } from '../lib/bloomops/project-access.mjs';
 import assert from 'node:assert/strict';
 import { testAuth, run, one, all, APP_URL } from './_bloomops-db.mjs';
 import { runBootstrap } from '../lib/bloomops/bootstrap.mjs';
@@ -279,6 +280,7 @@ test('the role matrix: every role against every representative action, allow and
   };
   const jamesClient = await loadClientResource(s.db, s.A, 'c_james');
   const jamesSocial = await loadServiceResource(s.db, s.A, 'se_james_social');
+  const jamesProject = projectResource({ id: 'project-james', workspaceId: s.A, clientId: 'c_james', visibility: 'client' }, [], { internal: false });
   const cases = {
     'members.manage': [true, true, false, false, false],
     'invitations.manage': [true, true, false, false, false],
@@ -305,6 +307,10 @@ test('the role matrix: every role against every representative action, allow and
     'service.create': [true, true, true, false, false],
     'client.assign': [true, true, true, false, false],
     'service.assign': [true, true, true, false, false],
+    'project.create': [true, true, true, false, false],
+    'project.view': [true, true, true, true, true],
+    'project.manage': [true, true, true, false, false],
+    'project.assign': [true, true, true, false, false],
     'legacy.prospecting': [true, true, false, false, false],
   };
   // Which record each resource action is asked about, so the matrix uses
@@ -322,6 +328,10 @@ test('the role matrix: every role against every representative action, allow and
     'service.view': jamesSocial,
     'service.manage': jamesSocial,
     'service.assign': jamesSocial,
+    'project.create': jamesClient,
+    'project.view': jamesProject,
+    'project.manage': jamesProject,
+    'project.assign': jamesProject,
   };
   assert.deepEqual(Object.keys(cases).sort(), Object.keys(ACTIONS).sort(), 'every action is in the matrix');
   for (const [action, policy] of Object.entries(ACTIONS)) {

@@ -2048,3 +2048,25 @@ select.bo-control {
   .bo-onboarding-item-head { flex-direction: column; gap: 8px; }
   .bo-onboarding-controls .bo-btn { width: 100%; }
 }
+
+/* B1 Projects: quiet rows, readable facts, and forms that fit the viewport. */
+.bo-project-row { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(130px, auto) minmax(130px, auto); gap: 24px; align-items: center; padding: 22px 0; border-bottom: 1px solid var(--bo-border); }
+.bo-project-name { display: inline-block; font-weight: 600; padding: 10px 0; overflow-wrap: anywhere; }
+.bo-project-state, .bo-project-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
+.bo-project-meta { font-size: 13px; overflow-wrap: anywhere; }
+.bo-project-filter { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 12px; margin: 0 0 24px; }
+.bo-project-filter .bo-field { margin: 0; min-width: 180px; }
+.bo-project-filter .bo-btn { margin-bottom: 1px; }
+.bo-project-form { max-width: 640px; }
+.bo-project-fields { display: grid; gap: 20px; }
+.bo-project-dates { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.bo-project-dates > * { min-width: 0; }
+.bo-project-reason { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 16px; }
+@media (max-width: 767px) {
+  .bo-project-row { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 20px 0; }
+  .bo-project-state { flex-direction: row; flex-wrap: wrap; gap: 8px 16px; }
+  .bo-project-meta { flex-direction: row; flex-wrap: wrap; gap: 8px 16px; }
+}
+@media (max-width: 389px) {
+  .bo-project-dates { grid-template-columns: minmax(0, 1fr); gap: 0; }
+}
