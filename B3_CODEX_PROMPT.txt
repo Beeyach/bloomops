@@ -1,0 +1,143 @@
+You are implementing BloomOps Release B, phase B3: Actions + Dependencies.
+
+WORK BRANCH
+- Work only on `codex/b3-actions-dependencies`.
+- Verified B2 merge base is `74eb09a619516ae4969622f5e79a64c35d300d39`.
+- B2 Deploy staging run `34190261299` succeeded on that exact SHA.
+- B2 Verify zero-to-current run `34190261285` succeeded on that exact SHA.
+- Do not merge the PR yourself.
+
+PRE-FLIGHT
+1. Read `AGENTS.md` completely.
+2. Read `docs/BUILD_STATE.md`, `docs/INDEX.md`, `docs/ROADMAP.md`, `docs/RELEASE_B.md`, `docs/phases/B1.md`, `docs/phases/B2.md`, `docs/phases/B3.md`, `docs/DOMAIN_MODEL.md`, `docs/PRODUCT_SPEC.md`, `docs/DESIGN_SYSTEM.md`, and `docs/DESIGN_CHECKLIST.md`.
+3. Inspect the current B1/B2 Project and Milestone schema, authorization, activity, API, UI, tests, migrations, local D1/workerd smoke scripts, browser review harness, and zero-to-current workflow.
+4. Verify `main` still points to `74eb09a619516ae4969622f5e79a64c35d300d39`. If main moved unexpectedly, stop and report it before implementation.
+5. Verify the two B2 post-merge runs above are successful on that exact SHA.
+6. Inspect inherited schema/table names before choosing the Action physical table name. UI terminology must remain `Action` even if storage uses another safe name.
+
+IMPLEMENT THE B3 CONTRACT
+Treat `docs/phases/B3.md` as the phase contract. Preserve all Release A, B1, and B2 invariants.
+
+Key requirements:
+- Add Actions as internal work. Every Action belongs to one Project; optional Milestone must belong to that same Project/workspace.
+- Derive Client, Service, and Department context from Project instead of duplicating competing parent facts.
+- Add a bounded priority vocabulary, due date, optional assignee, Waiting type/explanation, revision/concurrency, and safe create retry semantics.
+- Keep Actions internal-only in B3. No Client portal Action route, projection, count, activity, or guessed-ID access.
+- Use the B3 lifecycle contract exactly unless repository evidence requires a narrower safe correction that you document.
+- Done owns a server completion timestamp. Done and Cancelled are terminal.
+- Owner/Admin/Project Manager coordinate reachable Actions.
+- Team Members may progress only Actions currently assigned to their own active membership. They do not create/reassign/edit structural fields/manage dependencies.
+- Action assignment may grant that Action only, with minimal context. It must not grant parent Client/Service/full Project/siblings.
+- Reassignment or assignee deactivation must revoke Action-only access immediately.
+- Department membership and Project ownership are never authorization grants.
+- Restricted Action behavior must remain narrower than ordinary internal work.
+
+DEPENDENCIES
+- Add a simple directed Action dependency table.
+- Same workspace and same Project only.
+- No self-edge, no duplicate edge.
+- Prevent cycles atomically, including long cycles and concurrent competing edge creation.
+- Do not rely on a preflight-only in-memory graph check.
+- Dependency changes never rewrite Action lifecycle automatically.
+- Done satisfies a prerequisite. Cancelled remains unresolved unless stronger current repository evidence requires a different rule and you document/test it.
+- Derive dependency-blocked state. Do not store a second blocked lifecycle fact.
+- A dependency-blocked Action with a past due date is not ordinary overdue.
+
+WORK UI
+Make B3 useful as daily work, consistent with `PRODUCT_SPEC.md`.
+- Functional Action views: Mine, Today, Upcoming, Waiting, Review, Overdue, All.
+- B3-ready filters: Client, Department, Service, Project, Assignee, Status, Priority.
+- Add Project-detail Actions integration with coordinator controls and Team Member assigned-work progress behavior.
+- Show dependency-blocked state clearly without generic SaaS card clutter.
+- Keep result sets bounded and use relational predicates rather than huge bound-ID lists.
+- Do not create Deliverables/Files/Requests placeholders.
+
+AUTHORIZATION / API / HISTORY
+- Extend the centralized authorization engine deliberately for Action view/manage/progress/dependency operations.
+- Recheck live membership/workspace/scope/assignment/visibility inside committing writes.
+- Protected routes keep real sessions, origin checks, strict JSON objects, exact body allowlists, sanitized errors, leak-safe 404 behavior, and `no-store`.
+- Use atomic activity patterns from A11/B1/B2.
+- Add distinct semantic Action/dependency activity events.
+- Project/Client internal history may include Action events only when the Action is currently readable by that actor. Historical titles must disappear after restriction/reassignment/scope revocation.
+- Clients receive no Action history.
+
+MIGRATION
+- Additive migration after B2, expected `0010_b3_actions_dependencies.sql` unless journal state requires another exact name.
+- Do not rewrite historical migrations or rebuild Release A/B1/B2 tables.
+- Update Drizzle schema/journal/snapshot consistently.
+- Preserve the B2 zero-verifier push triggers for `lib/bloomops/schema.mjs` and `drizzle/**` and all disposable-target safety.
+
+CONCURRENCY / ADVERSARIAL TESTING
+Attack at least:
+- cross-workspace/client/project/milestone guessed IDs
+- Team Member no scope
+- Department-only and owner-only non-grants
+- Action-only assignment narrowness
+- reassignment/deactivation immediate revocation
+- restricted Action access
+- malformed/non-object bodies
+- field forgery
+- stale expected revisions
+- identical retries
+- competing status/edit/assignment writes
+- activity failure rollback
+- dependency self/duplicate/cross-project/foreign edges
+- long cycles and concurrent cycle attempts
+- dependency removal retries
+- prerequisite status races
+- overdue exclusion while dependency-blocked
+- D1 bind-limit behavior
+- parent lifecycle immutability
+
+VERIFICATION
+Run the strongest current equivalents of all of these before opening the PR:
+- `npm ci`
+- focused B3 domain/API/schema/UI/security/dependency tests
+- B1 Project regressions
+- B2 Milestone regressions
+- A8/A9/A10/A11 and core auth/authorization/security regressions
+- full `npm test`
+- `npm run build`
+- `npm run cf:build`
+- fresh migration and identical no-op second pass
+- `node .github/scripts/verify-zero-remote.mjs --local`
+- actual workerd/D1 Action/dependency smoke
+- built Worker HTTP smoke
+- local external verifier
+- browser/HTTP acceptance at 1440, 1024, 768, 390, and 320px
+- keyboard/focus checks for create/edit/status/dependency interactions
+- JavaScript syntax checks
+- `git diff --check`
+
+If the browser or D1 harness exposes a real issue, reproduce and fix the product bug. If it exposes only a harness bug, fix the harness narrowly and document the correction in `docs/BUILD_STATE.md`.
+
+DOCUMENTATION
+Before finalizing:
+- Update `docs/BUILD_STATE.md` with exact B3 implementation decisions, changed files by area, test/build/browser counts, migration evidence, any harness corrections, dependency advisory status, and remaining post-merge gates.
+- Expand `docs/DOMAIN_MODEL.md` Actions/dependencies from proposed concepts to the actual B3 implementation truth.
+- Update `docs/INDEX.md` and `docs/RELEASE_B.md` so B1 and B2 are recorded as closed and B3 is current/implemented awaiting audit.
+- Keep B4 Deliverables and later phases explicitly unimplemented.
+
+PROMPT FILE
+Delete `B3_CODEX_PROMPT.txt` before the final implementation commit so there is no net prompt-file diff against main.
+
+PR
+Open one PR against `main` when everything is green.
+Report:
+- PR number/title
+- final head SHA
+- verified base SHA
+- changed-file count and grouped changed paths
+- exact test/build/migration/Worker/browser counts
+- any known limitations or unchanged dependency advisories
+- confirmation that the prompt file has no net diff
+- confirmation that B4+ remains unimplemented
+
+Do not merge. Leave the PR open for independent ChatGPT audit.
+
+SAFETY
+- No production deployment.
+- No DNS/custom-domain changes.
+- No staging business-data mutation.
+- No real client email.
+- Never touch Leadsthatbloom / `Beeyach/bloomtrack-pro`.
