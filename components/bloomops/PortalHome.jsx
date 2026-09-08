@@ -9,7 +9,7 @@ function firstName(user) {
   return name ? name.split(/\s+/)[0] : '';
 }
 
-export function PortalHome({ workspaceName, user, clients = [], milestones = {} }) {
+export function PortalHome({ workspaceName, user, clients = [], milestones = {}, deliverables = {} }) {
   const first = firstName(user);
   if (clients.length === 0) {
     return (
@@ -45,7 +45,7 @@ export function PortalHome({ workspaceName, user, clients = [], milestones = {} 
       </section>)}
       {clients.filter(client => client.projects?.length).map(client => <section key={`projects-${client.id}`} className="bo-section" aria-labelledby={`projects-${client.id}`}>
         <h2 id={`projects-${client.id}`} className="bo-h2">{single ? 'Your projects' : `${client.name} · Projects`}</h2>
-        <PortalProjects projects={client.projects} milestones={milestones} />
+        <PortalProjects projects={client.projects} milestones={milestones} deliverables={deliverables} />
       </section>)}
     </>
   );

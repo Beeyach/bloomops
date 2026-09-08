@@ -6,15 +6,15 @@ Release B: Work Core. Release A is closed on A11 merge `3deed08d8db2a92fcf4dc29a
 
 ## Current Phase
 
-B3 Actions + Dependencies is implemented on `codex/b3-actions-dependencies`. Local verification is complete; independent audit and the B3 merge/post-merge gates remain pending. B1 and B2 are closed; B4 Deliverables and all later phases remain unimplemented.
+B4 Deliverables is implemented and locally verified on `codex/b4-deliverables`; independent audit and the B4 merge/post-merge gates remain pending. B1, B2 and B3 are closed. B5 Files and all later phases remain unimplemented.
 
-Current implementation spec: `docs/phases/B3.md`; release sequence: `docs/RELEASE_B.md`.
+Current implementation spec: `docs/phases/B4.md`; release sequence: `docs/RELEASE_B.md`.
 
 Documentation index: `docs/INDEX.md`
 
 ## Branch State
 
-PRs #2 through #16 are merged. B3 starts from verified main `74eb09a619516ae4969622f5e79a64c35d300d39`, followed by phase-contract commit `b2a58d7` and temporary task carrier `03e1b72`. Read-only preflight confirmed [Deploy staging 34190261299](https://github.com/Beeyach/bloomops/actions/runs/34190261299) and [remote zero-to-current 34190261285](https://github.com/Beeyach/bloomops/actions/runs/34190261285) succeeded on that exact B2 merge SHA. B1's earlier merge `cacb2d3b8f4ff634fb5a3470a4fd5f91930ef2c1` and both of its gates are also closed. The B2 gates do not substitute for B3's future post-merge evidence. This branch is for independent review and user-controlled merge.
+PRs #2 through #17 are merged. B4 starts from verified main `884051d2c2308839f95ecdac74c9d896edf221c5`, followed by phase-contract commit `76e43ff6d70610fb5e15d98e8c567fae7ba789b9` and temporary task carrier `06dc64ba9f16968ace83097c12d486dab1a34f36`. B3 closed after PR #17 merged as `884051d2c2308839f95ecdac74c9d896edf221c5`. Read-only preflight confirmed [Deploy staging 34199099414](https://github.com/Beeyach/bloomops/actions/runs/34199099414) and [remote zero-to-current 34199099461](https://github.com/Beeyach/bloomops/actions/runs/34199099461) succeeded on that exact SHA. The B3 gates do not substitute for B4 post-merge evidence. This branch is for independent review and user-controlled merge.
 
 ## Repository Agent Instructions
 
@@ -52,10 +52,81 @@ BloomOps Git history is fresh. The source commit object does not exist in the Bl
 
 - B1: Projects Core, merged as PR #15 at `cacb2d3`, with both post-merge gates passed.
 - B2: Milestones, merged as PR #16 at `74eb09a`, with both post-merge gates passed.
+- B3: Actions + Dependencies, merged as PR #17 at `884051d`, with both post-merge gates passed.
+
+## Deliverables (B4)
+
+B4 adds client-receivable outputs inside existing Projects, independent of Actions and Dependencies. The implementation follows `phases/B4.md`; the final relational model is in `DOMAIN_MODEL.md`.
+
+### Implementation decisions
+
+- Migration `0011_b4_deliverables.sql` adds only `deliverables`: 14 columns, two indexes, workspace and composite workspace/Project foreign keys, and nine validation/coherence checks. The generated journal and snapshot match. Physical-name inspection found no inherited Deliverables table. No historical migration or Release A/B1/B2/B3 table is rewritten or rebuilt.
+- Client, Service and Department derive from the Project. Internal title and optional Client label are bounded to 120 characters; optional multiline internal description to 5000; target date must be a real calendar date. Visibility starts internal. Every Deliverable starts Planned and uses the exact seven-state B4 matrix. Delivered owns one server timestamp; Cancelled owns none; both are terminal. Coordinators may correct details after either terminal state. No Deliverable operation changes parent or B3 work records.
+- Owner/Admin/PM coordinate reachable Deliverables. Team is read-only through existing Client/Service/Project scope. Project ownership, Department membership and Action-only assignment grant nothing. Explicit Project assignment is required for PM/Team to read restricted parents or children. The Project visibility ceiling, live workspace/membership/role/scope and contact-link checks apply to reads and committing writes.
+- The portal selects only safe fields and emits exactly `id`, `label`, `statusLabel`, `targetDate`, and `deliveredAt`. Blank Client labels display the literal **Deliverable**, never the internal title. Internal Review becomes **In progress**; Client Review becomes **Ready for review**. No Client approval action or approval history is introduced. Empty/hidden-only child sets produce no section, count or progress indicator.
+- Each Project has a guarded ceiling of 200 Deliverables, following the bounded child-detail approach in B2/B3. Lists explicitly limit to 200 and use deterministic creation time/id ordering. Portal Home calls the same bounded projection for each already authorized Project; it does not build an assignment-ID `IN` list or change B1's Project listing semantics. A broad portal pagination/composition redesign is outside B4.
+- UUIDv4 creation keys are unique per workspace/Project and compare normalized initial details in immutable creation activity. Retries converge after later edits; incompatible reuse conflicts; repeated titles can intentionally create separate outputs. Details and status use revision/CAS guards. Identical retries append no duplicate semantic history or second delivered timestamp. Events and facts share conditional D1 batches; late failures roll back both.
+- Significant activity distinguishes creation, details (including changed visibility fields) and status. Client/Service context comes from Project. Project and Client histories filter past Deliverable events by current readability, so restriction or revoked scope removes old internal titles. Clients receive no internal Deliverable activity.
+- Five route files expose Project list/create, child read/edit, transition, portal list and portal child read. All use real sessions, exact object-body allowlists, Origin checks, no-store responses and sanitized 400/403/404/409/500 answers. Guessed, foreign, hidden and other-domain IDs reveal no record existence.
+- The existing Project page gains a distinct Deliverables section with create/edit/status controls, visibility and target dates. Bloom rows, typography, fields, dialogs, toast and responsive styles are reused. Buttons wait for hydration; dialogs preserve keyboard focus, including after terminal status controls disappear. No new destination, component library, state library or major dependency is introduced.
+- The automatic remote zero-to-current workflow and its disposable-target, identity, command, cleanup and concurrency safeguards are unchanged. All acceptance mutations use disposable workerd/D1 or development loopback D1/R2 and example addresses. No staging business data, production, DNS, real email or Leadsthatbloom resources are touched.
+
+### Verification
+
+Node 22.22.1; dependency manifest and lockfile unchanged.
+
+| Check | Result |
+|---|---|
+| `npm ci` | Passed: 560 packages installed, 561 audited. The existing 49 advisories remain (1 low, 43 moderate, 5 high). |
+| `node --test tests/bloomops-deliverables-*.test.mjs` | 197/197 passed: 118 domain/lifecycle/retry/concurrency/rollback, 36 scope/visibility, 22 real-session HTTP, 17 schema and 4 UI tests. |
+| `node --test tests/bloomops-projects-*.test.mjs` | 97/97 passed. |
+| `node --test tests/bloomops-milestones-*.test.mjs` | 173/173 passed. |
+| `node --test tests/bloomops-actions-*.test.mjs` | 203/203 passed. |
+| Release A/auth/authorization/security/domain regression command recorded in the B3 section | 421/421 passed. |
+| `npm test` | 3,754/3,754 passed, zero failures/skips. |
+| `npm run build` and `npm run cf:build` | Both passed, including the available lint/type checks. |
+| `node scripts/deliverables-smoke-local.mjs` | 38/38 passed on actual disposable workerd/D1, including nonempty B3 parent/work preservation, combined Team histories within binding limits, capacity, retries, delivery concurrency, live revocation and late rollback. |
+| `node scripts/projects-smoke-local.mjs`, `milestones-smoke-local.mjs`, `actions-smoke-local.mjs`, `release-a-hardening-smoke-local.mjs` | Actual D1 regressions: 25/25, 28/28, 47/47 and 26/26 passed. |
+| `node .github/scripts/verify-zero-remote.mjs --local` | 22/22 passed: fresh/no-op, 60 inherited + 12 domain migrations, 33 domain / 69 total tables including ledgers, 77 explicit indexes, 15 triggers, FK/integrity clean and schema/ledgers identical after the second pass. |
+| `npm run db:domain:migrate:local` | Migration 0011 applied to the existing development database before preview; the fresh proof above used a separate disposable target. |
+| `node scripts/auth-smoke-local.mjs --url http://localhost:8787` | 144/144 built-Worker HTTP checks passed. |
+| `node .github/scripts/verify-staging.mjs --url http://localhost:8787 --expect-env development` | 21/21 passed against the built local Worker. |
+| JavaScript/JSX syntax and `git diff --check` | 33 changed/new script/module/component/route syntax checks passed; diff check passed. |
+
+`node scripts/deliverables-review-local.mjs --url http://localhost:8787 --out /tmp/bloomops-b4-review-final` passed **141/141** browser/HTTP checks with exit 0 and **42 screenshots** at **1440, 1024, 768, 390 and 320px**, plus the loaded live design reference. The flow covers multiple outputs in a service-specific B3 Project, derived Client/Service history, complete lifecycle, keyboard entry/validation/Tab trapping/Escape/focus after terminal controls disappear, 44px mobile targets, touch, reduced motion, exact portal DTO/HTML isolation, current scope/history restriction, response-loss retries, competing writes and late rollback.
+
+Logs are under `/tmp/bloomops-b4-*`; final captures are in `/tmp/bloomops-b4-review-final/`. The live Bloomlab gallery returned HTTP 200 and was visually inspected after loading. Final Project, create/edit/status, read-only Team and portal captures were visually inspected across all five widths. Browser tooling remains outside the repo at `/tmp/bloomops-a11-browser` (Playwright 1.63.0 / Chromium 153); no browser dependency was added.
+
+The unchanged dependency advisories are the same inherited tree assessed during B3. No dependency update is required for B4. The Cloudflare build also retains its existing compatibility-date suggestion and `punycode` deprecation notice.
+
+### Verification corrections
+
+The initial full run required narrow inventory updates for Deliverables in `BLOOMOPS_TABLES`, the migration count, two permissions in the role matrix and the activation invariant (zero automatically generated Deliverables). B3's migration test and local smoke now permit later migrations while preserving the exact B3 prefix. A portal test initially matched the word progress inside the deliberately safe status **In progress**; it now checks the forbidden JSON property precisely. No production behavior was changed to satisfy that assertion.
+
+The first local preview started amid concurrent verification startup and did not respond. The HTTP harness initially could not connect; the owned preview was restarted, its development health and twelve migrations were confirmed, and HTTP acceptance restarted. Application mutations were not automatically retried after uncertain failures.
+
+Visual review caught two acceptance-fixture issues: the reference screenshot needed to wait for the loaded Design gallery instead of its loading screen, and the Service API returns `service.id`, not a top-level `serviceEngagementId`. The final harness waits for the gallery and uses the correct Service ID, then explicitly asserts both the Project Service link and each Deliverable event's derived Client/Service context. Its preservation snapshot also includes Client and Service records. These corrections change verification only. The existing five-per-minute magic-link rate limit is preserved; browser retries are limited to explicit 429 responses.
+
+
+
+### Remaining gates and scope
+
+Independent B4 audit, user-controlled merge, and successful Deploy staging plus remote zero-to-current on the actual B4 merge SHA remain required. Local evidence does not substitute for those gates. Deliberate B4 limits are 200 Deliverables per Project, fixed parent identity, terminal Delivered/Cancelled lifecycle, read-only Team and coordinator-managed review states. Files, versions, formal approval rounds/history, comments, notifications, templates, auto-generation, specialist pipelines and Home composition are intentionally absent. B5 Files is the next planned phase and remains unimplemented.
+
+### Changed files by area
+
+All 42 paths are relative to the repository root, including the supplied B4 contract. The temporary B4 Codex prompt has no net diff against main.
+
+- Domain/access/history: `lib/bloomops/deliverables.mjs`, `lib/bloomops/deliverable-values.mjs`, `lib/bloomops/deliverable-access.mjs`, `lib/bloomops/authorization.mjs`, `lib/bloomops/activity.mjs`, `lib/bloomops/project-activity.mjs`, `lib/bloomops/client-activity.mjs`.
+- API: `lib/bloomops/deliverable-api.mjs`, `app/api/bloomops/projects/[id]/deliverables/route.js`, `app/api/bloomops/projects/[id]/deliverables/[deliverableId]/route.js`, `app/api/bloomops/projects/[id]/deliverables/[deliverableId]/transition/route.js`, `app/api/bloomops/portal/projects/[id]/deliverables/route.js`, `app/api/bloomops/portal/projects/[id]/deliverables/[deliverableId]/route.js`.
+- UI: `app/(internal)/work/projects/[id]/page.jsx`, `app/portal/page.jsx`, `app/bloomops.css`, `components/bloomops/DeliverableControls.jsx`, `components/bloomops/Deliverables.jsx`, `components/bloomops/PortalHome.jsx`, `components/bloomops/Projects.jsx`.
+- Schema: `lib/bloomops/schema.mjs`, `drizzle/0011_b4_deliverables.sql`, `drizzle/meta/0011_snapshot.json`, `drizzle/meta/_journal.json`.
+- Tests/verification: `tests/_deliverables.mjs`, `tests/bloomops-deliverables-domain.test.mjs`, `tests/bloomops-deliverables-access.test.mjs`, `tests/bloomops-deliverables-http.test.mjs`, `tests/bloomops-deliverables-schema.test.mjs`, `tests/bloomops-deliverables-ui.test.mjs`, `tests/bloomops-actions-schema.test.mjs`, `tests/bloomops-activation.test.mjs`, `tests/bloomops-authorization.test.mjs`, `tests/bloomops-schema.test.mjs`, `scripts/deliverables-smoke-local.mjs`, `scripts/deliverables-review-local.mjs`, `scripts/actions-smoke-local.mjs`.
+- Documentation: `docs/BUILD_STATE.md`, `docs/DOMAIN_MODEL.md`, `docs/INDEX.md`, `docs/RELEASE_B.md`, `docs/phases/B4.md`.
 
 ## Actions + Dependencies (B3)
 
-B3 adds internal daily Actions, optional same-Project Milestones, responsibility and priority, exact lifecycle/Waiting rules, atomic cycle-safe dependency edges, live authorization, semantic history, and functional Work/Project interfaces. `DOMAIN_MODEL.md` records the final model and `phases/B3.md` preserves the implementation contract. B4 Deliverables and later phases remain unimplemented.
+B3 adds internal daily Actions, optional same-Project Milestones, responsibility and priority, exact lifecycle/Waiting rules, atomic cycle-safe dependency edges, live authorization, semantic history, and functional Work/Project interfaces. `DOMAIN_MODEL.md` records the final model and `phases/B3.md` preserves the implementation contract. B3 is now closed by PR #17 and both verified post-merge gates; the following section preserves its local implementation evidence. B4 is recorded above.
 
 ### Implementation decisions
 
@@ -106,7 +177,7 @@ The first browser run reproduced a keyboard activation lost while an Action butt
 
 ### Remaining gates and scope
 
-Independent B3 audit, user-controlled merge, and successful staging deployment plus remote zero-to-current on the actual B3 merge SHA remain required. The local checks do not substitute for those gates. Deliberate limits are 200 Actions per Project, 200 rows per Work page and 200 choices per facet; same-Project dependencies only; fixed parent identities; final Done/Cancelled lifecycle; no automatic dependency-driven transitions. B4 Deliverables is next after B3 closes. Files, comments, approvals, notifications, template generation, specialist pipelines, Finance and later Home composition remain unimplemented.
+B3 is closed: independent review and user-controlled merge produced PR #17 at `884051d2c2308839f95ecdac74c9d896edf221c5`, with staging run 34199099414 and remote zero-to-current run 34199099461 both successful on that exact SHA. Deliberate B3 limits remain 200 Actions per Project, 200 rows per Work page and 200 choices per facet; same-Project dependencies only; fixed parent identities; final Done/Cancelled lifecycle; no automatic dependency-driven transitions. B4 is recorded above. Files, comments, approvals, notifications, template generation, specialist pipelines, Finance and later Home composition remain unimplemented.
 
 ### Changed files by area
 
@@ -1711,13 +1782,13 @@ For the current phase and its audit, read:
 
 1. `AGENTS.md`
 2. this file
-3. `docs/phases/B3.md`
+3. `docs/phases/B4.md`
 
 Read additional canonical planning docs only when the phase file or `docs/INDEX.md` calls for them.
 
 ## Next Planned Phase
 
-B4 — Deliverables, after independent B3 audit, user-controlled merge, and successful staging plus remote zero-to-current verification on the actual B3 merge SHA. B4 and later phases remain unimplemented and do not start automatically.
+B5 — Files, after independent B4 audit, user-controlled merge, and successful staging plus remote zero-to-current verification on the actual B4 merge SHA. B5 and later phases remain unimplemented and do not start automatically.
 
 ### The A7 phase, for reference
 
@@ -1725,7 +1796,9 @@ A7, Services and Departments. Complete. It seeds the four departments and the in
 
 ## Last Verification
 
-2026-09-08, B3. Focused Actions 203/203, B1 97/97, B2 173/173, Release A/auth/security/domain regressions 421/421 and full suite 3,557/3,557 passed with zero failures/skips. Install, both builds including lint/type checks, 33 changed/new JavaScript syntax checks and diff checks passed. Fresh/no-op migrations: 22/22 checks, 60 inherited + 11 domain migrations, 32 domain tables, 75 explicit indexes and 15 triggers. Actual D1 B3/B1/B2/A11: 47/25/28/26; built-Worker HTTP: 144/144; local external verifier: 21/21; B3 browser/HTTP: 161/161 with 53 screenshots at all five widths. Exact commands, decisions, corrections, changed paths and unchanged 49 dependency advisories are in the B3 section above. B3 awaits independent audit, user-controlled merge and both post-merge gates; B4+ remains unimplemented.
+2026-09-08, B4. Focused Deliverables 197/197, B1 97/97, B2 173/173, B3 203/203, Release A/core 421/421 and full suite 3,754/3,754 passed with zero failures/skips. Install, both builds with lint/type checks, 33 JavaScript/JSX syntax checks and diff checks passed. Fresh/no-op verification: 22/22, 60 inherited + 12 domain migrations, 33 domain / 69 total tables, 77 explicit indexes and 15 triggers. Actual D1 B4/B1/B2/B3/A11: 38/25/28/47/26; built HTTP: 144/144; local external verifier: 21/21; final B4 browser/HTTP: 141/141 with 42 screenshots across all five widths plus the live design reference, exit 0. Exact commands, 42 changed paths, limits, fixture corrections and the unchanged 49 dependency advisories are in the B4 section above. B4 awaits independent audit, user-controlled merge and both gates on the eventual merge SHA. B5 Files remains unimplemented.
+
+2026-09-08, B3. Focused Actions 203/203, B1 97/97, B2 173/173, Release A/auth/security/domain regressions 421/421 and full suite 3,557/3,557 passed with zero failures/skips. Install, both builds including lint/type checks, 33 changed/new JavaScript syntax checks and diff checks passed. Fresh/no-op migrations: 22/22 checks, 60 inherited + 11 domain migrations, 32 domain tables, 75 explicit indexes and 15 triggers. Actual D1 B3/B1/B2/A11: 47/25/28/26; built-Worker HTTP: 144/144; local external verifier: 21/21; B3 browser/HTTP: 161/161 with 53 screenshots at all five widths. Exact commands, decisions, corrections, changed paths and unchanged 49 dependency advisories are in the B3 section above. This is historical B3 local evidence. B3 is now closed by PR #17 and both verified post-merge gates; B4 is recorded above.
 
 2026-09-08, B2. Focused Milestones 173/173, B1 Projects 97/97, Release A/auth/security/domain regressions 421/421 and full suite 3,354/3,354 passed with zero failures/skips. Install, both builds with lint/type checks, 28 changed/new JavaScript syntax checks and diff checks passed. Fresh/no-op migrations: 22 checks; actual D1 B2/B1/A11: 28/25/26; built-Worker HTTP: 144/144; external local verifier: 21/21; B2 browser/HTTP acceptance: 117/117 with 38 screenshots at all five widths. Implementation, exact commands, verification corrections and existing dependency advisories are recorded in the B2 section above. This is historical B2 local evidence; B2 is now closed by PR #16 and both verified post-merge gates. B3 is recorded above.
 

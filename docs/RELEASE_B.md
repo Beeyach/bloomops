@@ -46,13 +46,15 @@ Milestone schema, ordering, lifecycle, Project detail integration, visibility, a
 
 ### B3 — Actions + Dependencies
 
-Implemented on `codex/b3-actions-dependencies`: internal Actions, narrow and revocable assignment, priority/dates/Waiting, explicit lifecycle, atomic cycle-safe dependency edges, canonical activity, Project integration and scoped daily Work views. Local verification is complete; independent audit is pending. The final model is in `DOMAIN_MODEL.md`; contract and evidence are in `phases/B3.md` and `BUILD_STATE.md`. Merge and both post-merge gates remain required.
+B3 closed after PR #17 merged as `884051d2c2308839f95ecdac74c9d896edf221c5`. Read-only preflight confirmed [Deploy staging 34199099414](https://github.com/Beeyach/bloomops/actions/runs/34199099414) and [remote zero-to-current 34199099461](https://github.com/Beeyach/bloomops/actions/runs/34199099461) succeeded on that exact SHA.
+
+Internal Actions, revocable assignment, priority/dates/Waiting, exact lifecycle, atomic cycle-safe dependencies, canonical activity, Project integration and scoped daily Work views. Contract and historical local evidence remain in `phases/B3.md` and `BUILD_STATE.md`.
 
 ### B4 — Deliverables
 
-Next planned phase after B3 closes. B4 and all later phases remain unimplemented.
+Implemented on `codex/b4-deliverables`: separate relational outputs with the exact B4 lifecycle, Project coordinator controls, explicit visibility, Client-safe labels/status, atomic significant activity and concurrency/retry safety. Local verification is complete. The final model is in `DOMAIN_MODEL.md`; contract and verification evidence are in `phases/B4.md` and `BUILD_STATE.md`. Independent audit, user-controlled merge and both post-merge gates remain required.
 
-Separate deliverable lifecycle, client visibility, internal/client review state foundation, project integration, and activity.
+B5 Files is next after B4 closes; B5 and every later phase remain unimplemented.
 
 ### B5 — Files
 

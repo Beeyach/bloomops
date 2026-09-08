@@ -385,26 +385,33 @@ Canonical events distinguish Action creation, details, assignment, status, depen
 
 ## Deliverables
 
-Deliverables describe what the client receives.
+Implemented in B4 as the relational `deliverables` table. Deliverables describe what the Client receives, such as a funnel, sales page, email sequence, course build, automation map or report. They are separate from internal Actions and their assignment, due dates, dependencies and lifecycle.
 
-Possible states:
-- Planned
-- In Progress
-- Internal Review
-- Client Review
-- Approved
-- Delivered
-- Cancelled
+Each Deliverable belongs to exactly one workspace and Project through a composite foreign key. Client, Service and Department derive from that Project. Parent identities are fixed by the creation route and cannot be edited through a Deliverable mutation.
 
-Examples:
-- funnel
-- sales page
-- email sequence
-- course build
-- automation map
-- report
+Stored fields are `id`, `workspace_id`, `project_id`, `creation_request_id`, `title`, `client_label`, `description`, `status`, `visibility`, `target_date`, `delivered_at`, `revision`, `created_at`, and `updated_at`. The internal title is required, trimmed and bounded to 120 characters; the optional Client label is bounded to 120, and optional multiline internal description to 5000. Target date is an optional real calendar date. Visibility defaults to internal and supports internal/client/restricted. Each Project accepts at most 200 Deliverables, with an atomic creation guard and deterministic, explicitly bounded lists.
 
-Deliverables may have files, versions, approvals, client visibility, and activity.
+Every Deliverable starts Planned. B4 uses this exact lifecycle:
+
+| From | Allowed next states |
+|---|---|
+| Planned | In Progress, Cancelled |
+| In Progress | Internal Review, Cancelled |
+| Internal Review | In Progress, Client Review, Approved, Cancelled |
+| Client Review | In Progress, Approved, Cancelled |
+| Approved | Delivered, Cancelled |
+| Delivered | None |
+| Cancelled | None |
+
+Delivered owns one server-generated timestamp; Cancelled has none. Both lifecycles are terminal, while coordinators may still correct details. No Deliverable mutation changes Project, Milestone, Action, Client, Service or Onboarding facts or lifecycles. Approved and Client Review are coordinator-managed states, without formal approval rounds or Client approval actions.
+
+Owner/Admin/Project Manager coordinate reachable Deliverables. Team Members are read-only through their existing Client, Service or Project scope. Department membership, Project ownership and an Action-only assignment grant no Deliverable access. Restricted parent or child visibility requires explicit Project assignment for PM/Team; Owner/Admin retain access. Live SQL predicates check workspace status, membership, role, scope and visibility both during reads and inside committing writes.
+
+Clients require a current contact link plus explicit client visibility on both the Project and Deliverable. The dedicated portal DTO contains exactly `id`, `label`, `statusLabel`, `targetDate`, and `deliveredAt`. A blank Client label displays the literal **Deliverable**, never the internal title. Internal Review projects as **In progress**; Client Review as **Ready for review**. Other states use plain delivery wording. Queries never select internal title/description for the portal; revision, request metadata, identities, activity, Service/Department IDs and hidden counts are absent. Zero visible children produces no portal section or fabricated progress. Portal Home loads the same bounded per-Project projection for its already authorized Projects.
+
+UUIDv4 creation keys are unique within workspace/Project. Immutable `DELIVERABLE_CREATED` activity snapshots the normalized initial details, so identical retries converge even after later edits; incompatible key reuse conflicts. Detail/status mutations use positive integer revisions and compare-and-swap writes. Identical response-loss retries append no duplicate history; competing writes conflict. Canonical events distinguish creation, detail changes (including visibility) and status changes. Events and facts commit in the same D1 batch, with rollback on late failure. Project/Client history filters all old Deliverable events through current readability before presenting their titles.
+
+Files, versions, formal approvals/history, comments, notifications, templates and automatic generation remain later work. B4 introduces no placeholder records or controls for them.
 
 ## Requests
 

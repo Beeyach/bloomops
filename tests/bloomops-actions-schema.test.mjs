@@ -7,7 +7,7 @@ import { all, run } from './_bloomops-db.mjs';
 test('B3 migration and generated snapshot add only two tables and the Milestone composite reference index', async () => {
   const read = path => JSON.parse(readFileSync(new URL(`../drizzle/meta/${path}`, import.meta.url)));
   const journal = read('_journal.json'), before = read('0009_snapshot.json'), after = read('0010_snapshot.json');
-  assert.equal(journal.entries.length, 11); assert.equal(journal.entries[10].tag, '0010_b3_actions_dependencies'); assert.equal(after.prevId, before.id);
+  assert.ok(journal.entries.length >= 11); assert.equal(journal.entries[10].tag, '0010_b3_actions_dependencies'); assert.equal(after.prevId, before.id);
   assert.deepEqual(Object.keys(after.tables).filter(name => !before.tables[name]).sort(), ['action_dependencies', 'actions']);
   for (const [name, table] of Object.entries(before.tables)) {
     if (name === 'milestones') { assert.deepEqual(after.tables[name].columns, table.columns); assert.equal(Object.keys(after.tables[name].indexes).length, Object.keys(table.indexes).length + 1); }
