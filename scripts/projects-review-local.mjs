@@ -165,7 +165,7 @@ try {
   const serviceId = service.serviceEngagementId || service.service?.id;
   assert.ok(serviceId);
   const sam = await login(members.sam.email, '/work'), client = await login(members.james.email, '/portal'), pm = await login(members.pm.email, '/work');
-  await sam.page.goto(base + '/work');
+  await sam.page.goto(base + '/work?tab=projects');
   check('unassigned Team Member has a meaningful empty Projects view', await sam.page.getByRole('heading', { name: 'No projects yet' }).isVisible() && await sam.page.getByRole('link', { name: 'Create project', exact: true }).count() === 0);
   for (const width of widths) await layout('projects-empty', sam.page, width);
   await owner.page.goto(`${base}/clients/${james}`);
@@ -276,7 +276,7 @@ try {
   await owner.page.goto(`${base}/clients/${james}?tab=projects`);
   check('Client Projects tab shares the canonical records', await owner.page.getByRole('link', { name, exact: true }).isVisible());
   for (const width of widths) await layout('client-projects', owner.page, width);
-  await owner.page.goto(base + '/work');
+  await owner.page.goto(base + '/work?tab=projects');
   for (const width of widths) await layout('projects-list', owner.page, width);
   await owner.page.getByLabel('Status', { exact: true }).selectOption('completed');
   await owner.page.getByRole('button', { name: 'Apply filter', exact: true }).click();

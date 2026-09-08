@@ -1,0 +1,125 @@
+#!/usr/bin/env node
+// B3 on an isolated, disposable workerd/D1 binding. No configured database,
+// remote binding, environment file, mail transport or production resource.
+import assert from 'node:assert/strict';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { getPlatformProxy } from 'wrangler';
+import { drizzle } from 'drizzle-orm/d1';
+import * as schema from '../lib/bloomops/schema.mjs';
+import { loadActor } from '../lib/bloomops/authorization.mjs';
+import { createProject, getProject, updateProject } from '../lib/bloomops/projects.mjs';
+import { createMilestone } from '../lib/bloomops/milestones.mjs';
+import { actionFilterOptions, createAction, getAction, listActions, transitionAction, updateAction } from '../lib/bloomops/actions.mjs';
+import { addActionDependency, listActionDependencies, removeActionDependency } from '../lib/bloomops/action-dependencies.mjs';
+import { projectActivity } from '../lib/bloomops/project-activity.mjs';
+const temp = mkdtempSync(join(tmpdir(), 'bloomops-b3-d1-')); let proxy, checks = 0;
+const check = (name, ok) => { assert.ok(ok, name); checks++; console.log(`ok   ${name}`); };
+try {
+  const configPath = join(temp, 'wrangler.json');
+  writeFileSync(configPath, JSON.stringify({ name: 'bloomops-b3-disposable', compatibility_date: '2025-05-01', d1_databases: [{ binding: 'DB', database_name: 'b3-disposable-local', database_id: 'b3-disposable-local' }] }));
+  proxy = await getPlatformProxy({ configPath, persist: false, remoteBindings: false, envFiles: [] });
+  const d1 = proxy.env.DB, db = drizzle(d1, { schema });
+  const run = (q, ...args) => d1.prepare(q).bind(...args).run(), one = (q, ...args) => d1.prepare(q).bind(...args).first(), all = async (q, ...args) => (await d1.prepare(q).bind(...args).all()).results;
+  const journal = JSON.parse(readFileSync(new URL('../drizzle/meta/_journal.json', import.meta.url)));
+  for (const { tag } of journal.entries) for (const statement of readFileSync(new URL(`../drizzle/${tag}.sql`, import.meta.url), 'utf8').split('--> statement-breakpoint')) if (statement.trim()) await run(statement.trim());
+  check('eleven domain migrations apply on actual D1', journal.entries.length === 11);
+  for (const ws of ['a', 'b']) await run('INSERT INTO workspaces(id,name,slug) VALUES(?,?,?)', ws, ws, ws);
+  for (const [id, role, ws] of [['ellen', 'owner', 'a'], ['ary', 'admin', 'a'], ['pm', 'project_manager', 'a'], ['sam', 'team_member', 'a'], ['other', 'team_member', 'a'], ['james', 'client', 'a'], ['foreign', 'owner', 'b']]) {
+    await run('INSERT INTO user(id,name,email) VALUES(?,?,?)', id, id, `${id}@example.com`);
+    await run("INSERT INTO workspace_memberships(id,workspace_id,user_id,role,status) VALUES(?,?,?,?,'active')", `m-${id}`, ws, id, role);
+  }
+  for (const [id, ws] of [['james', 'a'], ['lawrence', 'a'], ['foreign-client', 'b']]) await run('INSERT INTO bloomops_clients(id,workspace_id,name,slug) VALUES(?,?,?,?)', id, ws, id, id);
+  const actor = async id => { const m = await one('SELECT * FROM workspace_memberships WHERE user_id=?', id); return loadActor(db, { workspace: { id: m.workspace_id }, membership: { id: m.id, userId: id, role: m.role, status: m.status } }); };
+  const owner = await actor('ellen'), pm = await actor('pm'), projectId = (await createProject(db, { actor: owner, clientId: 'james', input: { name: 'Launch', visibility: 'client' } })).projectId;
+  const milestoneId = (await createMilestone(db, { actor: owner, projectId, requestId: crypto.randomUUID(), input: { name: 'Delivery' } })).milestoneId;
+  const add = (input = {}, extra = {}) => createAction(db, { actor: owner, projectId, requestId: crypto.randomUUID(), input: { title: 'Build', ...input }, ...extra });
+  const get = (id, who = owner, extra = {}) => getAction(db, who, id, extra);
+  const edit = async (id, input, extra = {}) => updateAction(db, { actor: owner, actionId: id, input, expectedRevision: (await get(id)).revision, ...extra });
+  const move = async (id, toStatus, extra = {}) => transitionAction(db, { actor: owner, actionId: id, toStatus, waitingType: 'ellen', waitingReason: 'Awaiting review\nExpected tomorrow', expectedRevision: (await get(id)).revision, ...extra });
+  const depend = async (id, target, extra = {}) => addActionDependency(db, { actor: owner, actionId: id, dependsOnActionId: target, expectedRevision: (await get(id)).revision, ...extra });
+  const dependencies = (id, who = owner) => listActionDependencies(db, who, id);
+  const remove = async (id, edge, extra = {}) => removeActionDependency(db, { actor: owner, actionId: id, dependencyId: edge, expectedRevision: (await get(id)).revision, ...extra });
+  const snapshot = async () => JSON.stringify(await Promise.all(['actions', 'action_dependencies', 'activity_events'].map(table => all(`SELECT * FROM ${table} ORDER BY rowid`))));
+  const parents = async () => JSON.stringify(await Promise.all(['projects', 'milestones', 'bloomops_clients', 'service_engagements', 'onboarding_instances'].map(table => all(`SELECT * FROM ${table} ORDER BY rowid`))));
+  const events = async type => (await one("SELECT count(*) n FROM activity_events WHERE subject_type='action' AND event_type=?", type)).n;
+  const beforeParents = await parents(), requestId = crypto.randomUUID(), input = { milestoneId, assigneeMembershipId: 'm-sam', dueDate: '2026-09-01' };
+  const created = await Promise.all([add(input, { requestId }), add(input, { requestId })]), id = created[0].actionId;
+  check('concurrent create retry owns one Action and one event', created.every(r => r.ok) && id === created[1].actionId && await events('ACTION_CREATED') === 1);
+  check('To Do, Normal and optional same-Project Milestone are canonical', (await get(id)).status === 'to_do' && (await get(id)).priority === 'normal' && (await get(id)).milestoneId === milestoneId);
+  await edit(id, { title: 'Renamed' }); check('creation retry survives later edits', (await add(input, { requestId })).unchanged);
+  check('creation key reuse conflicts', (await add({ title: 'Different' }, { requestId })).reason === 'conflict');
+  const a = (await add({ title: 'Prepare' })).actionId, b = (await add({ title: 'Review' })).actionId;
+  const sam = await actor('sam'); check('direct assignment reads Action but not full Project or siblings', Boolean(await get(id, sam)) && await getProject(db, sam, projectId) === null && await get(a, sam) === null);
+  check('direct assignment omits linked Milestone and Project link', (await get(id, sam)).milestoneId === null && (await get(id, sam)).projectHref === null);
+  check('Team may progress assigned Action but cannot edit or add dependencies', (await move(id, 'waiting', { actor: sam })).ok && !(await edit(id, { title: 'Forbidden' }, { actor: sam })).ok && !(await depend(id, a, { actor: sam })).ok);
+  check('unassigned Team, Client and foreign workspace cannot guess', await get(id, await actor('other')) === null && await get(id, await actor('james')) === null && await get(id, await actor('foreign')) === null);
+  check('Waiting type and explanation are retained', (await get(id)).waitingType === 'ellen' && (await get(id)).waitingReason.includes('\n'));
+  await move(id, 'in_progress'); check('leaving Waiting clears both fields', (await get(id)).waitingType === null && (await get(id)).waitingReason === null);
+  await depend(id, a); check('unresolved prerequisite derives blocking and excludes overdue', (await get(id)).dependencyBlocked && !(await get(id, owner, { now: new Date('2026-09-09T12:00:00Z') })).overdue);
+  check('hidden endpoint graph and titles are absent from Action-only access', (await dependencies(id, sam)).items.length === 0 && !JSON.stringify(await dependencies(id, sam)).includes('Prepare'));
+  check('dependency self-cycle is refused', (await depend(a, a)).reason === 'cycle');
+  check('two-way cycle is refused', (await depend(a, id)).reason === 'cycle');
+  await move(a, 'cancelled'); check('Cancelled remains unresolved', (await get(id)).dependencyBlocked);
+  let edge = (await dependencies(id)).items[0]; await remove(id, edge.id); await depend(id, b); await move(b, 'in_progress');
+  const revision = (await get(b)).revision;
+  const done = await Promise.all([move(b, 'done', { expectedRevision: revision, now: new Date('2026-09-08T12:00:00Z') }), move(b, 'done', { expectedRevision: revision, now: new Date('2026-09-08T12:00:00.050Z') })]);
+  check('concurrent Done retry converges with one winning completion timestamp', done.every(r => r.ok) && Boolean((await get(b)).completedAt));
+  check('Done satisfies dependency and ordinary overdue returns', !(await get(id)).dependencyBlocked && (await get(id, owner, { now: new Date('2026-09-09T12:00:00Z') })).overdue);
+  check('Done and Cancelled are terminal', !(await move(a, 'in_progress')).ok && !(await move(b, 'review')).ok && (await get(a)).completedAt === null);
+  const oldEdge = (await dependencies(id)).items[0], removeRevision = (await get(id)).revision;
+  check('concurrent removal retries converge', (await Promise.all([remove(id, oldEdge.id, { expectedRevision: removeRevision }), remove(id, oldEdge.id, { expectedRevision: removeRevision })])).every(r => r.ok));
+  await depend(id, b); check('delayed removal cannot remove a recreated edge', (await remove(id, oldEdge.id, { expectedRevision: removeRevision })).unchanged && (await dependencies(id)).items.length === 1);
+  check('all parent lifecycles and facts remain unchanged', beforeParents === await parents());
+  const siblingProject = (await createProject(db, { actor: owner, clientId: 'lawrence', input: { name: 'Other client' } })).projectId;
+  const sibling = (await add({}, { projectId: siblingProject })).actionId;
+  check('cross-Project/client edge is leak-safely refused', (await depend(id, sibling)).reason === 'not_found');
+  check('D1 itself rejects cross-Project edges', await run("INSERT INTO action_dependencies(workspace_id,project_id,action_id,depends_on_action_id) VALUES('a',?,?,?)", projectId, id, sibling).then(() => false, () => true));
+  check('D1 itself rejects foreign Action parent', await run("INSERT INTO actions(workspace_id,project_id,creation_request_id,title) VALUES('b',?,?,'Bad')", projectId, crypto.randomUUID()).then(() => false, () => true));
+  check('D1 rejects impossible calendar dates and client Action visibility', await run("UPDATE actions SET due_date='2026-02-30' WHERE id=?", id).then(() => false, () => true) && await run("UPDATE actions SET visibility='client' WHERE id=?", id).then(() => false, () => true));
+  await edit(id, { visibility: 'restricted' }); check('restricted Action permits its Team assignee but no ordinary PM', Boolean(await get(id, sam)) && await get(id, pm) === null);
+  await edit(id, { assigneeMembershipId: 'm-other' }); check('reassignment immediately revokes Action-only reads', await get(id, sam) === null && (await listActions(db, sam, { view: 'mine' })).items.length === 0);
+  await edit(id, { assigneeMembershipId: 'm-sam' }); await run("UPDATE workspace_memberships SET status='suspended' WHERE id='m-sam'");
+  check('assignee deactivation immediately revokes even a stale actor', await get(id, sam) === null && (await get(id)).assigneeMembershipId === 'm-sam');
+  await run("UPDATE workspace_memberships SET status='active' WHERE id='m-sam'");
+  await edit(id, { visibility: 'internal' }); check('ordinary PM sees current Action history', JSON.stringify(await projectActivity(db, pm, projectId)).includes('Renamed'));
+  await edit(id, { visibility: 'restricted' }); check('restriction immediately hides old Action titles', !JSON.stringify(await projectActivity(db, pm, projectId)).includes('Renamed'));
+  const graph = (await createProject(db, { actor: owner, clientId: 'james', input: { name: 'Graph' } })).projectId;
+  for (let n = 0; n < 180; n++) await run("INSERT INTO actions(id,workspace_id,project_id,creation_request_id,title) VALUES(?,'a',?,?,?)", `chain-${n}`, graph, crypto.randomUUID(), `Chain ${n}`);
+  for (let n = 1; n < 180; n++) await run("INSERT INTO action_dependencies(workspace_id,project_id,action_id,depends_on_action_id) VALUES('a',?,?,?)", graph, `chain-${n}`, `chain-${n - 1}`);
+  check('actual D1 refuses a 180-Action back-edge atomically', (await depend('chain-0', 'chain-179')).reason === 'cycle');
+  check('database trigger independently refuses that same long cycle', await run("INSERT INTO action_dependencies(workspace_id,project_id,action_id,depends_on_action_id) VALUES('a',?,'chain-0','chain-179')", graph).then(() => false, () => true));
+  const nodes = [];
+  for (let n = 0; n < 6; n++) nodes.push((await add({ title: `Concurrent ${n}` }, { projectId: graph })).actionId);
+  const cycles = await Promise.all(nodes.map((node, index) => depend(node, nodes[(index + 1) % nodes.length], { expectedRevision: 1 })));
+  check('six competing cycle additions commit five edges and one refusal', cycles.filter(r => r.ok).length === 5 && cycles.filter(r => r.reason === 'cycle').length === 1);
+  const diamond = [];
+  for (let n = 0; n < 4; n++) diamond.push((await add({ title: `Diamond ${n}` }, { projectId: graph })).actionId);
+  for (const [source, target] of [[0, 1], [0, 2], [1, 3], [2, 3]]) assert.ok((await depend(diamond[source], diamond[target])).ok);
+  check('diamond traversal terminates and refuses the back-edge', (await depend(diamond[3], diamond[0])).reason === 'cycle');
+  const contested = (await add()).actionId, contestedRevision = (await get(contested)).revision;
+  const competing = await Promise.all([edit(contested, { title: 'Winner' }, { expectedRevision: contestedRevision }), move(contested, 'in_progress', { expectedRevision: contestedRevision }), depend(contested, a, { expectedRevision: contestedRevision })]);
+  check('competing details/status/dependency writes keep one revision winner', competing.filter(r => r.ok).length === 1 && (await get(contested)).revision === contestedRevision + 1);
+  for (const [type, operation] of [['ACTION_CREATED', () => add()], ['ACTION_DETAILS_UPDATED', () => edit(id, { title: 'Failed' })], ['ACTION_ASSIGNEE_CHANGED', () => edit(id, { assigneeMembershipId: 'm-ary' })], ['ACTION_STATUS_CHANGED', () => move(id, 'review')], ['ACTION_DEPENDENCY_ADDED', () => depend(id, a)], ['ACTION_DEPENDENCY_REMOVED', async () => remove(id, (await dependencies(id)).items[0].id)]]) {
+    const before = await snapshot(); await run(`CREATE TRIGGER fail_b3 BEFORE INSERT ON activity_events WHEN NEW.event_type='${type}' BEGIN SELECT RAISE(ABORT,'injected activity failure'); END`);
+    await assert.rejects(operation()); check(`${type} rolls back the whole D1 batch`, before === await snapshot()); await run('DROP TRIGGER fail_b3');
+  }
+  const batch = db.batch.bind(db); let armed = true;
+  db.batch = async writes => { if (armed) { armed = false; await run("UPDATE workspace_memberships SET status='suspended' WHERE id='m-ellen'"); } return batch(writes); };
+  const before = await snapshot(); check('write-lock revocation prevents mutation and history', !(await edit(id, { title: 'Denied' })).ok && before === await snapshot()); db.batch = batch;
+  await run("UPDATE workspace_memberships SET status='active' WHERE id='m-ellen'");
+  for (let n = 0; n < 205; n++) {
+    const project = `scope-project-${n}`, action = `scope-action-${String(n).padStart(3, '0')}`;
+    await run("INSERT INTO projects(id,workspace_id,client_id,name) VALUES(?,'a','james',?)", project, project);
+    await run("INSERT INTO project_assignments(workspace_id,project_id,membership_id) VALUES('a',?,'m-other')", project);
+    await run("INSERT INTO actions(id,workspace_id,project_id,creation_request_id,title) VALUES(?,'a',?,?,?)", action, project, crypto.randomUUID(), action);
+  }
+  const other = await actor('other'), first = await listActions(db, other, { view: 'all' }), second = await listActions(db, other, { view: 'all', page: 2 });
+  check('205 Project assignments paginate on actual D1 within bind limits', first.items.length === 200 && first.hasMore && second.items.length === 5 && !second.hasMore);
+  check('large relational facets stay bounded on actual D1', (await actionFilterOptions(db, other)).projectId.hasMore);
+  await run("UPDATE bloomops_clients SET timezone='America/Los_Angeles' WHERE id='james'"); await run("UPDATE actions SET due_date='2026-09-08' WHERE id='scope-action-000'");
+  check('Client timezone Today projection works on actual D1', (await listActions(db, other, { view: 'today' }, { now: new Date('2026-09-09T00:30:00Z') })).items[0]?.id === 'scope-action-000');
+  check('D1 foreign-key and integrity checks pass', (await all('PRAGMA foreign_key_check')).length === 0 && (await one('PRAGMA quick_check')).quick_check === 'ok');
+  console.log(`B3 disposable workerd/D1: ${checks} checks passed.`);
+} finally { await proxy?.dispose(); rmSync(temp, { recursive: true, force: true }); }

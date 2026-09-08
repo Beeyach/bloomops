@@ -332,52 +332,56 @@ Progress is derived only from currently readable Milestones. Completed and Skipp
 
 Canonical activity uses `subject_type='milestone'`, with Client/Service context derived from the Project. Created, details updated, status changed and order changed are distinct semantic events. Mutations and history share one D1 batch; stale/concurrent losers append no events, and failures roll back both. Order history contains no ordered ID list or hidden count. Project and Client history filter all child events by **current** Milestone and Project readability, including events recorded before restriction. Clients receive no internal Milestone history.
 
-Milestones live inside the internal Project detail with accessible create/edit/status dialogs, keyboard/touch reorder controls, scoped read-only Team presentation and derived progress. The portal nests only nonempty safe Milestone summaries under their visible Projects. There is no new global Milestones navigation destination, automatic Project completion, template generation or B3 work.
+Milestones live inside the internal Project detail with accessible create/edit/status dialogs, keyboard/touch reorder controls, scoped read-only Team presentation and derived progress. The portal nests only nonempty safe Milestone summaries under their visible Projects. There is no new global Milestones navigation destination, automatic Project completion or template generation. B3 Actions remain separate records as described below.
 
 ## Actions
 
-Database may use `tasks`; UI calls them Actions.
+### actions (B3)
 
-Possible states:
-- To Do
-- In Progress
-- Waiting
-- Review
-- Done
-- Cancelled
+Implemented by additive migration `0010_b3_actions_dependencies.sql`. Preflight found no inherited `actions` or `action_dependencies` table collision. The UI consistently calls these records Actions.
 
-Useful fields:
-- client
-- service
-- project
-- milestone
-- department
-- title
-- description
-- assignee
-- priority
-- due date
-- waiting reason/type
-- visibility
+Each Action belongs to exactly one workspace and Project. Client, Service Engagement and Department are derived through the Project, including B1's service-type Department rule. An optional Milestone has a composite `(workspace_id, project_id, milestone_id)` foreign key; B3 adds the corresponding unique Milestone index without rebuilding that table. The assignee FK belongs to the same workspace. No parent identity or lifecycle is duplicated onto an Action.
 
-Waiting reasons:
-- Client
-- Ellen
-- Ary
-- Team
-- External
-- Dependency
-- Other
+The 18 stored columns are `id`, `workspace_id`, `project_id`, `milestone_id`, `creation_request_id`, `title`, `description`, `status`, `priority`, `assignee_membership_id`, `due_date`, `waiting_type`, `waiting_reason`, `visibility`, `revision`, `completed_at`, `created_at`, and `updated_at`.
 
-### task_dependencies
+Title is required, trimmed and bounded to 120 characters. Description is optional, trimmed and bounded to 5000 characters with ordinary multiline text allowed. Priority is Low/Normal/High/Urgent (`low`, `normal`, `high`, `urgent`), default Normal. Due date is a real calendar date or null. Visibility is `internal` or `restricted`, enforced by both application and database; Actions have no Client-visible state or portal representation.
 
-Simple dependency edges:
-- task_id
-- depends_on_task_id
+Every Action starts To Do. The exact transition matrix is:
 
-Cycles must be prevented.
+| From | Allowed next states |
+|---|---|
+| To Do | In Progress, Waiting, Cancelled |
+| In Progress | Waiting, Review, Done, Cancelled |
+| Waiting | In Progress, Review, Done, Cancelled |
+| Review | In Progress, Done, Cancelled |
+| Done | None |
+| Cancelled | None |
 
-A downstream action blocked by an incomplete prerequisite should not be treated as ordinary overdue work.
+Waiting requires a type (`client`, `ellen`, `ary`, `team`, `external`, `dependency`, `other`) and a trimmed explanation of 1–1000 characters; ordinary multiline text is supported. Leaving Waiting clears both fields. Done records one server-owned completion timestamp; Cancelled has none. Terminal lifecycle states cannot reopen, though coordinators can correct structural details. Action operations never change another Action, Project, Milestone, Client, Service, onboarding or Department lifecycle. Dependency blocking does not add an undocumented transition gate or automatically change status.
+
+A UUIDv4 creation request key is unique inside its workspace/Project. The immutable creation event snapshots normalized initial details, so identical retries converge after later edits and key reuse with different initial details conflicts. Intentional same-title Actions remain distinct. A positive integer revision guards structural changes, assignment, lifecycle and dependency mutations. Identical retries are no-ops; competing stale writes conflict; concurrent Done retries accept the winning timestamp. Conditional D1 batches commit semantic activity with each changed fact, or roll back together. Live authorization, reference eligibility and revisions are checked under the committing write lock. No uncertain mutation is retried automatically.
+
+Assignment names an active internal workspace membership when first set or changed. A later inactive or noninternal assignee remains historical responsibility until deliberately reassigned, but grants no authorization. Ordinary edits can retain that historical assignment.
+
+Owner/Admin/Project Manager coordinate Actions in Projects they can manage. Team Members read through existing Client, Service or explicit Project assignments and may progress only Actions currently assigned to their own active membership. Current direct Action assignment grants only that Action, including a restricted Action or an Action in a restricted Project, with minimal parent labels. It never changes permission to the full Project, Client, Service, sibling Actions or Milestones. DTOs provide a Project link only when B1 independently allows that Project; linked Milestone details require independent B2 readability. Reassignment or membership deactivation revokes the narrow grant immediately, including for previously loaded actors and issued sessions.
+
+Restricted Action access is limited to Owner/Admin, explicitly Project-assigned PMs, and Team Members explicitly assigned to the Project or currently assigned to that Action. Department membership and Project ownership grant nothing. Central permissions are `action.list`, `action.view`, `action.manage`, `action.progress`, and `action.dependencies`; Team progress has its additional current-assignee rule. Clients cannot list/read/progress Actions or see Action history, graph, counts or navigation.
+
+Work opens on Actions and retains Projects at `/work?tab=projects`. Mine means all Actions assigned to the actor, including terminal work; Today selects nonterminal due dates equal to the current Client calendar day; Upcoming selects nonterminal due dates strictly later than that day. Waiting and Review select explicit lifecycle states. All includes terminal work. Overdue requires a past due date, nonterminal status and no unresolved prerequisite. Each Client's configured IANA timezone determines its calendar day; absent settings use UTC. Tests supply time explicitly, including midnight and DST boundaries.
+
+Client, Department, Service, Project, Assignee, Status and Priority filters use relational predicates. Work pages contain at most 200 Actions with next/previous navigation. Facets contain at most 200 readable choices and disclose overflow. B3 also enforces a 200-Action ceiling per Project atomically, following B2's bounded parent-detail approach: this keeps Project rows and prerequisite choices complete and bounded. The create form states that limit; hidden rows never expose counts. No unbounded assignment-ID parameter lists are constructed.
+
+Project detail supports manual creation, structural edits, assignment and assigned-work progress. `/work/actions/:id` supports narrow Action-only access and dependency management. Internal DTOs explicitly select needed fields; raw database rows, creation keys, actor records, membership directories and hidden Milestone/endpoint details never cross the API/UI boundary. Views reuse Bloom rows, dialogs and controls, with a native Filters disclosure, focus restoration, keyboard/touch support and responsive layouts.
+
+### action_dependencies (B3)
+
+Each edge stores `id`, `workspace_id`, `project_id`, `action_id`, `depends_on_action_id`, and `created_at`. Both composite endpoint foreign keys require the same workspace and Project. A unique endpoint-pair index prevents duplicates and a CHECK prevents self-edges. Edge identity lets a delayed removal be an idempotent no-op after that pair has been removed and recreated under a new ID.
+
+Cycle prevention runs as a recursive `UNION` reachability predicate inside the committing conditional write, independently reinforced by a `BEFORE INSERT` database trigger. Nodes are visited once even in diamonds. Competing edge additions cannot both pass a stale graph; edge endpoints are immutable in place through an update trigger. Removal does not alter either lifecycle. Unknown/already removed edge IDs are no-op removals after source authorization; additions and existing-edge removals require both endpoints currently readable.
+
+Done is the only satisfying prerequisite state. Cancelled remains unresolved. `dependencyBlocked` is derived from direct prerequisites, including inaccessible ones, without storing a second lifecycle field. Inaccessible prerequisite IDs, labels, counts and graph structure are omitted; the generic blocking boolean still prevents falsely classifying downstream work as ordinary overdue. Manual completion remains independent of dependencies.
+
+Canonical events distinguish Action creation, details, assignment, status, dependency addition and dependency removal. Priority edits are coherent detail changes. Dependency events retain only the source Action title, never a sibling title or complete graph. Project and Client history filter every Action event through that Action's current live readability so past titles disappear after restriction or scope revocation. No Action history is exposed to Clients.
 
 ## Deliverables
 

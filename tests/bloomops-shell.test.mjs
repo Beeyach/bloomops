@@ -390,7 +390,7 @@ test('the inherited application is no longer the root, and every shell page re-c
   };
   walk(new URL('app/(internal)', root).pathname, 'internal');
   walk(new URL('app/portal', root).pathname, 'portal');
-  assert.equal(pages.filter(([, a]) => a === 'internal').length, 16, 'eleven destinations, Client and Project create/detail pages, and one layout');
+  assert.equal(pages.filter(([, a]) => a === 'internal').length, 17, 'eleven destinations, Client and Project create/detail pages, an Action detail page, and one layout');
   assert.equal(pages.filter(([, a]) => a === 'portal').length, 2);
   for (const [file, area] of pages) {
     const text = readFileSync(file, 'utf8');

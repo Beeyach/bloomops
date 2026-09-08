@@ -6,7 +6,7 @@ import { all, run } from './_bloomops-db.mjs';
 
 test('B2 migration adds only Milestones and indexes, with matching journal/snapshot and same-workspace FK',async()=>{
   const journal=JSON.parse(readFileSync(new URL('../drizzle/meta/_journal.json',import.meta.url)));
-  assert.equal(journal.entries.at(-1).tag,'0009_b2_milestones');assert.equal(journal.entries.length,10);
+  assert.equal(journal.entries[9].tag,'0009_b2_milestones');assert.ok(journal.entries.length>=10);
   const sql=readFileSync(new URL('../drizzle/0009_b2_milestones.sql',import.meta.url),'utf8');assert.doesNotMatch(sql,/\b(?:ALTER|DROP)\s+TABLE/i);
   const snapshot=JSON.parse(readFileSync(new URL('../drizzle/meta/0009_snapshot.json',import.meta.url)));
   assert.ok(snapshot.tables.milestones);assert.equal(Object.keys(snapshot.tables.milestones.indexes).length,4);

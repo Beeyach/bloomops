@@ -2084,6 +2084,39 @@ select.bo-control {
 .bo-milestone-progress progress::-webkit-progress-bar { background: var(--bo-mist); }
 .bo-milestone-progress progress::-webkit-progress-value { background: var(--bo-ink); }
 .bo-milestone-progress progress::-moz-progress-bar { background: var(--bo-ink); }
+/* B3: daily work remains a quiet, responsive list over canonical Actions. */
+.bo-action-views { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0 0 20px; }
+.bo-action-views a { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 10px; font-size: 14px; border-radius: 8px; color: var(--bo-ink-soft); }
+.bo-action-views a[aria-current='page'] { background: var(--bo-lilac); color: var(--bo-ink); font-weight: 600; }
+.bo-action-filter-panel { margin-bottom: 24px; }
+.bo-action-filter-panel > summary { min-height: 44px; padding: 12px 0; cursor: pointer; font-size: 14px; font-weight: 600; }
+.bo-action-filter-panel[open] > summary { margin-bottom: 12px; }
+.bo-action-filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; align-items: end; margin-bottom: 24px; }
+.bo-action-filters .bo-field { min-width: 0; margin: 0; }
+.bo-action-filter-buttons, .bo-action-buttons, .bo-action-pagination { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.bo-action-filter-buttons { grid-column: 1 / -1; }
+.bo-actions, .bo-action-dependencies { list-style: none; padding: 0; margin: 0; }
+.bo-action-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(130px, 160px) minmax(130px, 170px); gap: 12px 24px; align-items: start; padding: 20px 0; border-bottom: 1px solid var(--bo-border); }
+.bo-action-main, .bo-action-state, .bo-action-meta { min-width: 0; overflow-wrap: anywhere; }
+.bo-action-title { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 0; font-weight: 600; overflow-wrap: anywhere; }
+.bo-action-state, .bo-action-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding-top: 10px; }
+.bo-action-meta { font-size: 13px; color: var(--bo-ink-soft); }
+.bo-action-blocked { margin-top: 8px; font-size: 13px; color: var(--bo-ink-soft); }
+.bo-action-row-controls { grid-column: 1 / -1; }
+.bo-action-pagination, .bo-action-footnote { margin-top: 24px; }
+.bo-action-controls > .bo-section { margin-top: 32px; }
+.bo-action-dependencies li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px; border-bottom: 1px solid var(--bo-border); padding: 16px 0; }
+.bo-action-dependencies li > div { min-width: 0; flex: 1 1 180px; overflow-wrap: anywhere; }
+@media (max-width: 1023px) {
+  .bo-action-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bo-action-row { grid-template-columns: minmax(0, 1fr) minmax(120px, 140px); }
+  .bo-action-meta { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; gap: 8px 20px; padding-top: 0; }
+}
+@media (max-width: 479px) {
+  .bo-action-filters, .bo-action-row { grid-template-columns: minmax(0, 1fr); }
+  .bo-action-state { flex-direction: row; flex-wrap: wrap; align-items: center; padding-top: 0; }
+  .bo-action-buttons .bo-btn { flex-grow: 1; }
+}
 .bo-portal-project { flex-wrap: wrap; }
 .bo-portal-milestones { flex: 0 0 100%; min-width: 0; padding-top: 8px; }
 .bo-portal-milestones .bo-milestone { padding: 12px 0; }

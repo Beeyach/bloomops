@@ -40,13 +40,17 @@ Project schema, lifecycle, assignments, authorization, activity, internal Client
 
 ### B2 — Milestones
 
+Closed after PR #16 merged as `74eb09a619516ae4969622f5e79a64c35d300d39`; staging run 34190261299 and remote zero-to-current run 34190261285 both succeeded on that exact SHA.
+
 Milestone schema, ordering, lifecycle, Project detail integration, visibility, activity and derived progress. The implementation contract is `docs/phases/B2.md`; current verification and remaining gates are recorded in `docs/BUILD_STATE.md`.
 
 ### B3 — Actions + Dependencies
 
-Action schema, assignment, priority/dates/waiting semantics, dependency edges, cycle prevention, scoped Work views, and overdue/dependency behavior.
+Implemented on `codex/b3-actions-dependencies`: internal Actions, narrow and revocable assignment, priority/dates/Waiting, explicit lifecycle, atomic cycle-safe dependency edges, canonical activity, Project integration and scoped daily Work views. Local verification is complete; independent audit is pending. The final model is in `DOMAIN_MODEL.md`; contract and evidence are in `phases/B3.md` and `BUILD_STATE.md`. Merge and both post-merge gates remain required.
 
 ### B4 — Deliverables
+
+Next planned phase after B3 closes. B4 and all later phases remain unimplemented.
 
 Separate deliverable lifecycle, client visibility, internal/client review state foundation, project integration, and activity.
 
@@ -56,7 +60,7 @@ D1 asset metadata, R2 object lifecycle, subject links, visibility, upload/downlo
 
 ### B6 — Work + Home Projections
 
-Mine/Today/Upcoming/Waiting/Review/Overdue/All views, Project summaries, and a useful Home dashboard built from canonical records.
+Extend B3’s working Mine/Today/Upcoming/Waiting/Review/Overdue/All Action views with later canonical Deliverable/File and Project summaries, plus a useful Home dashboard. B3 does not implement that later composition.
 
 ### B7 — Release B Hardening
 
