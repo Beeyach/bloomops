@@ -10,7 +10,7 @@ import { clientActivity } from '../lib/bloomops/client-activity.mjs';
 test('B5 is additive, has matching journal/snapshot and no future subject schemas', () => {
   const read = path => JSON.parse(readFileSync(new URL(`../drizzle/meta/${path}`, import.meta.url)));
   const journal = read('_journal.json'), before = read('0011_snapshot.json'), after = read('0012_snapshot.json');
-  assert.equal(journal.entries.length, 13); assert.equal(journal.entries[12].tag, '0012_b5_files'); assert.equal(after.prevId, before.id);
+  assert.ok(journal.entries.length >= 13); assert.equal(journal.entries[12].tag, '0012_b5_files'); assert.equal(after.prevId, before.id);
   assert.deepEqual(Object.keys(after.tables).filter(key => !before.tables[key]).sort(), ['asset_links', 'asset_upload_attempts', 'assets']);
   for (const table of Object.keys(before.tables)) {
     const next = structuredClone(after.tables[table]); if (table === 'deliverables') delete next.indexes.deliverables_ws_project_id_uq;

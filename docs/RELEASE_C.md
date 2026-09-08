@@ -1,5 +1,9 @@
 # Release C - Social
 
+## Current state
+
+Release B closed on `c6509aa395a5db58310e2a0ae22a8a808082f77b` with successful Deploy staging `34269402296` and Verify zero-to-current `34269544255`. C1 Content Items Core is implemented and locally verified on `codex/c1-content-core`, pending independent ChatGPT audit, user-controlled merge and both exact-merge-SHA gates. C2+ remains unimplemented. See `BUILD_STATE.md` for evidence and outstanding gates.
+
 ## Goal
 
 Release C makes Social fulfillment a first-class operational system instead of a generic Project/Action approximation.
@@ -65,7 +69,7 @@ Stages are conditional. Content-specific workflow flags decide which steps apply
 
 ### C1 - Content Items Core
 
-Create the canonical Content Item relational model and internal Social list/detail/create/edit experience. Establish exact tenant/scope/visibility rules, normalized Content fields, basic platform association if required by the canonical model, retry/CAS/activity behavior, and bounded internal reads. New Content begins at Idea; C1 does not implement the production transition engine, calendar, Client uploads, formal approvals, revision rounds, or Client Content portal.
+Create the canonical Content Item relational model and internal Social list/detail/create/edit experience. Establish exact tenant/scope/visibility rules, normalized Content fields, retry/CAS/activity behavior, and bounded internal reads. New Content begins at Idea; C1 does not implement the production transition engine, calendar, Client uploads, formal approvals, revision rounds, or Client Content portal.
 
 ### C2 - Production Pipeline
 

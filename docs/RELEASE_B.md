@@ -68,7 +68,7 @@ B6 composes bounded Home and Work summaries from canonical records, with current
 
 ### B7 — Release B Hardening
 
-B7 hardening is implemented and locally verified, pending independent audit, on `codex/b7-release-b-hardening`. The audit closes exact HTTP input-contract gaps, fixes a notification covering a mobile dialog control, and adds integrated activation-to-delivery, session, concurrency and storage acceptance. No new product feature or migration. Evidence and final audit/merge gates are recorded in `phases/B7.md` and `BUILD_STATE.md`.
+B7 and Release B are closed through PR #21 on `c6509aa395a5db58310e2a0ae22a8a808082f77b`, with successful exact-SHA Deploy staging `34269402296` and Verify zero-to-current `34269544255` including cleanup. The audit closes exact HTTP input-contract gaps, fixes a notification covering a mobile dialog control, and adds integrated activation-to-delivery, session, concurrency and storage acceptance. No new product feature or migration. Historical implementation evidence and closure are recorded in `phases/B7.md` and `BUILD_STATE.md`.
 
 This sequence is implementation guidance. If repository evidence requires a smaller safe split, preserve the same product boundaries rather than pulling later Release features forward.
 
