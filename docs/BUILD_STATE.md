@@ -2,19 +2,96 @@
 
 ## Current Release
 
-Release B: Work Core. Release A is closed on A11 merge `3deed08d8db2a92fcf4dc29a6a879a9945260049` with both post-merge gates verified successfully.
+Release C: Social. Release B is closed on `c6509aa395a5db58310e2a0ae22a8a808082f77b` with both post-merge gates verified successfully. Release A is closed on A11 merge `3deed08d8db2a92fcf4dc29a6a879a9945260049` with both post-merge gates verified successfully.
 
 ## Current Phase
 
-B7 Release B Hardening is implemented and locally verified, pending independent audit, on `codex/b7-release-b-hardening`. B1 through B6 are closed. Release C and later phases remain unimplemented.
+C1 Content Items Core is implemented and locally verified on `codex/c1-content-core`, pending independent ChatGPT audit. B1 through B7 are closed. C2+ remains unimplemented.
 
-Current implementation spec: `docs/phases/B7.md`; release sequence: `docs/RELEASE_B.md`.
+Current implementation spec: `docs/phases/C1.md`; release sequence: `docs/RELEASE_C.md`.
 
 Documentation index: `docs/INDEX.md`
 
 ## Branch State
 
-PRs #2 through #20 are merged. B7 starts from verified main `58647bda6dd40739b7670e6c0f907b6f33689e5d`, followed by phase-contract commit `9a0691b` and temporary prompt carrier `16fb0f0`. B6 closed after PR #20 merged as `58647bda6dd40739b7670e6c0f907b6f33689e5d`. Read-only preflight verified [Deploy staging 34231285687](https://github.com/Beeyach/bloomops/actions/runs/34231285687) and [remote zero-to-current 34231727327](https://github.com/Beeyach/bloomops/actions/runs/34231727327) succeeded on that exact SHA. The zero verifier was manually dispatched because B6 was schema-free; disposable-database cleanup succeeded. B7 remains separate from those completed B6 gates.
+PRs #2 through #21 are merged. C1 starts from exact closed Release B main `c6509aa395a5db58310e2a0ae22a8a808082f77b`, followed by Release C sequence `a6563c9`, C1 contract `3942e3a` and temporary prompt carrier `6f3ab54`. Preflight verified branch ancestry and remote main equality before implementation. Read-only checks confirm [Deploy staging 34269402296](https://github.com/Beeyach/bloomops/actions/runs/34269402296) and [Verify zero-to-current 34269544255](https://github.com/Beeyach/bloomops/actions/runs/34269544255), including disposable D1 cleanup, succeeded on that exact B7 merge SHA. This closes Release B. C1 has its own independent audit, user-controlled merge and exact-merge-SHA post-merge gates.
+
+## Content Items Core (C1)
+
+C1 implementation and local verification are complete; independent audit and post-merge gates remain outstanding. Migration `0013_c1_content.sql` adds one canonical `content_items` table: 23 columns, four justified indexes, four foreign keys and two narrow triggers. No historical migration, package/lock, Worker binding/configuration or A/B lifecycle is changed. The migration/snapshot chain remains additive.
+
+### Implementation decisions
+
+- Client-level Content or an optional fixed same-Client Social Service; canonical Service Type → Department slug `social` resolution, never names/type slugs. Existing Client/Service composite keys are reused. Closed/terminal Service status is not an invented Content restriction.
+- Exact types: Reel, Static Post, Carousel, Story, Video, Email, Ad Creative, Other. Machine values and labels live together in `content-values.mjs`. Ad Creative is a type only.
+- Title/type/pillar/owner/hook/script/caption/CTA, target publish date and exact workflow booleans are relational fields. Text limits are 200/120/2,000/20,000/10,000/1,000 respectively for title/pillar/hook/script/caption/CTA; NFC and line-ending normalization, optional blank-to-null, controls/bidi/malformed UTF-16 rejection. Flag defaults are recording false, internal review true, Client approval true.
+- Storage contains all ten Release C stages; every C1 create is Idea with no published timestamp, and neither API nor UI accepts stage/published mutation. Visibility defaults internal; `client` is explicitly future eligibility with no portal access.
+- Owner/Admin coordinate the workspace. PM coordinates ordinary Content; PM/Team restriction requires a current explicit Client/exact Service assignment. Team may read/create/edit inside that canonical scope. Client assignment reaches Client-level and that Client's Social-service Content; Service-only assignment reaches exactly that Social service. Department, owner, Project and direct Action assignment never grant Content scope.
+- Every read/committing write fences current workspace, membership, role, parent, scope and visibility with relational SQL. Existing generic live-actor SQL is reused without an unrelated rename/refactor. Client activity now filters historical Content events by current readability, preventing old titles from surviving scope/restriction changes.
+- Lowercase UUIDv4 request identity is unique per workspace/Client. Immutable `CONTENT_CREATED` activity snapshots normalized initial details and exact Service context. Identical retry after edits returns the same record unchanged; incompatible reuse/retargeting conflicts. Strict edit revision CAS gives one competing winner/event; a stale identical edit still conflicts. Current-revision no-ops are silent. Fact and significant activity share a conditional atomic batch.
+- Protected parent-specific POST routes authorize fixed Client/Service context before parsing JSON, supporting Service-only Team members without granting Client detail access. Internal GET/PATCH routes and list filters use exact allowlists, duplicate-query rejection, real sessions, Origin, safe errors and no-store. No internal Content fields are projected into the portal.
+- `/social` now lists real records; `/social/new`, `/social/:contentId` and `/social/:contentId/edit` use native Bloom controls and an editorial reading column. Ownership is responsibility; Client eligibility and workflow intent are explained without claiming future functionality.
+- Visible lists use 200-row pages plus one readable overflow row, stable creation-timestamp/ID ordering and relational scope. There is no Content lifetime cap. Offset pages can shift under concurrent insertion. Parent choices show up to 200 Client-level plus 200 Social contexts with Client-name search and truthful overflow. Owner choices show the first 200 active internal members, announce overflow, allow unset ownership and preserve an existing selected owner. Empty-scope choices reveal no owner directory.
+
+### Verification evidence
+
+Use Node `22.22.1`. Commands run from the repository root; successful completed runs alone count as verification.
+
+| Command / check | Result |
+|---|---|
+| `npm ci` | 560 installed, 561 audited; package/lock unchanged |
+| `node --test tests/bloomops-content-*.test.mjs` | 133/133: schema 27, domain 36, access 44, HTTP 22, UI 4; final focused rerun exit 0 |
+| `node --test tests/bloomops-release-b-*.test.mjs` | 29/29 |
+| `node --test tests/bloomops-projects-*.test.mjs` | 97/97 |
+| `node --test tests/bloomops-milestones-*.test.mjs` | 173/173 |
+| `node --test tests/bloomops-actions-*.test.mjs` | 203/203 |
+| `node --test tests/bloomops-deliverables-*.test.mjs` | 197/197 |
+| `node --test tests/bloomops-files-*.test.mjs` | 171/171 |
+| `node --test tests/bloomops-projections-*.test.mjs` | 76/76 |
+| Release A/core command retained in the B6 section | 421/421 |
+| `npm test` | 4,163/4,163, zero failures/skips, exit 0 |
+| `npm run build` | Passed, lint/type checks included; final CF build also reruns this exact command |
+| `npm run cf:build` | Final source passed, nested Next build/lint/type checks included, exit 0 |
+| `node .github/scripts/verify-zero-remote.mjs --local` | 22/22 fresh/no-op checks, cleanup complete |
+| `node scripts/content-smoke-local.mjs` | Actual disposable workerd/D1: 43/43, exit 0 |
+| `node scripts/projects-smoke-local.mjs` | Actual D1: 25/25 |
+| `node scripts/milestones-smoke-local.mjs` | Actual D1: 28/28 |
+| `node scripts/actions-smoke-local.mjs` | Actual D1: 47/47 |
+| `node scripts/deliverables-smoke-local.mjs` | Actual D1: 38/38 |
+| `node scripts/files-smoke-local.mjs` | Actual D1/R2: 42/42 |
+| `node scripts/projections-smoke-local.mjs` | Actual D1: 34/34; 240 assignments, max 64 bindings / 12,918 SQL bytes |
+| `node scripts/release-a-hardening-smoke-local.mjs` | Actual D1: 26/26 |
+| `node scripts/release-b-smoke-local.mjs` | Actual D1/R2: 86/86 |
+| `node scripts/auth-smoke-local.mjs --url http://localhost:8787` | Built Worker HTTP: 144/144, exit 0 |
+| `node .github/scripts/verify-staging.mjs --url http://localhost:8787 --expect-env development` | Local external verifier: 21/21, exit 0 |
+| `node scripts/content-review-local.mjs --out /tmp/bloomops-c1-review-final` | 96/96, exit 0; 33 captures (32 app + live reference), all five widths, keyboard/focus, touch and reduced motion |
+| Changed JS/JSX syntax and `git diff --check` | 33 paths passed Node/esbuild syntax checks; whitespace clean |
+| `npm audit --json` | 49 existing advisories; current base/branch entries identical, count/severity delta zero |
+
+C1 actual D1 exercises exact types/Idea, canonical Social binding, role/scope/restricted access, concurrent identical creation, retry after edit, incompatible/retargeted keys, strict edit races, forbidden authority fields, four injected fact/activity rollback cases, live commit revocation, 240 assignments with two visible pages and unchanged parent lifecycles. Node/HTTP coverage adds all non-grants, current membership/role/workspace changes, exact malformed JSON/query behavior and safe 400/401/403/404/409/500 responses. Additional Client-history query inspection measured at most 77 bindings / 11,380 SQL bytes for the Team predicate.
+
+Fresh migration evidence: 60 inherited + 14 domain migrations, 37 domain / 73 total tables, 88 explicit indexes, 23 triggers, clean foreign-key/integrity checks, identical schema and both ledgers after no-op replay, and disposable local directory cleanup.
+
+`npm audit --json` reports 49 advisories (1 low, 43 moderate, 5 high, no critical), unchanged from B7. A contemporaneous audit of the exact base's package/lock in an external temporary directory returned identical vulnerability entries and severity counts. Package and lock have no diff. The historical B7 JSON was not retained, so this proves today's base/branch equality and continuity with recorded historical counts, not a historical advisory-by-advisory time comparison. This is not a zero-advisory dependency tree or a full transitive-dependency security audit.
+
+All runtime evidence uses pinned local Miniflare/workerd, disposable D1 for domain smokes, isolated development D1/R2 for the built Worker, and R2 development mail or in-memory test mail. `files-preview-local.mjs` supplies the existing unconditional Wrangler dry-run bundle/shims on loopback. Playwright 1.63.0/Chromium is installed outside the repository at `/tmp/bloomops-a11-browser`; logs/captures live at `/tmp/bloomops-c1-*`. These are local session artifacts, not remote post-merge acceptance. The live Bloomlab design gallery loaded and its palette/typography were inspected. Final browser acceptance covers empty/create/detail/edit/list/overflow at all five widths, long title/editorial copy, keyboard validation focus and navigation/save, real touch targets, reduced motion, Owner/Admin/PM and Service-scoped Team operations, Client denials, retry/CAS and current-session scope/suspension revocation. Mobile and desktop/tablet captures were visually inspected. The owned preview process was stopped after successful acceptance.
+
+Initial verification exposed expected schema/navigation/action-matrix inventory changes as C1 became real, including the B6 actual-D1 harness's former whole-journal count, plus a flaky test that changed a random UUID substring rather than the version nibble. The fixture now uses a fixed invalid-version UUID. The B6 harness now verifies its closed 13-migration prefix and runs all current migrations. These corrections preserve the prior A/B invariants. No production behavior was weakened for a test.
+
+### Changed files by area
+
+Net against exact closed Release B base: **44 paths** (includes the supplied Release C/C1 contract docs, excludes the removed temporary prompt).
+
+- Schema (4): `lib/bloomops/schema.mjs`, `drizzle/0013_c1_content.sql`, `drizzle/meta/0013_snapshot.json`, `drizzle/meta/_journal.json`.
+- Domain/boundaries/navigation (8): four `lib/bloomops/content*.mjs` modules, `authorization.mjs`, `activity.mjs`, `client-activity.mjs`, `navigation.mjs`.
+- API (4): Content list/item and Client-level/Service-specific creation route files.
+- UI (7): four Social pages, `ContentForm.jsx`, `ContentViews.jsx`, scoped additions to `app/bloomops.css`.
+- Verification (14): the B6 smoke migration-prefix assertion, three `scripts/content-*.mjs` harnesses, `_content.mjs`, five focused C1 test files, existing authorization/schema/Files-schema/shell inventory tests.
+- Documentation (7): this build state, domain model, index, Release B/C, B7 closure and C1 phase contract/evidence.
+
+The temporary `C1_CODEX_PROMPT.txt` has been deleted; comparison against exact closed Release B main shows no net diff for that path. C2+ remains unimplemented: transitions, calendar/platforms, recording/File subjects, approvals, revision-history screens, Content portal, comments, notifications, templates and Ads behavior. No production, staging business data, DNS, real email or Leadsthatbloom resource was changed. Independent ChatGPT audit, user-controlled merge, Deploy staging and Verify zero-to-current on the exact C1 merge SHA remain required before C2.
+
+The following B7 and earlier sections preserve historical implementation evidence; their original pre-merge status language is historical and superseded by the exact-SHA closure above.
 
 ## Repository Agent Instructions
 
@@ -138,7 +215,7 @@ Fixture corrections did not change production behavior: the new ten-Client seed 
 
 The live Bloomlab design gallery was loaded and inspected. Populated Home, Work Projects and safe portal captures were visually reviewed at all five widths; File upload/error/archive dialogs were also inspected, including both final 390/320 toast-regression captures with unobstructed confirmation controls. No redesign or new component library was needed.
 
-Independent audit, user-controlled merge, Deploy staging and remote zero-to-current on the **actual B7 merge SHA** remain required. B7's schema-free diff does not match the zero workflow's push path filter; manually dispatch the existing workflow against the actual merge SHA if it does not auto-trigger. Release B is not closed, and Release C is not started.
+At B7 local completion, independent audit, user-controlled merge and both exact-merge-SHA gates remained required; its schema-free diff required manual zero-workflow dispatch. Those gates subsequently succeeded on `c6509aa395a5db58310e2a0ae22a8a808082f77b`, closing Release B as recorded in the current branch state above.
 
 ### Changed files by area
 
@@ -1922,7 +1999,7 @@ Re-running the workflow is safe. Schema and migrations are idempotent, the provi
 
 - the default catalogue reaches an existing workspace through the bootstrap step of the staging deploy, not through a migration. If that step is ever skipped (it is skipped with a warning when the owner or admin secret is missing), a workspace has departments and service types only from whenever the bootstrap last ran, and the Services tab's Add form has nothing to offer. The seeding is idempotent, so re-running the bootstrap fixes it
 - the A7 duplicate rule (one open engagement per service type per client) is a Release A decision taken where the canonical documents are silent about re-selling. It is one partial unique index plus the open/terminal split in `lib/bloomops/schema.mjs`; widening or narrowing it means a migration, not a code change
-- a service-only Team Member has no navigation to the engagement they are assigned to. The engine grants it, `listClientServices` returns it, and no route or screen in A7 exposes a service on its own, because the client detail is behind the client record they deliberately do not have. The later Social, Ads, and Systems areas are where that navigation belongs
+- a service-only Team Member has no navigation to the engagement they are assigned to. The engine grants it, `listClientServices` returns it, and no route or screen in A7 exposes a service on its own, because the client detail is behind the client record they deliberately do not have. C1 now provides scoped Social Content list/create/detail/edit and minimal Social-service context; a standalone Service detail remains outside C1
 - `describeEvent` falls back to "Client updated" for an event type it does not know, which is right for a screen but means a future phase that adds an event and forgets its renderer degrades quietly rather than loudly
 - A6 shows the client lifecycle and never writes it, so a client created today stays Draft until A9 exists. That is the deliberate boundary (see "Lifecycle, and the A9 boundary"), but it means the lifecycle filters other than Draft can only show clients whose status was set outside the application
 - the A6 owner-candidate policy (workspace-wide roles, plus a Team Member already assigned to that client) is a decision taken where the canonical documents are silent, made because ownership grants no access. It is one function, `ownerCandidates`, and A7 may widen it once assignment management exists
@@ -2032,7 +2109,7 @@ Read additional canonical planning docs only when the phase file or `docs/INDEX.
 
 ## Next Planned Phase
 
-Finish B7 independent audit and user-controlled merge, then verify staging and remote zero-to-current on the actual B7 merge SHA. Only then may Release B close. The next roadmap release is Release C — Social; it remains unimplemented and requires a separate instruction.
+Finish C1 independent ChatGPT audit and user-controlled merge, then verify Deploy staging and Verify zero-to-current on the exact C1 merge SHA. The next planned phase is C2 — the conditional Social pipeline, after those gates and a separate implementation instruction. C2+ remains unimplemented.
 
 ### The A7 phase, for reference
 
@@ -2040,7 +2117,9 @@ A7, Services and Departments. Complete. It seeds the four departments and the in
 
 ## Last Verification
 
-2026-09-08, B7. Schema-free Release B hardening reproduced and corrected exact Project body validation, Work query validation and a mobile toast obstructing a dialog. B7 focused 29/29 (34 shared race assertions), B1–B6 97/173/203/197/171/76, A/core 421/421 and full 4,030/4,030 passed with zero failures/skips. Install, Next/Cloudflare builds including lint/type checks, 21 JavaScript syntax checks and whitespace checks passed. Fresh/no-op zero: 22/22 with unchanged 60 inherited + 13 domain migrations. Actual D1 B1/B2/B3/B4/B6/A11: 25/28/47/38/34/26; actual Files D1/R2: 42; integrated B7 D1/R2: 86. Final built HTTP: 144; external: 21; B7 browser: 273 with 62 captures; Files browser: 143 with 44 captures plus reference. All five required widths passed, including immediate 390/320 toast hit tests. The B7 section records exact commands, the 28-path inventory, audit matrix, local evidence limits and unchanged 49-advisory count/severity baseline. Independent audit, user-controlled merge and both exact-B7-merge-SHA gates remain required. Release B is not closed; Release C has not started.
+2026-09-08, C1. Canonical Content Items and the real Social list/create/detail/edit flow passed 133 focused tests, all B1–B7 and A/core regressions, and 4,163/4,163 full tests. Both builds, 33 JS/JSX syntax checks, whitespace checks, 22 fresh/no-op checks, C1 actual D1 43, prior B1/B2/B3/B4/B5/B6/B7/A11 actual D1/R2 25/28/47/38/42/34/86/26, built HTTP 144, external verifier 21, and final browser/HTTP 96 with 33 captures all passed. Package/lock unchanged; audit 49 advisories, zero current base/branch delta. The C1 section records the 44-path inventory, exact schema/field/auth choices, pagination/choice limits, complete commands and local evidence limitations. The temporary prompt is gone with no net diff. C1 awaits independent audit, user-controlled merge and both exact-C1-merge-SHA gates; C2+ is not implemented.
+
+2026-09-08, B7. Schema-free Release B hardening reproduced and corrected exact Project body validation, Work query validation and a mobile toast obstructing a dialog. B7 focused 29/29 (34 shared race assertions), B1–B6 97/173/203/197/171/76, A/core 421/421 and full 4,030/4,030 passed with zero failures/skips. Install, Next/Cloudflare builds including lint/type checks, 21 JavaScript syntax checks and whitespace checks passed. Fresh/no-op zero: 22/22 with unchanged 60 inherited + 13 domain migrations. Actual D1 B1/B2/B3/B4/B6/A11: 25/28/47/38/34/26; actual Files D1/R2: 42; integrated B7 D1/R2: 86. Final built HTTP: 144; external: 21; B7 browser: 273 with 62 captures; Files browser: 143 with 44 captures plus reference. All five required widths passed, including immediate 390/320 toast hit tests. The B7 section records exact commands, the 28-path inventory, audit matrix, local evidence limits and unchanged 49-advisory count/severity baseline. This is historical B7 local evidence. B7/Release B subsequently closed through PR #21 and both successful exact-SHA gates on `c6509aa395a5db58310e2a0ae22a8a808082f77b`. C1 is recorded above.
 
 2026-09-08, B6. Schema-free canonical Home/Work projections passed 76/76 focused tests, B1/B2/B3/B4/B5 regressions 97/173/203/197/171, Release A/core 421/421 and the full suite 4,001/4,001, all with zero failures/skips. Install, both builds including lint/type validation, 16 JS/JSX syntax checks and diff checks passed. Fresh/no-op verification: 22/22, unchanged 60 inherited + 13 domain migrations, 36 domain / 72 total tables, 84 indexes and 21 triggers. Actual D1 B6: 34/34 with 240 assignments, Home 14 metadata queries and a maximum 64 bindings / 12,918 SQL bytes; no R2 binding. Prior D1/R2 B1/B2/B3/B4/B5/A11: 25/28/47/38/42/26. Final built HTTP: 144/144; external verifier: 21/21; B6 browser/HTTP: 144/144 with 47 captures at 1440/1024/768/390/320, including keyboard/focus, mobile anchor positioning, touch, reduced motion and no-JavaScript Home. Exact commands, the 23-path inventory, query/date/attention rules, fixture/UI corrections, local runtime limitations and unchanged 49 dependency advisories are recorded in the B6 section. This is historical B6 local evidence. B6 subsequently closed through PR #20 and both gates on `58647bda6dd40739b7670e6c0f907b6f33689e5d`; current B7 evidence is recorded above.
 

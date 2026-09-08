@@ -424,46 +424,39 @@ Possible states:
 
 Accepted requests may be converted to an Action or Project.
 
-## Content
+## Content (C1)
+
+Additive `0013_c1_content.sql` implements canonical `content_items`; inherited tables have no name collision. Content is independent of Projects, Actions and Deliverables. C1 stores editorial work and workflow intent only.
 
 ### content_items
 
-Useful fields:
-- client
-- service
-- title
-- type
-- pillar
-- owner
-- hook
-- script
-- caption
-- CTA
-- workflow flags
-- target publish date
-- published date
-- visibility
+The 23 columns are `id`, `workspace_id`, `client_id`, optional `service_engagement_id`, `creation_request_id`, `title`, `type`, optional `pillar`, optional `owner_membership_id`, optional `hook`, `script`, `caption`, `cta`, `recording_required`, `internal_review_required`, `client_approval_required`, `stage`, optional `target_publish_date`, optional `published_at`, `visibility`, `revision`, `created_at`, `updated_at`.
 
-Workflow flags:
-- recording_required
-- internal_review_required
-- client_approval_required
+Workspace, Client and optional Service binding are fixed at creation. Composite foreign keys enforce the same workspace Client, the same workspace/Client Service, and the same workspace owner membership. A Service must resolve through its canonical Service Type to the same workspace Department with slug `social`; labels or Service Type slugs do not determine this. SQL insertion and every authorized read/write enforce that rule. Service lifecycle status adds no invented eligibility restriction. Database triggers prevent identity, parent, request-key and creation-timestamp mutation.
 
-Default pipeline:
-- Idea
-- Script
-- Waiting for Recording
-- Editing
-- Internal Review
-- Client Review
-- Revision Requested
-- Approved
-- Scheduled
-- Published
+The one value/label module is `content-values.mjs`. Types are exactly `reel` (Reel), `static_post` (Static Post), `carousel` (Carousel), `story` (Story), `video` (Video), `email` (Email), `ad_creative` (Ad Creative), `other` (Other). Ad Creative grants no Ads operations.
 
-### content_platforms
+Text limits in UTF-16 code units are title 200, pillar 120, hook 2,000, script 20,000, caption 10,000 and CTA 1,000. Text is NFC-normalized, line endings normalized and outer whitespace trimmed; optional blanks become null. Title and pillar are single-line; editorial fields allow line breaks and tabs. Controls, bidi formatting and malformed UTF-16 are rejected. Target publish date is an exact real `YYYY-MM-DD` calendar date. New owners must be current active internal workspace members. Existing inactive responsibility can be retained while editing other details; ownership never grants access.
 
-Associates content item with platforms.
+Workflow flags are exact booleans, defaulting to recording false, internal review true, Client approval true. They express requirements; C1 does not execute a workflow. Storage admits the complete canonical stages: `idea`, `script`, `waiting_for_recording`, `editing`, `internal_review`, `client_review`, `revision_requested`, `approved`, `scheduled`, `published`. All C1 creation starts at **Idea**, revision 1, with no published timestamp. Neither API nor UI accepts a stage or published-timestamp mutation. The database requires published timestamp/stage coherence for later phases.
+
+Visibility is `internal`, `client` or `restricted`, default internal. `client` is future eligibility and grants no Client access in C1. Owner/Admin coordinate all current workspace Content. PM coordinates ordinary Content; restricted PM/Team access requires an explicit current Client or exact Service assignment. Team may read/create/edit within those same canonical assignments: Client assignment reaches Client-level Content and that Client's Social services; Service-only assignment reaches just that Social service. Department membership, Content ownership, Project assignment and direct Action assignment grant no Content scope. Client role has no internal Social access or Content portal DTO/routes.
+
+All SQL reads and committing writes check current active workspace, membership, unchanged role, scope, canonical parent and visibility. Relational assignment predicates avoid huge bound-ID lists. Historical Client activity also checks each Content item's current readability before exposing any old title or event.
+
+### Retry, revision and activity
+
+UUIDv4 creation request keys are normalized to lowercase and unique per workspace/Client. Immutable `CONTENT_CREATED` activity holds the normalized initial details and exact optional Service context. Identical response-loss retries return the original item even after later edits, without reverting it; incompatible reuse or retargeting conflicts. Conditional insertion and activity commit atomically, including concurrent requests. The snapshot is creation provenance, never mutable Content state.
+
+Detail edits use strict positive-integer revision CAS. One competing request wins one revision and one `CONTENT_DETAILS_UPDATED` event. Stale edits conflict even when their supplied values match the winner. A current-revision no-op creates no event. Late fact/event failure rolls back the whole batch. Existing activity immutability applies unchanged.
+
+### Internal Social reads and routes
+
+`/social`, `/social/new`, `/social/:contentId`, and `/social/:contentId/edit` render the real list/create/detail/edit flow. List filters are Client, exact Social Service, type and owner. Pages contain at most 200 visible records ordered by creation timestamp descending then ID descending; one extra visible record determines truthful overflow. Offset pages have no lifetime creation cap; concurrent insertions can shift page boundaries. Parent choices fetch at most 200 Client-level and 200 Social-service contexts, with Client-name search and explicit overflow. Owner choices show at most 200 active internal memberships and announce overflow; ownership may remain unset. An existing selected owner remains editable without silent reassignment.
+
+Protected APIs are `GET /api/bloomops/content`, `GET/PATCH /api/bloomops/content/:contentId`, and `POST /api/bloomops/clients/:id/content` or `/api/bloomops/clients/:id/services/:serviceId/content`. Parent context comes from the authorized route, never arbitrary JSON. Real session/workspace authorization precedes exact query/body validation, including duplicate query rejection and malformed/non-object JSON. Responses use safe errors and no-store; mutations require Origin.
+
+Platforms, calendars, pipeline transitions, recording/File subjects, approvals, revision-history screens, Content portal, comments, notifications and templates remain future Release C work. No `content_platforms` table exists in C1.
 
 ## Assets / Files (B5)
 

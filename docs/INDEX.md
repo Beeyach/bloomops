@@ -15,7 +15,8 @@ For every implementation session:
 - `PRODUCT_SPEC.md` — product behavior, users, navigation, client experience
 - `DOMAIN_MODEL.md` — entities, lifecycle, permissions, canonical data rules
 - `RELEASE_A.md` — Release A scope and release-level acceptance
-- `RELEASE_B.md` — Work Core scope and the B1–B7 implementation sequence
+- `RELEASE_B.md` — closed Work Core and the B1–B7 implementation sequence
+- `RELEASE_C.md` — Social scope and C1 onward sequencing
 - `ROADMAP.md` — later releases and sequencing
 - `DESIGN_SYSTEM.md` — Bloomlab-derived visual language, tokens, component behavior, accessibility, and BloomOps adaptation rules
 - `DESIGN_CHECKLIST.md` — per-screen visual QA and responsive/accessibility acceptance checklist
@@ -26,9 +27,9 @@ Do not automatically load every planning document into context.
 
 ## Current Build
 
-Release B — Work Core is the active release.
+Release C — Social is the active release.
 
-Current phase: **B7 — Release B Hardening implemented and locally verified; independent audit pending**
+Current phase: **C1 — Content Items Core implemented and locally verified; independent audit pending**
 
 Release A closed after A11 PR #14 merged as `3deed08d8db2a92fcf4dc29a6a879a9945260049`. Read-only preflight verified [Deploy staging 34175768644](https://github.com/Beeyach/bloomops/actions/runs/34175768644) and [remote zero-to-current 34175768643](https://github.com/Beeyach/bloomops/actions/runs/34175768643) completed successfully on that exact SHA.
 
@@ -44,7 +45,9 @@ B5 closed after PR #19 merged as `4c6dad696d15fac4094b8172788b5c72642ff757`. Rea
 
 B6 closed after PR #20 merged as `58647bda6dd40739b7670e6c0f907b6f33689e5d`. Read-only preflight verified [Deploy staging 34231285687](https://github.com/Beeyach/bloomops/actions/runs/34231285687) and [remote zero-to-current 34231727327](https://github.com/Beeyach/bloomops/actions/runs/34231727327) succeeded on that exact SHA. The zero verifier was manually dispatched because B6 was schema-free; disposable-database cleanup succeeded.
 
-Current phase file: `docs/phases/B7.md`; release sequence: `docs/RELEASE_B.md`. B7 hardens Release B without adding features. `BUILD_STATE.md` records reproduced gaps, verification evidence and the remaining independent audit, user-controlled merge and exact-merge-SHA post-merge gates. Release C does not start automatically.
+Release B closed with PR #21 on `c6509aa395a5db58310e2a0ae22a8a808082f77b`. [Deploy staging 34269402296](https://github.com/Beeyach/bloomops/actions/runs/34269402296) and [Verify zero-to-current 34269544255](https://github.com/Beeyach/bloomops/actions/runs/34269544255), including disposable cleanup, succeeded on that exact SHA.
+
+Current phase file: `docs/phases/C1.md`; release sequence: `docs/RELEASE_C.md`. `BUILD_STATE.md` records C1 evidence. Independent audit, user-controlled merge and both exact-merge-SHA gates are required before C2.
 
 ## Phase Reading Matrix
 
@@ -69,6 +72,7 @@ Current phase file: `docs/phases/B7.md`; release sequence: `docs/RELEASE_B.md`. 
 | B5 | `RELEASE_B.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/B1.md`, `phases/B2.md`, `phases/B3.md`, `phases/B4.md`, `phases/B5.md`, current Worker/R2 configuration and test harnesses |
 | B6 | `RELEASE_B.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/B3.md`, `phases/B4.md`, `phases/B5.md`, canonical B1–B5 reads/authorization/UI and current test harnesses |
 | B7 | `RELEASE_B.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/B2.md` through `phases/B7.md`, merged A/B implementations and strongest local Worker/D1/R2/browser harnesses |
+| C1 | `RELEASE_C.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/B7.md`, `phases/C1.md`, current schema/migrations, Client/Service authorization, activity, exact HTTP boundaries and Worker/browser harnesses |
 
 ## Minimal Coding-Agent Prompt Pattern
 

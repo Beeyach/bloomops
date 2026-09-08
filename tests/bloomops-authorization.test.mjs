@@ -318,6 +318,10 @@ test('the role matrix: every role against every representative action, allow and
     'deliverable.manage': [true, true, true, false, false],
     'file.view': [true, true, true, true, true],
     'file.manage': [true, true, true, false, false],
+    'content.list': [true, true, true, true, false],
+    'content.create': [true, true, true, true, false],
+    'content.view': [true, true, true, true, false],
+    'content.manage': [true, true, true, true, false],
     'action.list': [true, true, true, true, false],
     'action.view': [true, true, true, true, false],
     'action.manage': [true, true, true, false, false],
@@ -350,6 +354,9 @@ test('the role matrix: every role against every representative action, allow and
     'deliverable.manage': { ...jamesProject, type: 'deliverable', projectId: jamesProject.id, id: 'deliverable' },
     'file.view': { ...jamesProject, type: 'file', projectId: jamesProject.id, id: 'file' },
     'file.manage': { ...jamesProject, type: 'file', projectId: jamesProject.id, id: 'file' },
+    'content.create': { ...jamesClient, type: 'content_parent', visibility: 'internal' },
+    'content.view': { ...jamesClient, type: 'content', visibility: 'internal' },
+    'content.manage': { ...jamesClient, type: 'content', visibility: 'internal' },
     'action.view': jamesAction,
     'action.manage': jamesAction,
     'action.progress': jamesAction,
@@ -368,10 +375,9 @@ test('the role matrix: every role against every representative action, allow and
       assert.equal(decision.allowed, expected[i], `${role} ${action} -> ${describe(decision)}`);
     });
   }
-  // All actors can see James. The internal-only Action is the deliberate
-  // exception: Clients must not learn that it exists.
+  // All actors can see James. Clients cannot discover internal Actions or Content.
   assert.ok(seen.filter((l) => l.includes('forbidden')).every((l) => /forbidden:(role|capability)$/.test(l)), seen.join('\n'));
-  assert.deepEqual(seen.filter((l) => l.includes('not_found')), ['view', 'manage', 'progress', 'dependencies'].map(operation => `client action.${operation}: not_found:visibility`));
+  assert.deepEqual(seen.filter((l) => l.includes('not_found')), [...['create', 'view', 'manage'].map(operation => `client content.${operation}: not_found:visibility`), ...['view', 'manage', 'progress', 'dependencies'].map(operation => `client action.${operation}: not_found:visibility`)]);
 });
 
 // ── capabilities ─────────────────────────────────────────────────────────
