@@ -6,15 +6,15 @@ Release B: Work Core. Release A is closed on A11 merge `3deed08d8db2a92fcf4dc29a
 
 ## Current Phase
 
-B4 Deliverables is implemented and locally verified on `codex/b4-deliverables`; independent audit and the B4 merge/post-merge gates remain pending. B1, B2 and B3 are closed. B5 Files and all later phases remain unimplemented.
+B5 Files is implemented and locally verified on `codex/b5-files`. B1, B2, B3 and B4 are closed. Independent B5 audit and merge/post-merge gates remain pending. B6 Work + Home Projections and all later phases remain unimplemented.
 
-Current implementation spec: `docs/phases/B4.md`; release sequence: `docs/RELEASE_B.md`.
+Current implementation spec: `docs/phases/B5.md`; release sequence: `docs/RELEASE_B.md`.
 
 Documentation index: `docs/INDEX.md`
 
 ## Branch State
 
-PRs #2 through #17 are merged. B4 starts from verified main `884051d2c2308839f95ecdac74c9d896edf221c5`, followed by phase-contract commit `76e43ff6d70610fb5e15d98e8c567fae7ba789b9` and temporary task carrier `06dc64ba9f16968ace83097c12d486dab1a34f36`. B3 closed after PR #17 merged as `884051d2c2308839f95ecdac74c9d896edf221c5`. Read-only preflight confirmed [Deploy staging 34199099414](https://github.com/Beeyach/bloomops/actions/runs/34199099414) and [remote zero-to-current 34199099461](https://github.com/Beeyach/bloomops/actions/runs/34199099461) succeeded on that exact SHA. The B3 gates do not substitute for B4 post-merge evidence. This branch is for independent review and user-controlled merge.
+PRs #2 through #18 are merged. B5 starts from verified main `ac71b358f27894af8dd8108f004499cd765fca69`, followed by phase-contract commit `874a2ef36a9ceee92b1917eb15a1d157e9ee278f` and temporary task carrier `43fc1751c12c40daa257b9cd1f08c21a4b308c47`. B4 closed after PR #18 merged as `ac71b358f27894af8dd8108f004499cd765fca69`. Read-only preflight confirmed [Deploy staging 34207017617](https://github.com/Beeyach/bloomops/actions/runs/34207017617) and [remote zero-to-current 34207017646](https://github.com/Beeyach/bloomops/actions/runs/34207017646) succeeded on that exact SHA. The B4 gates do not substitute for B5 post-merge evidence. This branch is for independent review and user-controlled merge.
 
 ## Repository Agent Instructions
 
@@ -53,10 +53,80 @@ BloomOps Git history is fresh. The source commit object does not exist in the Bl
 - B1: Projects Core, merged as PR #15 at `cacb2d3`, with both post-merge gates passed.
 - B2: Milestones, merged as PR #16 at `74eb09a`, with both post-merge gates passed.
 - B3: Actions + Dependencies, merged as PR #17 at `884051d`, with both post-merge gates passed.
+- B4: Deliverables, merged as PR #18 at `ac71b35`, with both post-merge gates passed.
+
+## Files (B5)
+
+B5 adds real Project/Deliverable attachments, with D1 as canonical metadata and authorization and R2 as canonical bytes. The phase contract is `phases/B5.md`; `DOMAIN_MODEL.md` records the complete relational model and storage protocol. All required local verification passed, including the final browser/HTTP acceptance run. Independent audit, user-controlled merge and both gates on the eventual B5 merge SHA remain required.
+
+### Preflight and implementation decisions
+
+- Verified ancestry and remote main at exact B4 merge `ac71b358f27894af8dd8108f004499cd765fca69` before substantial implementation. PR #18 and its two successful merge-SHA gates are recorded above. The requested phase-contract and task-carrier commits are preserved; `B5_CODEX_PROMPT.txt` is removed so it has no net diff against main.
+- Reused the actual `FILES` binding: development uses local `bloomops-files-dev`, staging declares its own `bloomops-files-staging`, and production remains separately configured. Application code accepts the binding and never hard-codes a bucket. Wrangler configuration, compatibility date `2025-05-01`, staging/zero workflows, environment isolation and dependency manifest/lock are unchanged. Verification uses only disposable local bindings or the loopback development Worker with R2 mail and example identities.
+- The explicit upload limit is **5,242,880 bytes (5 MiB)**. One exact, percent-encoded JSON header carries bounded metadata and the body contains only raw bytes. Validation precedes one bounded allocation; streaming reads enforce the actual and declared lengths. Filenames are NFC-normalized and bounded to 180 UTF-16 code units, MIME to 127 characters, and the metadata header to 4096 characters. Path/control/bidi/header injection and caller workspace/key authority are refused. The server computes SHA-256. This deliberately small buffered policy follows current official Workers limits and R2 API/consistency documentation linked in `DOMAIN_MODEL.md`; no platform-limit change, multipart infrastructure or scanning claim is introduced.
+- Additive `0012_b5_files.sql` creates `assets` (19 columns), `asset_links` (5), and `asset_upload_attempts` (6), with 12 File CHECKs and composite workspace/File/uploader/Project/Deliverable FKs. Seven indexes are added: `assets_ws_id_uq`, `assets_ws_request_uq`, `assets_key_uq`, `asset_links_ws_project_idx`, `asset_attempts_key_uq`, `asset_attempts_cleanup_idx`, and `deliverables_ws_project_id_uq`. Six triggers preserve original details, fixed links, durable attempt identity and legal generation transitions. The generated Drizzle snapshot/journal match; no prior table or migration is rebuilt or rewritten.
+- Each File has one fixed Project attachment or a Deliverable attachment within that exact Project. There is no mutable relinking or generic polymorphic endpoint. These are the coherent current upload surfaces required by B5. Client-only, Milestone, Action and onboarding attachment integrations remain outside this implementation. A committing relational count caps each Project at 200 Files including archives, keeping active lists complete and bounded. The form states the limit.
+- Upload reserves **Uploading**, the link and a durable attempt in one conditional D1 batch. Each generation has a fresh server-owned workspace-separated opaque key and a five-minute lease. R2 must confirm key, size, MIME, etag and SHA-256 before a live-authorized conditional batch writes **Ready**, its one server timestamp and exactly one `FILE_UPLOADED` event. Reservation has no semantic upload event. UUIDv4 request keys plus immutable initial details and bytes make lost-response retries converge on one File; incompatible reuse conflicts.
+- Put/finalize failures mark only the owned Uploading generation **Failed** when D1 can answer. Positive current D1 evidence fences cleanup; uncertain commits never justify blind deletion. A lost finalization response is success only with readable Ready metadata and matching R2 evidence. Database unavailability can leave Uploading and a known key for explicit retry after its lease. Recovery claims a new generation with CAS, so a late old writer or cleaner cannot overwrite/delete the winner.
+- Cleanup checks at most ten eligible attempt keys per pass and rotates failed checks as well as successful ones, preventing persistent failures from starving later keys. Attempt rows remain after deletion because an interrupted PUT may finish late; a later explicit recovery/readiness/archive retry can revisit them. Cleanup is best effort, without a scheduled production sweep or guarantee of immediate orphan removal. Archive is terminal metadata removal from active views/downloads, retains previously Ready bytes and timestamp, and atomically records `FILE_ARCHIVED`. Ready visibility uses revision/CAS and `FILE_VISIBILITY_CHANGED`; no parent lifecycle changes.
+- Owner/Admin/PM coordinate within current Project scope; Team is read-only. Restricted Project/Deliverable/File access for PM/Team requires explicit Project assignment. Department, Project ownership and Action-only assignment grant no File scope. Every query and committing write uses current identity/workspace/membership/role/assignment/parent visibility predicates, with no assigned-ID expansion. Historical File names are filtered by current File and parent readability in both Project and Client history.
+- Clients receive only Ready Files where both File and all parents are currently Client-visible and contact linkage remains valid. The exact portal DTO has six fields: `id`, `filename`, `mimeType`, `byteSize`, `readyAt`, `attachmentLabel`. Labels never fall back to internal Deliverable titles. Hidden counts, uploader identity, storage keys, hashes, lease/revision details and internal activity are excluded. Empty/hidden-only File sets produce no portal section or navigation.
+- Six route files provide Project list/upload, File read/visibility/archive, explicit retry, authorized byte download and two portal reads. Real sessions, Origin checks, strict allowlists, sanitized errors and no-store apply. Download resolves a File ID through D1, fetches only its canonical Ready key, then rechecks live authorization and generation after the R2 await. Missing/hidden/foreign/non-ready/missing-object cases share 404; no ordinary read repairs storage. Bytes use safe ASCII/RFC 5987 attachment filenames, `private, no-store`, `nosniff`, sandboxed content policy and same-origin resource policy.
+- Project Files and coherent Deliverable attachments use existing Bloom rows, dialogs, buttons, typography, error notices and toast. Upload/retry, visibility, archive and downloads have hydration/pending guards and keyboard focus restoration. Client Files appear under reachable Projects only when actual shared records exist. No new UI library, provider, destination or major dependency was added.
+
+### Verification
+
+Node 22.22.1, Wrangler 4.129.0, pinned Miniflare/workerd and unchanged dependencies.
+
+| Check | Result |
+|---|---|
+| `npm ci` | Passed: 560 packages installed, 561 audited. Existing 49 advisories remain: 1 low, 43 moderate, 5 high. |
+| `node --test tests/bloomops-files-*.test.mjs` | 171/171 passed: 59 lifecycle/recovery/domain, 54 access, 27 real-session HTTP, 27 schema and 4 UI. |
+| B1/B2/B3/B4 focused regressions | 97/97 Projects, 173/173 Milestones, 203/203 Actions/dependencies and 197/197 Deliverables passed. |
+| Release A/auth/authorization/security/domain regression command recorded in the B3 section | 421/421 passed. |
+| `npm test` | 3,925/3,925 passed, zero failures/skips. |
+| `npm run build` and `npm run cf:build` | Both passed, including available lint/type checks. |
+| `node scripts/files-smoke-local.mjs` | 42/42 passed inside actual disposable workerd with D1 and R2: reserve/put/finalize/cleanup failures, response loss, generations, live revocation, 5 MiB bytes/checksum/head/get/delete, isolation, parent preservation and integrity. |
+| Prior disposable D1 smokes | B1 25/25; B2 28/28; B3 47/47; B4 38/38; A11 26/26 passed. |
+| `node .github/scripts/verify-zero-remote.mjs --local` | 22/22 passed: 60 inherited + 13 domain migrations; 36 domain / 72 total tables including ledgers; 84 explicit indexes; 21 triggers; FK/integrity clean and schema/ledgers identical after the no-op second pass. |
+| `npm run db:domain:migrate:local` | Migration 0012 applied to the existing development database; the fresh proof used a separate disposable target. |
+| `node scripts/auth-smoke-local.mjs --url http://localhost:8787` | 144/144 built-Worker HTTP checks passed. |
+| `node .github/scripts/verify-staging.mjs --url http://localhost:8787 --expect-env development` | 21/21 passed against the built local Worker. |
+| `node scripts/files-review-local.mjs --url http://localhost:8787 --out /tmp/bloomops-b5-review-final` | 139/139 passed, exit 0; 42 screenshots at 1440/1024/768/390/320px plus the loaded live design reference. |
+| Changed JavaScript/JSX syntax and `git diff --check` | 42 syntax checks passed; diff check passed. The local preview argument guard also refused overrides before creating output or starting a Worker. |
+
+The actual R2 smoke runs the domain inside a Worker bundled with existing esbuild and instantiated through the pinned Wrangler Miniflare runtime. The Node-side `getPlatformProxy` R2 preflight repeatedly stalled before returning a proxy; a direct Worker put/get/delete probe succeeded, so the stronger in-Worker harness exercises all D1/R2 boundaries there. No unverified upstream cause is asserted and no dependency/runtime configuration was changed. The harness refuses remote targets, owns temporary storage and disposes it.
+
+Two normal Wrangler CLI previews stopped with `Error inside ProxyWorker` and an underlying `Network connection lost` cause, matching the failure signature in [workers-sdk #15317](https://github.com/cloudflare/workers-sdk/issues/15317). The exact dropped-connection trigger here is not established. `node scripts/files-preview-local.mjs` provides a reproducible loopback-only alternative: Wrangler first bundles the existing OpenNext output with an unconditional local `deploy --dry-run --no-autoconfig`, including its normal Node shims, then pinned Miniflare/workerd serves that exact bundle with the existing development D1/R2 state and asset binding. It refuses environment/remote arguments, checks the actual local binding identities and R2 mail transport, uses the pinned v5 `resourcePersistencePath`, validates health and removes only its owned temporary bundle on exit. No dependency or production configuration was changed. The disposable File smoke also uses that v5 persistence option for its owned temporary resources.
+
+Browser acceptance then reproduced middleware stripping the File route's `private` cache directive. The narrow authenticated File-download path now retains `private, no-store`; adjacent paths and anonymous denial keep their existing policy. Middleware regressions verify that this creates no authorization exemption. Adversarial HTTP input also reproduced two failures where object-valued MIME/size fields with invalid conversion properties returned 500. Validation now rejects those types without coercion and returns sanitized 400 on both upload and retry; the 27 HTTP tests and built-Worker browser cases cover the correction. Browser failure diagnostics report Worker reachability, and full-page captures begin at the top so fixed navigation does not obscure File rows in the saved images.
+
+The first full/Release A runs exposed an old A6 source-text assertion scanning all Client activity labels for the word “archive.” File history legitimately adds “File archived.” The assertion now checks the actual Client/contact mutation modules, preserving its original invariant that A6 creates no Client archive operation. Existing domain inventory, migration-prefix and permission-matrix tests were extended for B5 without changing prior business behavior. Recovery verification also caught cleanup starvation; failed checks now rotate and the new 13-generation regression proves all known orphan keys get a turn.
+
+The final built Worker was served by the checked-in `files-preview-local.mjs` after both builds passed. Its full 144-check HTTP smoke and 21-check external verifier passed again before browser acceptance. The 139 browser/HTTP checks cover one real File/object/event under double-click and response-loss retry, exact saved bytes and headers for coordinator and Client, no-JavaScript control safety, five-width empty/upload/visibility/Team/portal/retry/archive layouts, keyboard chooser/Tab/Escape/focus after controls disappear, touch, reduced motion, sanitized late finalization failure and recovery, current scope/history revocation, strict input types and unchanged parent facts. Project, upload and portal captures were visually reviewed across all five widths; final retry/archive captures were reviewed at every width, with final Project/Team/portal spot checks. The preview was stopped after verification.
+
+The completed run wrote logs and browser captures under `/tmp/bloomops-b5-*` and used external browser tooling at `/tmp/bloomops-a11-browser` (Playwright 1.63.0 / Chromium 153). These temporary artifacts and the browser installation were no longer present when the session resumed for PR finalization; they are not retained PR artifacts. The exact results above and checked-in verification harnesses remain the durable record. The live Bloomlab reference loaded successfully and was visually inspected during verification. Existing dependency advisories, SQLite experimental notice, build compatibility-date suggestion and `punycode` deprecation remain; none required a dependency or platform change for B5.
+
+### Remaining gates and scope
+
+This branch must remain open and unmerged for independent ChatGPT audit. The user-controlled merge must then pass Deploy staging and automatic remote zero-to-current on the actual B5 merge SHA. Local verification does not replace either post-merge gate.
+
+Deliberate limits are 5 MiB per File, 200 Files including archives per Project, fixed Project/Deliverable attachment, read-only Team, explicit recovery with a five-minute active lease, bounded best-effort orphan cleanup, terminal archive retaining Ready bytes, and no scanning. Client uploads, other subject integrations, relinking, restoration, purge/retention policy, versions, approvals/history, comments, notifications, templates, specialist pipelines and future Request/Page/Finance placeholders are absent. B6 Work + Home Projections is next only after B5 audit, merge and both gates; B6/B7 and later releases remain unimplemented.
+
+### Changed-file inventory
+
+The net diff against verified B4 main contains 52 paths. The temporary task prompt has no net diff.
+
+- Schema: `drizzle/0012_b5_files.sql`, `drizzle/meta/0012_snapshot.json`, `drizzle/meta/_journal.json`, `lib/bloomops/schema.mjs`.
+- Domain and authorization: `lib/bloomops/activity.mjs`, `lib/bloomops/api-handler.mjs`, `lib/bloomops/authorization.mjs`, `lib/bloomops/client-activity.mjs`, `lib/bloomops/file-access.mjs`, `lib/bloomops/file-api.mjs`, `lib/bloomops/file-values.mjs`, `lib/bloomops/files.mjs`, `lib/bloomops/project-activity.mjs`, `middleware.js`.
+- API routes: `app/api/bloomops/files/[fileId]/download/route.js`, `app/api/bloomops/files/[fileId]/retry/route.js`, `app/api/bloomops/files/[fileId]/route.js`, `app/api/bloomops/portal/files/[fileId]/route.js`, `app/api/bloomops/portal/projects/[id]/files/route.js`, `app/api/bloomops/projects/[id]/files/route.js`.
+- UI: `app/(internal)/work/projects/[id]/page.jsx`, `app/bloomops.css`, `app/portal/page.jsx`, `components/bloomops/DeliverableControls.jsx`, `components/bloomops/Deliverables.jsx`, `components/bloomops/FileControls.jsx`, `components/bloomops/Files.jsx`, `components/bloomops/PortalHome.jsx`, `components/bloomops/Projects.jsx`.
+- Tests and verification: `scripts/deliverables-smoke-local.mjs`, `scripts/files-preview-local.mjs`, `scripts/files-review-local.mjs`, `scripts/files-smoke-local.mjs`, `scripts/files-smoke-worker.mjs`, `tests/_files.mjs`, `tests/bloomops-activation.test.mjs`, `tests/bloomops-authorization.test.mjs`, `tests/bloomops-clients.test.mjs`, `tests/bloomops-deliverables-schema.test.mjs`, `tests/bloomops-files-access.test.mjs`, `tests/bloomops-files-domain.test.mjs`, `tests/bloomops-files-http.test.mjs`, `tests/bloomops-files-schema.test.mjs`, `tests/bloomops-files-ui.test.mjs`, `tests/bloomops-middleware.test.mjs`, `tests/bloomops-schema.test.mjs`.
+- Documentation: `docs/BUILD_STATE.md`, `docs/DOMAIN_MODEL.md`, `docs/INDEX.md`, `docs/RELEASE_B.md`, `docs/phases/B4.md`, `docs/phases/B5.md`.
 
 ## Deliverables (B4)
 
-B4 adds client-receivable outputs inside existing Projects, independent of Actions and Dependencies. The implementation follows `phases/B4.md`; the final relational model is in `DOMAIN_MODEL.md`.
+B4 is closed through PR #18 and its two verified merge-SHA gates recorded above. This section preserves the historical local evidence. B4 adds client-receivable outputs inside existing Projects, independent of Actions and Dependencies. The implementation follows `phases/B4.md`; the final relational model is in `DOMAIN_MODEL.md`.
 
 ### Implementation decisions
 
@@ -111,7 +181,7 @@ Visual review caught two acceptance-fixture issues: the reference screenshot nee
 
 ### Remaining gates and scope
 
-Independent B4 audit, user-controlled merge, and successful Deploy staging plus remote zero-to-current on the actual B4 merge SHA remain required. Local evidence does not substitute for those gates. Deliberate B4 limits are 200 Deliverables per Project, fixed parent identity, terminal Delivered/Cancelled lifecycle, read-only Team and coordinator-managed review states. Files, versions, formal approval rounds/history, comments, notifications, templates, auto-generation, specialist pipelines and Home composition are intentionally absent. B5 Files is the next planned phase and remains unimplemented.
+B4's audit, merge and both post-merge gates are complete on `ac71b358f27894af8dd8108f004499cd765fca69`, as recorded above. Deliberate B4 limits remain 200 Deliverables per Project, fixed parent identity, terminal Delivered/Cancelled lifecycle, read-only Team and coordinator-managed review states. B5 adds Files in a separate phase; versions, formal approval rounds/history, comments, notifications, templates, auto-generation, specialist pipelines and Home composition remain absent.
 
 ### Changed files by area
 
@@ -1782,13 +1852,13 @@ For the current phase and its audit, read:
 
 1. `AGENTS.md`
 2. this file
-3. `docs/phases/B4.md`
+3. `docs/phases/B5.md`
 
 Read additional canonical planning docs only when the phase file or `docs/INDEX.md` calls for them.
 
 ## Next Planned Phase
 
-B5 — Files, after independent B4 audit, user-controlled merge, and successful staging plus remote zero-to-current verification on the actual B4 merge SHA. B5 and later phases remain unimplemented and do not start automatically.
+B6 — Work + Home Projections, after independent B5 audit, user-controlled merge, and successful staging plus remote zero-to-current verification on the actual B5 merge SHA. B6 and later phases remain unimplemented and do not start automatically.
 
 ### The A7 phase, for reference
 
@@ -1796,7 +1866,9 @@ A7, Services and Departments. Complete. It seeds the four departments and the in
 
 ## Last Verification
 
-2026-09-08, B4. Focused Deliverables 197/197, B1 97/97, B2 173/173, B3 203/203, Release A/core 421/421 and full suite 3,754/3,754 passed with zero failures/skips. Install, both builds with lint/type checks, 33 JavaScript/JSX syntax checks and diff checks passed. Fresh/no-op verification: 22/22, 60 inherited + 12 domain migrations, 33 domain / 69 total tables, 77 explicit indexes and 15 triggers. Actual D1 B4/B1/B2/B3/A11: 38/25/28/47/26; built HTTP: 144/144; local external verifier: 21/21; final B4 browser/HTTP: 141/141 with 42 screenshots across all five widths plus the live design reference, exit 0. Exact commands, 42 changed paths, limits, fixture corrections and the unchanged 49 dependency advisories are in the B4 section above. B4 awaits independent audit, user-controlled merge and both gates on the eventual merge SHA. B5 Files remains unimplemented.
+2026-09-08, B5. Focused Files 171/171, B1/B2/B3/B4 97/173/203/197, Release A/core 421/421 and full suite 3,925/3,925 passed with zero failures/skips. Install, both builds with lint/type checks, 42 JavaScript/JSX syntax checks and diff checks passed. Fresh/no-op verification: 22/22, 60 inherited + 13 domain migrations, 36 domain / 72 total tables, 84 explicit indexes and 21 triggers. Actual D1/R2 B5 42/42; prior D1 B1/B2/B3/B4/A11 25/28/47/38/26; built HTTP 144/144; external verifier 21/21; browser/HTTP 139/139 with 42 screenshots at five widths plus the live design reference, exit 0. The B5 section records the complete 52-path inventory, 5 MiB upload and recovery limits, middleware/input corrections, reproducible local preview alternative and unchanged 49 dependency advisories. Independent B5 audit, user-controlled merge and both post-merge gates remain pending. B6 and later work remain unimplemented.
+
+2026-09-08, B4. Focused Deliverables 197/197, B1 97/97, B2 173/173, B3 203/203, Release A/core 421/421 and full suite 3,754/3,754 passed with zero failures/skips. Install, both builds with lint/type checks, 33 JavaScript/JSX syntax checks and diff checks passed. Fresh/no-op verification: 22/22, 60 inherited + 12 domain migrations, 33 domain / 69 total tables, 77 explicit indexes and 15 triggers. Actual D1 B4/B1/B2/B3/A11: 38/25/28/47/26; built HTTP: 144/144; local external verifier: 21/21; final B4 browser/HTTP: 141/141 with 42 screenshots across all five widths plus the live design reference, exit 0. Exact commands, 42 changed paths, limits, fixture corrections and the unchanged 49 dependency advisories are in the B4 section above. This is historical B4 local evidence; B4 is now closed through PR #18 and both gates on `ac71b358f27894af8dd8108f004499cd765fca69`. B5 is recorded above.
 
 2026-09-08, B3. Focused Actions 203/203, B1 97/97, B2 173/173, Release A/auth/security/domain regressions 421/421 and full suite 3,557/3,557 passed with zero failures/skips. Install, both builds including lint/type checks, 33 changed/new JavaScript syntax checks and diff checks passed. Fresh/no-op migrations: 22/22 checks, 60 inherited + 11 domain migrations, 32 domain tables, 75 explicit indexes and 15 triggers. Actual D1 B3/B1/B2/A11: 47/25/28/26; built-Worker HTTP: 144/144; local external verifier: 21/21; B3 browser/HTTP: 161/161 with 53 screenshots at all five widths. Exact commands, decisions, corrections, changed paths and unchanged 49 dependency advisories are in the B3 section above. This is historical B3 local evidence. B3 is now closed by PR #17 and both verified post-merge gates; B4 is recorded above.
 

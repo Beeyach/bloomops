@@ -117,6 +117,7 @@ test('activation selects all real open services, merges Meta, commits once, and 
   assert.equal(count(t, 'projects'), 0, 'activation never creates Projects automatically');
   assert.equal(count(t, 'actions'), 0, 'activation never creates Actions automatically');
   assert.equal(count(t, 'deliverables'), 0, 'activation never creates Deliverables automatically');
+  assert.equal(count(t, 'assets'), 0, 'activation never creates Files automatically');
 });
 
 test('mail failure leaves a singular core and retries only invitation delivery', async () => {

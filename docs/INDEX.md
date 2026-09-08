@@ -28,7 +28,7 @@ Do not automatically load every planning document into context.
 
 Release B — Work Core is the active release.
 
-Current phase: **B4 — Deliverables implemented and locally verified; independent audit pending**
+Current phase: **B5 — Files implemented and locally verified; independent audit pending**
 
 Release A closed after A11 PR #14 merged as `3deed08d8db2a92fcf4dc29a6a879a9945260049`. Read-only preflight verified [Deploy staging 34175768644](https://github.com/Beeyach/bloomops/actions/runs/34175768644) and [remote zero-to-current 34175768643](https://github.com/Beeyach/bloomops/actions/runs/34175768643) completed successfully on that exact SHA.
 
@@ -38,7 +38,9 @@ B2 closed after PR #16 merged as `74eb09a619516ae4969622f5e79a64c35d300d39`. Rea
 
 B3 closed after PR #17 merged as `884051d2c2308839f95ecdac74c9d896edf221c5`. Read-only preflight confirmed [Deploy staging 34199099414](https://github.com/Beeyach/bloomops/actions/runs/34199099414) and [remote zero-to-current 34199099461](https://github.com/Beeyach/bloomops/actions/runs/34199099461) succeeded on that exact SHA.
 
-Current phase file: `docs/phases/B4.md`; release sequence: `docs/RELEASE_B.md`. B4 adds separate Deliverables, exact lifecycle, Project coordinator controls, live visibility, safe Client DTOs, atomic history and retries. Evidence and limits are in `docs/BUILD_STATE.md`. Independent B4 audit, user-controlled merge, and successful staging plus remote zero-to-current on the eventual merge SHA remain required. B5 Files and all later phases remain unimplemented.
+B4 closed after PR #18 merged as `ac71b358f27894af8dd8108f004499cd765fca69`. Read-only preflight confirmed [Deploy staging 34207017617](https://github.com/Beeyach/bloomops/actions/runs/34207017617) and [remote zero-to-current 34207017646](https://github.com/Beeyach/bloomops/actions/runs/34207017646) succeeded on that exact SHA.
+
+Current phase file: `docs/phases/B5.md`; release sequence: `docs/RELEASE_B.md`. B5 adds D1 File metadata, fixed Project/Deliverable attachments, bounded R2 upload/recovery, current authorization for metadata and bytes, safe conditional portal rows and immutable activity. The model and deliberate scope limits are in `DOMAIN_MODEL.md`; verification evidence is in `BUILD_STATE.md`. B5 independent audit, user-controlled merge and both gates on its eventual merge SHA remain required. B6 Work + Home Projections and B7 remain unimplemented.
 
 ## Phase Reading Matrix
 
@@ -60,6 +62,8 @@ Current phase file: `docs/phases/B4.md`; release sequence: `docs/RELEASE_B.md`. 
 | B2 | `RELEASE_B.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/B1.md`, `phases/B2.md` |
 | B3 | `RELEASE_B.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/B1.md`, `phases/B2.md`, `phases/B3.md` |
 | B4 | `RELEASE_B.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/B1.md`, `phases/B2.md`, `phases/B3.md`, `phases/B4.md` |
+
+| B5 | `RELEASE_B.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/B1.md`, `phases/B2.md`, `phases/B3.md`, `phases/B4.md`, `phases/B5.md`, current Worker/R2 configuration and test harnesses |
 
 ## Minimal Coding-Agent Prompt Pattern
 

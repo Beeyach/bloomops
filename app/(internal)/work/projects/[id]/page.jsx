@@ -15,6 +15,8 @@ import { listActions } from '@/lib/bloomops/actions.mjs';
 import { ProjectActions } from '@/components/bloomops/ActionControls';
 import { listDeliverables } from '@/lib/bloomops/deliverables.mjs';
 import DeliverableControls from '@/components/bloomops/DeliverableControls';
+import { listFiles } from '@/lib/bloomops/files.mjs';
+import FileControls from '@/components/bloomops/FileControls';
 
 export const dynamic = 'force-dynamic';
 export async function generateMetadata({ params }) {
@@ -29,13 +31,14 @@ export default async function ProjectPage({ params }) {
   if (!result.ok) notFound();
   const { project, resource } = result;
   const mayManage = evaluate(actor, { action: 'project.manage', resource }).allowed;
-  const [assignments, activity, options, clientResource, milestones, actions, deliverables] = await Promise.all([
+  const [assignments, activity, options, clientResource, milestones, actions, deliverables, files] = await Promise.all([
     listProjectAssignments(access.db, actor, project.id), projectActivity(access.db, actor, project.id),
     mayManage ? projectOptions(access.db, actor, { clientId: project.clientId }) : null,
     loadInternalClientResource(access.db, actor.workspaceId, project.clientId),
     listMilestones(access.db, actor, project.id),
     listActions(access.db, actor, { projectId: project.id, view: 'all' }),
     listDeliverables(access.db, actor, project.id),
+    listFiles(access.db, actor, project.id),
   ]);
   const clientHref = clientResource && evaluate(actor, { action: 'client.view', resource: clientResource }).allowed ? `/clients/${project.clientId}` : null;
   return <>
@@ -45,7 +48,9 @@ export default async function ProjectPage({ params }) {
     <MilestoneControls projectId={project.id} summary={milestones} mayManage={mayManage} canRestrict={options?.canRestrict || assignments.some(a => a.membershipId === actor.membershipId)} />
     <ProjectActions projectId={project.id} items={actions.items || []} members={options?.members || []} milestones={milestones.items.map(({ id, name }) => ({ id, name }))}
       mayManage={mayManage} membershipId={actor.membershipId} canRestrict={options?.canRestrict || assignments.some(a => a.membershipId === actor.membershipId)} />
-    <DeliverableControls projectId={project.id} summary={deliverables} mayManage={evaluate(actor, { action: 'deliverable.manage', resource }).allowed}
+    <DeliverableControls projectId={project.id} summary={deliverables} files={files.items} mayManage={evaluate(actor, { action: 'deliverable.manage', resource }).allowed}
+      canRestrict={options?.canRestrict || assignments.some(a => a.membershipId === actor.membershipId)} />
+    <FileControls projectId={project.id} summary={files} deliverables={deliverables.items.map(({ id, title }) => ({ id, title }))} mayManage={evaluate(actor, { action: 'file.manage', resource }).allowed}
       canRestrict={options?.canRestrict || assignments.some(a => a.membershipId === actor.membershipId)} />
     <ProjectTeam projectId={project.id} assignments={assignments} members={options?.members || []} mayManage={mayManage} />
     <Section id="project-activity" title="Activity">

@@ -7,7 +7,7 @@ import { all, run } from './_bloomops-db.mjs';
 test('B4 migration adds only Deliverables with the same-workspace Project reference and matching snapshot',async()=>{
   const read=path=>JSON.parse(readFileSync(new URL(`../drizzle/meta/${path}`,import.meta.url)));
   const journal=read('_journal.json'),before=read('0010_snapshot.json'),after=read('0011_snapshot.json');
-  assert.equal(journal.entries.length,12);assert.equal(journal.entries[11].tag,'0011_b4_deliverables');assert.equal(after.prevId,before.id);
+  assert.ok(journal.entries.length>=12);assert.equal(journal.entries[11].tag,'0011_b4_deliverables');assert.equal(after.prevId,before.id);
   assert.deepEqual(Object.keys(after.tables).filter(name=>!before.tables[name]),['deliverables']);for(const[name,table]of Object.entries(before.tables))assert.deepEqual(after.tables[name],table,name);
   assert.equal(Object.keys(after.tables.deliverables.indexes).length,2);
   const migration=readFileSync(new URL('../drizzle/0011_b4_deliverables.sql',import.meta.url),'utf8');assert.doesNotMatch(migration,/\b(?:ALTER|DROP)\s+TABLE/i);

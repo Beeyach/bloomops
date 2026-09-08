@@ -27,8 +27,8 @@ export const config = {
 // rendered by the Worker, so the document's Cache-Control has to be set
 // here. Do not weaken a protected route’s no-store policy when middleware
 // headers are merged into its response. Hashed assets retain their caching.
-function freshHtml(res) {
-  res.headers.set('Cache-Control', 'no-store');
+function freshHtml(res, privateBytes = false) {
+  res.headers.set('Cache-Control', privateBytes ? 'private, no-store' : 'no-store');
   return res;
 }
 
@@ -108,7 +108,12 @@ export async function middleware(req) {
     return NextResponse.next();
   }
 
-  if (hasSessionCookie(req)) return freshHtml(NextResponse.next());
+  if (hasSessionCookie(req)) {
+    // Middleware headers are merged after the route response. Preserve the
+    // File byte route's private policy as well as the universal no-store.
+    const privateBytes = req.method === 'GET' && /^\/api\/bloomops\/files\/[^/]+\/download\/?$/.test(pathname);
+    return freshHtml(NextResponse.next(), privateBytes);
+  }
 
   if (pathname.startsWith('/api/')) {
     return freshHtml(NextResponse.json({ error: 'Sign in to continue.' }, { status: 401 }));

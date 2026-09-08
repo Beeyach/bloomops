@@ -9,7 +9,7 @@ import Dialog from './Dialog';
 import { DeliverableList } from './Deliverables';
 import { send } from './ClientOverview';
 
-export default function DeliverableControls({ projectId, summary, mayManage, canRestrict }) {
+export default function DeliverableControls({ projectId, summary, files = [], mayManage, canRestrict }) {
   const router = useRouter(), pending = useRef(false), requestId = useRef(null), focusAfterMutation = useRef(null);
   const [ready, setReady] = useState(false), [busy, setBusy] = useState(false), [dialog, setDialog] = useState(null);
   const [values, setValues] = useState({}), [initial, setInitial] = useState({}), [errors, setErrors] = useState({}), [error, setError] = useState('');
@@ -54,7 +54,7 @@ export default function DeliverableControls({ projectId, summary, mayManage, can
   }
   return <Section id="project-deliverables" title="Deliverables" aside={mayManage && <Button id="add-deliverable" size="sm" disabled={busy || !ready} onClick={() => open('create')}>Add Deliverable</Button>}>
     <p className="bo-small">What the client receives from this Project.</p>
-    <DeliverableList items={summary.items} controls={mayManage ? item => <div className="bo-deliverable-controls" role="group" aria-label={`${item.title} controls`}>
+    <DeliverableList items={summary.items} files={files} controls={mayManage ? item => <div className="bo-deliverable-controls" role="group" aria-label={`${item.title} controls`}>
       <Button size="sm" disabled={busy || !ready} onClick={() => open('edit', item)}>Edit Deliverable</Button>
       {DELIVERABLE_TRANSITIONS[item.status].length > 0 && <Button size="sm" disabled={busy || !ready} onClick={() => open('status', item)}>Change Deliverable status</Button>}
     </div> : null} />

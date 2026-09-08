@@ -1327,7 +1327,8 @@ test('A6 built nothing that a later phase owns', () => {
   }
   assert.ok(!/schema\.clientAssignments\b/.test(stripped.replace(/\.from\(schema\.clientAssignments\)/g, '').replace(/schema\.clientAssignments\.\w+/g, '')), 'client_assignments is read for the owner picker and never written');
   assert.ok(!/insert\(schema\.clientAssignments/.test(stripped), 'no assignment row is ever created');
-  assert.ok(!/archived_at|deleted_at|archive/i.test(stripped), 'no archive machinery was invented');
+  const clientMutations = src('lib/bloomops/clients.mjs') + src('lib/bloomops/client-contacts.mjs');
+  assert.ok(!/archived_at|deleted_at|archive/i.test(clientMutations.replace(/^\s*\/\/.*$/gm, '')), 'Client mutations do not archive or delete Clients; later child history may describe its own archive');
   // The schema gained one index and nothing else.
   const migration = src('drizzle/0003_a6_primary_contact.sql');
   assert.equal(migration.trim().split('\n').length, 1, 'the A6 migration is one statement');
