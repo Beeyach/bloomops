@@ -1,0 +1,76 @@
+Use Astra.
+
+Work only on branch `codex/c3-calendar-platforms` in `Beeyach/bloomops`.
+
+Exact verified base/main SHA: `fed68697ff9f45e5c0228655bec2aaee3583f1c2`.
+
+C2 is closed only because both exact-SHA gates succeeded:
+- Deploy staging `34291205923`
+- Verify zero-to-current `34291205922`
+
+Read completely before editing:
+- `AGENTS.md`
+- `docs/BUILD_STATE.md`
+- `docs/RELEASE_C.md`
+- `docs/PRODUCT_SPEC.md`
+- `docs/DOMAIN_MODEL.md`
+- `docs/DESIGN_SYSTEM.md`
+- `docs/DESIGN_CHECKLIST.md`
+- `docs/phases/C1.md`
+- `docs/phases/C2.md`
+- `docs/phases/C3.md`
+- current C1/C2 Content, authorization, activity, migrations, API boundaries, D1/browser harnesses
+
+Execute C3 exactly as defined by `docs/phases/C3.md`.
+
+Core objective: add durable Content platform/channel associations and a practical internal Social calendar while keeping Content dates/stages canonical. Do not create duplicate schedule state.
+
+Binding rules:
+1. Calendar is a read projection. `target_publish_date`, C2 `stage`, C2 `published_at`, and platform associations are canonical facts. Calendar reads must write nothing.
+2. Add a relational Content-to-platform association only if needed after exact schema inspection. Expected migration is `0015_c3_calendar_platforms.sql`, subject to journal truth. Never rewrite C1/C2 migrations.
+3. One Content Item may have multiple platforms. No duplicate platform row per Content. Platform changes never change Client/Service parent, stage or dates.
+4. Do not invent an arbitrary platform list from general knowledge. Search canonical repo docs/history first. If no exact fixed vocabulary exists, choose the smallest safe normalized bounded durable model and document the decision clearly.
+5. No provider OAuth, tokens, external account IDs, post IDs, publishing APIs, analytics, webhooks, queues, automatic publishing or Release D Ads behavior.
+6. Preserve C1/C2 Identity -> Role -> Scope -> Visibility. Team and restricted PM require exact current Client/Service assignment. Owner field, Department, Project assignment and Action-only assignment grant nothing. Client has no C3 internal access.
+7. Platform mutations must use live current authorization and race-safe CAS/retry semantics. Revocation/restriction during commit must fence writes. Significant activity and facts commit atomically. Response-loss retry must not duplicate semantic history.
+8. Calendar range/query validation must be exact and bounded. Hidden rows may not affect overflow, counts or empty state. Use relational scope predicates and stay under D1 bind/statement limits.
+9. Social UI should gain a practical Calendar view and platform editing/filtering. Keep existing design system. No drag/drop if it bypasses canonical edit/CAS rules.
+10. C4+ stays out: no recordings/File subject extension, no formal approvals, no revision-history model, no Client Content portal, no comments, no notifications/templates.
+
+Verification must include the strongest current equivalents of:
+- npm ci
+- focused C3 schema/domain/access/HTTP/UI tests
+- C2  pipeline regressions
+- C1 Content regressions
+- B7 and B1-B6 regressions
+- Release A/core regressions
+- full npm test
+- npm run build
+- npm run cf:build
+- fresh/no-op local zero-to-current
+- actual workerd/D1 C3 smoke
+- C2/C1 actual D1 smokes
+- prior A/B D1/R2 smokes
+- built Worker HTTP
+- local external verifier
+- C3 browser/HTTP acceptance at 1440/1024/768/390/320
+- keyboard/focus/touch/reduced motion
+- dense same-day calendar items, long labels, empty states, range edges
+- issued-session revocation on calendar reads and platform writes
+- changed JS/JSX syntax
+- git diff --check
+- dependency audit comparison against established 49-advisory baseline
+
+No production deployment. No staging business-data mutation. No DNS. No real email. No third-party provider calls. Do not touch Leadsthatbloom.
+
+Before opening the PR:
+- update `docs/BUILD_STATE.md`, `docs/DOMAIN_MODEL.md`, `docs/INDEX.md`, `docs/RELEASE_C.md`, and `docs/phases/C3.md` with durable truth/evidence
+- delete `C3_CODEX_PROMPT.txt`
+- prove it has zero net diff against the exact base
+- ensure clean working tree
+- open PR against `main`
+- leave PR OPEN and UNMERGED for independent ChatGPT audit
+
+Report exact base SHA, final head SHA, changed path count, migration/schema changes, platform vocabulary decision, authorization/concurrency behavior, complete verification counts, advisory delta, and evidence limitations.
+
+Do not claim C3 closed and do not begin C4. After independent audit/merge, both Deploy staging and Verify zero-to-current must pass on the exact C3 merge SHA before C4 starts.
