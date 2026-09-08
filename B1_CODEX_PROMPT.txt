@@ -1,0 +1,409 @@
+BLOOMOPS RELEASE B / B1 IMPLEMENTATION PROMPT
+
+Recommended implementation model: Astra. This line is a recommendation only.
+
+You are implementing BloomOps Release B, phase B1: Projects Core.
+
+BRANCH / VERIFIED BASE
+
+Work on branch:
+  codex/b1-projects-core
+
+This branch was created from final Release A main:
+  3deed08d8db2a92fcf4dc29a6a879a9945260049
+
+Release A is closed. Its final post-A11 gates passed on that exact SHA:
+- Deploy staging run 34175768644: success
+- Verify zero-to-current run 34175768643: success
+
+This branch already contains two planning commits created after that verified base:
+- docs/RELEASE_B.md
+- docs/phases/B1.md
+
+Treat those files as the canonical Release B/B1 contract unless repository evidence exposes a contradiction with AGENTS.md, PRODUCT_SPEC.md or DOMAIN_MODEL.md. If there is a real contradiction, stop and report it instead of silently changing product meaning.
+
+This file is only a task carrier. Read it completely before editing code. Delete B1_CODEX_PROMPT.txt before the final implementation commit so it has no net PR diff.
+
+PRE-FLIGHT GATE
+
+Before editing implementation code:
+
+1. Read root AGENTS.md completely.
+2. Read docs/BUILD_STATE.md enough to understand current factual Release A implementation and inherited constraints.
+3. Read docs/INDEX.md.
+4. Read docs/ROADMAP.md.
+5. Read docs/RELEASE_B.md.
+6. Read docs/phases/B1.md.
+7. Read the Project, Service, Activity, Permission and Client Portal sections of docs/DOMAIN_MODEL.md.
+8. Read relevant Work, Client Detail, Client Portal and design sections of docs/PRODUCT_SPEC.md.
+9. Read docs/DESIGN_SYSTEM.md and docs/DESIGN_CHECKLIST.md before UI work.
+10. Inspect current Release A patterns instead of creating parallel architecture. At minimum inspect:
+   - lib/bloomops/schema.mjs
+   - lib/bloomops/authorization.mjs
+   - lib/bloomops/access.mjs
+   - lib/bloomops/activity.mjs
+   - lib/bloomops/clients.mjs
+   - lib/bloomops/services.mjs
+   - lib/bloomops/assignments.mjs
+   - lib/bloomops/client-activity.mjs
+   - lib/bloomops/overview.mjs
+   - lib/bloomops/shell.mjs
+   - lib/bloomops/navigation.mjs
+   - lib/bloomops/api-handler.mjs
+   - app/(internal) routes and Client detail shell
+   - app/portal and its dedicated safe read models
+   - current test database/D1 transaction double
+   - A11 hardening tests for stale state, no-store and sanitized errors
+11. Inspect current database migrations and Drizzle journal/snapshot conventions.
+12. Verify main is still exactly 3deed08d8db2a92fcf4dc29a6a879a9945260049 before implementation. If main moved unexpectedly, stop and report rather than silently rebasing unrelated work.
+13. Verify workflow runs 34175768644 and 34175768643 are completed/success on that exact SHA.
+
+Do not modify production, DNS/custom domains, Cloudflare production resources, or Leadsthatbloom. Do not send real email.
+
+B1 OBJECTIVE
+
+Build the Project domain as the first real Release B Work Core primitive.
+
+After B1, authorized internal users can create and operate Projects for a Client, optionally tie them to a Service Engagement, assign responsibility, move them through an explicit lifecycle, inspect them from Work and Client Detail, and trust activity/history and authorization under retries/concurrency.
+
+B1 establishes patterns that later Milestones, Actions, Deliverables and Files will reuse. It MUST NOT implement those later domains now.
+
+CANONICAL RELEASE B CONTEXT
+
+Roadmap Release B contains:
+- Projects
+- Milestones
+- Actions
+- Dependencies
+- Deliverables
+- Home dashboard
+- Files
+
+B1 is PROJECTS ONLY, plus the minimum Project assignment/read/activity/UI foundation needed to make Projects real.
+
+Do not pull B2+ work forward.
+
+PROJECT DATA MODEL
+
+Add the smallest relational Project model that supports the canonical domain.
+
+Required Project facts:
+- id
+- workspaceId
+- clientId
+- optional serviceEngagementId for service-specific work
+- departmentId or equivalent canonical Department relationship only when validated from the Project/Service context
+- name
+- optional client-facing label
+- status
+- health
+- optional owner/responsible membership
+- start date
+- target date
+- completed date
+- explicit visibility
+- created/updated timestamps
+
+Project states, using the existing canonical vocabulary:
+- planned
+- ready
+- in_progress
+- waiting
+- blocked
+- review
+- completed
+- cancelled
+- archived
+
+Project health should use a small explicit vocabulary consistent with current Product/Domain truth. Do not invent fake productivity scoring. If existing docs do not own exact Project health enum labels, choose the smallest sensible internal vocabulary and document it clearly. Do not tie it automatically to status.
+
+Waiting means an expected dependency/person.
+Blocked means an unexpected impediment.
+Do not implement Action dependency mechanics in B1.
+
+PROJECT RELATIONSHIPS
+
+Every Project belongs to one workspace and one Client.
+
+Service Engagement:
+- may be nullable for legitimate Client-level Projects
+- if provided, it must belong to the same workspace and Client
+- never infer a Service by name or Department
+
+Department:
+- organizational metadata only
+- must never grant authorization
+- if the Project has a Service Engagement whose Service Type already carries a Department, prefer a coherent validated relationship rather than duplicating contradictory Department truth
+- do not permit a Project to claim a Department inconsistent with its linked Service without an explicit canonical reason
+
+Responsibility / ownership:
+- an optional Project owner/responsible membership may be used for coordination
+- it must be an active or otherwise canonically valid internal workspace membership
+- never use owner field as an authorization bypass
+
+PROJECT ASSIGNMENTS
+
+B1 should support an explicit Project assignment relation if needed to make Team Member scope canonical.
+
+Requirements:
+- workspace-scoped relational FKs
+- Project and member must share workspace
+- no Department-wide access grant
+- no duplicate assignment rows for the same Project/member
+- assignment is responsibility/scope, not a new role
+- Owner/Admin/Project Manager retain delivery coordination scope
+- Team Member can reach a Project only through an already-supported broader Client/Service assignment OR explicit Project assignment according to the authorization design you establish and test
+
+Be conservative about widening Team Member access. Prefer additive explicit scope over implicit grants.
+
+AUTHORIZATION ACTIONS
+
+Add explicit Project actions to A4 authorization rather than overloading client.manage.
+
+Use repository naming patterns, for example:
+- project.view
+- project.create
+- project.manage
+- project.assign
+
+Exact names may differ if current conventions support better names, but keep policy explicit.
+
+Required role/scope behavior:
+- Owner/Admin/Project Manager: workspace-wide Project coordination
+- Team Member: only Projects within supported assignment scope
+- Client: only own explicitly client-visible Project read projection, no Project mutation in B1
+- Department membership alone grants nothing
+- foreign workspace/client/service/project ids fail safely
+- resource existence is hidden with 404-equivalent behavior when appropriate
+
+Do not expose provider identity to Clients unnecessarily.
+
+VISIBILITY
+
+Use the existing visibility vocabulary/patterns and resource evaluation.
+
+Internal read model may include operational fields allowed to that actor.
+
+Client projection must be a dedicated allowlist, not a raw Project row.
+
+A Client-safe Project summary may include only what is useful, such as:
+- project id
+- client-facing label or safe name fallback
+- safe status label
+- safe target/completed date if deliberately included
+
+Never expose to Client:
+- internal owner/member ids
+- Project assignment rows
+- Department internals unless deliberately client-facing
+- hidden Service ids
+- internal health unless explicitly intended
+- internal status metadata/history that is not client-visible
+- other Clients
+
+If there are no client-visible Projects, do not add a noisy empty portal module.
+
+PROJECT LIFECYCLE
+
+Implement explicit server-owned transitions. Do not accept arbitrary status assignment from request bodies.
+
+Define a transition matrix grounded in the canonical Project lifecycle.
+
+At minimum support sensible movement through:
+planned -> ready -> in_progress
+in_progress <-> waiting / blocked / review where operationally valid
+review -> in_progress or completed
+completed -> archived
+cancelled -> archived
+
+Do not assume this exact matrix if existing Product/Domain rules require a correction; document the final matrix in DOMAIN_MODEL.md.
+
+Requirements:
+- invalid transitions fail safely
+- status update and semantic activity are atomic
+- completedAt is set only on transition into completed and retained appropriately
+- leaving completed should not be allowed unless the canonical lifecycle explicitly supports reopening; B1 may make completed monotonic except archive
+- cancelled and archived must not silently return to active work states
+- status retry after response loss is idempotent
+- concurrent identical transitions yield one stored transition and one semantic activity event
+- competing transitions cannot create contradictory event history
+
+Project status must NOT mutate Client status or Service status.
+
+PROJECT HEALTH
+
+Health is independent of Project status.
+
+Provide a bounded validated health edit if included.
+
+Health changes should record their own semantic activity only when the stored value actually changes. Concurrent duplicate requests must not duplicate history.
+
+ACTIVITY
+
+Add canonical Project activity codes and descriptions using current patterns.
+
+At minimum distinguish meaningful facts such as:
+- PROJECT_CREATED
+- PROJECT_DETAILS_UPDATED
+- PROJECT_OWNER_CHANGED or equivalent if ownership is separately meaningful
+- PROJECT_STATUS_CHANGED, or semantic PROJECT_STARTED/WAITING/BLOCKED/COMPLETED events if that is more consistent with existing activity conventions
+- PROJECT_HEALTH_CHANGED if health is editable
+- PROJECT_ASSIGNMENT_ADDED / UPDATED / REMOVED when assignment facts exist
+
+Do not append activity for stale/duplicate changes that did not commit.
+Use the A11 conditional activity/write pattern under the same D1 transaction/write lock.
+
+MIGRATION / SCHEMA
+
+Use a new additive Drizzle migration after A10's 0007 migration. Do not edit earlier migration files.
+
+Required relational protections:
+- workspace id on Project business records
+- same-workspace Client FK
+- same-workspace Service FK if service supplied
+- same-workspace membership FK for Project owner/responsibility
+- same-workspace assignment FKs
+- same-client relation for service when practical at DB level, not only application validation
+- status / visibility / health checks
+- useful indexes for Client, Service, status, owner/assignment and Work list queries
+
+Avoid table rebuilds unless absolutely required. No Release A table rewrite.
+
+Update Drizzle schema, migration, snapshot and journal consistently.
+
+INTERNAL UI
+
+The internal shell already has a Work destination concept. Make Projects real without building later Work views.
+
+Required B1 UI:
+- Work > Projects list or equivalent canonical Work entry
+- create Project flow
+- Project detail/overview
+- Project lifecycle/status control for authorized users
+- health/dates/Client/Service context
+- owner/responsibility and assignments if implemented
+- meaningful empty state
+- Client Detail Projects tab shown only when meaningful or according to established tab pattern
+- Project activity/history using existing safe descriptions
+
+Do not add empty Milestones/Actions/Files/Deliverables tabs.
+
+Use BloomOps design direction:
+- calm
+- premium/editorial
+- understandable
+- not generic SaaS dashboard cards
+- minimal icon clutter
+- responsive at desktop/tablet/phone widths
+- keyboard usable and accessible labels/status text
+
+CLIENT PORTAL
+
+B1 may add a minimal Projects section only for explicitly client-visible Projects if doing so cleanly fits the existing portal shell and conditional navigation rule.
+
+If implemented:
+- derive reachable clients from A4 contact scope
+- dedicated Project allowlist projection
+- explicit client visibility
+- multi-client contexts remain separated
+- guessed Project ids cannot cross scope
+- no internal Project activity/assignments/health/Service ids leak
+- do not add Milestones, Actions, Deliverables or Files placeholders
+
+If adding the portal surface would substantially expand B1 beyond Projects Core, leave the underlying safe client projection tested and document portal rendering for a later Release B phase. Do not weaken scope to force UI breadth.
+
+API / HTTP HARDENING
+
+Follow A11 standards:
+- protected API routes use the shared sanitized error boundary
+- no-store on protected responses
+- safe JSON parsing
+- allowlisted request fields only
+- do not accept workspaceId/clientId/actor identity from bodies when route/server context owns them
+- cross-site writes refused by existing origin rules
+- no raw SQLite/constraint/stack data in responses
+
+CONCURRENCY / ADVERSARIAL TESTS
+
+At minimum test:
+- two concurrent Project creates with duplicate natural constraints if any
+- two identical detail edits
+- two status transitions from the same snapshot
+- two assignment additions/removals
+- late activity failure rolling back the Project mutation
+- stale owner/member/service state changing before commit
+- Team Member scope changing before commit
+- Client visibility changing before a Client read/mutation attempt
+- foreign Client/Service/Project ids
+- cross-workspace same-looking ids
+- malformed/non-object bodies
+- large assigned Team Member scope does not hit D1 bind limits
+
+Do not change the test double to hide a real concurrency problem.
+
+RELEASE A REGRESSION GATE
+
+B1 must preserve all Release A guarantees.
+
+Run the full suite and specifically keep A8/A9/A10/A11 hardening green.
+
+No Project implementation may:
+- alter onboarding generation semantics
+- change invitation/contact linkage
+- weaken client portal isolation
+- weaken no-store / API sanitization
+- add production/staging coupling
+- change Service lifecycle as a Project side effect
+
+LOCAL VERIFICATION
+
+At minimum run and report:
+- npm ci, lockfile unchanged
+- focused B1 Project tests
+- authorization / Client / Service / assignment / activity regressions
+- A8/A9/A10/A11 regressions
+- full npm test with no failures/skips
+- npm run build
+- npm run cf:build
+- fresh local zero-to-current migrations and unchanged second pass
+- actual disposable workerd/D1 Project smoke
+- existing Worker HTTP smoke
+- safe local external verifier
+- browser/HTTP Project acceptance at representative desktop/tablet/mobile widths
+- JavaScript syntax checks on changed/new JS
+- git diff --check
+
+REMOTE / PRODUCTION SAFETY
+
+Do not deploy production.
+Do not touch DNS.
+Do not touch Leadsthatbloom.
+Do not send real email.
+Do not manually mutate staging business data.
+
+A PR can be opened after local verification, but it remains unmerged for independent ChatGPT audit. After merge, staging deploy and remote zero-to-current must pass on the actual merge SHA before B1 is closed.
+
+DOCUMENTATION
+
+Update:
+- docs/BUILD_STATE.md
+- docs/DOMAIN_MODEL.md
+- docs/INDEX.md
+- docs/RELEASE_B.md and docs/phases/B1.md only as needed to reflect what actually shipped
+
+The current INDEX is factually stale because it was last written before A11's merge. Correct it to record Release A final closure on merge SHA 3deed08d8db2a92fcf4dc29a6a879a9945260049 with successful staging 34175768644 and zero-to-current 34175768643, then set Release B / B1 as current factual work.
+
+Do not claim B2 or broader Release B completion.
+
+FINAL REPORT
+
+When finished:
+- open a PR against main
+- report exact head SHA and base SHA
+- give concise implementation summary
+- list changed files grouped by domain/API/UI/schema/tests/docs
+- report exact verification counts/results
+- call out any limitations or follow-up work
+- confirm no production/DNS/Leadsthatbloom/real-email changes
+- leave the PR open for independent audit
+- do not self-merge
