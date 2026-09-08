@@ -1,0 +1,260 @@
+You are implementing BloomOps Release B, phase B2: Milestones.
+
+Repository: Beeyach/bloomops
+Branch: codex/b2-milestones
+Verified B1 merge base: cacb2d3b8f4ff634fb5a3470a4fd5f91930ef2c1
+Current planning commit includes docs/phases/B2.md.
+
+MODEL: use Astra.
+
+EXECUTION RULES
+
+1. Read AGENTS.md completely first and obey it.
+2. Read docs/phases/B2.md completely. It is the implementation contract for this phase.
+3. Then read the current merged B1 implementation and tests, especially:
+   - docs/RELEASE_B.md
+   - docs/DOMAIN_MODEL.md
+   - docs/BUILD_STATE.md
+   - docs/phases/B1.md
+   - lib/bloomops/schema.mjs
+   - lib/bloomops/authorization.mjs
+   - lib/bloomops/project-access.mjs
+   - lib/bloomops/projects.mjs
+   - lib/bloomops/project-activity.mjs
+   - lib/bloomops/client-activity.mjs
+   - app/(internal)/work/projects/[id]/page.jsx
+   - components/bloomops/Projects.jsx
+   - components/bloomops/ProjectControls.jsx
+   - app/portal/page.jsx
+   - components/bloomops/PortalHome.jsx
+   - tests/bloomops-projects-*.test.mjs
+   - current migration and verifier scripts/workflows.
+4. Do not trust stale documentation statements that B1 is still awaiting merge. B1 is merged and post-merge staging plus zero-to-current are green on cacb2d3b8f4ff634fb5a3470a4fd5f91930ef2c1.
+5. Implement only B2. No Actions, dependencies, Deliverables, Files, comments, approvals, notifications, template generation, automatic Project completion, or Release C+ work.
+6. Keep Leadsthatbloom completely untouched.
+7. Do not mutate production, staging business data, DNS, external services, or send real email.
+8. Do not merge your own PR.
+9. Before final commit, DELETE B2_CODEX_PROMPT.txt so it has no net PR diff.
+
+PRIMARY PRODUCT CONTRACT
+
+Milestones are ordered child records of one Project. They are not a duplicate Project lifecycle.
+
+Use the canonical B2 states exactly:
+- upcoming
+- in_progress
+- waiting
+- completed
+- skipped
+
+Use the lifecycle from docs/phases/B2.md:
+- upcoming -> in_progress | waiting | skipped
+- in_progress -> waiting | completed | skipped
+- waiting -> in_progress | completed | skipped
+- completed terminal
+- skipped terminal
+
+Every Milestone starts upcoming. Completion timestamps are server-owned. Identical retries are no-ops. Stale competing writes return conflict. Do not let request bodies directly write arbitrary status/completed timestamps/parent/workspace facts.
+
+A Milestone belongs to one workspace and one Project. Client, Service, and Department context derive from the parent Project. Do not duplicate them as independent Milestone lifecycle facts.
+
+Likely fields, unless current repository evidence strongly supports a smaller equivalent:
+- id
+- workspace_id
+- project_id
+- name
+- client_label nullable
+- status
+- position
+- start_date nullable
+- target_date nullable
+- completed_at nullable
+- visibility
+- revision or equivalent concurrency token
+- created_at
+- updated_at
+
+Use an additive Drizzle migration after B1, expected 0009_b2_milestones.sql unless the journal requires an exact adjacent name. Add matching Drizzle snapshot/journal state. Do not rebuild Release A or B1 tables.
+
+AUTHORIZATION / VISIBILITY
+
+Preserve the existing Identity -> Role -> Scope -> Visibility model.
+
+Add explicit milestone actions only as needed, likely milestone.view and milestone.manage. Do not add roles.
+
+Owner/Admin/Project Manager may coordinate reachable Milestones. Team Member remains read-only.
+
+A Team Member reaches a Milestone only through the EXISTING parent Project scope rules:
+- client assignment grants ordinary Projects under that Client
+- service assignment grants Projects under that Service
+- explicit project assignment grants only that Project
+- department membership grants nothing
+- Project ownership grants nothing
+
+A child Milestone must never broaden scope to the parent Client, Service, sibling Project, or sibling Milestone outside the readable Project.
+
+Parent Project visibility caps Milestone visibility. Portal requires BOTH parent Project visibility=client and Milestone visibility=client plus the current client_contacts.user_id relationship. Internal/restricted parent means no Client child visibility.
+
+For restricted Milestones, preserve B1 restricted behavior: Owner/Admin can see; Project Manager/Team Member require the explicit Project assignment used for restricted Project access. Client never sees restricted work.
+
+All guessed/foreign/cross-workspace/cross-client/cross-project IDs must fail leak-safely.
+
+Do not serialize raw Milestone rows to portal code. Build a dedicated exact allowlist projection.
+
+ORDERING
+
+Implement deterministic per-Project order with the smallest safe relational approach.
+
+Requirements:
+- Project A reorder cannot affect Project B
+- foreign/guessed IDs cannot enter an order operation
+- malformed duplicate/missing IDs are rejected where the operation expects a complete set
+- winning reorder and semantic activity are atomic
+- concurrent/stale reorders cannot silently lose updates
+- retry of the winning order is a no-op with no duplicate event
+- reads remain deterministic even if storage permits temporary equal positions
+
+Do not add a second Project-status fact merely to coordinate ordering. If you add a separate ordering revision/token, justify it as concurrency metadata only and test it thoroughly. Prefer a Milestone-local/relational solution if it stays correct.
+
+PROGRESS
+
+Progress is derived, never persisted as a second status.
+
+Internal Project progress summarizes currently readable Milestones. Client progress uses only client-visible Milestones under a client-visible parent Project.
+
+Completed + Skipped count as terminal/finished for progress math. Use wording like finished, not completed, when skipped rows are included.
+
+If zero visible Milestones exist, do not fabricate 0% or render an empty progress module.
+
+Hidden/restricted Milestones must not affect Client counts, percentages, labels, or whether a progress section exists.
+
+ACTIVITY
+
+Use canonical activity_events with subject_type='milestone'. Carry Client/Service context derived from the Project.
+
+At minimum distinct semantic events for:
+- MILESTONE_CREATED
+- MILESTONE_DETAILS_UPDATED
+- MILESTONE_STATUS_CHANGED
+- MILESTONE_ORDER_CHANGED or an equivalently clear reorder event
+
+Mutation and event must share one transaction/batch. A late activity failure must roll back the Milestone fact. Retries/concurrent losers cannot duplicate history.
+
+If Project activity includes Milestone child events, filter them by CURRENT Milestone readability and current Project visibility so an event created while visible cannot leak after restriction. Clients receive no internal Milestone activity in B2.
+
+UI
+
+Integrate Milestones into the existing Project detail page. Do not create a generic Milestones navigation destination unless repository evidence shows it is required.
+
+Authorized coordinator UX should support:
+- ordered list
+- create
+- edit name/client-facing label/dates/visibility
+- explicit status control
+- reorder using accessible controls that work with keyboard and touch
+- clear waiting/finished state
+- derived progress only when milestones exist
+
+Team Member sees a read-only version according to scope.
+
+Portal may render an ordered Milestone summary only under a client-visible Project and only for client-visible Milestones. Keep it calm, plain-language, and minimal. Do not expose internal names when a client label should be shown, revisions, owner/team identities, internal activity, Service/Department IDs, hidden counts, or later-phase placeholders.
+
+Use existing BloomOps primitives/design system. Avoid generic SaaS cards, icon clutter, and empty Milestone/Action/File/Deliverable placeholder tabs.
+
+HTTP / FAILURE BOUNDARIES
+
+Reuse A11/B1 protections:
+- real session auth
+- safe origin checks for writes
+- body allowlists
+- malformed and non-object JSON -> safe 400
+- not-found/forbidden semantics consistent with sensitive resource existence
+- sanitized unexpected 500s
+- protected/token-bearing responses retain no-store
+- no unsafe retries of uncertain mutations
+- stale session/membership/workspace/contact/scope changes are rechecked at mutation/read time, including under the write lock where required.
+
+TESTS MUST ATTACK, NOT JUST DEMONSTRATE
+
+Add focused B2 tests that fail against unchanged B1 code and prove at least:
+- additive schema/FK/check/index correctness
+- valid and invalid lifecycle transitions
+- server-owned completedAt and terminal Completed/Skipped
+- idempotent retry and stale conflict behavior
+- create/edit/status/reorder atomic activity
+- late activity failure rollback
+- same workspace + same Project parent integrity
+- cross-workspace/cross-client/cross-project guessed ID denial
+- Department membership gives no scope
+- Project assignment gives only the Project and readable Milestones, not Client/sibling Project/Service
+- Client/service assignment inheritance matches B1 Project scope
+- parent Project visibility caps child visibility
+- restricted Milestone behavior for Owner/Admin/PM/Team Member/Client
+- stale visibility/scope/contact/membership/workspace revocation takes immediate effect
+- exact Client projection allowlist
+- Client progress excludes hidden/restricted milestones
+- reorder rejects duplicate/missing/foreign IDs
+- reorder/status concurrency produces one coherent winner and one semantic event
+- no Project/Client/Service/Onboarding lifecycle side effects
+- malformed/non-object HTTP body handling
+- sanitized unexpected failures and no-store
+- UI does not expose hidden internal data or later-phase placeholders.
+
+ACCEPTANCE
+
+Add/extend local actual Worker/browser acceptance proving this story:
+
+1. Coordinator opens an existing B1 Project and creates at least three Milestones.
+2. Reorders them and verifies the stored/read order.
+3. Moves Milestones through allowed status paths, including Waiting, Completed, and Skipped.
+4. Retries a winning mutation and gets no duplicate fact/event.
+5. Internal progress changes while Project status remains unchanged.
+6. A Team Member with canonical B1 Project scope sees the allowed Project/Milestones read-only and cannot coordinate.
+7. A Client sees only client-visible Milestones under a client-visible Project, in order, and progress is computed only from those visible rows.
+8. Hide/restrict one Milestone or revoke contact/scope and prove it disappears immediately with no hidden count/activity leak.
+
+BROWSER / RESPONSIVE
+
+Verify at 1440, 1024, 768, 390, 320px. Check keyboard focus and dialog/reorder controls. Reuse existing browser tooling rather than adding dependencies unless genuinely necessary.
+
+MIGRATION / REMOTE VERIFIER QUALITY OF LIFE
+
+Current verify-zero-remote.yml supports manual workflow_dispatch but its push path filter does not include ordinary schema/migration files. Because B2 adds schema/migration state, safely fix that narrow trigger gap if practical:
+- make main pushes that change canonical BloomOps schema and/or Drizzle migrations automatically run the EXISTING disposable zero-to-current verifier
+- do not alter its target database behavior, disposable name, cleanup, Cloudflare identity guards, staging identity checks, concurrency safety, or production isolation
+- add a small regression/static test if the current verifier-safety suite has a natural place for it
+- keep manual workflow_dispatch too.
+
+VERIFICATION GATE BEFORE PR
+
+Run and report exact results for:
+- npm ci, lockfile unchanged unless justified
+- focused B2 tests
+- B1 Project regressions
+- A8/A9/A10/A11 + auth/authorization/security regressions
+- full npm test
+- npm run build
+- npm run cf:build
+- fresh migrations from empty DB + identical second pass/no-op
+- node .github/scripts/verify-zero-remote.mjs --local or current equivalent
+- actual workerd/D1 Milestone smoke
+- built Worker HTTP smoke
+- external verifier against local Worker
+- browser/HTTP acceptance across five widths
+- JS syntax checks on changed/new JS
+- git diff --check
+
+Update docs/DOMAIN_MODEL.md with implemented Milestone truth, docs/BUILD_STATE.md with exact B2 evidence and next phase B3, docs/INDEX.md, and docs/RELEASE_B.md only where current truth requires it.
+
+Do not overclaim staging/remote verification before merge. The PR body must say post-merge staging and remote zero-to-current on the actual merge SHA are still required.
+
+FINAL HYGIENE
+
+- Working tree clean.
+- Delete B2_CODEX_PROMPT.txt before final commit so there is no net prompt diff.
+- Open a PR against main.
+- Include exact verified base SHA and final head SHA.
+- Group changed files by domain/API/UI/schema/tests/docs.
+- Include all verification counts/evidence.
+- State explicitly that B3 Actions + Dependencies is not implemented.
+- Leave PR open and unmerged for independent ChatGPT audit.
