@@ -1,0 +1,125 @@
+You are implementing BloomOps Release C, phase C2: Production Pipeline.
+
+Model: Astra.
+
+Repository: Beeyach/bloomops
+Branch: codex/c2-production-pipeline
+Exact base/main SHA: f1003c236cbce5102efcddd1bf7cda20e4f8ed8b
+
+Before writing code:
+1. Verify you are on codex/c2-production-pipeline.
+2. Fetch origin and verify this branch descends exactly from C1 merge f1003c236cbce5102efcddd1bf7cda20e4f8ed8b.
+3. Verify remote main is still that exact SHA before implementation. If main moved unexpectedly, stop and report.
+4. Read AGENTS.md, docs/BUILD_STATE.md, docs/RELEASE_C.md, docs/PRODUCT_SPEC.md, docs/DOMAIN_MODEL.md, docs/DESIGN_SYSTEM.md, docs/DESIGN_CHECKLIST.md, docs/phases/C1.md and docs/phases/C2.md completely.
+5. Inspect the actual C1 Content schema, migration journal, content domain/access/API/UI/tests and current activity/CAS patterns. Do not assume the contract is enough without reading the implementation.
+
+Binding contract:
+- docs/phases/C2.md is the phase contract.
+- Implement only C2 Production Pipeline.
+- If repository canon conflicts with a detail in the phase file, preserve security/domain invariants, choose the narrowest safe interpretation, document it in BUILD_STATE/DOMAIN_MODEL as appropriate, and do not pull C3+ scope forward.
+
+Core implementation requirements:
+- Add a dedicated Content transition engine. Ordinary C1 detail edits must continue to reject direct stage/published authority.
+- Preserve exact stages: idea, script, waiting_for_recording, editing, internal_review, client_review, revision_requested, approved, scheduled, published.
+- Default forward path is Idea -> Script -> Waiting for Recording -> Editing -> Internal Review -> Client Review -> Approved -> Scheduled -> Published.
+- Conditional skips are current-fact driven:
+  * recording_required=false skips Waiting for Recording
+  * internal_review_required=false skips Internal Review
+  * client_approval_required=false skips Client Review
+- The transition engine, not the caller, determines legal next applicable forward stages.
+- Revision Requested may be entered only from Internal Review or Client Review, requires bounded non-empty revision context, and returns only to Editing.
+- Waiting for Recording is only legal when recording_required=true. Do not add actual recording uploads.
+- Approved in C2 is a production stage only, not formal approval history. C5 owns approval rounds.
+- Scheduled has no platform/calendar implementation. C3 owns that.
+- Published is terminal in C2. Set published_at server-side exactly once on the winning transition. Do not add unpublish/reopen.
+- Workflow-flag edits do not auto-mutate current stage. Transition resolution uses current flags and skips future disabled stages.
+- If durable Waiting/Revision context is needed, add only the smallest additive schema required. Do not create a duplicate pipeline/status table. If a migration is required, inspect the journal first; expected next name is 0014_c2_content_pipeline.sql. Never rewrite 0013_c1_content.sql.
+
+Authorization/security:
+- Preserve C1 Identity -> Role -> Scope -> Visibility exactly.
+- Owner/Admin coordinate reachable Content.
+- PM ordinary reach remains workspace coordination, but restricted Content still requires current exact Client/Service assignment as in C1.
+- Team transitions only within current Client/Service assignment scope.
+- Content owner, Department membership, Project assignment and Action-only assignment are never grants.
+- Clients receive no internal C2 Content/stage access.
+- Every committing transition must re-check live workspace, membership/user/role, Client/Service Social parent validity, assignment scope, Content visibility, current revision and source stage inside the commit predicate.
+- Authorization precedes input validation where required to preserve leak-safe 401/403/404 behavior.
+- Exact JSON/query allowlists, no-store, Origin protection, safe 400/401/403/404/409/500, no SQL/constraint/stack leaks.
+
+Concurrency/retry/activity:
+- Strict revision CAS.
+- Transition vs transition and transition vs detail edit must produce one canonical winner.
+- Identical response-loss retry after a committed transition must converge safely without duplicate semantic history.
+- One revision increment and one transition event per committed transition.
+- Add one canonical transition event such as CONTENT_STAGE_CHANGED unless existing conventions justify a narrower equivalent.
+- Event + fact must be atomic; injected late failures must roll both back.
+- Published timestamp must belong to the winning commit only.
+- Do not make activity metadata the mutable source of stage/context truth.
+
+UI:
+- Extend the real Social list/detail experience, not a separate fake workflow.
+- Show current stage clearly.
+- Show only legal transition actions.
+- Add a safe revision-request dialog/flow with required bounded context.
+- Present Waiting for Recording clearly when applicable.
+- A simple stage-aware detail/list is preferred over drag/drop if drag/drop would weaken transition rules.
+- Optional stage filter is fine if useful and exact.
+- No fake Calendar, platforms, recording uploader, approval history, revision history or Client Content portal controls.
+- Keep BloomOps design system and verify 1440/1024/768/390/320, keyboard/focus/touch/reduced-motion and long reason text.
+
+Verification:
+Run the strongest current equivalents of all requirements in docs/phases/C2.md, including at minimum:
+- npm ci
+- focused C2 tests
+- C1 Content regressions
+- B7 hardening
+- B1-B6 regressions
+- Release A/core regressions
+- full npm test
+- npm run build
+- npm run cf:build
+- local fresh/no-op zero-to-current
+- actual workerd/D1 C2 smoke
+- C1 actual D1 smoke
+- prior Release A/B D1/R2 smokes
+- built Worker HTTP
+- local external verifier
+- browser/HTTP C2 acceptance at all five widths
+- syntax checks
+- git diff --check
+- dependency audit comparison with the established 49-advisory baseline
+
+Explicit acceptance cases:
+- every workflow-flag combination and each conditional skip
+- recording-required and recording-disabled legality
+- internal review skip
+- client review skip
+- revision request from each review state with required reason, then Editing
+- Published server timestamp, terminal behavior and retry convergence
+- current-session assignment/membership/role/workspace/visibility revocation fencing a transition
+- Team exact assignment scope; restricted PM/Team exact assignment
+- owner/Department/Project/Action-only non-grants
+- transition/edit and transition/transition races
+- Client denial
+- no parent Release A/B lifecycle mutation
+
+Documentation:
+- Update docs/BUILD_STATE.md with exact implementation/evidence/limitations.
+- Update docs/DOMAIN_MODEL.md for durable pipeline truth.
+- Update docs/INDEX.md and docs/RELEASE_C.md current state.
+- Update docs/phases/C1.md closure language and docs/phases/C2.md implementation evidence as appropriate.
+- Do not claim C3+ implemented.
+
+Before final commit/PR:
+- Delete C2_CODEX_PROMPT.txt so it has no net diff against main.
+- Ensure working tree clean.
+- Open a PR against main and leave it OPEN and UNMERGED for independent ChatGPT audit.
+- Report exact base SHA, final head SHA, changed-file count/inventory, migration/no-migration choice, test/build/runtime/browser counts, advisory delta, prompt deletion and any evidence limitations.
+
+Never:
+- deploy production
+- change DNS/custom domains
+- mutate staging business data for tests
+- send real email/messages
+- touch Leadsthatbloom / Beeyach/bloomtrack-pro
+- implement C3+ or Release D+ work
