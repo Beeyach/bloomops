@@ -17,7 +17,7 @@ import { SESSION_COOKIE_NAMES } from '@/lib/bloomops/auth-config.mjs';
 //   /p/<token>, /api/public/<token>  shared Pages, GET only
 //   the inherited unattended callers (video beacon, cron drain, Gmail push)
 //
-// The matcher also covers the exempt pages so the no-cache header below
+// The matcher also covers the exempt pages so the no-store header below
 // reaches them. `fonts/` and `_next/` are static assets, never pages.
 export const config = {
   matcher: ['/((?!_next/|favicon.ico|fonts/|guide/).*)'],
@@ -25,9 +25,10 @@ export const config = {
 
 // Pages' public/_headers only applies to STATIC assets. These pages are
 // rendered by the Worker, so the document's Cache-Control has to be set
-// here. Hashed assets keep their year-long immutable caching.
+// here. Do not weaken a protected route’s no-store policy when middleware
+// headers are merged into its response. Hashed assets retain their caching.
 function freshHtml(res) {
-  res.headers.set('Cache-Control', 'no-cache, must-revalidate');
+  res.headers.set('Cache-Control', 'no-store');
   return res;
 }
 
@@ -110,12 +111,12 @@ export async function middleware(req) {
   if (hasSessionCookie(req)) return freshHtml(NextResponse.next());
 
   if (pathname.startsWith('/api/')) {
-    return NextResponse.json({ error: 'Sign in to continue.' }, { status: 401 });
+    return freshHtml(NextResponse.json({ error: 'Sign in to continue.' }, { status: 401 }));
   }
   const signIn = req.nextUrl.clone();
   signIn.pathname = '/sign-in';
   signIn.search = '';
   const next = safeNextPath(pathname, req.nextUrl.search);
   if (next !== '/') signIn.searchParams.set('next', next);
-  return NextResponse.redirect(signIn);
+  return freshHtml(NextResponse.redirect(signIn));
 }

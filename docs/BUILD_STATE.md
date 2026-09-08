@@ -6,15 +6,15 @@ Release A: Foundation, Auth, Clients, Services, Onboarding, Client Portal
 
 ## Current Phase
 
-A10 Client Onboarding Portal is implemented and locally verified on `codex/a10-client-onboarding-portal`, pending independent PR audit and merge. A0–A9 are merged, including PR #12's activation-managed revoke correction. A10 completes the Release A onboarding interaction and coordination flow; A11 hardening is next after independent audit/merge and successful merged-main staging/zero-to-current verification.
+A11 Release A hardening is complete on `codex/a11-release-a-hardening`. Release A is complete and audited locally, pending independent PR review/merge and successful post-merge staging plus remote zero-to-current verification on the actual merge SHA before final release closure. A0–A10 are merged, including A10 PR #13 and the A9 activation-managed revoke correction. No Release B work is included.
 
-Completed implementation specs: `docs/phases/A0.md` through `docs/phases/A10.md`. Next: `docs/phases/A11.md`, Release A hardening, after the merged-A10 verification gate.
+Current implementation spec: `docs/phases/A11.md`.
 
 Documentation index: `docs/INDEX.md`
 
 ## Branch State
 
-PRs #2 through #12 are merged. A10 starts from main `de510d7473fec1b27692b3d9b7f3e6240a0dc699`. Read-only preflight verified [Deploy staging 34100048733](https://github.com/Beeyach/bloomops/actions/runs/34100048733) and [Verify zero-to-current 34100593565](https://github.com/Beeyach/bloomops/actions/runs/34100593565) both completed successfully on that exact SHA. Main was unchanged at preflight. This branch is for independent review, not self-merge.
+PRs #2 through #13 are merged. A11 starts from main `b7d65ee6bd998fe3b04bdec60860f447cd2452d1`, verified against successful staging and remote zero-to-current runs on that exact SHA (see A11 evidence below). This branch is for independent review, not self-merge.
 
 ## Repository Agent Instructions
 
@@ -47,7 +47,160 @@ BloomOps Git history is fresh. The source commit object does not exist in the Bl
 - A7: service engagements with independent lifecycles, the default departments and service types, and client-wide/service-specific team assignments; see "Services and Departments (A7)" for implementation and verification evidence
 - A8: five workspace onboarding defaults, immutable version creation and atomic publishing, deterministic logical-key compilation, relational multi-version provenance, and atomic generated onboarding; audited and merged as PR #10, staging deployed successfully
 - A9: authorized Draft → Onboarding activation, atomic A8 generation and core activity, durable initial-activation identity, recoverable invitation delivery, explicit portal contact linkage, and minimal internal activation/retry UX; merged with generic revoke ownership correction as PR #12
-- A10: scoped onboarding portal and internal operational tab, durable Client submission, coordinator verification/completion, reasoned waiver/N/A, atomic onboarding completion and Client Active transition; locally verified, pending independent audit
+- A10: scoped onboarding portal and internal operational tab, durable Client submission, coordinator verification/completion, reasoned waiver/N/A, atomic onboarding completion and Client Active transition; merged as PR #13
+- A11: twelve reproduced hardening corrections, 82 new adversarial regressions, fresh/no-op migration proof, actual workerd/D1 and built-Worker verification, and both Release A browser acceptance stories; complete and audited locally, with independent review/merge and both post-merge gates still required
+
+## Release A Hardening (A11)
+
+### Strategy and verified base
+
+A11 treats A3–A10 as a release candidate and attacks stored-state races, transaction failures, authorization and field boundaries, lifecycle recovery, migration safety, and the two Release A acceptance stories. Reproductions use real SQLite SQL/serialized batches and real Better Auth sessions; separate disposable workerd/D1 and built-Worker browser runs verify Cloudflare and user-facing behavior. No test double was changed. The A9 stale-sender injection now intercepts the transactional batch instead of replacing a Drizzle query's `returning` method with a Promise.
+
+The branch starts at merged main `b7d65ee6bd998fe3b04bdec60860f447cd2452d1` (A10 PR #13), followed by task carrier `ee04c0e`. Read-only preflight confirmed [Deploy staging 34108338874](https://github.com/Beeyach/bloomops/actions/runs/34108338874) and [Verify zero-to-current 34108461749](https://github.com/Beeyach/bloomops/actions/runs/34108461749) completed successfully on that exact main SHA. The latter's logs explicitly prove deletion of its disposable database, exact restoration of the eight-database inventory, and unchanged staging identity. These are the pre-A11 gate, not verification of A11 or a future merge.
+
+The final verification also ran the 82 new adversarial tests against an isolated archive of `ee04c0e` with its unchanged pre-hardening application code: 38 failed and 44 passed. The same tests pass 82/82 on the final A11 implementation. Failures reproduce all twelve correction areas below, including middleware caching, URL telemetry, and the four unsafe staging-config shapes. The comparison archive and its logs are disposable local evidence, not a second branch or a test-double change.
+
+### Reproduced defects and corrections
+
+| Defect | Correction and regression evidence |
+|---|---|
+| Generic invitation acceptance could grant/reactivate membership after token rotation/revocation or workspace suspension won the race, and leave partial membership/acceptance when a later event failed. | Generic and explicitly contact-bound invitations now share one fenced acceptance batch. Live token hash, expiry, workspace, membership state, and any intended contact are checked under the write lock. Concurrent acceptance converges to the accepted identity; inactive accepted-token retries are refused. Both acceptance events roll back with membership/contact/invitation writes. |
+| Generic resend/revoke/expiry changed the invitation before separately recording activity. A failed event left token/status drift. A stale expiry lookup could invalidate a newly rotated token; revoke racing generic retargeting could record activity against the prior client. | Conditional event insertion and mutation share one batch and stored-state predicate. Expiry compares the old token and expiry; revoke compares its token snapshot; lookup rejects a token that rotated during the read. Activation-managed ownership is checked both before and within generic mutations. |
+| Concurrent suspensions could remove both remaining Owners; failed membership activity left the status changed. | The last-Owner check now runs under the transaction's write lock. Membership status and its event commit together; the losing request returns a safe conflict. |
+| Concurrent duplicate Client, Service, contact, and assignment edits/removals appended history for changes that happened only once. | Client/Service/assignment edits compare the stored snapshot and conditionally record events in the same batch. Contact editing validates its snapshot under the write lock before detail/primary writes; unlinked contact removal is conditional and atomic. No-op/stale attempts add no phantom events. |
+| A successfully delivered activation invitation became unrecoverable after its seven-day expiry: delivery was `sent`, generic resend was correctly refused, and activation retry was a no-op. | The existing activation retry can renew an expired, unaccepted invitation. Its claim serializes concurrent renewals; the first delivery timestamp and initial lifecycle events remain singular. The existing activation panel explains expiry and exposes retry. Accepted/revoked invitations are not renewed by this path. |
+| The existing resolution textarea allowed multiline input, but the server rejected ordinary line breaks. | Reason validation permits newline, carriage return, and tab while retaining the length bound and rejection of other control characters. Multiline rationale is retained and tested through the narrow-screen keyboard flow. |
+| Malformed/null/array/scalar JSON on Client/contact/Service PATCH could be treated as an empty successful edit. | The shared body reader requires a JSON object and returns a safe 400 without a write. |
+| Unexpected database/authorization/read errors in protected Release A routes escaped their JSON contract. | A small shared error boundary wraps every BloomOps route, preserves established statuses, sanitizes unexpected errors to JSON 500, and applies `no-store` to all responses. Forced late constraint failures are checked through real route handlers and the built Worker. |
+| Middleware could replace a protected handler's `no-store` policy with weaker revalidation headers. | Middleware now preserves `no-store` for authenticated and denied responses, portal HTML, sign-in, and token-bearing invitation/auth routes. Regression tests cover the merged boundary, with a built-Worker assertion in browser acceptance. |
+| Enabled Worker invocation logs/traces could persist raw invitation or magic-link tokens from request URLs. | Disable Worker observability logs, invocation logs, and traces until URL redaction is available. A regression resolves the actual Wrangler configuration for development, staging, and production and proves all three are disabled. Business activity remains in D1. |
+| The supported 200-client list and large assigned scopes exceeded D1’s bound-variable limit, although SQLite unit calls passed. | Client scope and primary-contact lookups now bind the authorized ID set as one JSON parameter and apply relational `json_each` predicates with the existing workspace filter. Actual D1 proves both full-page reads and large assignment scope without leaking unassigned clients; two focused regressions also verify contact association and counts. |
+| The staging config guard accepted additional D1/R2 bindings and an incorrect environment/origin despite validating the first resource names. | The guard now requires exactly one D1 and R2 binding, the staging environment, and the explicit staging origin. Disposable config-corruption tests prove rejection without contacting Cloudflare. |
+
+All corrections use the existing schema, capabilities, lifecycle operations, reason mappings, and design primitives. No migration, historical migration rewrite, dependency, resource binding, product destination, or Release B feature was added.
+
+### Security, data, lifecycle, and failure evidence
+
+The new tests compare unauthorized portal responses byte-for-byte for unknown, foreign, internal, restricted, and instance-as-item identifiers; assert exact Client-facing field allowlists; deny Client calls into internal Client/Service/assignment/member/invitation/onboarding APIs; and invalidate already-issued sessions immediately after membership suspension/removal or workspace deactivation. Unsupported/prototype action names default deny. Existing A4–A10 regressions retain department/owner non-grants, canonical client/service assignment boundaries, workspace-body/query smuggling denial, restricted activity privacy, and same-email/contact-link acceptance refusals.
+
+Direct SQL attacks reject fourteen additional A8–A10 foreign-parent combinations for provenance, activation, contact association, submissions, and resolutions. The existing migration/schema/compiler tests retain same-workspace composite FKs, partial uniqueness, immutable definitions/provenance/activity, deterministic generation, and bootstrap idempotency. Later master publication and contact-address edits preserve runtime snapshots and accepted identity. The domain-only fresh database has exactly the 27 Release A domain tables.
+
+Lifecycle tests retain concurrent first activation, contact/service prerequisite changes, failed/missing local mail, uncertain acknowledgement, stale sender/token finalization, expired delivery leases, and late core rollback. New cases add workspace/role/status/primary/removal races and expiry recovery. A10 regression plus new adversarial tests cover duplicate completion/submission/verification, competing waiver/N/A rationale, submission versus verification, two final mutations, response-loss retries, late mutation rollback, hidden required work, optional work, independent service status, and protection of non-initial or unexpected Client lifecycle states. Significant lifecycle events are singular and immutable. Raw tokens remain hashed in storage and absent from public invitation DTOs and activity; test delivery uses only memory or development R2 capture.
+
+### Verification
+
+All required local verification passed on 2026-09-07/08; final browser acceptance completed on 2026-09-08 before updating the documentation index or opening the PR.
+
+| Exact command | Result |
+|---|---|
+| `npm ci` | Passed; lockfile unchanged. |
+| `node --test tests/bloomops-hardening-*.test.mjs` | 82/82 passed. |
+| `node --test tests/bloomops-onboarding-runtime.test.mjs` | A10: 39/39 passed. |
+| `node --test tests/bloomops-activation.test.mjs` | A9: 44/44 passed. |
+| `node --test tests/bloomops-onboarding-compiler.test.mjs tests/bloomops-onboarding-templates.test.mjs` | A8: 72/72 passed. |
+| `node --test tests/bloomops-auth.test.mjs tests/bloomops-authorization.test.mjs tests/bloomops-invitations.test.mjs tests/bloomops-membership.test.mjs tests/bloomops-mail.test.mjs tests/bloomops-middleware.test.mjs tests/bloomops-clients.test.mjs tests/bloomops-services.test.mjs tests/bloomops-assignments.test.mjs` | 184/184 passed. |
+| `node --test tests/bloomops-schema.test.mjs tests/bloomops-shell.test.mjs tests/zero-verify-safety.test.mjs` | 56/56 passed. |
+| `npm test` | 3,083/3,083 passed; zero failures/skips. |
+| `npm run build` | Passed, including Next's lint/type checks. |
+| `npm run cf:build` | Passed; OpenNext Worker bundle generated. |
+| `node .github/scripts/verify-zero-remote.mjs --local` | 22 checks passed: genuinely empty disposable database, all 60 inherited and 8 domain migrations, exactly 63 migration-defined tables including ledgers (27 domain tables), all 55 explicit domain indexes and 13 immutability triggers, valid FKs/SQLite integrity, and second pass with identical complete schema and both ledgers. |
+| `node scripts/release-a-hardening-smoke-local.mjs` | A11 actual workerd/D1: 26 checks passed. |
+| `node scripts/onboarding-runtime-smoke-local.mjs` | A10 actual workerd/D1: 27 checks passed. |
+| `node scripts/activation-smoke-local.mjs` | A9 actual workerd/D1: 14 checks passed. |
+| `node scripts/onboarding-smoke-local.mjs` | A8 actual workerd/D1: 12 checks passed. |
+| `node scripts/auth-smoke-local.mjs --url http://localhost:8787` | 144/144 passed. |
+| `node .github/scripts/verify-staging.mjs --url http://localhost:8787 --expect-env development` | 21/21 passed; local target only. |
+| `node scripts/onboarding-portal-review-local.mjs --url http://localhost:8787 --out /tmp/bloomops-a11-review --playwright /tmp/bloomops-a11-browser` | 174/174 checks passed; 42 acceptance screenshots at 1440/1024/768/390/320px, plus the live design-reference capture. |
+| `node --check` on changed/new JavaScript scripts and modules; `git diff --check` | All 48 JavaScript files passed; diff check passed. |
+
+These commands used Node 22.22.1. Browser tooling was installed outside the repository with `npm install --prefix /tmp/bloomops-a11-browser --no-audit --no-fund --fetch-retries=0 playwright` (Playwright 1.63.0; existing Chromium 153.0.8010.12). The built Worker ran through `npx --no-install opennextjs-cloudflare preview -- --log-level error`; this avoids local request-URL logging. The existing local Worker database also received `npm run db:schema:local`, `npm run db:migrate:local`, and `npm run db:domain:migrate:local` before HTTP acceptance; the genuinely fresh/no-op proof is the separate disposable verifier above.
+
+The earlier fresh-migration attempt hit a Wrangler subprocess assertion (`message?.id === id`); a fresh disposable rerun passed all checks. No migration was modified to accommodate it. The final verification session reran npm installation and Node tests outside the filesystem/process sandbox: the sandbox blocked installation subprocesses/cache writes and reported only test-file counts, which were discarded as evidence. Local workerd checks also require loopback sockets that the sandbox refuses; their approved reruns remain local. Focused reproductions failed before their corrections; test-harness timing and event-metadata integration mistakes caught during verification were corrected before the passing runs.
+
+Browser verification exposed four harness issues: the reference screenshot could precede the gallery's render; a standalone Wrangler fixture connection hit `SQLITE_BUSY` while the live Worker held the same local database; a fixed publication-marker title could already exist after a previous run, causing a false failure despite identical runtime snapshots; and two later Client-create fixtures omitted required contact fields, so validation correctly prevented the intended database-failure/multi-client checks. Reference capture now waits for the gallery heading and fonts. The new-version fixture insert uses a fixed ID with `ON CONFLICT(id) DO NOTHING`, retries only explicit lock errors, and verifies the exact stored definition hash. Its title is unique per run, preserving bootstrap's immutable-history behavior. Both Client fixtures now supply valid required contacts. Other fixture/application mutations are not blindly replayed, and application validation and runtime/D1 race tests are unchanged.
+
+### Dependency advisory assessment
+
+The supplementary `npm audit --json --fetch-retries=0` returned its expected nonzero advisory status: 49 affected package entries (5 high, 43 moderate, 1 low), including transitive duplicates. No lockfile or dependency was changed. This is not a zero-advisory dependency tree. The high-severity entries are brace-expansion, Browserslist, nanoid, PostCSS, and sharp; the first four concern build/query/CSS/generator inputs not accepted by Release A's onboarding APIs. The OpenNext Cloudflare image handler uses the optional Cloudflare Images binding, not sharp/libvips, and no Images binding is configured. Tiptap's [attribute-merging advisory](https://github.com/advisories/GHSA-cp6q-959q-f8rh) concerns an untrusted attribute-object boundary: Release A has no editor/import workflow, and the inherited editor uses fixed schemas and HTML content. No reachable Release A exploit was identified by this scoped assessment. Dependency maintenance and a separate inherited-editor review remain follow-up work; the audit's suggested major Next/Drizzle changes were not applied as unrelated release hardening.
+
+### Acceptance, isolation, and release closure
+
+Both Release A acceptance stories passed through the built Worker, real Better Auth sessions, local D1/R2, and Chromium. Story 1 creates Lawrence and Kajabi, assigns Ary, activates and accepts the local invitation, completes Common + Kajabi requirements, keeps submitted Kajabi access awaiting verification, and reaches Client Active only after Ary verifies it. The Service remains Planned and each significant lifecycle event occurs once. Story 2 creates James with Social + Ads + GHL, proves one Meta item linked to both applicable engagements, gives the Social contractor only canonical Social scope and Ary GHL scope, refuses parent/sibling/onboarding access without assignment, isolates both Clients, and preserves all generated items/provenance/service links after a new master version is published. The flow requires only Release A's 27 domain tables.
+
+The 174 browser/HTTP checks include sign-in and invitation acceptance, five-width portal/internal layouts, accessible progress values/text, required/optional and awaiting-verification/completion states, keyboard completion/verification/multiline waiver/N/A, duplicate-click singularity, reload persistence, expired invitation recovery, safe malformed-input and late-failure responses with rollback, immediate session suspension, and separate single-/multi-client contexts. All 42 acceptance screenshots were captured at the stated widths; representative desktop/mobile states and both multi-client layouts were visually inspected. The text browsing tool refused the design-reference URL, but Chromium successfully opened the live design gallery; its fully rendered reference was captured and visually inspected.
+
+No production, DNS/custom domain, staging data, or Leadsthatbloom resource was manually modified. Local Worker tests refuse non-loopback targets and require development R2 mail; D1 smoke uses disposable non-persistent local bindings. No real email was sent.
+
+A11 adds no Release B features. Deliberate portal retargeting/revocation/reinvite, general file uploads, arbitrary template-editing UI, and later execution workflows remain outside Release A. Release A is complete and audited locally. Independent PR review, user-controlled merge, then staging deployment and remote zero-to-current verification on the actual merge SHA are still required before final release closure.
+
+### Exact A11 file manifest
+
+The net PR changes these 53 files relative to the verified main. The task carrier is deleted and has no net PR diff.
+
+Domain consistency and activation UI:
+
+- `components/bloomops/ClientActivation.jsx`
+- `lib/bloomops/activity.mjs`
+- `lib/bloomops/assignments.mjs`
+- `lib/bloomops/client-activation.mjs`
+- `lib/bloomops/client-contacts.mjs`
+- `lib/bloomops/client-invitation-acceptance.mjs`
+- `lib/bloomops/clients.mjs`
+- `lib/bloomops/invitations.mjs`
+- `lib/bloomops/membership.mjs`
+- `lib/bloomops/onboarding-runtime.mjs`
+- `lib/bloomops/services.mjs`
+
+Protected API error boundary:
+
+- `app/api/bloomops/clients/[id]/activate/route.js`
+- `app/api/bloomops/clients/[id]/assignments/[assignmentId]/route.js`
+- `app/api/bloomops/clients/[id]/assignments/route.js`
+- `app/api/bloomops/clients/[id]/contacts/[contactId]/route.js`
+- `app/api/bloomops/clients/[id]/contacts/route.js`
+- `app/api/bloomops/clients/[id]/onboarding/items/[itemId]/[operation]/route.js`
+- `app/api/bloomops/clients/[id]/onboarding/route.js`
+- `app/api/bloomops/clients/[id]/retry-invitation/route.js`
+- `app/api/bloomops/clients/[id]/route.js`
+- `app/api/bloomops/clients/[id]/services/[serviceId]/assignments/[assignmentId]/route.js`
+- `app/api/bloomops/clients/[id]/services/[serviceId]/assignments/route.js`
+- `app/api/bloomops/clients/[id]/services/[serviceId]/route.js`
+- `app/api/bloomops/clients/[id]/services/route.js`
+- `app/api/bloomops/clients/_shared.mjs`
+- `app/api/bloomops/clients/route.js`
+- `app/api/bloomops/invitations/[id]/resend/route.js`
+- `app/api/bloomops/invitations/[id]/revoke/route.js`
+- `app/api/bloomops/invitations/accept/route.js`
+- `app/api/bloomops/invitations/route.js`
+- `app/api/bloomops/me/route.js`
+- `app/api/bloomops/members/[id]/route.js`
+- `app/api/bloomops/members/route.js`
+- `app/api/bloomops/portal/onboarding/[id]/items/[itemId]/submit/route.js`
+- `app/api/bloomops/portal/onboarding/[id]/route.js`
+- `app/api/bloomops/portal/onboarding/route.js`
+- `lib/bloomops/api-handler.mjs`
+- `middleware.js`
+
+Environment guards, tests, and verification scripts:
+
+- `.github/scripts/ensure-staging-resources.mjs`
+- `.github/scripts/verify-zero-remote.mjs`
+- `wrangler.jsonc`
+- `scripts/onboarding-portal-review-local.mjs`
+- `scripts/release-a-hardening-smoke-local.mjs`
+- `tests/bloomops-activation.test.mjs`
+- `tests/bloomops-middleware.test.mjs`
+- `tests/bloomops-hardening-config.test.mjs`
+- `tests/bloomops-hardening-data.test.mjs`
+- `tests/bloomops-hardening-http.test.mjs`
+- `tests/bloomops-hardening-invitations.test.mjs`
+- `tests/bloomops-hardening-lifecycle.test.mjs`
+
+Documentation:
+
+- `docs/BUILD_STATE.md`
+- `docs/DOMAIN_MODEL.md`
+- `docs/INDEX.md`
 
 ## Client Onboarding Portal (A10)
 
@@ -1380,13 +1533,15 @@ Read additional canonical planning docs only when the phase file or `docs/INDEX.
 
 ## Next Planned Phase
 
-A11, Release A Hardening, after independent A10 audit/merge and successful staging plus remote zero-to-current verification on the A10 merge SHA. A11 adds no product features. A10 supplies the Client onboarding interactions, internal verification/completion and reasoned waiver/N/A capability; schema-v1 file uploads remain explicitly outside this implementation.
+Independent A11 PR audit and user-controlled merge, followed by successful Deploy staging and remote Verify zero-to-current runs on the actual merge SHA. These are the remaining Release A closure gates; local A11 hardening and both acceptance stories are complete. No Release B phase starts automatically, and general file uploads remain outside this implementation.
 
 ### The A7 phase, for reference
 
 A7, Services and Departments. Complete. It seeds the four departments and the initial service types, gives one client several purchased service engagements with their own lifecycle, and builds assignment at both the client and the engagement level. The Services and Team tabs of the client detail (`app/(internal)/clients/[id]/page.jsx`) are where its screens land; both say today, honestly, that services and assignments are a later release. `service.view` and `service.manage` already exist in `ACTIONS`, and `loadServiceResource` already builds the descriptor; A7 adds whatever creation action it needs beside `client.create` and may widen `ownerCandidates` in `lib/bloomops/clients.mjs` once a manager can grant client access in the same place they name an owner. The A4 rule that a service assignment reaches the engagement and not the client record is load-bearing and is covered by tests in both `tests/bloomops-authorization.test.mjs` and `tests/bloomops-clients.test.mjs`.
 
 ## Last Verification
+
+2026-09-08, A11. New adversarial tests 82/82 (38 failures reproduced against unchanged pre-hardening code); A10 39/39, A9 44/44, A8 72/72, auth/security/domain 184/184, schema/shell/verifier safety 56/56. Full suite 3,083/3,083 with zero failures/skips on Node 22.22.1. Install, both builds including lint/type checks, all 48 changed/new JavaScript syntax checks, and diff checks passed. Fresh/no-op migrations 22 checks; actual workerd/D1 A11/A10/A9/A8 smoke 26/27/14/12; built Worker HTTP 144/144; external local verifier 21/21; both Release A browser stories and responsive hardening 174/174 with 42 screenshots at five widths. Four browser-fixture defects were corrected before the final passing acceptance run. The dependency advisory assessment and exact commands/files are recorded above. Release A is complete and audited locally, pending independent PR review/merge and both post-merge runs on the actual merge SHA. No real email or manual staging, production, DNS, or Leadsthatbloom mutation occurred.
 
 2026-09-07, A10. Focused A10 39/39; A9 44/44; A8 72/72; affected domain/access 141/141; shell/schema 36/36, combined 332/332. Full suite 3001/3001 on Node 22.22.1. Install and both final builds exit 0. Fresh/no-op local verifier 19/19; A10/A9/A8 disposable D1 smoke 27/14/12; built Worker HTTP smoke 144/144; external verifier against local Worker 21/21; A10 HTTP/browser/Release A acceptance 95/95 with 20 screenshots at five widths. Exact architecture, evidence and limitations are above. All email used memory/development R2, and no staging, production, DNS or Leadsthatbloom resources were modified. A11 is next after independent audit/merge and the merged-main gate.
 

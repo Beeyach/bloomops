@@ -1,3 +1,4 @@
+import { withApiErrors } from '@/lib/bloomops/api-handler.mjs';
 import { NextResponse } from 'next/server';
 import { requireAuthorized } from '@/lib/bloomops/access.mjs';
 import { createClient } from '@/lib/bloomops/clients.mjs';
@@ -15,7 +16,7 @@ export const dynamic = 'force-dynamic';
 // The new client is always Draft and On Track. Nothing in the body can
 // change that, and nothing here invites anybody: no invitation, no
 // membership, no email, no portal link, whatever address the contact has.
-export async function POST(req) {
+async function handlePOST(req) {
   const { access, response } = await requireAuthorized(req, { action: 'client.create' });
   if (response) return response;
   const body = await readBody(req);
@@ -29,3 +30,5 @@ export async function POST(req) {
   if (!result.ok) return domainProblem(result);
   return NextResponse.json({ client: { id: result.clientId } }, { status: 201 });
 }
+
+export const POST = withApiErrors(handlePOST);

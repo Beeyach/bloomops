@@ -1,3 +1,4 @@
+import { withApiErrors } from '@/lib/bloomops/api-handler.mjs';
 import { NextResponse } from 'next/server';
 import { createServiceEngagement } from '@/lib/bloomops/services.mjs';
 import { domainProblem, pick, readBody, requireClient } from '../../_shared.mjs';
@@ -17,7 +18,7 @@ export const dynamic = 'force-dynamic';
 // always Planned; Onboarding and Active describe work that activation (A9)
 // coordinates. Nothing here changes the client's own lifecycle, generates
 // onboarding, instantiates a template, invites anyone, or sends mail.
-export async function POST(req, { params }) {
+async function handlePOST(req, { params }) {
   const { id } = await params;
   const { access, client, response } = await requireClient(req, id, 'service.create');
   if (response) return response;
@@ -33,3 +34,5 @@ export async function POST(req, { params }) {
   if (!result.ok) return domainProblem(result);
   return NextResponse.json({ service: { id: result.serviceEngagementId } }, { status: 201 });
 }
+
+export const POST = withApiErrors(handlePOST);

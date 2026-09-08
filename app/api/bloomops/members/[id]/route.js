@@ -1,3 +1,4 @@
+import { withApiErrors } from '@/lib/bloomops/api-handler.mjs';
 import { NextResponse } from 'next/server';
 import { requireAuthorized } from '@/lib/bloomops/access.mjs';
 import { setMembershipStatus } from '@/lib/bloomops/membership.mjs';
@@ -17,7 +18,7 @@ const REASONS = {
 // PATCH { status } -> suspend, reinstate, or remove a member. Suspended and
 // removed members lose workspace access on their next request even if their
 // identity session is still valid.
-export async function PATCH(req, { params }) {
+async function handlePATCH(req, { params }) {
   const { access, response } = await requireAuthorized(req, { action: 'members.manage' });
   if (response) return response;
   const { id } = await params;
@@ -35,3 +36,5 @@ export async function PATCH(req, { params }) {
   }
   return NextResponse.json({ membership: result.membership, unchanged: Boolean(result.unchanged) });
 }
+
+export const PATCH = withApiErrors(handlePATCH);

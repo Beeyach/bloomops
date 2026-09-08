@@ -1,3 +1,4 @@
+import { withApiErrors } from '@/lib/bloomops/api-handler.mjs';
 import { NextResponse } from 'next/server';
 import { requireAuthorized } from '@/lib/bloomops/access.mjs';
 import { createInvitation, listInvitations } from '@/lib/bloomops/invitations.mjs';
@@ -8,7 +9,7 @@ export const dynamic = 'force-dynamic';
 // Invitations of the caller's workspace. Needs the members.manage
 // capability (Owner and Admin by role).
 
-export async function GET(req) {
+async function handleGET(req) {
   const { access, response } = await requireAuthorized(req, { action: 'invitations.manage' });
   if (response) return response;
   const rows = await listInvitations(access.db, access.workspace.id);
@@ -18,7 +19,7 @@ export async function GET(req) {
 // POST { email, role, name?, clientId? } -> creates the invitation and sends
 // the email. If one is already pending for that address it is rotated and
 // re-sent, and the previous link stops working. The token is never returned.
-export async function POST(req) {
+async function handlePOST(req) {
   const { access, response } = await requireAuthorized(req, { action: 'invitations.manage' });
   if (response) return response;
   let body;
@@ -41,3 +42,6 @@ export async function POST(req) {
     { status: result.resent ? 200 : 201 },
   );
 }
+
+export const GET = withApiErrors(handleGET);
+export const POST = withApiErrors(handlePOST);

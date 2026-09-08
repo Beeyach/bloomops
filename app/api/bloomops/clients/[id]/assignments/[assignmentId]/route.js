@@ -1,3 +1,4 @@
+import { withApiErrors } from '@/lib/bloomops/api-handler.mjs';
 import { NextResponse } from 'next/server';
 import { removeClientAssignment, updateClientAssignment } from '@/lib/bloomops/assignments.mjs';
 import { domainProblem, pick, readBody, requireClient } from '../../../_shared.mjs';
@@ -9,7 +10,7 @@ export const dynamic = 'force-dynamic';
 // The assignment is looked up by this client and this workspace, so an
 // assignment id belonging to another client, another workspace, or nothing
 // at all is one answer: 404.
-export async function PATCH(req, { params }) {
+async function handlePATCH(req, { params }) {
   const { id, assignmentId } = await params;
   const { access, client, response } = await requireClient(req, id, 'client.assign');
   if (response) return response;
@@ -33,7 +34,7 @@ export async function PATCH(req, { params }) {
 // person holds under this client stands, so they keep that one engagement
 // and lose the client record and its other engagements on their next
 // request. The client's internal owner is untouched, whoever it names.
-export async function DELETE(req, { params }) {
+async function handleDELETE(req, { params }) {
   const { id, assignmentId } = await params;
   const { access, client, response } = await requireClient(req, id, 'client.assign');
   if (response) return response;
@@ -47,3 +48,6 @@ export async function DELETE(req, { params }) {
   if (!result.ok) return domainProblem(result);
   return NextResponse.json({ ok: true, removed: result.removed });
 }
+
+export const PATCH = withApiErrors(handlePATCH);
+export const DELETE = withApiErrors(handleDELETE);

@@ -1,5 +1,8 @@
+import { withApiErrors } from '@/lib/bloomops/api-handler.mjs';
 import { activationResponse } from '../../_activation.mjs';
 export const dynamic = 'force-dynamic';
-export async function POST(req, { params }) {
+async function handlePOST(req, { params }) {
   return activationResponse(req, params);
 }
+
+export const POST = withApiErrors(handlePOST);

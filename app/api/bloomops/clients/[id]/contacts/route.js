@@ -1,3 +1,4 @@
+import { withApiErrors } from '@/lib/bloomops/api-handler.mjs';
 import { NextResponse } from 'next/server';
 import { addContact } from '@/lib/bloomops/client-contacts.mjs';
 import { domainProblem, pick, readBody, requireClient } from '../../_shared.mjs';
@@ -10,7 +11,7 @@ export const dynamic = 'force-dynamic';
 // whether a contact can sign in to the client portal is decided by A9/A10
 // on invitation acceptance, never by this route and never by a matching
 // email address.
-export async function POST(req, { params }) {
+async function handlePOST(req, { params }) {
   const { id } = await params;
   const { access, client, response } = await requireClient(req, id);
   if (response) return response;
@@ -26,3 +27,5 @@ export async function POST(req, { params }) {
   if (!result.ok) return domainProblem(result);
   return NextResponse.json({ contact: { id: result.contactId } }, { status: 201 });
 }
+
+export const POST = withApiErrors(handlePOST);

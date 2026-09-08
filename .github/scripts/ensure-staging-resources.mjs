@@ -56,6 +56,8 @@ function checkConfig({ parsed }) {
   const s = parsed?.env?.staging;
   if (!s) fail(`${CONFIG} has no env.staging block.`);
   if (s.name !== WORKER) fail(`env.staging.name must be ${WORKER}, found ${s.name}`);
+  if (s.d1_databases?.length !== 1 || s.r2_buckets?.length !== 1) fail('staging must declare exactly its one D1 and one R2 binding.');
+  if (s.vars?.BLOOMOPS_ENV !== 'staging' || s.vars?.BLOOMOPS_APP_URL !== 'https://bloomops-staging.cool-sunset-2169.workers.dev') fail('staging environment and app origin must identify the staging Worker.');
   const d1 = s.d1_databases?.[0];
   const r2 = s.r2_buckets?.[0];
   if (!d1 || d1.binding !== 'DB' || d1.database_name !== DB_NAME) {

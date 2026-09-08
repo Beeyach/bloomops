@@ -26,8 +26,13 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  // Invitation paths and magic-link query strings contain bearer tokens.
+  // Workers telemetry includes request URLs; keep it off until a logging
+  // path can redact those credentials. Business activity stays in D1.
   "observability": {
-    "enabled": true
+    "enabled": false,
+    "logs": { "enabled": false, "invocation_logs": false },
+    "traces": { "enabled": false }
   },
   "vars": {
     "BLOOMOPS_ENV": "development",
