@@ -26,7 +26,7 @@ try {
   const all = async (q, ...args) => (await d1.prepare(q).bind(...args).all()).results;
   const journal = JSON.parse(readFileSync(new URL('../drizzle/meta/_journal.json', import.meta.url)));
   for (const { tag } of journal.entries) for (const statement of readFileSync(new URL(`../drizzle/${tag}.sql`, import.meta.url), 'utf8').split('--> statement-breakpoint')) if (statement.trim()) await run(statement.trim());
-  check('nine domain migrations apply on actual workerd D1', journal.entries.length === 9);
+  check('the B1 migration prefix applies on actual workerd D1', journal.entries.length >= 9 && journal.entries[8].tag === '0008_b1_projects_core');
   for (const ws of ['a', 'b']) await run('INSERT INTO workspaces(id,name,slug) VALUES(?,?,?)', ws, ws, ws);
   for (const [id, role, ws] of [['ellen','owner','a'],['pm','project_manager','a'],['sam','team_member','a'],['james','client','a'],['foreign','owner','b']]) {
     await run('INSERT INTO user(id,name,email) VALUES(?,?,?)', id, id, `${id}@example.com`);

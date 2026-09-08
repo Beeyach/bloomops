@@ -308,20 +308,31 @@ Maps a Project to an internal workspace membership with Lead or Member responsib
 
 ### milestones
 
-Possible states:
-- Upcoming
-- In Progress
-- Waiting
-- Completed
-- Skipped
+Implemented in B2 by additive migration `0009_b2_milestones.sql`. One Milestone belongs to one workspace and one Project, protected by a composite foreign key. Client, Service and Department context derive from that Project. No Release A or B1 table is rebuilt.
 
-Useful fields:
-- project
-- internal name
-- client-facing label
-- position
-- dates
-- client visibility
+The required internal name and optional Client label are bounded to 120 characters. A Client label defaults to the name only for explicitly shared presentation. Start/target dates are optional valid calendar dates, with target on or after start. Visibility is internal by default, or client/restricted. Position, revision, created/updated timestamps and server-owned completion are relational fields. A parent-scoped UUID `creation_request_id` is retry metadata: the server still generates the Milestone ID. Its immutable creation event snapshots the normalized initial details, so a retry can identify its original creation even after later operational edits. Reusing that key for different initial details conflicts; deliberate same-name creates with different keys remain separate.
+
+Every Milestone starts Upcoming. Its lifecycle is independent of Project status/health, Client relationship/health, Service lifecycle and onboarding:
+
+| From | Allowed next states |
+|---|---|
+| Upcoming | In Progress, Waiting, Skipped |
+| In Progress | Waiting, Completed, Skipped |
+| Waiting | In Progress, Completed, Skipped |
+| Completed | None |
+| Skipped | None |
+
+Waiting requires an internal explanation of what or whom it is waiting on, bounded to 1000 characters with ordinary multiline text supported, following `AGENTS.md`. Leaving Waiting clears the explanation. Completed records one server-owned timestamp; Skipped has none. Terminal status cannot reopen through B2 operations, though details may still be corrected. Identical retries change neither revision nor history; competing stale edits/status changes conflict. Concurrent identical completion accepts the winner's timestamp.
+
+Owner/Admin/Project Manager coordinate reachable Milestones; Team Member is read-only. Milestone scope follows the existing parent Project's Client, Service or explicit Project assignment. A Project assignment never grants the parent Client, Service or siblings. Department membership and Project ownership grant nothing. Parent Project visibility caps every child. Owner/Admin may see restricted Milestones; PM/Team Member need an explicit assignment to that Project. The same assignment is required for a PM to create or change a Milestone to restricted. Live SQL rechecks identity membership, role, workspace, scope and visibility, including inside committing batches.
+
+Projects support up to 200 Milestones. Each Project has unique integer position slots, appended under the write lock. Reads order by position and ID. Reorder accepts exactly the actor's complete readable set with each row's expected revision; hidden rows keep their slots and never enter the request or progress. A conditional semantic event acts as a transaction receipt, then two guarded updates park the selected rows above the Project's occupied range and assign their requested slots. This avoids SQLite's immediate unique-index collisions. Every selected revision advances once. Snapshot membership/revisions are checked under the lock, so concurrent reorder/status and visible creation races cannot silently overwrite. A winning-order retry is a no-op. No Project ordering token, counter or second lifecycle field is added.
+
+Progress is derived only from currently readable Milestones. Completed and Skipped count as **finished**. Zero readable rows produce null progress. Clients require both current parent and child visibility=client and a current contact link. The dedicated Client Milestone DTO is exactly `id`, `label`, `statusLabel`, `targetDate`, `completedAt`; its enclosing summary is `items` plus `progress` (`total`, `finished`, `percentage`, or null). The server consumes raw status and grouping IDs before serialization. No positions, revisions, request keys, internal names where a Client label exists, waiting explanations, team identities, Service/Department IDs or hidden counts appear. Existing B1 Project DTO fields are unchanged.
+
+Canonical activity uses `subject_type='milestone'`, with Client/Service context derived from the Project. Created, details updated, status changed and order changed are distinct semantic events. Mutations and history share one D1 batch; stale/concurrent losers append no events, and failures roll back both. Order history contains no ordered ID list or hidden count. Project and Client history filter all child events by **current** Milestone and Project readability, including events recorded before restriction. Clients receive no internal Milestone history.
+
+Milestones live inside the internal Project detail with accessible create/edit/status dialogs, keyboard/touch reorder controls, scoped read-only Team presentation and derived progress. The portal nests only nonempty safe Milestone summaries under their visible Projects. There is no new global Milestones navigation destination, automatic Project completion, template generation or B3 work.
 
 ## Actions
 

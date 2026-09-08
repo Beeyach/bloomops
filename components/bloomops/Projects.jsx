@@ -1,6 +1,7 @@
 import { formatDate } from '@/lib/bloomops/format.mjs';
 import { PROJECT_HEALTH_LABELS, PROJECT_STATUS_LABELS, PROJECT_STATUS_TONES, PROJECT_VISIBILITY_LABELS } from '@/lib/bloomops/project-values.mjs';
 import { EmptyState, Facts, Status } from './Primitives';
+import { PortalMilestones } from './Milestones';
 
 export function ProjectStatus({ status }) {
   return <Status label={PROJECT_STATUS_LABELS[status]} tone={PROJECT_STATUS_TONES[status]} glyph={status === 'completed' ? 'check' : ['waiting', 'blocked'].includes(status) ? 'clock' : 'dot'} />;
@@ -47,14 +48,15 @@ export function ProjectFacts({ project, clientHref = null }) {
 
 // Only the dedicated portal DTO is accepted here. No internal record props
 // are forwarded into a Client component or serialized into its page.
-export function PortalProjects({ projects = [] }) {
+export function PortalProjects({ projects = [], milestones = {} }) {
   if (!projects.length) return null;
   return <ul className="bo-rows" aria-label="Your projects">
-    {projects.map(project => <li key={project.id} className="bo-row bo-row-wrap">
+    {projects.map(project => <li key={project.id} className="bo-row bo-portal-project">
       <span className="bo-row-text"><span className="bo-row-title">{project.label}</span>
         {(project.completedAt || project.targetDate) && <span className="bo-row-meta">{project.completedAt ? `Completed ${formatDate(project.completedAt)}` : `Target ${formatDate(project.targetDate)}`}</span>}
       </span>
       <Status label={project.statusLabel} />
+      <PortalMilestones summary={milestones[project.id]} />
     </li>)}
   </ul>;
 }

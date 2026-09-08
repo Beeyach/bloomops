@@ -311,6 +311,8 @@ test('the role matrix: every role against every representative action, allow and
     'project.view': [true, true, true, true, true],
     'project.manage': [true, true, true, false, false],
     'project.assign': [true, true, true, false, false],
+    'milestone.view': [true, true, true, true, true],
+    'milestone.manage': [true, true, true, false, false],
     'legacy.prospecting': [true, true, false, false, false],
   };
   // Which record each resource action is asked about, so the matrix uses
@@ -332,6 +334,8 @@ test('the role matrix: every role against every representative action, allow and
     'project.view': jamesProject,
     'project.manage': jamesProject,
     'project.assign': jamesProject,
+    'milestone.view': { ...jamesProject, type: 'milestone', projectId: jamesProject.id, id: 'milestone' },
+    'milestone.manage': { ...jamesProject, type: 'milestone', projectId: jamesProject.id, id: 'milestone' },
   };
   assert.deepEqual(Object.keys(cases).sort(), Object.keys(ACTIONS).sort(), 'every action is in the matrix');
   for (const [action, policy] of Object.entries(ACTIONS)) {

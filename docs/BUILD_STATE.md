@@ -6,15 +6,15 @@ Release B: Work Core. Release A is closed on A11 merge `3deed08d8db2a92fcf4dc29a
 
 ## Current Phase
 
-B1 Projects Core is implemented and locally verified on `codex/b1-projects-core`, ready for independent PR audit. Independent review/merge and successful post-merge staging plus remote zero-to-current on the actual merge SHA remain required before B1 closure. No B2 or later work is included.
+B2 Milestones is implemented and locally verified on `codex/b2-milestones`. Independent review/merge and successful post-merge staging plus remote zero-to-current on the actual merge SHA remain required before B2 closure. B3 Actions + Dependencies is not implemented.
 
-Current implementation spec: `docs/phases/B1.md`; release sequence: `docs/RELEASE_B.md`.
+Current implementation spec: `docs/phases/B2.md`; release sequence: `docs/RELEASE_B.md`.
 
 Documentation index: `docs/INDEX.md`
 
 ## Branch State
 
-PRs #2 through #14 are merged. B1 starts from main `3deed08d8db2a92fcf4dc29a6a879a9945260049`, followed by Release B/B1 planning commits and task carrier `8681479`. Read-only preflight verified successful [Deploy staging 34175768644](https://github.com/Beeyach/bloomops/actions/runs/34175768644) and [remote zero-to-current 34175768643](https://github.com/Beeyach/bloomops/actions/runs/34175768643) on that exact main SHA. This branch remains for independent review and user-controlled merge.
+PRs #2 through #15 are merged. B2 starts from main `cacb2d3b8f4ff634fb5a3470a4fd5f91930ef2c1`, followed by phase-contract commit `6c6dbd2` and temporary task carrier `5ed400e`. Read-only preflight confirmed [Deploy staging 34182639418](https://github.com/Beeyach/bloomops/actions/runs/34182639418) and [remote zero-to-current 34183581349](https://github.com/Beeyach/bloomops/actions/runs/34183581349) both succeeded on that exact B1 merge SHA. These are B1's completed gates, not B2 post-merge evidence. This branch is for independent review and user-controlled merge.
 
 ## Repository Agent Instructions
 
@@ -50,7 +50,65 @@ BloomOps Git history is fresh. The source commit object does not exist in the Bl
 - A10: scoped onboarding portal and internal operational tab, durable Client submission, coordinator verification/completion, reasoned waiver/N/A, atomic onboarding completion and Client Active transition; merged as PR #13
 - A11: twelve reproduced hardening corrections, 82 new adversarial regressions, fresh/no-op migration proof, actual workerd/D1 and built-Worker verification, and both Release A browser acceptance stories; merged as PR #14 with both post-merge gates passed on `3deed08`. Release A is closed. The following A11 section preserves its historical pre-merge evidence.
 
+## Milestones (B2)
+
+B2 adds ordered, workspace-scoped Project children, explicit Milestone lifecycle, internal waiting context, atomic semantic activity, scoped internal APIs and Project-detail controls, and a dedicated Client-safe Milestone/progress projection. The implemented model and exact allowlists are documented in `DOMAIN_MODEL.md`. B3 Actions + Dependencies is not implemented.
+
+### Implementation decisions
+
+- Additive generated migration `0009_b2_milestones.sql` adds only `milestones` (16 columns) and four indexes, with matching Drizzle journal/snapshot. Composite workspace/Project FK, per-Project unique positions and request keys, date/name/status/visibility/completion/waiting/revision CHECKs protect stored facts. There are 30 domain tables; no Release A/B1 table is rebuilt.
+- Client/Service/Department remain derived from the parent Project. Milestone creation and all changes leave Project status/health/revision, Client, Service and onboarding facts unchanged. Waiting has a bounded internal explanation because `AGENTS.md` requires work to record what or whom it waits on; that explanation is excluded from the portal.
+- A UUID creation request key permits explicit response-loss retry without inventing name uniqueness. Server-generated Milestone IDs and immutable initial details in the creation event distinguish retries from key reuse, even after later edits. There are no automatic retries of uncertain mutations.
+- A Project supports up to 200 Milestones. Reorder accepts the complete readable set plus its per-row revisions, preserves hidden slots, and parks rows before assigning final unique positions. A conditional canonical event is the transaction receipt; no Project ordering field or secondary status is introduced. Same-order retries add no event. Competing status/reorder and stale-set writes conflict, including under the D1 write lock.
+- Owner/Admin/PM coordinate reachable children; Team Member stays read-only. Existing Client/Service/Project assignments govern reach; Department and ownership grant nothing. Restricted children use explicit Project assignment for PM/Team. Both parent and child must be client-visible with a current contact link for Client access. Fresh SQL predicates protect reads, write batches and historical activity against revocation.
+- Six route files reuse A11/B1 session/origin, strict JSON/body fields, leak-safe 404s, sanitized 500s and no-store. The exact Client Milestone DTO is `id`, `label`, `statusLabel`, `targetDate`, `completedAt`; safe derived progress is computed only from visible rows, counting Completed and Skipped as finished. Empty progress is null and omitted from UI. B1 Project DTO fields remain unchanged.
+- Project detail reuses Bloom primitives, dialogs and toast utilities. Create/edit/status and keyboard/touch reorder controls sit beside the ordered list; Team sees only readable rows. Client summaries nest under relevant Projects, with no global Milestone destination or future-phase placeholders. Project/Client activity filters Milestone events by current readability.
+- The existing remote zero verifier's push path filter now includes `lib/bloomops/schema.mjs` and `drizzle/**`. Manual dispatch, database target, cleanup, identity checks, concurrency and isolation logic are unchanged. A workflow regression checks the new paths and retained controls.
+
+### Verification
+
+Node 22.22.1 / Wrangler 4.129.0; local D1 and development R2 mail only, with example.com fixture identities. Dependency manifests and lockfile are unchanged. No production deployment, staging business-data mutation, DNS, real email or Leadsthatbloom operation occurred.
+
+| Check | Result |
+|---|---|
+| `npm ci` | Passed; package and lockfile unchanged. The same 49 existing advisory entries (5 high, 43 moderate, 1 low) documented by A11 remain; B2 introduces no dependency. |
+| `node --test tests/bloomops-milestones-*.test.mjs` | 173/173 passed: 76 domain/lifecycle/rollback/revocation, 32 access/visibility, 25 real-session HTTP, 19 ordering/concurrency, 17 schema and 4 UI tests. |
+| `node --test tests/bloomops-projects-*.test.mjs` | 97/97 passed. |
+| A8/A9/A10/A11 + auth/authorization/security/Client/Service/assignment regressions | 421/421 passed, including A8 72, A9 44, A10 39 and A11 82. |
+| `npm test` | 3,354/3,354 passed; zero failures/skips. |
+| `npm run build`; `npm run cf:build` | Both passed, including Next lint/type checks and OpenNext Worker generation. |
+| `node .github/scripts/verify-zero-remote.mjs --local` | 22 checks passed: genuinely empty disposable DB; 60 inherited and 10 domain migrations; 66 total migration-defined tables including ledgers / 30 domain tables; 68 explicit domain indexes and 13 immutability triggers; FK/integrity checks; identical complete schema and both ledgers after the no-op second pass. |
+| `node scripts/milestones-smoke-local.mjs` | 28/28 actual workerd/D1 checks passed, including idempotent creates/completion, visibility revocation, atomic rollback and 200-row reorder within D1 bind limits. |
+| `node scripts/projects-smoke-local.mjs`; `node scripts/release-a-hardening-smoke-local.mjs` | B1 25/25 and A11 26/26 actual D1 checks passed against the current migrations. B1 checks its original migration prefix while accepting B2. |
+| `node scripts/auth-smoke-local.mjs --url http://localhost:8787` | 144/144 checks passed. |
+| `node .github/scripts/verify-staging.mjs --url http://localhost:8787 --expect-env development` | 21/21 passed against the built local Worker. |
+| `node scripts/milestones-review-local.mjs --url http://localhost:8787 --out /tmp/bloomops-b2-review --playwright /tmp/bloomops-a11-browser` | 117/117 checks passed; 38 screenshots at 1440, 1024, 768, 390 and 320px. Real coordinator create/edit/status/keyboard and touch reorder, visible-only Client progress, Team denial, immediate visibility/contact/scope/suspension revocation, rollback, no-store, focus, reduced motion and responsive geometry passed. |
+| `node --check` on changed/new JavaScript; `git diff --check` | 28 modules/scripts passed syntax checks; diff check passed. JSX is covered by the builds. |
+
+Local logs and captures are `/tmp/bloomops-b2-*`; these are verification artifacts, not repository assets. The live Bloomlab design gallery rendered successfully and was inspected at `/tmp/bloomops-b2-design.png`. Existing external Playwright 1.63.0 / Chromium tooling is reused; no browser dependency was installed. Representative internal, dialog, Team and portal captures were visually inspected across all five widths, including the corrected tablet portal layout.
+
+The six new B2 test files were also copied into an isolated archive of the unchanged verified B1 merge. All six fail to load because the Milestone implementation is absent there. This is a new-feature baseline check, not a claim of six pre-existing B1 defects. The final current implementation passes all 173 individual B2 tests.
+
+Verification corrections: the initial order-test source had an invalid await inside a synchronous callback; this test syntax was corrected before the passing run. A portal render test initially rejected valid 0-of-1 progress; it now rejects fabricated 0-of-0 and independently proves hidden-only Projects render no Milestone progress. No application behavior was changed to satisfy that weak assertion. Browser acceptance initially expected 201 for the existing B1 assignment endpoint, which correctly returned 200; the harness now checks that established contract. A separate real-browser probe reproduced terminal Milestone status changes losing keyboard focus to the document body when the status control disappeared. B2 now restores focus to the surviving Edit control. The same probe passes on the final Worker (`/tmp/bloomops-b2-focus-before.log` and `focus-after.log`), and acceptance checks focus after every status mutation. The browser assertions wait for the existing asynchronous dialog/focus effects to settle instead of sampling before the requested animation frame; they still fail if focus is never restored. The final story also uses a real touch-enabled context for reordering and checks reduced motion. Tablet acceptance also reproduced a portal Project row that did not wrap its new full-width Milestone child above the mobile breakpoint (768px viewport measured 833px document width). A dedicated portal Project wrapping rule fixes the parent layout at every width; the browser probe measures 768px afterward, with no clipped content. The first HTTP smoke started before the preview listener was ready; its rerun follows a successful development health check. One local Next build attempt was terminated with SIGTERM during trace collection after compilation and type checks; the detached sequential rerun completed both builds with exit 0. The final external verifier initially received a safe 429 after the HTTP smoke consumed Better Auth’s existing five-per-60-second magic-link allowance. After that window expired, the unchanged verifier passed 21/21 against the same bundle; authentication limits were not relaxed.
+
+### Remaining gates and scope
+
+Independent B2 PR audit, user-controlled merge, and successful staging plus remote zero-to-current on the actual merge SHA remain required. No B2 staging/remote verification is claimed. The 200-Milestone bound, terminal Completed/Skipped, fixed parents and read-only Team coordination are deliberate B2 limits. B3 Actions + Dependencies, Deliverables, Files, comments, approvals, templates/generation, notifications and automatic Project completion remain outside this implementation.
+
+### Changed files by area
+
+All 44 paths are relative to the repository root. The supplied B2 contract is included; the temporary Codex prompt has no net diff against main.
+
+- Domain: `lib/bloomops/activity.mjs`, `lib/bloomops/authorization.mjs`, `lib/bloomops/client-activity.mjs`, `lib/bloomops/milestone-access.mjs`, `lib/bloomops/milestone-values.mjs`, `lib/bloomops/milestones.mjs`, `lib/bloomops/project-activity.mjs`.
+- API: `app/api/bloomops/portal/projects/[id]/milestones/[milestoneId]/route.js`, `app/api/bloomops/portal/projects/[id]/milestones/route.js`, `app/api/bloomops/projects/[id]/milestones/[milestoneId]/route.js`, `app/api/bloomops/projects/[id]/milestones/[milestoneId]/transition/route.js`, `app/api/bloomops/projects/[id]/milestones/reorder/route.js`, `app/api/bloomops/projects/[id]/milestones/route.js`, `lib/bloomops/milestone-api.mjs`.
+- UI: `app/(internal)/work/projects/[id]/page.jsx`, `app/bloomops.css`, `app/portal/page.jsx`, `components/bloomops/MilestoneControls.jsx`, `components/bloomops/Milestones.jsx`, `components/bloomops/PortalHome.jsx`, `components/bloomops/Projects.jsx`.
+- Schema/migrations: `drizzle/0009_b2_milestones.sql`, `drizzle/meta/0009_snapshot.json`, `drizzle/meta/_journal.json`, `lib/bloomops/schema.mjs`.
+- Tests/verification: `.github/workflows/verify-zero-remote.yml`, `scripts/milestones-review-local.mjs`, `scripts/milestones-smoke-local.mjs`, `scripts/projects-smoke-local.mjs`, `tests/_milestones.mjs`, `tests/bloomops-authorization.test.mjs`, `tests/bloomops-milestones-access.test.mjs`, `tests/bloomops-milestones-domain.test.mjs`, `tests/bloomops-milestones-http.test.mjs`, `tests/bloomops-milestones-order.test.mjs`, `tests/bloomops-milestones-schema.test.mjs`, `tests/bloomops-milestones-ui.test.mjs`, `tests/bloomops-schema.test.mjs`, `tests/zero-verify-safety.test.mjs`.
+- Docs: `docs/BUILD_STATE.md`, `docs/DOMAIN_MODEL.md`, `docs/INDEX.md`, `docs/RELEASE_B.md`, `docs/phases/B2.md`.
+
 ## Projects Core (B1)
+
+B1 is closed: PR #15 merged as `cacb2d3`, with both gates verified above. The following section retains its historical implementation and local evidence. B2 extends it as recorded above.
 
 B1 adds the canonical Project model, Project assignments, scoped internal APIs and Work screens, conditional Client Projects tab, and minimal safe Project summaries in the existing portal. The detailed lifecycle matrix and access rules are recorded in `DOMAIN_MODEL.md` under Projects. There are no Milestone/Action/Deliverable/File placeholders, automatic Project generation, notifications, or later Release B features.
 
@@ -94,7 +152,7 @@ An intermittent portal geometry assertion was isolated against the real page: it
 
 ### Scope and next phase
 
-B1 is subject to independent review and user-controlled merge. Successful staging deployment and remote zero-to-current on that actual merge SHA are still required before closure. B2 — Milestones is next and is not implemented. The internal list limit and fixed Project parents are deliberate B1 boundaries.
+B1 independent review, merge and both post-merge gates are complete. The internal list limit and fixed Project parents remain deliberate B1 boundaries. B2 Milestones follows, with its current evidence recorded above.
 
 ### Changed files by area
 
@@ -1580,23 +1638,25 @@ Re-running the workflow is safe. Schema and migrations are idempotent, the provi
 
 ## Context Discipline
 
-For the next phase, read:
+For the current phase and its audit, read:
 
 1. `AGENTS.md`
 2. this file
-3. `docs/phases/A11.md`
+3. `docs/phases/B2.md`
 
 Read additional canonical planning docs only when the phase file or `docs/INDEX.md` calls for them.
 
 ## Next Planned Phase
 
-Independent A11 PR audit and user-controlled merge, followed by successful Deploy staging and remote Verify zero-to-current runs on the actual merge SHA. These are the remaining Release A closure gates; local A11 hardening and both acceptance stories are complete. No Release B phase starts automatically, and general file uploads remain outside this implementation.
+B3 — Actions + Dependencies, after independent B2 audit, user-controlled merge, and successful staging plus remote zero-to-current verification on the actual B2 merge SHA. B3 is not implemented and does not start automatically.
 
 ### The A7 phase, for reference
 
 A7, Services and Departments. Complete. It seeds the four departments and the initial service types, gives one client several purchased service engagements with their own lifecycle, and builds assignment at both the client and the engagement level. The Services and Team tabs of the client detail (`app/(internal)/clients/[id]/page.jsx`) are where its screens land; both say today, honestly, that services and assignments are a later release. `service.view` and `service.manage` already exist in `ACTIONS`, and `loadServiceResource` already builds the descriptor; A7 adds whatever creation action it needs beside `client.create` and may widen `ownerCandidates` in `lib/bloomops/clients.mjs` once a manager can grant client access in the same place they name an owner. The A4 rule that a service assignment reaches the engagement and not the client record is load-bearing and is covered by tests in both `tests/bloomops-authorization.test.mjs` and `tests/bloomops-clients.test.mjs`.
 
 ## Last Verification
+
+2026-09-08, B2. Focused Milestones 173/173, B1 Projects 97/97, Release A/auth/security/domain regressions 421/421 and full suite 3,354/3,354 passed with zero failures/skips. Install, both builds with lint/type checks, 28 changed/new JavaScript syntax checks and diff checks passed. Fresh/no-op migrations: 22 checks; actual D1 B2/B1/A11: 28/25/26; built-Worker HTTP: 144/144; external local verifier: 21/21; B2 browser/HTTP acceptance: 117/117 with 38 screenshots at all five widths. Implementation, exact commands, verification corrections and existing dependency advisories are recorded in the B2 section above. Independent B2 audit, merge and post-merge staging/remote gates remain pending. B3 Actions + Dependencies is next and is not implemented.
 
 2026-09-08, A11. New adversarial tests 82/82 (38 failures reproduced against unchanged pre-hardening code); A10 39/39, A9 44/44, A8 72/72, auth/security/domain 184/184, schema/shell/verifier safety 56/56. Full suite 3,083/3,083 with zero failures/skips on Node 22.22.1. Install, both builds including lint/type checks, all 48 changed/new JavaScript syntax checks, and diff checks passed. Fresh/no-op migrations 22 checks; actual workerd/D1 A11/A10/A9/A8 smoke 26/27/14/12; built Worker HTTP 144/144; external local verifier 21/21; both Release A browser stories and responsive hardening 174/174 with 42 screenshots at five widths. Four browser-fixture defects were corrected before the final passing acceptance run. The dependency advisory assessment and exact commands/files are recorded above. Release A is complete and audited locally, pending independent PR review/merge and both post-merge runs on the actual merge SHA. No real email or manual staging, production, DNS, or Leadsthatbloom mutation occurred.
 
