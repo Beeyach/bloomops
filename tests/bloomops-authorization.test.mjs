@@ -321,6 +321,7 @@ test('the role matrix: every role against every representative action, allow and
     'content.list': [true, true, true, true, false],
     'content.create': [true, true, true, true, false],
     'content.view': [true, true, true, true, false],
+    'content.transition': [true, true, true, true, false],
     'content.manage': [true, true, true, true, false],
     'action.list': [true, true, true, true, false],
     'action.view': [true, true, true, true, false],
@@ -356,6 +357,7 @@ test('the role matrix: every role against every representative action, allow and
     'file.manage': { ...jamesProject, type: 'file', projectId: jamesProject.id, id: 'file' },
     'content.create': { ...jamesClient, type: 'content_parent', visibility: 'internal' },
     'content.view': { ...jamesClient, type: 'content', visibility: 'internal' },
+    'content.transition': { ...jamesClient, type: 'content', visibility: 'internal' },
     'content.manage': { ...jamesClient, type: 'content', visibility: 'internal' },
     'action.view': jamesAction,
     'action.manage': jamesAction,
@@ -377,7 +379,7 @@ test('the role matrix: every role against every representative action, allow and
   }
   // All actors can see James. Clients cannot discover internal Actions or Content.
   assert.ok(seen.filter((l) => l.includes('forbidden')).every((l) => /forbidden:(role|capability)$/.test(l)), seen.join('\n'));
-  assert.deepEqual(seen.filter((l) => l.includes('not_found')), [...['create', 'view', 'manage'].map(operation => `client content.${operation}: not_found:visibility`), ...['view', 'manage', 'progress', 'dependencies'].map(operation => `client action.${operation}: not_found:visibility`)]);
+  assert.deepEqual(seen.filter((l) => l.includes('not_found')), [...['create', 'view', 'transition', 'manage'].map(operation => `client content.${operation}: not_found:visibility`), ...['view', 'manage', 'progress', 'dependencies'].map(operation => `client action.${operation}: not_found:visibility`)]);
 });
 
 // ── capabilities ─────────────────────────────────────────────────────────
