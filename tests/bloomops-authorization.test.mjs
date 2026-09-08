@@ -281,6 +281,7 @@ test('the role matrix: every role against every representative action, allow and
   const jamesClient = await loadClientResource(s.db, s.A, 'c_james');
   const jamesSocial = await loadServiceResource(s.db, s.A, 'se_james_social');
   const jamesProject = projectResource({ id: 'project-james', workspaceId: s.A, clientId: 'c_james', visibility: 'client' }, [], { internal: false });
+  const jamesAction = { ...jamesProject, type: 'action', projectId: jamesProject.id, id: 'action-james', visibility: 'internal', assigneeMembershipId: actors.team_member.membershipId };
   const cases = {
     'members.manage': [true, true, false, false, false],
     'invitations.manage': [true, true, false, false, false],
@@ -313,6 +314,11 @@ test('the role matrix: every role against every representative action, allow and
     'project.assign': [true, true, true, false, false],
     'milestone.view': [true, true, true, true, true],
     'milestone.manage': [true, true, true, false, false],
+    'action.list': [true, true, true, true, false],
+    'action.view': [true, true, true, true, false],
+    'action.manage': [true, true, true, false, false],
+    'action.progress': [true, true, true, true, false],
+    'action.dependencies': [true, true, true, false, false],
     'legacy.prospecting': [true, true, false, false, false],
   };
   // Which record each resource action is asked about, so the matrix uses
@@ -336,6 +342,10 @@ test('the role matrix: every role against every representative action, allow and
     'project.assign': jamesProject,
     'milestone.view': { ...jamesProject, type: 'milestone', projectId: jamesProject.id, id: 'milestone' },
     'milestone.manage': { ...jamesProject, type: 'milestone', projectId: jamesProject.id, id: 'milestone' },
+    'action.view': jamesAction,
+    'action.manage': jamesAction,
+    'action.progress': jamesAction,
+    'action.dependencies': jamesAction,
   };
   assert.deepEqual(Object.keys(cases).sort(), Object.keys(ACTIONS).sort(), 'every action is in the matrix');
   for (const [action, policy] of Object.entries(ACTIONS)) {
@@ -350,10 +360,10 @@ test('the role matrix: every role against every representative action, allow and
       assert.equal(decision.allowed, expected[i], `${role} ${action} -> ${describe(decision)}`);
     });
   }
-  // Every denial in the matrix is a role or capability denial (the actors
-  // can all see James), so none of them hides existence.
+  // All actors can see James. The internal-only Action is the deliberate
+  // exception: Clients must not learn that it exists.
   assert.ok(seen.filter((l) => l.includes('forbidden')).every((l) => /forbidden:(role|capability)$/.test(l)), seen.join('\n'));
-  assert.equal(seen.filter((l) => l.includes('not_found')).length, 0);
+  assert.deepEqual(seen.filter((l) => l.includes('not_found')), ['view', 'manage', 'progress', 'dependencies'].map(operation => `client action.${operation}: not_found:visibility`));
 });
 
 // ── capabilities ─────────────────────────────────────────────────────────

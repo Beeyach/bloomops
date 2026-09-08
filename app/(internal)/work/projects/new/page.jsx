@@ -14,7 +14,7 @@ export default async function NewProjectPage({ searchParams }) {
   if (!options) notFound();
   const clientId = options.clients.some(c => c.id === query?.clientId) ? query.clientId : '';
   return <>
-    <Button href="/work" variant="ghost" size="sm">Back to projects</Button>
+    <Button href="/work?tab=projects" variant="ghost" size="sm">Back to projects</Button>
     <PageHeader title="Create project" subtitle="A clear piece of delivery for one client, with an optional purchased service." />
     {options.clients.length ? <ProjectForm options={options} clientId={clientId} /> : <EmptyState title="Add a client first" actions={<Button href="/clients/new">Add client</Button>}><p>Every project belongs to a client.</p></EmptyState>}
   </>;

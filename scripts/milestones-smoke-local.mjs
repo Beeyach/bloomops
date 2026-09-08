@@ -20,7 +20,7 @@ try {
   const d1=proxy.env.DB,db=drizzle(d1,{schema}),run=(q,...args)=>d1.prepare(q).bind(...args).run(),one=(q,...args)=>d1.prepare(q).bind(...args).first(),all=async(q,...args)=>(await d1.prepare(q).bind(...args).all()).results;
   const journal=JSON.parse(readFileSync(new URL('../drizzle/meta/_journal.json',import.meta.url)));
   for(const {tag}of journal.entries)for(const statement of readFileSync(new URL(`../drizzle/${tag}.sql`,import.meta.url),'utf8').split('--> statement-breakpoint'))if(statement.trim())await run(statement.trim());
-  check('ten domain migrations apply on actual D1',journal.entries.length===10);
+  check('B2 migration prefix applies on actual D1',journal.entries.length>=10&&journal.entries[9].tag==='0009_b2_milestones');
   for(const ws of ['a','b'])await run('INSERT INTO workspaces(id,name,slug) VALUES(?,?,?)',ws,ws,ws);
   for(const[id,role,ws]of[['ellen','owner','a'],['pm','project_manager','a'],['sam','team_member','a'],['james','client','a'],['lawrence','client','a'],['foreign','owner','b']]){
     await run('INSERT INTO user(id,name,email) VALUES(?,?,?)',id,id,`${id}@example.com`);await run("INSERT INTO workspace_memberships(id,workspace_id,user_id,role,status) VALUES(?,?,?,?,'active')",`m-${id}`,ws,id,role);

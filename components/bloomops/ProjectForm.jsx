@@ -77,7 +77,7 @@ export default function ProjectForm({ project = null, options, clientId = '', on
       {error && <Notice tone="error">{error}</Notice>}
     </div>
     <div className={project ? 'bo-dialog-actions' : 'bo-form-actions'}>
-      {onCancel ? <Button onClick={onCancel} disabled={busy}>Cancel</Button> : <Button href="/work">Cancel</Button>}
+      {onCancel ? <Button onClick={onCancel} disabled={busy}>Cancel</Button> : <Button href="/work?tab=projects">Cancel</Button>}
       <Button type="submit" variant="primary" loading={busy} disabled={busy}>{project ? 'Save details' : 'Create project'}</Button>
     </div>
   </form>;
