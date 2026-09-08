@@ -59,7 +59,15 @@ test('with a session cookie the request passes, and the cookie names are exactly
     const r = await run(req('/api/infra', { headers: { cookie: `${name}=abc.def` } }));
     assert.equal(r.status, 200, name);
     assert.equal(r.headers.get('cache-control'), 'no-store');
+    const bytes = await run(req('/api/bloomops/files/opaque-id/download', { headers: { cookie: `${name}=abc.def` } }));
+    assert.equal(bytes.headers.get('cache-control'), 'private, no-store', 'middleware preserves private File byte responses');
+    for (const path of ['/api/bloomops/files/opaque-id', '/api/bloomops/files/opaque-id/download/extra']) {
+      assert.equal((await run(req(path, { headers: { cookie: `${name}=abc.def` } }))).headers.get('cache-control'), 'no-store');
+    }
   }
+  const deniedBytes = await run(req('/api/bloomops/files/opaque-id/download'));
+  assert.equal(deniedBytes.status, 401, 'private byte headers create no anonymous exemption');
+  assert.equal(deniedBytes.headers.get('cache-control'), 'no-store');
   assert.equal(hasSessionCookie(req('/', { headers: { cookie: 'better-auth.session_token=x' } })), false, 'the default Better Auth prefix is not ours');
   assert.equal(hasSessionCookie(req('/', { headers: { cookie: 'bloomops.session_token=' } })), false, 'an empty value is no cookie');
 });

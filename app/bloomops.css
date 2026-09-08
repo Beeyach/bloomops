@@ -2134,3 +2134,17 @@ select.bo-control {
   .bo-milestone-controls > .bo-btn { flex-grow: 1; }
   .bo-deliverable-controls > .bo-btn { flex-grow: 1; }
 }
+/* B5 Files remain quiet rows; names and controls wrap without hiding actions. */
+.bo-files { list-style: none; padding: 0; margin: 12px 0 0; }
+.bo-file { padding: 16px 0; border-bottom: 1px solid var(--bo-border); min-width: 0; }
+.bo-file:last-child { border-bottom: 0; }
+.bo-file-heading, .bo-file-controls, .bo-file-attachment { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.bo-file-heading { justify-content: space-between; }
+.bo-file .bo-row-title, .bo-file p, .bo-file-attachment span { overflow-wrap: anywhere; min-width: 0; }
+.bo-file-controls { margin-top: 12px; }
+.bo-file-input { max-width: 100%; padding: 8px; }
+.bo-file-input::file-selector-button { min-height: 36px; margin-right: 12px; font: inherit; }
+.bo-file-download { min-width: 0; }
+.bo-portal-files { flex-basis: 100%; width: 100%; min-width: 0; margin-top: 12px; }
+.bo-deliverable-files { margin-top: 16px; }
+.bo-file-attachment { justify-content: space-between; padding: 8px 0; }

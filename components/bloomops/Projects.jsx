@@ -3,6 +3,7 @@ import { PROJECT_HEALTH_LABELS, PROJECT_STATUS_LABELS, PROJECT_STATUS_TONES, PRO
 import { EmptyState, Facts, Status } from './Primitives';
 import { PortalMilestones } from './Milestones';
 import { PortalDeliverables } from './Deliverables';
+import { PortalFiles } from './Files';
 
 export function ProjectStatus({ status }) {
   return <Status label={PROJECT_STATUS_LABELS[status]} tone={PROJECT_STATUS_TONES[status]} glyph={status === 'completed' ? 'check' : ['waiting', 'blocked'].includes(status) ? 'clock' : 'dot'} />;
@@ -49,7 +50,7 @@ export function ProjectFacts({ project, clientHref = null }) {
 
 // Only the dedicated portal DTO is accepted here. No internal record props
 // are forwarded into a Client component or serialized into its page.
-export function PortalProjects({ projects = [], milestones = {}, deliverables = {} }) {
+export function PortalProjects({ projects = [], milestones = {}, deliverables = {}, files = {} }) {
   if (!projects.length) return null;
   return <ul className="bo-rows" aria-label="Your projects">
     {projects.map(project => <li key={project.id} className="bo-row bo-portal-project">
@@ -59,6 +60,7 @@ export function PortalProjects({ projects = [], milestones = {}, deliverables = 
       <Status label={project.statusLabel} />
       <PortalMilestones summary={milestones[project.id]} />
       <PortalDeliverables summary={deliverables[project.id]} />
+      <PortalFiles summary={files[project.id]} />
     </li>)}
   </ul>;
 }

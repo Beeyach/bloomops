@@ -1,8 +1,9 @@
 import { formatDate } from '@/lib/bloomops/format.mjs';
 import { DELIVERABLE_STATUS_LABELS } from '@/lib/bloomops/deliverable-values.mjs';
 import { Status } from './Primitives';
+import { DeliverableFiles } from './Files';
 
-export function DeliverableList({ items = [], controls = null }) {
+export function DeliverableList({ items = [], files = [], controls = null }) {
   if (!items.length) return <p className="bo-body">No Deliverables to show yet.</p>;
   return <ul className="bo-deliverables" aria-label="Deliverables">{items.map(item => <li key={item.id} className="bo-deliverable" data-deliverable-id={item.id}>
     <div className="bo-deliverable-heading"><h3 className="bo-row-title">{item.title}</h3>
@@ -13,6 +14,7 @@ export function DeliverableList({ items = [], controls = null }) {
     {item.clientLabel && <p className="bo-small">Client-facing label: {item.clientLabel}</p>}
     {item.description && <p className="bo-body bo-project-reason">{item.description}</p>}
     {controls?.(item)}
+    <DeliverableFiles items={files.filter(file => file.deliverableId === item.id)} />
   </li>)}</ul>;
 }
 

@@ -52,13 +52,13 @@ Internal Actions, revocable assignment, priority/dates/Waiting, exact lifecycle,
 
 ### B4 — Deliverables
 
-Implemented on `codex/b4-deliverables`: separate relational outputs with the exact B4 lifecycle, Project coordinator controls, explicit visibility, Client-safe labels/status, atomic significant activity and concurrency/retry safety. Local verification is complete. The final model is in `DOMAIN_MODEL.md`; contract and verification evidence are in `phases/B4.md` and `BUILD_STATE.md`. Independent audit, user-controlled merge and both post-merge gates remain required.
+B4 closed after PR #18 merged as `ac71b358f27894af8dd8108f004499cd765fca69`. Read-only preflight confirmed [Deploy staging 34207017617](https://github.com/Beeyach/bloomops/actions/runs/34207017617) and [remote zero-to-current 34207017646](https://github.com/Beeyach/bloomops/actions/runs/34207017646) succeeded on that exact SHA.
 
-B5 Files is next after B4 closes; B5 and every later phase remain unimplemented.
+Separate Deliverables, exact lifecycle, Project coordination, visibility, Client-safe labels/status and atomic activity remain defined in `DOMAIN_MODEL.md` and `phases/B4.md`.
 
 ### B5 — Files
 
-D1 asset metadata, R2 object lifecycle, subject links, visibility, upload/download authorization, and safe failure/retry behavior.
+Implemented and locally verified on `codex/b5-files`: D1 asset metadata and fixed Project/Deliverable links, the existing R2 binding, a 5 MiB upload limit, recoverable upload generations, current authorization for metadata/downloads, visibility/archive, filtered activity and internal/conditional Client Files UI. Model and limits are in `DOMAIN_MODEL.md`; evidence is in `BUILD_STATE.md`. Independent audit, user-controlled merge and both post-merge gates are required before B6 starts.
 
 ### B6 — Work + Home Projections
 

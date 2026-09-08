@@ -411,7 +411,7 @@ Clients require a current contact link plus explicit client visibility on both t
 
 UUIDv4 creation keys are unique within workspace/Project. Immutable `DELIVERABLE_CREATED` activity snapshots the normalized initial details, so identical retries converge even after later edits; incompatible key reuse conflicts. Detail/status mutations use positive integer revisions and compare-and-swap writes. Identical response-loss retries append no duplicate history; competing writes conflict. Canonical events distinguish creation, detail changes (including visibility) and status changes. Events and facts commit in the same D1 batch, with rollback on late failure. Project/Client history filters all old Deliverable events through current readability before presenting their titles.
 
-Files, versions, formal approvals/history, comments, notifications, templates and automatic generation remain later work. B4 introduces no placeholder records or controls for them.
+B5 adds File attachments as described below. Versions, formal approvals/history, comments, notifications, templates and automatic generation remain later work. B4 introduced no placeholder records or controls for them.
 
 ## Requests
 
@@ -465,42 +465,49 @@ Default pipeline:
 
 Associates content item with platforms.
 
-## Assets / Files
+## Assets / Files (B5)
+
+B5 implements Files in additive migration `0012_b5_files.sql`, with D1 owning metadata, authorization and lifecycle, and the existing environment-specific `FILES` R2 binding owning bytes. The schema has no inherited name collision. No bucket, binding, Worker compatibility date, historical migration or prior domain table is rebuilt or renamed.
 
 ### assets
 
-D1 metadata for R2 objects.
+The 19 columns are `id`, `workspace_id`, `creation_request_id`, `filename`, `mime_type`, `byte_size`, `sha256`, `uploader_membership_id`, `initial_visibility`, `visibility`, `status`, `object_key`, `lease_until`, `etag`, `revision`, `ready_at`, `archived_at`, `created_at`, and `updated_at`. Uploader membership has a same-workspace FK. Workspace/id, workspace/request and object key are unique. Twelve CHECKs enforce bounded/coherent metadata and lifecycle. Immutable initial details, including original visibility, distinguish an intentional new upload from a replay after an operational visibility change. Original File identity, filename, type, size, checksum, request key, uploader and creation timestamp cannot be rewritten.
 
-Possible states:
-- Uploading
-- Ready
-- Failed
-- Archived
+Files accept **1–5,242,880 bytes (5 MiB)**. Display filenames are NFC-normalized, trimmed and bounded to 180 UTF-16 code units; paths, C0/C1 controls, bidi formatting and malformed UTF-16 are refused. MIME is a normalized type/subtype, bounded to 127 characters, without parameters or controls. Unknown browser types use `application/octet-stream`. No authorization or content trust is inferred from the extension or MIME. No scanning service exists or is claimed.
 
-Useful fields:
-- workspace
-- R2 key
-- filename
-- mime
-- size
-- uploader
-- status
-- visibility
+A single upload request contains a percent-encoded exact JSON metadata allowlist in `x-bloomops-file` (maximum 4096 header characters) and a raw `application/octet-stream` body. The initial fields are `requestId`, `filename`, `mimeType`, `byteSize`, optional `visibility` and optional `deliverableId`. Retry by File ID accepts only filename, MIME and size plus the same bytes. The route validates metadata before allocating one bounded buffer, reads incrementally, checks actual and declared lengths, and stops oversized streams; it never calls unbounded `formData()` or `arrayBuffer()` on an incoming request. SHA-256 is computed by the server and supplied to R2 for integrity verification. D1 contains no bytes or signed URL.
 
 ### asset_links
 
-Generic relationship:
-- asset
-- subject type
-- subject id
-- purpose
+Each File has one fixed relational attachment: `asset_id`, `workspace_id`, `project_id`, optional `deliverable_id`, and `created_at`. The asset is the primary key. Composite FKs bind File and Project to the same workspace, and the optional Deliverable to that exact workspace and Project. B5 adds a unique `(workspace_id, project_id, id)` Deliverable index to support this FK. The link has a workspace/Project/Deliverable lookup index. Link update/delete triggers prevent silent relinking or loss of historical authorization.
 
-Files may attach to Clients, Onboarding, Projects, Milestones, Actions, Deliverables, Content, Requests, and Pages.
+B5 deliberately implements **Project and Deliverable attachments** because these have the required current upload surface and a shared, well-defined parent permission ceiling. Files for a Client are presented under that Client's reachable Projects. Client-only, Milestone, Action and onboarding attachment workflows are not exposed in B5; there is no generic polymorphic endpoint or future Content/Request/Page/Finance placeholder. The link owns parent context; File metadata does not duplicate Client, Service or Project lifecycle facts. Each Project has an atomically enforced ceiling of 200 Files including archives, with complete bounded active lists.
 
-Visibility:
-- Internal
-- Client
-- Restricted
+### asset_upload_attempts and storage protocol
+
+Attempt rows hold `id`, `workspace_id`, `asset_id`, `object_key`, `cleanup_checked_at`, and `created_at`. File FK is same-workspace; keys are unique, with a workspace/File/last-check index. Identity and keys are immutable and rows are retained, including after cleanup, so an interrupted writer cannot leave an untracked generation. A last-check timestamp describes a cleanup attempt, not confirmed absence forever.
+
+1. Current coordinator authorization, Project/Deliverable reach and intended restriction are checked. One conditional D1 batch reserves the File as **Uploading**, its fixed link and its first attempt. Keys use `bloomops-files/<encoded-workspace-id>/<server-file-id>/<server-random-id>`; no filename or caller storage key enters the key. A five-minute lease protects the in-progress attempt.
+2. R2 `put` must return the expected key, positive exact size, MIME, etag and SHA-256. Then one conditional D1 batch checks live actor/parents/File visibility, current key and revision and commits **Ready**, one server readiness timestamp and exactly one `FILE_UPLOADED` event. Uploading has no semantic upload event. Lease expiry alone does not invalidate a writer; a competing recovery claim changes its key and fences it atomically.
+3. Put/finalize failure marks an owned Uploading generation **Failed** when D1 is available, then best-effort cleans only keys proven permanently ineligible for readiness. Unknown D1 outcomes never justify blind deletion. A lost finalize response is accepted only after a fresh authorized Ready read and matching R2 `head`; its committed object is retained. An unavailable database may leave an Uploading row and known key until explicit recovery.
+4. Same workspace/request UUID plus identical normalized initial details and bytes converges on the same File. Changed details or bytes conflict. Concurrent active uploads return a conflict; a later retry converges after success. A Failed or expired Uploading retry claims a new unique key and attempt using CAS and live predicates. Old writers and cleaners cannot overwrite or delete the new generation. No uncertain mutation is blindly replayed.
+5. Recovery/Ready response-loss retries and archive retry inspect at most ten eligible attempt keys per cleanup pass, rotating both successful and failed checks. Old keys are never reused. Records remain durable after deletion because a previously interrupted PUT could finish late; later explicit retries can revisit them. This is bounded best-effort recovery, not a claim that R2 and D1 commit atomically or that all abandoned bytes are immediately gone. No cron, production sweep, purge or retention policy is introduced.
+
+**Archived** is terminal and removes the File from active lists and all downloads. Archive and `FILE_ARCHIVED` commit together; identical retries are no-ops. Already Ready bytes and their readiness timestamp are retained. Archiving an incomplete upload fences finalization and permits best-effort cleanup of its unusable attempt. Ready visibility changes use revision/CAS and `FILE_VISIBILITY_CHANGED`; bytes, original request facts and parent lifecycles stay fixed. Six migration triggers reinforce fixed attachments, immutable attempts/request facts, and generation transitions; a failed key cannot become Ready or be reused.
+
+### Authorization, download and presentation
+
+Owner/Admin/Project Manager coordinate according to current Project scope. Team is read-only through existing Client/Service/Project assignments. Department, Project ownership and Action-only assignment confer no File grant. PM/Team require explicit Project assignment for a restricted Project, Deliverable or File. Every file query and committing batch checks live workspace, membership, identity, role, scope and parent visibility through relational predicates, without expanding assigned-ID lists.
+
+Clients need a current contact link, Ready status, File visibility=client, Project visibility=client and, for a Deliverable attachment, Deliverable visibility=client. The exact six-field portal DTO is `id`, `filename`, `mimeType`, `byteSize`, `readyAt`, and `attachmentLabel`. A Deliverable attachment label uses its Client label or the literal **Deliverable**; Project attachments have null labels. Internal titles, uploader identities, original request data, storage keys, hashes, revisions, leases, hidden counts and activity never enter the portal. Empty/hidden-only File sets render no portal module or navigation.
+
+Authenticated downloads resolve the opaque File ID through D1, require current readable Ready metadata, then fetch only its canonical R2 key. They recheck current permissions and generation/revision after the R2 await before returning bytes. Non-ready, missing, hidden, foreign and missing-object cases share a sanitized 404; unexpected storage failures are sanitized 500. Missing objects cause no mutating read repair. Bytes already delivered cannot be recalled; authorization is checked before handing over the response stream.
+
+Responses use safe ASCII plus RFC 5987 attachment filenames, `private, no-store`, `nosniff`, a sandboxed content policy and same-origin resource policy. Metadata is `no-store`; mutation routes have Origin protection and exact field allowlists. R2 metadata is never forwarded wholesale. No public URL, raw-key route, public cache, presigned upload or anonymous download exists.
+
+Internal Project Files support upload, fixed Project/Deliverable selection, download, failed/interrupted retry, Ready visibility and archive. Ready attachments also appear under the corresponding Deliverable. Bloom rows, dialogs, live announcements, keyboard file input, pending guards, focus restoration, touch targets and pre-hydration safety are reused. Project/Client history filters every past File event by the File's current parent-capped readability, including after restriction. Clients receive no internal File history.
+
+The 5 MiB policy is deliberately below the platform request ceiling and keeps buffered memory bounded. Preflight used the committed Wrangler configuration, installed Wrangler/Miniflare runtime, and current official [Workers limits](https://developers.cloudflare.com/workers/platform/limits/), [R2 Workers API](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/) and [R2 consistency model](https://developers.cloudflare.com/r2/reference/consistency/). The existing compatibility date is `2025-05-01`; no platform-limit increase or configuration change was required. Actual in-Worker D1/R2 smoke confirms put/checksum/head/get/delete and the full lifecycle on disposable local bindings.
 
 ## Approvals
 
