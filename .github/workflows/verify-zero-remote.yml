@@ -13,8 +13,7 @@ name: Verify zero-to-current migration
 # .github/scripts/verify-zero-remote.mjs for the checks.
 #
 # Runs on demand, and on pushes that change this workflow, the script it runs,
-# or the migration runner, so the proof is repeated whenever the machinery
-# under it changes.
+# the migration runner, canonical domain schema, or Drizzle migration state.
 
 on:
   workflow_dispatch:
@@ -28,6 +27,8 @@ on:
       - ".github/scripts/zero-verify-safety.mjs"
       - "tests/zero-verify-safety.test.mjs"
       - "scripts/migrate.mjs"
+      - "lib/bloomops/schema.mjs"
+      - "drizzle/**"
 
 concurrency:
   group: bloomops-a2-zero-verify

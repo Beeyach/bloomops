@@ -30,15 +30,17 @@ Release B does not include the specialized Social production pipeline, Ads opera
 - Dashboards and department views project canonical records. They do not maintain duplicate status facts.
 - Files use D1 metadata plus R2 objects. Do not store raw platform passwords or credentials.
 
-## Proposed Phase Sequence
+## Phase Sequence
 
 ### B1 — Projects Core
+
+Merged as PR #15 at `cacb2d3b8f4ff634fb5a3470a4fd5f91930ef2c1`; staging and remote zero-to-current both passed on that SHA.
 
 Project schema, lifecycle, assignments, authorization, activity, internal Client/Work UI, and safe client-visible project projection where appropriate.
 
 ### B2 — Milestones
 
-Milestone schema, ordering, lifecycle, project detail integration, visibility, activity, and progress projection.
+Milestone schema, ordering, lifecycle, Project detail integration, visibility, activity and derived progress. The implementation contract is `docs/phases/B2.md`; current verification and remaining gates are recorded in `docs/BUILD_STATE.md`.
 
 ### B3 — Actions + Dependencies
 
