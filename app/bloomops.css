@@ -2196,3 +2196,9 @@ select.bo-control {
 .bo-content-copy { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; }
 .bo-content-detail .bo-display, .bo-content-detail .bo-lede { overflow-wrap: anywhere; }
 @media (max-width: 480px) { .bo-content-parent-search { align-items: stretch; flex-direction: column; } .bo-content-filters .bo-field { flex-basis: 100%; } }
+
+/* C3 monthly agenda: dense dates and full labels remain readable at every width. */
+.bo-content-calendar { margin-top: 32px; display: grid; gap: 36px; }
+.bo-content-calendar > section, .bo-content-calendar .bo-content-summary > span { min-width: 0; overflow-wrap: anywhere; }
+.bo-content-calendar h2 { margin-bottom: 16px; }
+.bo-content-detail textarea { resize: vertical; }

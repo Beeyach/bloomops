@@ -2,7 +2,7 @@
 
 ## Current state
 
-C1 closed through PR #22 on `f1003c236cbce5102efcddd1bf7cda20e4f8ed8b`. Read-only checks verified [Deploy staging 34276571767](https://github.com/Beeyach/bloomops/actions/runs/34276571767) and [Verify zero-to-current 34276571760](https://github.com/Beeyach/bloomops/actions/runs/34276571760), including disposable-database cleanup, succeeded on that exact merge SHA. C2 Production Pipeline is implemented and locally verified on `codex/c2-production-pipeline`, pending independent ChatGPT audit. Independent audit, user-controlled merge and both exact-C2-merge-SHA gates precede C3. C3+ remains unimplemented. See `BUILD_STATE.md`.
+C1 closed through PR #22 on `f1003c236cbce5102efcddd1bf7cda20e4f8ed8b`. Read-only checks verified [Deploy staging 34276571767](https://github.com/Beeyach/bloomops/actions/runs/34276571767) and [Verify zero-to-current 34276571760](https://github.com/Beeyach/bloomops/actions/runs/34276571760), including disposable-database cleanup, succeeded on that exact merge SHA. C2 closed through PR #23 on `fed68697ff9f45e5c0228655bec2aaee3583f1c2`. Deploy staging `34291205923` and Verify zero-to-current `34291205922`, including disposable cleanup, succeeded on that exact SHA. C3 Calendar + Platforms is implemented and locally verified on `codex/c3-calendar-platforms`, ready for independent ChatGPT audit. Independent audit, user-controlled merge and both exact-C3-merge-SHA gates must precede C4. C4+ remains unimplemented. See `BUILD_STATE.md`.
 
 ## Goal
 

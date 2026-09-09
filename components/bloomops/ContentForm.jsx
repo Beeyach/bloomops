@@ -1,4 +1,5 @@
 'use client';
+import { PlatformInput,platformLines } from './ContentPlatforms';
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/lib/toast.mjs';
@@ -15,6 +16,7 @@ export default function ContentForm({ item = null, options }) {
   const [values, setValues] = useState({ ...Object.fromEntries(Object.keys(CONTENT_TEXT_LIMITS).map(k => [k, item?.[k] || ''])),
     type: item?.type || 'reel', ownerMembershipId: item?.ownerMembershipId || '', visibility: item?.visibility || 'internal', targetPublishDate: item?.targetPublishDate || '',
     ...Object.fromEntries(Object.entries(CONTENT_FLAG_DEFAULTS).map(([k, v]) => [k, item?.[k] ?? v])) });
+  const [platformText,setPlatformText]=useState('');
   const parent = item ? options.parents.find(p => p.clientId === item.clientId && p.serviceEngagementId === item.serviceEngagementId) : options.parents[Number(parentIndex)];
   const canRestrict = item?.visibility === 'restricted' || parent?.canRestrict;
   const owners = item?.ownerMembershipId && !options.members.some(m => m.membershipId === item.ownerMembershipId)
@@ -31,7 +33,7 @@ export default function ContentForm({ item = null, options }) {
     pending.current = true; setBusy(true); requestId.current ||= crypto.randomUUID();
     try {
       const path = item ? `/api/bloomops/content/${item.id}` : `/api/bloomops/clients/${parent.clientId}${parent.serviceEngagementId ? `/services/${parent.serviceEngagementId}` : ''}/content`;
-      const result = await send(path, { method: item ? 'PATCH' : 'POST', body: { ...values, ...(item ? { expectedRevision: item.revision } : { requestId: requestId.current }) } });
+      const result = await send(path, { method: item ? 'PATCH' : 'POST', body: { ...values, ...(!item?{platforms:platformLines(platformText)}:{}), ...(item ? { expectedRevision: item.revision } : { requestId: requestId.current }) } });
       toast(item ? 'Content details saved.' : 'Content created.'); router.push(`/social/${result.contentId}`); router.refresh();
     } catch (err) {
       setErrors(err.fields || {}); setError(err.fields?.form || err.message || 'Unable to save Content. Try again.');
@@ -52,6 +54,7 @@ export default function ContentForm({ item = null, options }) {
       {options.membersOverflow && <Notice>The first 200 active owners are shown. You can leave ownership unset.</Notice>}
       {['hook', 'script', 'caption', 'cta'].map(key => <Field key={key} id={`content-${key}`} label={textLabels[key]} optional error={errors[key]}><textarea {...aria(key)} className="bo-control" rows={key === 'script' ? 10 : 4} value={values[key]} onChange={set(key)} maxLength={CONTENT_TEXT_LIMITS[key]} /></Field>)}
       <Field id="content-targetPublishDate" label="Target publish date" optional error={errors.targetPublishDate}><input {...aria('targetPublishDate')} className="bo-control" type="date" value={values.targetPublishDate} onChange={set('targetPublishDate')} /></Field>
+      {!item && <PlatformInput error={errors.platforms} value={platformText} onChange={e=>setPlatformText(e.target.value)} disabled={busy} />}
       <fieldset className="bo-content-flags"><legend className="bo-label">Workflow requirements</legend>{Object.entries(flagLabels).map(([key, label]) => <div key={key}><label className="bo-content-check"><input {...aria(key)} type="checkbox" checked={values[key]} onChange={set(key)} />{label}</label>{errors[key] && <p id={`content-${key}-error`} role="alert">{errors[key]}</p>}</div>)}</fieldset>
       <Field id="content-visibility" label="Visibility" error={errors.visibility} hint="Client eligible prepares this item for future sharing. Content is not shared in the client portal yet."><select {...aria('visibility')} aria-describedby={`content-visibility-hint${errors.visibility ? ' content-visibility-error' : ''}`} className="bo-control" value={values.visibility} onChange={set('visibility')}>{Object.entries(CONTENT_VISIBILITY_LABELS).filter(([v]) => v !== 'restricted' || canRestrict).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select></Field>
     </fieldset>

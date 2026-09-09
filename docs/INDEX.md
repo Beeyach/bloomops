@@ -29,7 +29,7 @@ Do not automatically load every planning document into context.
 
 Release C — Social is the active release.
 
-Current phase: **C2 — Production Pipeline implemented and locally verified; independent audit pending**
+Current phase: **C3 — Calendar + Platforms implemented and locally verified; independent audit pending**
 
 Release A closed after A11 PR #14 merged as `3deed08d8db2a92fcf4dc29a6a879a9945260049`. Read-only preflight verified [Deploy staging 34175768644](https://github.com/Beeyach/bloomops/actions/runs/34175768644) and [remote zero-to-current 34175768643](https://github.com/Beeyach/bloomops/actions/runs/34175768643) completed successfully on that exact SHA.
 
@@ -49,7 +49,9 @@ Release B closed with PR #21 on `c6509aa395a5db58310e2a0ae22a8a808082f77b`. [Dep
 
 C1 closed through PR #22 on `f1003c236cbce5102efcddd1bf7cda20e4f8ed8b`. Read-only checks verified [Deploy staging 34276571767](https://github.com/Beeyach/bloomops/actions/runs/34276571767) and [Verify zero-to-current 34276571760](https://github.com/Beeyach/bloomops/actions/runs/34276571760), including disposable-database cleanup, succeeded on that exact merge SHA.
 
-Current phase file: `docs/phases/C2.md`; release sequence: `docs/RELEASE_C.md`. `BUILD_STATE.md` records C2 decisions and verification. Independent audit, user-controlled merge and both exact-merge-SHA gates are required before C3.
+C2 closed through PR #23 on `fed68697ff9f45e5c0228655bec2aaee3583f1c2`. Deploy staging `34291205923` and Verify zero-to-current `34291205922`, including disposable cleanup, succeeded on that exact SHA.
+
+Current phase file: `docs/phases/C3.md`; release sequence: `docs/RELEASE_C.md`. `BUILD_STATE.md` records C3 decisions and verification. Independent audit, user-controlled merge and both exact-C3-merge-SHA gates are required before C4.
 
 ## Phase Reading Matrix
 
@@ -76,6 +78,7 @@ Current phase file: `docs/phases/C2.md`; release sequence: `docs/RELEASE_C.md`. 
 | B7 | `RELEASE_B.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/B2.md` through `phases/B7.md`, merged A/B implementations and strongest local Worker/D1/R2/browser harnesses |
 | C1 | `RELEASE_C.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/B7.md`, `phases/C1.md`, current schema/migrations, Client/Service authorization, activity, exact HTTP boundaries and Worker/browser harnesses |
 | C2 | `RELEASE_C.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/C1.md`, `phases/C2.md` |
+| C3 | `RELEASE_C.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/C1.md`, `phases/C2.md`, `phases/C3.md` |
 
 ## Minimal Coding-Agent Prompt Pattern
 
