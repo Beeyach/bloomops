@@ -391,7 +391,7 @@ test('the inherited application is no longer the root, and every shell page re-c
   walk(new URL('app/(internal)', root).pathname, 'internal');
   walk(new URL('app/portal', root).pathname, 'portal');
   assert.equal(pages.filter(([, a]) => a === 'internal').length, 21, 'eleven destinations, Client and Project create/detail, Action detail, Content create/detail/edit/calendar and one layout');
-  assert.equal(pages.filter(([, a]) => a === 'portal').length, 3, 'C4 adds only the conditional recording request page');
+  assert.equal(pages.filter(([, a]) => a === 'portal').length, 4, 'C5 adds only the dedicated approval response page');
   for (const [file, area] of pages) {
     const text = readFileSync(file, 'utf8');
     assert.match(text, new RegExp(`requireShell\\('${area}'\\)`), `${file} resolves the ${area} shell itself`);

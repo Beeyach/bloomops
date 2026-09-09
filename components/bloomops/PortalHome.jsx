@@ -9,7 +9,7 @@ function firstName(user) {
   return name ? name.split(/\s+/)[0] : '';
 }
 
-export function PortalHome({ workspaceName, user, clients = [], milestones = {}, deliverables = {}, files = {}, recordings = [] }) {
+export function PortalHome({ workspaceName, user, clients = [], milestones = {}, deliverables = {}, files = {}, recordings = [], approvals = {items:[],hasMore:false} }) {
   const first = firstName(user);
   if (clients.length === 0) {
     return (
@@ -43,6 +43,11 @@ export function PortalHome({ workspaceName, user, clients = [], milestones = {},
         <h2 id={`onboarding-${client.id}`} className="bo-h2">{single ? 'Your onboarding' : `${client.name} · Onboarding`}</h2>
         <Onboarding clientId={client.id} onboarding={client.onboarding} portal />
       </section>)}
+      {approvals.items.length>0&&<section className="bo-section" aria-labelledby="approvals-needed"><h2 id="approvals-needed" className="bo-h2">Approval needed</h2>
+        <p className="bo-body">Your team has work ready for your review.</p>
+        <ul className="bo-content-list">{approvals.items.map(item=><li key={item.id}><a className="bo-content-title" href={`/portal/approvals/${item.id}`}>{item.title}</a></li>)}</ul>
+        {approvals.hasMore&&<p className="bo-hint">Showing the first 200 requests. More will appear as you respond.</p>}
+      </section>}
       {recordings.length > 0 && <section className="bo-section" aria-labelledby="recordings-needed"><h2 id="recordings-needed" className="bo-h2">Recording needed</h2>
         <p className="bo-body">Your team is ready for your short recordings.</p>
         <ul className="bo-content-list">{recordings.map(item => <li key={item.id}><a className="bo-content-title" href={`/portal/recordings/${item.id}`}>{item.title}</a></li>)}</ul>

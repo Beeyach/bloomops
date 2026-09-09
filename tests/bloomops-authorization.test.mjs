@@ -325,6 +325,10 @@ test('the role matrix: every role against every representative action, allow and
     'content.platforms': [true, true, true, true, false],
     'content.transition': [true, true, true, true, false],
     'content.manage': [true, true, true, true, false],
+    'content.approval.request': [true,true,true,false,false],
+    'content.approval.withdraw': [true,true,true,false,false],
+    'approval.view': [false,false,false,false,true],
+    'approval.respond': [false,false,false,false,true],
     'content.file.manage': [true, true, true, true, false],
     'recording.view': [false, false, false, false, true],
     'recording.upload': [false, false, false, false, true],
@@ -368,6 +372,10 @@ test('the role matrix: every role against every representative action, allow and
     'content.platforms': { ...jamesClient, type: 'content', visibility: 'internal' },
     'content.transition': { ...jamesClient, type: 'content', visibility: 'internal' },
     'content.manage': { ...jamesClient, type: 'content', visibility: 'internal' },
+    'content.approval.request': {...jamesClient,type:'content',visibility:'internal'},
+    'content.approval.withdraw': {...jamesClient,type:'content_approval',visibility:'internal'},
+    'approval.view': {...jamesClient,type:'content_approval',visibility:'client'},
+    'approval.respond': {...jamesClient,type:'content_approval',visibility:'client'},
     'action.view': jamesAction,
     'action.manage': jamesAction,
     'action.progress': jamesAction,
@@ -388,7 +396,7 @@ test('the role matrix: every role against every representative action, allow and
   }
   // All actors can see James. Clients cannot discover internal Actions or Content.
   assert.ok(seen.filter((l) => l.includes('forbidden')).every((l) => /forbidden:(role|capability)$/.test(l)), seen.join('\n'));
-  assert.deepEqual(seen.filter((l) => l.includes('not_found')), [...['create', 'view', 'platforms', 'transition', 'manage', 'file.manage'].map(operation => `client content.${operation}: not_found:visibility`), ...['view', 'manage', 'progress', 'dependencies'].map(operation => `client action.${operation}: not_found:visibility`)]);
+  assert.deepEqual(seen.filter((l) => l.includes('not_found')), [...['create', 'view', 'platforms', 'transition', 'manage', 'approval.request', 'approval.withdraw', 'file.manage'].map(operation => `client content.${operation}: not_found:visibility`), ...['view', 'manage', 'progress', 'dependencies'].map(operation => `client action.${operation}: not_found:visibility`)]);
 });
 
 // ── capabilities ─────────────────────────────────────────────────────────

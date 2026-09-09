@@ -29,7 +29,8 @@ export default function ContentPipeline({ item }) {
     {item.stage==='waiting_for_recording' && <p>Waiting for the recording described below before editing can continue.</p>}
     {item.stage==='revision_requested' && <p>Return to Editing to make the requested changes.</p>}
     {item.stageContext && <p className="bo-content-copy">{item.stageContext}</p>}
-    {item.stage==='approved' && <p className="bo-hint">Production is approved. Formal client approval is not recorded here yet.</p>}
+    {item.approvalRequested&&<p className="bo-hint">Awaiting the Client’s response. Withdraw the approval request before making production changes.</p>}
+    {item.stage==='approved' && <p className="bo-hint">Production is approved. Client review decisions, when required, are recorded in the approval history below.</p>}
     {item.stage==='scheduled' && <p className="bo-hint">Ready and intended for publication. Confirm publication when it is live.</p>}
     {item.stage==='published' && <p>Published {item.publishedAt ? new Date(item.publishedAt).toISOString().replace('T',' ').replace('.000Z',' UTC') : ''}. This is the final production stage.</p>}
     {error && !target && <Notice tone="error"><span>{error}</span> <a href={`/social/${item.id}`}>Reload Content</a></Notice>}

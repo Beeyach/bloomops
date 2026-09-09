@@ -6,6 +6,7 @@ import { loadActor } from '../lib/bloomops/authorization.mjs';
 import { createContent, updateContent, getContent, listContent, contentOptions } from '../lib/bloomops/content.mjs';
 import { transitionContent } from '../lib/bloomops/content-pipeline.mjs';
 import { contentNextStages,contentNeedsContext } from '../lib/bloomops/content-pipeline-values.mjs';
+import { requestContentApproval,respondContentApproval } from '../lib/bloomops/content-approvals.mjs';
 export default {async fetch(request,env){
  if(env.C2_DISPOSABLE!=='local-only'||new URL(request.url).hostname!=='localhost')return new Response(null,{status:403});
  const messages=[],check=(name,ok)=>{assert.ok(ok,name);messages.push(name);};
@@ -16,6 +17,7 @@ export default {async fetch(request,env){
  for(const ws of['a','b'])await run('INSERT INTO workspaces(id,name,slug) VALUES(?,?,?)',ws,ws,ws);
  for(const[id,role,ws]of[['ellen','owner','a'],['ary','admin','a'],['pm','project_manager','a'],['sam','team_member','a'],['james','client','a'],['foreign','owner','b']]){await run('INSERT INTO user(id,name,email) VALUES(?,?,?)',id,id,`${id}@example.com`);await run("INSERT INTO workspace_memberships(id,workspace_id,user_id,role,status) VALUES(?,?,?,?,'active')",`m-${id}`,ws,id,role);}
  for(const[id,ws]of[['james','a'],['lawrence','a'],['foreign','b']])await run('INSERT INTO bloomops_clients(id,workspace_id,name,slug) VALUES(?,?,?,?)',id,ws,id,id);
+ await run("INSERT INTO client_contacts(workspace_id,client_id,name,user_id) VALUES('a','james','James','james')");
  for(const d of['social','systems']){await run("INSERT INTO departments(id,workspace_id,name,slug) VALUES(?,'a',?,?)",d,d,d);await run("INSERT INTO service_types(id,workspace_id,name,slug,department_id) VALUES(?,'a',?,?,?)",d,d,`custom-${d}`,d);}
  for(const[id,cl,type]of[['social','james','social'],['ghl','james','systems'],['sibling','lawrence','social']])await run("INSERT INTO service_engagements(id,workspace_id,client_id,service_type_id) VALUES(?,'a',?,?)",id,cl,type);
  const actor=async id=>{const m=await one('SELECT * FROM workspace_memberships WHERE user_id=?',id);return loadActor(db,{workspace:{id:m.workspace_id},membership:{id:m.id,userId:id,role:m.role,status:m.status}});};
@@ -28,11 +30,17 @@ export default {async fetch(request,env){
 
  const move=async(id,targetStage,extra={})=>transitionContent(db,{actor:owner,contentId:id,input:{targetStage,expectedRevision:(await get(id))?.revision||1,...(contentNeedsContext(targetStage)?{context:'James to provide the opening recording'}:{})},...extra});
  for(let mask=0;mask<8;mask++){
-  const flags={recordingRequired:!!(mask&1),internalReviewRequired:!!(mask&2),clientApprovalRequired:!!(mask&4)},id=(await add(flags)).contentId;
+  const flags={recordingRequired:!!(mask&1),internalReviewRequired:!!(mask&2),clientApprovalRequired:!!(mask&4)},id=(await add({...flags,visibility:'client'})).contentId;
   const path=['idea','script',...(mask&1?['waiting_for_recording']:[]),'editing',...(mask&2?['internal_review']:[]),...(mask&4?['client_review']:[]),'approved','scheduled','published'];
-  for(let i=1;i<path.length;i++){assert.equal(contentNextStages(await get(id))[0],path[i]);assert.ok((await move(id,path[i])).ok);}
-  check(`flags ${mask} exact path, skips and one event/revision per stage`,(await get(id)).revision===path.length&&(await all("SELECT * FROM activity_events WHERE subject_id=? AND event_type='CONTENT_STAGE_CHANGED'",id)).length===path.length-1);
-  const before=await snapshot(),input={targetStage:'published',expectedRevision:path.length-1};check(`flags ${mask} Published timestamp terminal and response-loss retry stable`,!!(await get(id)).publishedAt&&(await move(id,'idea')).reason==='invalid'&&(await move(id,'published',{input,now:new Date('2030-01-01')})).unchanged&&await snapshot()===before);
+  for(let i=1;i<path.length;i++){
+   if(path[i-1]==='client_review'){
+    assert.equal((await move(id,'approved')).ok,false);
+    const requested=await requestContentApproval(db,{actor:owner,contentId:id,input:{requestId:crypto.randomUUID(),expectedRevision:(await get(id)).revision}});assert.equal(requested.ok,true);
+    assert.equal((await respondContentApproval(db,{actor:await actor('james'),roundId:requested.roundId,input:{decision:'approved'}})).ok,true);
+   }else{assert.equal(contentNextStages(await get(id))[0],path[i]);assert.ok((await move(id,path[i])).ok);}
+  }
+  check(`flags ${mask} exact path, skips, formal Client gate and one event per stage`,(await get(id)).revision===path.length+(flags.clientApprovalRequired?1:0)&&(await all("SELECT * FROM activity_events WHERE subject_id=? AND event_type='CONTENT_STAGE_CHANGED'",id)).length===path.length-1);
+  const before=await snapshot(),input={targetStage:'published',expectedRevision:(await get(id)).revision-1};check(`flags ${mask} Published timestamp terminal and response-loss retry stable`,!!(await get(id)).publishedAt&&(await move(id,'idea')).reason==='invalid'&&(await move(id,'published',{input,now:new Date('2030-01-01')})).unchanged&&await snapshot()===before);
  }
  for(const stage of ['internal_review','client_review']){
   const id=(await add()).contentId;await run('UPDATE content_items SET stage=? WHERE id=?',stage,id);

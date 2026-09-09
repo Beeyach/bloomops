@@ -1,0 +1,6508 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "f3966e76-6bec-48d0-b72b-69a3b2103844",
+  "prevId": "b3502222-ca15-4600-971a-e13c2b9e30b6",
+  "tables": {
+    "account": {
+      "name": "account",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provider_id": {
+          "name": "provider_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "issuer": {
+          "name": "issuer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "access_token": {
+          "name": "access_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "refresh_token": {
+          "name": "refresh_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "id_token": {
+          "name": "id_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "access_token_expires_at": {
+          "name": "access_token_expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "refresh_token_expires_at": {
+          "name": "refresh_token_expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "scope": {
+          "name": "scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "account_issuer_accountId_uidx": {
+          "name": "account_issuer_accountId_uidx",
+          "columns": [
+            "issuer",
+            "account_id"
+          ],
+          "isUnique": true
+        },
+        "account_userId_idx": {
+          "name": "account_userId_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "account_user_id_user_id_fk": {
+          "name": "account_user_id_user_id_fk",
+          "tableFrom": "account",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "action_dependencies": {
+      "name": "action_dependencies",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "action_id": {
+          "name": "action_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "depends_on_action_id": {
+          "name": "depends_on_action_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "action_dependencies_pair_uq": {
+          "name": "action_dependencies_pair_uq",
+          "columns": [
+            "workspace_id",
+            "project_id",
+            "action_id",
+            "depends_on_action_id"
+          ],
+          "isUnique": true
+        },
+        "action_dependencies_prerequisite_idx": {
+          "name": "action_dependencies_prerequisite_idx",
+          "columns": [
+            "workspace_id",
+            "project_id",
+            "depends_on_action_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "action_dependencies_workspace_id_workspaces_id_fk": {
+          "name": "action_dependencies_workspace_id_workspaces_id_fk",
+          "tableFrom": "action_dependencies",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "action_dependencies_action_fk": {
+          "name": "action_dependencies_action_fk",
+          "tableFrom": "action_dependencies",
+          "tableTo": "actions",
+          "columnsFrom": [
+            "workspace_id",
+            "project_id",
+            "action_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "project_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "action_dependencies_prerequisite_fk": {
+          "name": "action_dependencies_prerequisite_fk",
+          "tableFrom": "action_dependencies",
+          "tableTo": "actions",
+          "columnsFrom": [
+            "workspace_id",
+            "project_id",
+            "depends_on_action_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "project_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "action_dependencies_self_chk": {
+          "name": "action_dependencies_self_chk",
+          "value": "action_id <> depends_on_action_id"
+        }
+      }
+    },
+    "actions": {
+      "name": "actions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "milestone_id": {
+          "name": "milestone_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creation_request_id": {
+          "name": "creation_request_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'to_do'"
+        },
+        "priority": {
+          "name": "priority",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'normal'"
+        },
+        "assignee_membership_id": {
+          "name": "assignee_membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "due_date": {
+          "name": "due_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "waiting_type": {
+          "name": "waiting_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "waiting_reason": {
+          "name": "waiting_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'internal'"
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "actions_ws_project_id_uq": {
+          "name": "actions_ws_project_id_uq",
+          "columns": [
+            "workspace_id",
+            "project_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "actions_project_request_uq": {
+          "name": "actions_project_request_uq",
+          "columns": [
+            "workspace_id",
+            "project_id",
+            "creation_request_id"
+          ],
+          "isUnique": true
+        },
+        "actions_ws_project_status_due_idx": {
+          "name": "actions_ws_project_status_due_idx",
+          "columns": [
+            "workspace_id",
+            "project_id",
+            "status",
+            "due_date"
+          ],
+          "isUnique": false
+        },
+        "actions_ws_assignee_status_due_idx": {
+          "name": "actions_ws_assignee_status_due_idx",
+          "columns": [
+            "workspace_id",
+            "assignee_membership_id",
+            "status",
+            "due_date"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "actions_workspace_id_workspaces_id_fk": {
+          "name": "actions_workspace_id_workspaces_id_fk",
+          "tableFrom": "actions",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "actions_project_fk": {
+          "name": "actions_project_fk",
+          "tableFrom": "actions",
+          "tableTo": "projects",
+          "columnsFrom": [
+            "workspace_id",
+            "project_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "actions_assignee_fk": {
+          "name": "actions_assignee_fk",
+          "tableFrom": "actions",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "assignee_membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "actions_milestone_fk": {
+          "name": "actions_milestone_fk",
+          "tableFrom": "actions",
+          "tableTo": "milestones",
+          "columnsFrom": [
+            "workspace_id",
+            "project_id",
+            "milestone_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "project_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "actions_title_chk": {
+          "name": "actions_title_chk",
+          "value": "length(trim(title)) BETWEEN 1 AND 120"
+        },
+        "actions_description_chk": {
+          "name": "actions_description_chk",
+          "value": "description IS NULL OR length(trim(description)) BETWEEN 1 AND 5000"
+        },
+        "actions_status_chk": {
+          "name": "actions_status_chk",
+          "value": "status IN ('to_do', 'in_progress', 'waiting', 'review', 'done', 'cancelled')"
+        },
+        "actions_priority_chk": {
+          "name": "actions_priority_chk",
+          "value": "priority IN ('low', 'normal', 'high', 'urgent')"
+        },
+        "actions_visibility_chk": {
+          "name": "actions_visibility_chk",
+          "value": "visibility IN ('internal', 'restricted')"
+        },
+        "actions_request_chk": {
+          "name": "actions_request_chk",
+          "value": "length(creation_request_id)=36"
+        },
+        "actions_revision_chk": {
+          "name": "actions_revision_chk",
+          "value": "typeof(revision)='integer' AND revision >= 1"
+        },
+        "actions_due_date_chk": {
+          "name": "actions_due_date_chk",
+          "value": "due_date IS NULL OR (length(due_date)=10 AND due_date GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' AND date(due_date, '+0 days') IS NOT NULL AND date(due_date, '+0 days')=due_date)"
+        },
+        "actions_waiting_type_chk": {
+          "name": "actions_waiting_type_chk",
+          "value": "waiting_type IS NULL OR waiting_type IN ('client', 'ellen', 'ary', 'team', 'external', 'dependency', 'other')"
+        },
+        "actions_waiting_chk": {
+          "name": "actions_waiting_chk",
+          "value": "(status='waiting' AND waiting_type IS NOT NULL AND waiting_reason IS NOT NULL AND length(trim(waiting_reason)) BETWEEN 1 AND 1000) OR (status<>'waiting' AND waiting_type IS NULL AND waiting_reason IS NULL)"
+        },
+        "actions_completion_chk": {
+          "name": "actions_completion_chk",
+          "value": "(status='done' AND completed_at IS NOT NULL) OR (status<>'done' AND completed_at IS NULL)"
+        }
+      }
+    },
+    "activity_events": {
+      "name": "activity_events",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "event_type": {
+          "name": "event_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "subject_type": {
+          "name": "subject_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "subject_id": {
+          "name": "subject_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actor_membership_id": {
+          "name": "actor_membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "actor_user_id": {
+          "name": "actor_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "service_engagement_id": {
+          "name": "service_engagement_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "metadata_json": {
+          "name": "metadata_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "occurred_at": {
+          "name": "occurred_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "activity_events_ws_occurred_idx": {
+          "name": "activity_events_ws_occurred_idx",
+          "columns": [
+            "workspace_id",
+            "occurred_at"
+          ],
+          "isUnique": false
+        },
+        "activity_events_client_occurred_idx": {
+          "name": "activity_events_client_occurred_idx",
+          "columns": [
+            "client_id",
+            "occurred_at"
+          ],
+          "isUnique": false
+        },
+        "activity_events_subject_idx": {
+          "name": "activity_events_subject_idx",
+          "columns": [
+            "subject_type",
+            "subject_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "activity_events_workspace_id_workspaces_id_fk": {
+          "name": "activity_events_workspace_id_workspaces_id_fk",
+          "tableFrom": "activity_events",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "activity_events_actor_user_id_user_id_fk": {
+          "name": "activity_events_actor_user_id_user_id_fk",
+          "tableFrom": "activity_events",
+          "tableTo": "user",
+          "columnsFrom": [
+            "actor_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "activity_events_actor_fk": {
+          "name": "activity_events_actor_fk",
+          "tableFrom": "activity_events",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "actor_membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "activity_events_client_fk": {
+          "name": "activity_events_client_fk",
+          "tableFrom": "activity_events",
+          "tableTo": "bloomops_clients",
+          "columnsFrom": [
+            "workspace_id",
+            "client_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "activity_events_engagement_fk": {
+          "name": "activity_events_engagement_fk",
+          "tableFrom": "activity_events",
+          "tableTo": "service_engagements",
+          "columnsFrom": [
+            "workspace_id",
+            "service_engagement_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "activity_events_event_type_chk": {
+          "name": "activity_events_event_type_chk",
+          "value": "event_type GLOB '[A-Z]*' AND event_type = upper(event_type)"
+        }
+      }
+    },
+    "asset_links": {
+      "name": "asset_links",
+      "columns": {
+        "asset_id": {
+          "name": "asset_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deliverable_id": {
+          "name": "deliverable_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "asset_links_ws_project_idx": {
+          "name": "asset_links_ws_project_idx",
+          "columns": [
+            "workspace_id",
+            "project_id",
+            "deliverable_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "asset_links_workspace_id_workspaces_id_fk": {
+          "name": "asset_links_workspace_id_workspaces_id_fk",
+          "tableFrom": "asset_links",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "asset_links_asset_fk": {
+          "name": "asset_links_asset_fk",
+          "tableFrom": "asset_links",
+          "tableTo": "assets",
+          "columnsFrom": [
+            "workspace_id",
+            "asset_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "asset_links_project_fk": {
+          "name": "asset_links_project_fk",
+          "tableFrom": "asset_links",
+          "tableTo": "projects",
+          "columnsFrom": [
+            "workspace_id",
+            "project_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "asset_links_workspace_id_project_id_deliverable_id_deliverables_workspace_id_project_id_id_fk": {
+          "name": "asset_links_workspace_id_project_id_deliverable_id_deliverables_workspace_id_project_id_id_fk",
+          "tableFrom": "asset_links",
+          "tableTo": "deliverables",
+          "columnsFrom": [
+            "workspace_id",
+            "project_id",
+            "deliverable_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "project_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "asset_upload_attempts": {
+      "name": "asset_upload_attempts",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "asset_id": {
+          "name": "asset_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "object_key": {
+          "name": "object_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cleanup_checked_at": {
+          "name": "cleanup_checked_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "asset_attempts_key_uq": {
+          "name": "asset_attempts_key_uq",
+          "columns": [
+            "object_key"
+          ],
+          "isUnique": true
+        },
+        "asset_attempts_cleanup_idx": {
+          "name": "asset_attempts_cleanup_idx",
+          "columns": [
+            "workspace_id",
+            "asset_id",
+            "cleanup_checked_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "asset_upload_attempts_workspace_id_workspaces_id_fk": {
+          "name": "asset_upload_attempts_workspace_id_workspaces_id_fk",
+          "tableFrom": "asset_upload_attempts",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "asset_attempts_asset_fk": {
+          "name": "asset_attempts_asset_fk",
+          "tableFrom": "asset_upload_attempts",
+          "tableTo": "assets",
+          "columnsFrom": [
+            "workspace_id",
+            "asset_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "assets": {
+      "name": "assets",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "creation_request_id": {
+          "name": "creation_request_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "filename": {
+          "name": "filename",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mime_type": {
+          "name": "mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "byte_size": {
+          "name": "byte_size",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "uploader_membership_id": {
+          "name": "uploader_membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "initial_visibility": {
+          "name": "initial_visibility",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'internal'"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'uploading'"
+        },
+        "object_key": {
+          "name": "object_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lease_until": {
+          "name": "lease_until",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "etag": {
+          "name": "etag",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "ready_at": {
+          "name": "ready_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "archived_at": {
+          "name": "archived_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "assets_ws_id_uq": {
+          "name": "assets_ws_id_uq",
+          "columns": [
+            "workspace_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "assets_ws_request_uq": {
+          "name": "assets_ws_request_uq",
+          "columns": [
+            "workspace_id",
+            "creation_request_id"
+          ],
+          "isUnique": true
+        },
+        "assets_key_uq": {
+          "name": "assets_key_uq",
+          "columns": [
+            "object_key"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "assets_workspace_id_workspaces_id_fk": {
+          "name": "assets_workspace_id_workspaces_id_fk",
+          "tableFrom": "assets",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "assets_uploader_fk": {
+          "name": "assets_uploader_fk",
+          "tableFrom": "assets",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "uploader_membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "assets_status_chk": {
+          "name": "assets_status_chk",
+          "value": "status IN ('uploading', 'ready', 'failed', 'archived')"
+        },
+        "assets_visibility_chk": {
+          "name": "assets_visibility_chk",
+          "value": "visibility IN ('internal', 'client', 'restricted')"
+        },
+        "assets_initial_visibility_chk": {
+          "name": "assets_initial_visibility_chk",
+          "value": "initial_visibility IN ('internal', 'client', 'restricted')"
+        },
+        "assets_name_chk": {
+          "name": "assets_name_chk",
+          "value": "length(trim(filename)) BETWEEN 1 AND 180 AND instr(filename, char(0))=0 AND instr(filename, char(10))=0 AND instr(filename, char(13))=0 AND instr(filename, '/')=0 AND instr(filename, char(92))=0"
+        },
+        "assets_mime_chk": {
+          "name": "assets_mime_chk",
+          "value": "length(mime_type) BETWEEN 3 AND 127 AND instr(mime_type, '/')>1 AND instr(mime_type, char(10))=0 AND instr(mime_type, char(13))=0"
+        },
+        "assets_size_chk": {
+          "name": "assets_size_chk",
+          "value": "typeof(byte_size)='integer' AND byte_size BETWEEN 1 AND 5242880"
+        },
+        "assets_hash_chk": {
+          "name": "assets_hash_chk",
+          "value": "length(sha256)=64 AND sha256 NOT GLOB '*[^0-9a-f]*'"
+        },
+        "assets_request_chk": {
+          "name": "assets_request_chk",
+          "value": "length(creation_request_id)=36"
+        },
+        "assets_revision_chk": {
+          "name": "assets_revision_chk",
+          "value": "typeof(revision)='integer' AND revision>=1"
+        },
+        "assets_ready_chk": {
+          "name": "assets_ready_chk",
+          "value": "(status='ready' AND ready_at IS NOT NULL AND etag IS NOT NULL) OR (status='archived') OR (status IN ('uploading','failed') AND ready_at IS NULL AND etag IS NULL)"
+        },
+        "assets_archive_chk": {
+          "name": "assets_archive_chk",
+          "value": "(status='archived' AND archived_at IS NOT NULL) OR (status<>'archived' AND archived_at IS NULL)"
+        },
+        "assets_lease_chk": {
+          "name": "assets_lease_chk",
+          "value": "(status='uploading' AND lease_until IS NOT NULL) OR (status<>'uploading' AND lease_until IS NULL)"
+        }
+      }
+    },
+    "client_activations": {
+      "name": "client_activations",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "onboarding_instance_id": {
+          "name": "onboarding_instance_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "contact_id": {
+          "name": "contact_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "recipient_email": {
+          "name": "recipient_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "invitee_name": {
+          "name": "invitee_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actor_membership_id": {
+          "name": "actor_membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "invitation_id": {
+          "name": "invitation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "delivery_status": {
+          "name": "delivery_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "delivery_attempt_id": {
+          "name": "delivery_attempt_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "delivery_lease_until": {
+          "name": "delivery_lease_until",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "delivered_at": {
+          "name": "delivered_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "client_activations_client_uq": {
+          "name": "client_activations_client_uq",
+          "columns": [
+            "client_id"
+          ],
+          "isUnique": true
+        },
+        "client_activations_instance_uq": {
+          "name": "client_activations_instance_uq",
+          "columns": [
+            "onboarding_instance_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "client_activations_workspace_id_workspaces_id_fk": {
+          "name": "client_activations_workspace_id_workspaces_id_fk",
+          "tableFrom": "client_activations",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "client_activations_client_fk": {
+          "name": "client_activations_client_fk",
+          "tableFrom": "client_activations",
+          "tableTo": "bloomops_clients",
+          "columnsFrom": [
+            "workspace_id",
+            "client_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "client_activations_actor_fk": {
+          "name": "client_activations_actor_fk",
+          "tableFrom": "client_activations",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "actor_membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "client_activations_workspace_id_client_id_onboarding_instance_id_onboarding_instances_workspace_id_client_id_id_fk": {
+          "name": "client_activations_workspace_id_client_id_onboarding_instance_id_onboarding_instances_workspace_id_client_id_id_fk",
+          "tableFrom": "client_activations",
+          "tableTo": "onboarding_instances",
+          "columnsFrom": [
+            "workspace_id",
+            "client_id",
+            "onboarding_instance_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "client_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "client_activations_workspace_id_client_id_contact_id_client_contacts_workspace_id_client_id_id_fk": {
+          "name": "client_activations_workspace_id_client_id_contact_id_client_contacts_workspace_id_client_id_id_fk",
+          "tableFrom": "client_activations",
+          "tableTo": "client_contacts",
+          "columnsFrom": [
+            "workspace_id",
+            "client_id",
+            "contact_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "client_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "client_activations_workspace_id_client_id_invitation_id_workspace_invitations_workspace_id_client_id_id_fk": {
+          "name": "client_activations_workspace_id_client_id_invitation_id_workspace_invitations_workspace_id_client_id_id_fk",
+          "tableFrom": "client_activations",
+          "tableTo": "workspace_invitations",
+          "columnsFrom": [
+            "workspace_id",
+            "client_id",
+            "invitation_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "client_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "client_activations_delivery_chk": {
+          "name": "client_activations_delivery_chk",
+          "value": "delivery_status IN ('pending', 'sending', 'sent', 'failed')"
+        }
+      }
+    },
+    "client_assignments": {
+      "name": "client_assignments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "membership_id": {
+          "name": "membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "assignment_role": {
+          "name": "assignment_role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'member'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "client_assignments_client_member_uq": {
+          "name": "client_assignments_client_member_uq",
+          "columns": [
+            "client_id",
+            "membership_id"
+          ],
+          "isUnique": true
+        },
+        "client_assignments_member_idx": {
+          "name": "client_assignments_member_idx",
+          "columns": [
+            "membership_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "client_assignments_workspace_id_workspaces_id_fk": {
+          "name": "client_assignments_workspace_id_workspaces_id_fk",
+          "tableFrom": "client_assignments",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "client_assignments_client_fk": {
+          "name": "client_assignments_client_fk",
+          "tableFrom": "client_assignments",
+          "tableTo": "bloomops_clients",
+          "columnsFrom": [
+            "workspace_id",
+            "client_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "client_assignments_membership_fk": {
+          "name": "client_assignments_membership_fk",
+          "tableFrom": "client_assignments",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "client_assignments_role_chk": {
+          "name": "client_assignments_role_chk",
+          "value": "assignment_role IN ('lead', 'member')"
+        }
+      }
+    },
+    "client_contacts": {
+      "name": "client_contacts",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "is_primary": {
+          "name": "is_primary",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "client_contacts_ws_client_id_uq": {
+          "name": "client_contacts_ws_client_id_uq",
+          "columns": [
+            "workspace_id",
+            "client_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "client_contacts_client_idx": {
+          "name": "client_contacts_client_idx",
+          "columns": [
+            "client_id"
+          ],
+          "isUnique": false
+        },
+        "client_contacts_client_email_uq": {
+          "name": "client_contacts_client_email_uq",
+          "columns": [
+            "client_id",
+            "email"
+          ],
+          "isUnique": true,
+          "where": "email IS NOT NULL"
+        },
+        "client_contacts_primary_uq": {
+          "name": "client_contacts_primary_uq",
+          "columns": [
+            "client_id"
+          ],
+          "isUnique": true,
+          "where": "is_primary = 1"
+        }
+      },
+      "foreignKeys": {
+        "client_contacts_workspace_id_workspaces_id_fk": {
+          "name": "client_contacts_workspace_id_workspaces_id_fk",
+          "tableFrom": "client_contacts",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "client_contacts_user_id_user_id_fk": {
+          "name": "client_contacts_user_id_user_id_fk",
+          "tableFrom": "client_contacts",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "client_contacts_client_fk": {
+          "name": "client_contacts_client_fk",
+          "tableFrom": "client_contacts",
+          "tableTo": "bloomops_clients",
+          "columnsFrom": [
+            "workspace_id",
+            "client_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "client_invitation_contacts": {
+      "name": "client_invitation_contacts",
+      "columns": {
+        "invitation_id": {
+          "name": "invitation_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "contact_id": {
+          "name": "contact_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "client_invitation_contacts_workspace_id_workspaces_id_fk": {
+          "name": "client_invitation_contacts_workspace_id_workspaces_id_fk",
+          "tableFrom": "client_invitation_contacts",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "client_invitation_contacts_workspace_id_client_id_invitation_id_workspace_invitations_workspace_id_client_id_id_fk": {
+          "name": "client_invitation_contacts_workspace_id_client_id_invitation_id_workspace_invitations_workspace_id_client_id_id_fk",
+          "tableFrom": "client_invitation_contacts",
+          "tableTo": "workspace_invitations",
+          "columnsFrom": [
+            "workspace_id",
+            "client_id",
+            "invitation_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "client_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "client_invitation_contacts_workspace_id_client_id_contact_id_client_contacts_workspace_id_client_id_id_fk": {
+          "name": "client_invitation_contacts_workspace_id_client_id_contact_id_client_contacts_workspace_id_client_id_id_fk",
+          "tableFrom": "client_invitation_contacts",
+          "tableTo": "client_contacts",
+          "columnsFrom": [
+            "workspace_id",
+            "client_id",
+            "contact_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "client_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "bloomops_clients": {
+      "name": "bloomops_clients",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "company": {
+          "name": "company",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "relationship_status": {
+          "name": "relationship_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'draft'"
+        },
+        "health": {
+          "name": "health",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'on_track'"
+        },
+        "timezone": {
+          "name": "timezone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "website": {
+          "name": "website",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "start_date": {
+          "name": "start_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "end_date": {
+          "name": "end_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "owner_membership_id": {
+          "name": "owner_membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "bloomops_clients_ws_id_uq": {
+          "name": "bloomops_clients_ws_id_uq",
+          "columns": [
+            "workspace_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "bloomops_clients_ws_slug_uq": {
+          "name": "bloomops_clients_ws_slug_uq",
+          "columns": [
+            "workspace_id",
+            "slug"
+          ],
+          "isUnique": true
+        },
+        "bloomops_clients_ws_status_idx": {
+          "name": "bloomops_clients_ws_status_idx",
+          "columns": [
+            "workspace_id",
+            "relationship_status"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "bloomops_clients_workspace_id_workspaces_id_fk": {
+          "name": "bloomops_clients_workspace_id_workspaces_id_fk",
+          "tableFrom": "bloomops_clients",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "bloomops_clients_owner_fk": {
+          "name": "bloomops_clients_owner_fk",
+          "tableFrom": "bloomops_clients",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "owner_membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "bloomops_clients_relationship_status_chk": {
+          "name": "bloomops_clients_relationship_status_chk",
+          "value": "relationship_status IN ('draft', 'onboarding', 'active', 'paused', 'completed', 'ended')"
+        },
+        "bloomops_clients_health_chk": {
+          "name": "bloomops_clients_health_chk",
+          "value": "health IN ('on_track', 'needs_attention', 'at_risk')"
+        }
+      }
+    },
+    "content_approval_rounds": {
+      "name": "content_approval_rounds",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content_id": {
+          "name": "content_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "revision_id": {
+          "name": "revision_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "number": {
+          "name": "number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "request_id": {
+          "name": "request_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "request_revision": {
+          "name": "request_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "requested_by": {
+          "name": "requested_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "requested_at": {
+          "name": "requested_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'requested'"
+        },
+        "responded_by": {
+          "name": "responded_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "responded_at": {
+          "name": "responded_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "feedback": {
+          "name": "feedback",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "withdrawn_by": {
+          "name": "withdrawn_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "withdrawn_at": {
+          "name": "withdrawn_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "withdrawal_reason": {
+          "name": "withdrawal_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "completion_revision": {
+          "name": "completion_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "completion_id": {
+          "name": "completion_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "content_approval_rounds_number_uq": {
+          "name": "content_approval_rounds_number_uq",
+          "columns": [
+            "workspace_id",
+            "content_id",
+            "number"
+          ],
+          "isUnique": true
+        },
+        "content_approval_rounds_revision_uq": {
+          "name": "content_approval_rounds_revision_uq",
+          "columns": [
+            "workspace_id",
+            "content_id",
+            "revision_id"
+          ],
+          "isUnique": true
+        },
+        "content_approval_rounds_request_uq": {
+          "name": "content_approval_rounds_request_uq",
+          "columns": [
+            "workspace_id",
+            "content_id",
+            "request_id"
+          ],
+          "isUnique": true
+        },
+        "content_approval_rounds_requested_uq": {
+          "name": "content_approval_rounds_requested_uq",
+          "columns": [
+            "workspace_id",
+            "content_id"
+          ],
+          "isUnique": true,
+          "where": "status='requested'"
+        },
+        "content_approval_rounds_status_idx": {
+          "name": "content_approval_rounds_status_idx",
+          "columns": [
+            "workspace_id",
+            "status",
+            "requested_at",
+            "id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "content_approval_rounds_workspace_id_workspaces_id_fk": {
+          "name": "content_approval_rounds_workspace_id_workspaces_id_fk",
+          "tableFrom": "content_approval_rounds",
+          "tableTo": "workspaces",
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "content_approval_rounds_workspace_id_content_id_revision_id_content_review_revisions_workspace_id_content_id_id_fk": {
+          "name": "content_approval_rounds_workspace_id_content_id_revision_id_content_review_revisions_workspace_id_content_id_id_fk",
+          "tableFrom": "content_approval_rounds",
+          "tableTo": "content_review_revisions",
+          "columnsFrom": [
+            "workspace_id",
+            "content_id",
+            "revision_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "content_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "content_approval_rounds_requestedBy_fk": {
+          "name": "content_approval_rounds_requestedBy_fk",
+          "tableFrom": "content_approval_rounds",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "requested_by"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "content_approval_rounds_respondedBy_fk": {
+          "name": "content_approval_rounds_respondedBy_fk",
+          "tableFrom": "content_approval_rounds",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "responded_by"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "content_approval_rounds_withdrawnBy_fk": {
+          "name": "content_approval_rounds_withdrawnBy_fk",
+          "tableFrom": "content_approval_rounds",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "withdrawn_by"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "content_approval_rounds_status_chk": {
+          "name": "content_approval_rounds_status_chk",
+          "value": "status IN ('requested','approved','changes_requested','withdrawn')"
+        },
+        "content_approval_rounds_number_chk": {
+          "name": "content_approval_rounds_number_chk",
+          "value": "typeof(number)='integer' AND number>=1 AND typeof(request_revision)='integer' AND request_revision>=1"
+        },
+        "content_approval_rounds_request_chk": {
+          "name": "content_approval_rounds_request_chk",
+          "value": "length(request_id)=36"
+        },
+        "content_approval_rounds_feedback_chk": {
+          "name": "content_approval_rounds_feedback_chk",
+          "value": "feedback IS NULL OR length(trim(feedback)) BETWEEN 1 AND 2000"
+        },
+        "content_approval_rounds_reason_chk": {
+          "name": "content_approval_rounds_reason_chk",
+          "value": "withdrawal_reason IS NULL OR length(trim(withdrawal_reason)) BETWEEN 1 AND 2000"
+        },
+        "content_approval_rounds_resolution_chk": {
+          "name": "content_approval_rounds_resolution_chk",
+          "value": "(status='requested' AND responded_by IS NULL AND responded_at IS NULL AND feedback IS NULL AND withdrawn_by IS NULL AND withdrawn_at IS NULL AND withdrawal_reason IS NULL AND completion_revision IS NULL AND completion_id IS NULL)\n    OR (completion_revision>=request_revision+1 AND completion_id IS NOT NULL AND ((status IN ('approved','changes_requested') AND responded_by IS NOT NULL AND responded_at IS NOT NULL AND withdrawn_by IS NULL AND withdrawn_at IS NULL AND withdrawal_reason IS NULL AND ((status='approved' AND feedback IS NULL) OR (status='changes_requested' AND feedback IS NOT NULL)))\n    OR (status='withdrawn' AND withdrawn_by IS NOT NULL AND withdrawn_at IS NOT NULL AND responded_by IS NULL AND responded_at IS NULL AND feedback IS NULL)))"
+        }
+      }
+    },
+    "content_asset_links": {
+      "name": "content_asset_links",
+      "columns": {
+        "asset_id": {
+          "name": "asset_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content_id": {
+          "name": "content_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "purpose": {
+          "name": "purpose",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "content_asset_links_ws_content_idx": {
+          "name": "content_asset_links_ws_content_idx",
+          "columns": [
+            "workspace_id",
+            "content_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "content_asset_links_workspace_id_workspaces_id_fk": {
+          "name": "content_asset_links_workspace_id_workspaces_id_fk",
+          "tableFrom": "content_asset_links",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "content_asset_links_asset_fk": {
+          "name": "content_asset_links_asset_fk",
+          "tableFrom": "content_asset_links",
+          "tableTo": "assets",
+          "columnsFrom": [
+            "workspace_id",
+            "asset_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "content_asset_links_content_fk": {
+          "name": "content_asset_links_content_fk",
+          "tableFrom": "content_asset_links",
+          "tableTo": "content_items",
+          "columnsFrom": [
+            "workspace_id",
+            "content_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "content_asset_links_purpose_chk": {
+          "name": "content_asset_links_purpose_chk",
+          "value": "purpose IN ('recording','asset')"
+        }
+      }
+    },
+    "content_items": {
+      "name": "content_items",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "service_engagement_id": {
+          "name": "service_engagement_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creation_request_id": {
+          "name": "creation_request_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "pillar": {
+          "name": "pillar",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "owner_membership_id": {
+          "name": "owner_membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "hook": {
+          "name": "hook",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "script": {
+          "name": "script",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "caption": {
+          "name": "caption",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cta": {
+          "name": "cta",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "recording_required": {
+          "name": "recording_required",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "internal_review_required": {
+          "name": "internal_review_required",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "client_approval_required": {
+          "name": "client_approval_required",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "stage": {
+          "name": "stage",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'idea'"
+        },
+        "stage_context": {
+          "name": "stage_context",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "target_publish_date": {
+          "name": "target_publish_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'internal'"
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "content_items_ws_id_uq": {
+          "name": "content_items_ws_id_uq",
+          "columns": [
+            "workspace_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "content_items_ws_target_id_idx": {
+          "name": "content_items_ws_target_id_idx",
+          "columns": [
+            "workspace_id",
+            "target_publish_date",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "content_items_client_request_uq": {
+          "name": "content_items_client_request_uq",
+          "columns": [
+            "workspace_id",
+            "client_id",
+            "creation_request_id"
+          ],
+          "isUnique": true
+        },
+        "content_items_ws_stage_created_idx": {
+          "name": "content_items_ws_stage_created_idx",
+          "columns": [
+            "workspace_id",
+            "stage",
+            "created_at",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "content_items_ws_created_idx": {
+          "name": "content_items_ws_created_idx",
+          "columns": [
+            "workspace_id",
+            "created_at",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "content_items_ws_client_created_idx": {
+          "name": "content_items_ws_client_created_idx",
+          "columns": [
+            "workspace_id",
+            "client_id",
+            "created_at",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "content_items_ws_service_created_idx": {
+          "name": "content_items_ws_service_created_idx",
+          "columns": [
+            "workspace_id",
+            "service_engagement_id",
+            "created_at",
+            "id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "content_items_workspace_id_workspaces_id_fk": {
+          "name": "content_items_workspace_id_workspaces_id_fk",
+          "tableFrom": "content_items",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "content_items_client_fk": {
+          "name": "content_items_client_fk",
+          "tableFrom": "content_items",
+          "tableTo": "bloomops_clients",
+          "columnsFrom": [
+            "workspace_id",
+            "client_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "content_items_owner_fk": {
+          "name": "content_items_owner_fk",
+          "tableFrom": "content_items",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "owner_membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "content_items_workspace_id_client_id_service_engagement_id_service_engagements_workspace_id_client_id_id_fk": {
+          "name": "content_items_workspace_id_client_id_service_engagement_id_service_engagements_workspace_id_client_id_id_fk",
+          "tableFrom": "content_items",
+          "tableTo": "service_engagements",
+          "columnsFrom": [
+            "workspace_id",
+            "client_id",
+            "service_engagement_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "client_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "content_items_stage_context_chk": {
+          "name": "content_items_stage_context_chk",
+          "value": "stage_context IS NULL OR (stage IN ('waiting_for_recording','revision_requested') AND length(trim(stage_context)) BETWEEN 1 AND 2000)"
+        },
+        "content_items_type_chk": {
+          "name": "content_items_type_chk",
+          "value": "type IN ('reel', 'static_post', 'carousel', 'story', 'video', 'email', 'ad_creative', 'other')"
+        },
+        "content_items_stage_chk": {
+          "name": "content_items_stage_chk",
+          "value": "stage IN ('idea', 'script', 'waiting_for_recording', 'editing', 'internal_review', 'client_review', 'revision_requested', 'approved', 'scheduled', 'published')"
+        },
+        "content_items_visibility_chk": {
+          "name": "content_items_visibility_chk",
+          "value": "visibility IN ('internal', 'client', 'restricted')"
+        },
+        "content_items_title_chk": {
+          "name": "content_items_title_chk",
+          "value": "length(trim(title)) BETWEEN 1 AND 200"
+        },
+        "content_items_pillar_chk": {
+          "name": "content_items_pillar_chk",
+          "value": "pillar IS NULL OR length(trim(pillar)) BETWEEN 1 AND 120"
+        },
+        "content_items_hook_chk": {
+          "name": "content_items_hook_chk",
+          "value": "hook IS NULL OR length(trim(hook)) BETWEEN 1 AND 2000"
+        },
+        "content_items_script_chk": {
+          "name": "content_items_script_chk",
+          "value": "script IS NULL OR length(trim(script)) BETWEEN 1 AND 20000"
+        },
+        "content_items_caption_chk": {
+          "name": "content_items_caption_chk",
+          "value": "caption IS NULL OR length(trim(caption)) BETWEEN 1 AND 10000"
+        },
+        "content_items_cta_chk": {
+          "name": "content_items_cta_chk",
+          "value": "cta IS NULL OR length(trim(cta)) BETWEEN 1 AND 1000"
+        },
+        "content_items_recording_required_chk": {
+          "name": "content_items_recording_required_chk",
+          "value": "recording_required IN (0,1)"
+        },
+        "content_items_internal_review_required_chk": {
+          "name": "content_items_internal_review_required_chk",
+          "value": "internal_review_required IN (0,1)"
+        },
+        "content_items_client_approval_required_chk": {
+          "name": "content_items_client_approval_required_chk",
+          "value": "client_approval_required IN (0,1)"
+        },
+        "content_items_request_chk": {
+          "name": "content_items_request_chk",
+          "value": "length(creation_request_id)=36"
+        },
+        "content_items_revision_chk": {
+          "name": "content_items_revision_chk",
+          "value": "typeof(revision)='integer' AND revision>=1"
+        },
+        "content_items_target_chk": {
+          "name": "content_items_target_chk",
+          "value": "target_publish_date IS NULL OR (length(target_publish_date)=10 AND target_publish_date GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' AND date(target_publish_date,'+0 days') IS NOT NULL AND date(target_publish_date,'+0 days')=target_publish_date)"
+        },
+        "content_items_published_chk": {
+          "name": "content_items_published_chk",
+          "value": "(stage='published' AND published_at IS NOT NULL) OR (stage<>'published' AND published_at IS NULL)"
+        }
+      }
+    },
+    "content_platforms": {
+      "name": "content_platforms",
+      "columns": {
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content_id": {
+          "name": "content_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "platform_key": {
+          "name": "platform_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "content_platforms_ws_key_content_idx": {
+          "name": "content_platforms_ws_key_content_idx",
+          "columns": [
+            "workspace_id",
+            "platform_key",
+            "content_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "content_platforms_workspace_id_workspaces_id_fk": {
+          "name": "content_platforms_workspace_id_workspaces_id_fk",
+          "tableFrom": "content_platforms",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "content_platforms_workspace_id_content_id_content_items_workspace_id_id_fk": {
+          "name": "content_platforms_workspace_id_content_id_content_items_workspace_id_id_fk",
+          "tableFrom": "content_platforms",
+          "tableTo": "content_items",
+          "columnsFrom": [
+            "workspace_id",
+            "content_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "content_platforms_workspace_id_content_id_platform_key_pk": {
+          "columns": [
+            "workspace_id",
+            "content_id",
+            "platform_key"
+          ],
+          "name": "content_platforms_workspace_id_content_id_platform_key_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "content_platforms_key_chk": {
+          "name": "content_platforms_key_chk",
+          "value": "length(trim(platform_key)) BETWEEN 1 AND 120"
+        },
+        "content_platforms_label_chk": {
+          "name": "content_platforms_label_chk",
+          "value": "length(trim(label)) BETWEEN 1 AND 60"
+        }
+      }
+    },
+    "content_review_revisions": {
+      "name": "content_review_revisions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content_id": {
+          "name": "content_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "number": {
+          "name": "number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "hook": {
+          "name": "hook",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "script": {
+          "name": "script",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "caption": {
+          "name": "caption",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cta": {
+          "name": "cta",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "target_publish_date": {
+          "name": "target_publish_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "platforms_json": {
+          "name": "platforms_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "content_review_revisions_parent_id_uq": {
+          "name": "content_review_revisions_parent_id_uq",
+          "columns": [
+            "workspace_id",
+            "content_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "content_review_revisions_number_uq": {
+          "name": "content_review_revisions_number_uq",
+          "columns": [
+            "workspace_id",
+            "content_id",
+            "number"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "content_review_revisions_workspace_id_workspaces_id_fk": {
+          "name": "content_review_revisions_workspace_id_workspaces_id_fk",
+          "tableFrom": "content_review_revisions",
+          "tableTo": "workspaces",
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "content_review_revisions_content_fk": {
+          "name": "content_review_revisions_content_fk",
+          "tableFrom": "content_review_revisions",
+          "tableTo": "content_items",
+          "columnsFrom": [
+            "workspace_id",
+            "content_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "content_review_revisions_number_chk": {
+          "name": "content_review_revisions_number_chk",
+          "value": "typeof(number)='integer' AND number>=1"
+        },
+        "content_review_revisions_platforms_chk": {
+          "name": "content_review_revisions_platforms_chk",
+          "value": "json_valid(platforms_json) AND json_type(platforms_json)='array' AND json_array_length(platforms_json)<=12"
+        }
+      }
+    },
+    "deliverables": {
+      "name": "deliverables",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "creation_request_id": {
+          "name": "creation_request_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "client_label": {
+          "name": "client_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'planned'"
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'internal'"
+        },
+        "target_date": {
+          "name": "target_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "delivered_at": {
+          "name": "delivered_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "deliverables_project_request_uq": {
+          "name": "deliverables_project_request_uq",
+          "columns": [
+            "workspace_id",
+            "project_id",
+            "creation_request_id"
+          ],
+          "isUnique": true
+        },
+        "deliverables_ws_project_id_uq": {
+          "name": "deliverables_ws_project_id_uq",
+          "columns": [
+            "workspace_id",
+            "project_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "deliverables_ws_project_visibility_idx": {
+          "name": "deliverables_ws_project_visibility_idx",
+          "columns": [
+            "workspace_id",
+            "project_id",
+            "visibility"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "deliverables_workspace_id_workspaces_id_fk": {
+          "name": "deliverables_workspace_id_workspaces_id_fk",
+          "tableFrom": "deliverables",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "deliverables_project_fk": {
+          "name": "deliverables_project_fk",
+          "tableFrom": "deliverables",
+          "tableTo": "projects",
+          "columnsFrom": [
+            "workspace_id",
+            "project_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "deliverables_status_chk": {
+          "name": "deliverables_status_chk",
+          "value": "status IN ('planned', 'in_progress', 'internal_review', 'client_review', 'approved', 'delivered', 'cancelled')"
+        },
+        "deliverables_visibility_chk": {
+          "name": "deliverables_visibility_chk",
+          "value": "visibility IN ('internal', 'client', 'restricted')"
+        },
+        "deliverables_title_chk": {
+          "name": "deliverables_title_chk",
+          "value": "length(trim(title)) BETWEEN 1 AND 120"
+        },
+        "deliverables_label_chk": {
+          "name": "deliverables_label_chk",
+          "value": "client_label IS NULL OR length(trim(client_label)) BETWEEN 1 AND 120"
+        },
+        "deliverables_description_chk": {
+          "name": "deliverables_description_chk",
+          "value": "description IS NULL OR length(trim(description)) BETWEEN 1 AND 5000"
+        },
+        "deliverables_request_chk": {
+          "name": "deliverables_request_chk",
+          "value": "length(creation_request_id)=36"
+        },
+        "deliverables_revision_chk": {
+          "name": "deliverables_revision_chk",
+          "value": "typeof(revision)='integer' AND revision >= 1"
+        },
+        "deliverables_target_date_chk": {
+          "name": "deliverables_target_date_chk",
+          "value": "target_date IS NULL OR (length(target_date)=10 AND target_date GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' AND date(target_date, '+0 days') IS NOT NULL AND date(target_date, '+0 days')=target_date)"
+        },
+        "deliverables_delivery_chk": {
+          "name": "deliverables_delivery_chk",
+          "value": "(status='delivered' AND delivered_at IS NOT NULL) OR (status<>'delivered' AND delivered_at IS NULL)"
+        }
+      }
+    },
+    "department_memberships": {
+      "name": "department_memberships",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "department_id": {
+          "name": "department_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "membership_id": {
+          "name": "membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "is_lead": {
+          "name": "is_lead",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "department_memberships_dept_member_uq": {
+          "name": "department_memberships_dept_member_uq",
+          "columns": [
+            "department_id",
+            "membership_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "department_memberships_workspace_id_workspaces_id_fk": {
+          "name": "department_memberships_workspace_id_workspaces_id_fk",
+          "tableFrom": "department_memberships",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "department_memberships_department_fk": {
+          "name": "department_memberships_department_fk",
+          "tableFrom": "department_memberships",
+          "tableTo": "departments",
+          "columnsFrom": [
+            "workspace_id",
+            "department_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "department_memberships_membership_fk": {
+          "name": "department_memberships_membership_fk",
+          "tableFrom": "department_memberships",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "departments": {
+      "name": "departments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "active": {
+          "name": "active",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "departments_ws_id_uq": {
+          "name": "departments_ws_id_uq",
+          "columns": [
+            "workspace_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "departments_ws_slug_uq": {
+          "name": "departments_ws_slug_uq",
+          "columns": [
+            "workspace_id",
+            "slug"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "departments_workspace_id_workspaces_id_fk": {
+          "name": "departments_workspace_id_workspaces_id_fk",
+          "tableFrom": "departments",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "member_capabilities": {
+      "name": "member_capabilities",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "membership_id": {
+          "name": "membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "capability": {
+          "name": "capability",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "granted_by_membership_id": {
+          "name": "granted_by_membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "member_capabilities_member_cap_uq": {
+          "name": "member_capabilities_member_cap_uq",
+          "columns": [
+            "membership_id",
+            "capability"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "member_capabilities_workspace_id_workspaces_id_fk": {
+          "name": "member_capabilities_workspace_id_workspaces_id_fk",
+          "tableFrom": "member_capabilities",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "member_capabilities_membership_fk": {
+          "name": "member_capabilities_membership_fk",
+          "tableFrom": "member_capabilities",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "member_capabilities_granted_by_fk": {
+          "name": "member_capabilities_granted_by_fk",
+          "tableFrom": "member_capabilities",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "granted_by_membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "member_capabilities_capability_chk": {
+          "name": "member_capabilities_capability_chk",
+          "value": "capability GLOB '[a-z]*.[a-z]*'"
+        }
+      }
+    },
+    "milestones": {
+      "name": "milestones",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "creation_request_id": {
+          "name": "creation_request_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "client_label": {
+          "name": "client_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'upcoming'"
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "start_date": {
+          "name": "start_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "target_date": {
+          "name": "target_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "waiting_reason": {
+          "name": "waiting_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'internal'"
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "milestones_ws_id_uq": {
+          "name": "milestones_ws_id_uq",
+          "columns": [
+            "workspace_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "milestones_ws_project_id_uq": {
+          "name": "milestones_ws_project_id_uq",
+          "columns": [
+            "workspace_id",
+            "project_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "milestones_project_position_uq": {
+          "name": "milestones_project_position_uq",
+          "columns": [
+            "project_id",
+            "position"
+          ],
+          "isUnique": true
+        },
+        "milestones_project_request_uq": {
+          "name": "milestones_project_request_uq",
+          "columns": [
+            "workspace_id",
+            "project_id",
+            "creation_request_id"
+          ],
+          "isUnique": true
+        },
+        "milestones_ws_project_visibility_idx": {
+          "name": "milestones_ws_project_visibility_idx",
+          "columns": [
+            "workspace_id",
+            "project_id",
+            "visibility"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "milestones_workspace_id_workspaces_id_fk": {
+          "name": "milestones_workspace_id_workspaces_id_fk",
+          "tableFrom": "milestones",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "milestones_project_fk": {
+          "name": "milestones_project_fk",
+          "tableFrom": "milestones",
+          "tableTo": "projects",
+          "columnsFrom": [
+            "workspace_id",
+            "project_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "milestones_status_chk": {
+          "name": "milestones_status_chk",
+          "value": "status IN ('upcoming', 'in_progress', 'waiting', 'completed', 'skipped')"
+        },
+        "milestones_visibility_chk": {
+          "name": "milestones_visibility_chk",
+          "value": "visibility IN ('internal', 'client', 'restricted')"
+        },
+        "milestones_name_chk": {
+          "name": "milestones_name_chk",
+          "value": "length(trim(name)) BETWEEN 1 AND 120"
+        },
+        "milestones_label_chk": {
+          "name": "milestones_label_chk",
+          "value": "client_label IS NULL OR length(trim(client_label)) BETWEEN 1 AND 120"
+        },
+        "milestones_request_chk": {
+          "name": "milestones_request_chk",
+          "value": "length(creation_request_id) = 36"
+        },
+        "milestones_position_chk": {
+          "name": "milestones_position_chk",
+          "value": "typeof(position) = 'integer' AND position BETWEEN 0 AND 9007199254740991"
+        },
+        "milestones_revision_chk": {
+          "name": "milestones_revision_chk",
+          "value": "typeof(revision) = 'integer' AND revision >= 1"
+        },
+        "milestones_start_date_chk": {
+          "name": "milestones_start_date_chk",
+          "value": "start_date IS NULL OR (length(start_date)=10 AND start_date GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' AND date(start_date, '+0 days') IS NOT NULL AND date(start_date, '+0 days')=start_date)"
+        },
+        "milestones_target_date_chk": {
+          "name": "milestones_target_date_chk",
+          "value": "target_date IS NULL OR (length(target_date)=10 AND target_date GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' AND date(target_date, '+0 days') IS NOT NULL AND date(target_date, '+0 days')=target_date)"
+        },
+        "milestones_dates_chk": {
+          "name": "milestones_dates_chk",
+          "value": "start_date IS NULL OR target_date IS NULL OR target_date >= start_date"
+        },
+        "milestones_completion_chk": {
+          "name": "milestones_completion_chk",
+          "value": "(status='completed' AND completed_at IS NOT NULL) OR (status<>'completed' AND completed_at IS NULL)"
+        },
+        "milestones_waiting_chk": {
+          "name": "milestones_waiting_chk",
+          "value": "(status='waiting' AND waiting_reason IS NOT NULL AND length(trim(waiting_reason)) BETWEEN 1 AND 1000) OR (status<>'waiting' AND waiting_reason IS NULL)"
+        }
+      }
+    },
+    "onboarding_instance_templates": {
+      "name": "onboarding_instance_templates",
+      "columns": {
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "onboarding_instance_id": {
+          "name": "onboarding_instance_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "template_version_id": {
+          "name": "template_version_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "onboarding_instance_templates_uq": {
+          "name": "onboarding_instance_templates_uq",
+          "columns": [
+            "onboarding_instance_id",
+            "template_version_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "onboarding_instance_templates_workspace_id_workspaces_id_fk": {
+          "name": "onboarding_instance_templates_workspace_id_workspaces_id_fk",
+          "tableFrom": "onboarding_instance_templates",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "onboarding_instance_templates_instance_fk": {
+          "name": "onboarding_instance_templates_instance_fk",
+          "tableFrom": "onboarding_instance_templates",
+          "tableTo": "onboarding_instances",
+          "columnsFrom": [
+            "workspace_id",
+            "onboarding_instance_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "onboarding_instance_templates_version_fk": {
+          "name": "onboarding_instance_templates_version_fk",
+          "tableFrom": "onboarding_instance_templates",
+          "tableTo": "template_versions",
+          "columnsFrom": [
+            "workspace_id",
+            "template_version_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "onboarding_instances": {
+      "name": "onboarding_instances",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "template_version_id": {
+          "name": "template_version_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'not_started'"
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "completed_by_membership_id": {
+          "name": "completed_by_membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "override_reason": {
+          "name": "override_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "onboarding_instances_ws_client_id_uq": {
+          "name": "onboarding_instances_ws_client_id_uq",
+          "columns": [
+            "workspace_id",
+            "client_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "onboarding_instances_ws_id_uq": {
+          "name": "onboarding_instances_ws_id_uq",
+          "columns": [
+            "workspace_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "onboarding_instances_client_idx": {
+          "name": "onboarding_instances_client_idx",
+          "columns": [
+            "client_id"
+          ],
+          "isUnique": false
+        },
+        "onboarding_instances_open_client_uq": {
+          "name": "onboarding_instances_open_client_uq",
+          "columns": [
+            "client_id"
+          ],
+          "isUnique": true,
+          "where": "status <> 'complete'"
+        }
+      },
+      "foreignKeys": {
+        "onboarding_instances_workspace_id_workspaces_id_fk": {
+          "name": "onboarding_instances_workspace_id_workspaces_id_fk",
+          "tableFrom": "onboarding_instances",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "onboarding_instances_client_fk": {
+          "name": "onboarding_instances_client_fk",
+          "tableFrom": "onboarding_instances",
+          "tableTo": "bloomops_clients",
+          "columnsFrom": [
+            "workspace_id",
+            "client_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "onboarding_instances_template_version_fk": {
+          "name": "onboarding_instances_template_version_fk",
+          "tableFrom": "onboarding_instances",
+          "tableTo": "template_versions",
+          "columnsFrom": [
+            "workspace_id",
+            "template_version_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "onboarding_instances_completed_by_fk": {
+          "name": "onboarding_instances_completed_by_fk",
+          "tableFrom": "onboarding_instances",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "completed_by_membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "onboarding_instances_status_chk": {
+          "name": "onboarding_instances_status_chk",
+          "value": "status IN ('not_started', 'in_progress', 'ready', 'complete', 'blocked')"
+        }
+      }
+    },
+    "onboarding_item_resolutions": {
+      "name": "onboarding_item_resolutions",
+      "columns": {
+        "onboarding_item_id": {
+          "name": "onboarding_item_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resolved_by_membership_id": {
+          "name": "resolved_by_membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resolved_at": {
+          "name": "resolved_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "onboarding_item_resolutions_workspace_id_workspaces_id_fk": {
+          "name": "onboarding_item_resolutions_workspace_id_workspaces_id_fk",
+          "tableFrom": "onboarding_item_resolutions",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "onboarding_resolutions_item_fk": {
+          "name": "onboarding_resolutions_item_fk",
+          "tableFrom": "onboarding_item_resolutions",
+          "tableTo": "onboarding_items",
+          "columnsFrom": [
+            "workspace_id",
+            "onboarding_item_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "onboarding_resolutions_actor_fk": {
+          "name": "onboarding_resolutions_actor_fk",
+          "tableFrom": "onboarding_item_resolutions",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "resolved_by_membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "onboarding_resolutions_reason_chk": {
+          "name": "onboarding_resolutions_reason_chk",
+          "value": "length(trim(reason)) BETWEEN 1 AND 1000"
+        }
+      }
+    },
+    "onboarding_item_services": {
+      "name": "onboarding_item_services",
+      "columns": {
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "onboarding_item_id": {
+          "name": "onboarding_item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "service_engagement_id": {
+          "name": "service_engagement_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "onboarding_item_services_uq": {
+          "name": "onboarding_item_services_uq",
+          "columns": [
+            "onboarding_item_id",
+            "service_engagement_id"
+          ],
+          "isUnique": true
+        },
+        "onboarding_item_services_engagement_idx": {
+          "name": "onboarding_item_services_engagement_idx",
+          "columns": [
+            "service_engagement_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "onboarding_item_services_workspace_id_workspaces_id_fk": {
+          "name": "onboarding_item_services_workspace_id_workspaces_id_fk",
+          "tableFrom": "onboarding_item_services",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "onboarding_item_services_item_fk": {
+          "name": "onboarding_item_services_item_fk",
+          "tableFrom": "onboarding_item_services",
+          "tableTo": "onboarding_items",
+          "columnsFrom": [
+            "workspace_id",
+            "onboarding_item_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "onboarding_item_services_engagement_fk": {
+          "name": "onboarding_item_services_engagement_fk",
+          "tableFrom": "onboarding_item_services",
+          "tableTo": "service_engagements",
+          "columnsFrom": [
+            "workspace_id",
+            "service_engagement_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "onboarding_item_submissions": {
+      "name": "onboarding_item_submissions",
+      "columns": {
+        "onboarding_item_id": {
+          "name": "onboarding_item_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "submitted_by_membership_id": {
+          "name": "submitted_by_membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "submitted_at": {
+          "name": "submitted_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "onboarding_item_submissions_workspace_id_workspaces_id_fk": {
+          "name": "onboarding_item_submissions_workspace_id_workspaces_id_fk",
+          "tableFrom": "onboarding_item_submissions",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "onboarding_submissions_item_fk": {
+          "name": "onboarding_submissions_item_fk",
+          "tableFrom": "onboarding_item_submissions",
+          "tableTo": "onboarding_items",
+          "columnsFrom": [
+            "workspace_id",
+            "onboarding_item_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "onboarding_submissions_actor_fk": {
+          "name": "onboarding_submissions_actor_fk",
+          "tableFrom": "onboarding_item_submissions",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "submitted_by_membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "onboarding_items": {
+      "name": "onboarding_items",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "onboarding_instance_id": {
+          "name": "onboarding_instance_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "logical_key": {
+          "name": "logical_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "instructions": {
+          "name": "instructions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "required": {
+          "name": "required",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "verification_required": {
+          "name": "verification_required",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "responsible_party": {
+          "name": "responsible_party",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'client'"
+        },
+        "responsible_membership_id": {
+          "name": "responsible_membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'client'"
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "due_date": {
+          "name": "due_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "completed_by_membership_id": {
+          "name": "completed_by_membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "verified_at": {
+          "name": "verified_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "verified_by_membership_id": {
+          "name": "verified_by_membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "onboarding_items_ws_id_uq": {
+          "name": "onboarding_items_ws_id_uq",
+          "columns": [
+            "workspace_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "onboarding_items_instance_key_uq": {
+          "name": "onboarding_items_instance_key_uq",
+          "columns": [
+            "onboarding_instance_id",
+            "logical_key"
+          ],
+          "isUnique": true
+        },
+        "onboarding_items_instance_status_idx": {
+          "name": "onboarding_items_instance_status_idx",
+          "columns": [
+            "onboarding_instance_id",
+            "status"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "onboarding_items_workspace_id_workspaces_id_fk": {
+          "name": "onboarding_items_workspace_id_workspaces_id_fk",
+          "tableFrom": "onboarding_items",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "onboarding_items_instance_fk": {
+          "name": "onboarding_items_instance_fk",
+          "tableFrom": "onboarding_items",
+          "tableTo": "onboarding_instances",
+          "columnsFrom": [
+            "workspace_id",
+            "onboarding_instance_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "onboarding_items_responsible_fk": {
+          "name": "onboarding_items_responsible_fk",
+          "tableFrom": "onboarding_items",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "responsible_membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "onboarding_items_completed_by_fk": {
+          "name": "onboarding_items_completed_by_fk",
+          "tableFrom": "onboarding_items",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "completed_by_membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "onboarding_items_verified_by_fk": {
+          "name": "onboarding_items_verified_by_fk",
+          "tableFrom": "onboarding_items",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "verified_by_membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "onboarding_items_status_chk": {
+          "name": "onboarding_items_status_chk",
+          "value": "status IN ('pending', 'in_progress', 'completed', 'blocked', 'waived', 'not_applicable')"
+        },
+        "onboarding_items_responsible_party_chk": {
+          "name": "onboarding_items_responsible_party_chk",
+          "value": "responsible_party IN ('client', 'team', 'user', 'external')"
+        },
+        "onboarding_items_visibility_chk": {
+          "name": "onboarding_items_visibility_chk",
+          "value": "visibility IN ('internal', 'client', 'restricted')"
+        },
+        "onboarding_items_logical_key_chk": {
+          "name": "onboarding_items_logical_key_chk",
+          "value": "length(logical_key) > 0 AND logical_key = lower(logical_key)"
+        }
+      }
+    },
+    "project_assignments": {
+      "name": "project_assignments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "membership_id": {
+          "name": "membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "assignment_role": {
+          "name": "assignment_role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'member'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "project_assignments_project_member_uq": {
+          "name": "project_assignments_project_member_uq",
+          "columns": [
+            "project_id",
+            "membership_id"
+          ],
+          "isUnique": true
+        },
+        "project_assignments_ws_member_idx": {
+          "name": "project_assignments_ws_member_idx",
+          "columns": [
+            "workspace_id",
+            "membership_id",
+            "project_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "project_assignments_workspace_id_workspaces_id_fk": {
+          "name": "project_assignments_workspace_id_workspaces_id_fk",
+          "tableFrom": "project_assignments",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "project_assignments_project_fk": {
+          "name": "project_assignments_project_fk",
+          "tableFrom": "project_assignments",
+          "tableTo": "projects",
+          "columnsFrom": [
+            "workspace_id",
+            "project_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "project_assignments_member_fk": {
+          "name": "project_assignments_member_fk",
+          "tableFrom": "project_assignments",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "project_assignments_role_chk": {
+          "name": "project_assignments_role_chk",
+          "value": "assignment_role IN ('lead', 'member')"
+        }
+      }
+    },
+    "projects": {
+      "name": "projects",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "service_engagement_id": {
+          "name": "service_engagement_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "department_id": {
+          "name": "department_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "client_label": {
+          "name": "client_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'planned'"
+        },
+        "health": {
+          "name": "health",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'on_track'"
+        },
+        "owner_membership_id": {
+          "name": "owner_membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "start_date": {
+          "name": "start_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "target_date": {
+          "name": "target_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'internal'"
+        },
+        "status_reason": {
+          "name": "status_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "projects_ws_id_uq": {
+          "name": "projects_ws_id_uq",
+          "columns": [
+            "workspace_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "projects_ws_client_idx": {
+          "name": "projects_ws_client_idx",
+          "columns": [
+            "workspace_id",
+            "client_id"
+          ],
+          "isUnique": false
+        },
+        "projects_ws_service_idx": {
+          "name": "projects_ws_service_idx",
+          "columns": [
+            "workspace_id",
+            "service_engagement_id"
+          ],
+          "isUnique": false
+        },
+        "projects_ws_status_idx": {
+          "name": "projects_ws_status_idx",
+          "columns": [
+            "workspace_id",
+            "status",
+            "target_date"
+          ],
+          "isUnique": false
+        },
+        "projects_ws_owner_idx": {
+          "name": "projects_ws_owner_idx",
+          "columns": [
+            "workspace_id",
+            "owner_membership_id"
+          ],
+          "isUnique": false
+        },
+        "projects_ws_visibility_idx": {
+          "name": "projects_ws_visibility_idx",
+          "columns": [
+            "workspace_id",
+            "visibility",
+            "client_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "projects_workspace_id_workspaces_id_fk": {
+          "name": "projects_workspace_id_workspaces_id_fk",
+          "tableFrom": "projects",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "projects_client_fk": {
+          "name": "projects_client_fk",
+          "tableFrom": "projects",
+          "tableTo": "bloomops_clients",
+          "columnsFrom": [
+            "workspace_id",
+            "client_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "projects_service_client_fk": {
+          "name": "projects_service_client_fk",
+          "tableFrom": "projects",
+          "tableTo": "service_engagements",
+          "columnsFrom": [
+            "workspace_id",
+            "client_id",
+            "service_engagement_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "client_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "projects_department_fk": {
+          "name": "projects_department_fk",
+          "tableFrom": "projects",
+          "tableTo": "departments",
+          "columnsFrom": [
+            "workspace_id",
+            "department_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "projects_owner_fk": {
+          "name": "projects_owner_fk",
+          "tableFrom": "projects",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "owner_membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "projects_status_chk": {
+          "name": "projects_status_chk",
+          "value": "status IN ('planned', 'ready', 'in_progress', 'waiting', 'blocked', 'review', 'completed', 'cancelled', 'archived')"
+        },
+        "projects_health_chk": {
+          "name": "projects_health_chk",
+          "value": "health IN ('on_track', 'needs_attention', 'at_risk')"
+        },
+        "projects_visibility_chk": {
+          "name": "projects_visibility_chk",
+          "value": "visibility IN ('internal', 'client', 'restricted')"
+        },
+        "projects_name_chk": {
+          "name": "projects_name_chk",
+          "value": "length(trim(name)) BETWEEN 1 AND 120"
+        },
+        "projects_label_chk": {
+          "name": "projects_label_chk",
+          "value": "client_label IS NULL OR length(trim(client_label)) BETWEEN 1 AND 120"
+        },
+        "projects_department_source_chk": {
+          "name": "projects_department_source_chk",
+          "value": "service_engagement_id IS NULL OR department_id IS NULL"
+        },
+        "projects_dates_chk": {
+          "name": "projects_dates_chk",
+          "value": "start_date IS NULL OR target_date IS NULL OR target_date >= start_date"
+        },
+        "projects_completion_chk": {
+          "name": "projects_completion_chk",
+          "value": "(status <> 'completed' OR completed_at IS NOT NULL) AND (completed_at IS NULL OR status IN ('completed','archived'))"
+        },
+        "projects_reason_chk": {
+          "name": "projects_reason_chk",
+          "value": "(status IN ('waiting','blocked') AND status_reason IS NOT NULL AND length(trim(status_reason)) BETWEEN 1 AND 1000) OR (status NOT IN ('waiting','blocked') AND status_reason IS NULL)"
+        },
+        "projects_revision_chk": {
+          "name": "projects_revision_chk",
+          "value": "revision >= 1"
+        }
+      }
+    },
+    "service_assignments": {
+      "name": "service_assignments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "service_engagement_id": {
+          "name": "service_engagement_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "membership_id": {
+          "name": "membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "assignment_role": {
+          "name": "assignment_role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'member'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "service_assignments_engagement_member_uq": {
+          "name": "service_assignments_engagement_member_uq",
+          "columns": [
+            "service_engagement_id",
+            "membership_id"
+          ],
+          "isUnique": true
+        },
+        "service_assignments_member_idx": {
+          "name": "service_assignments_member_idx",
+          "columns": [
+            "membership_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "service_assignments_workspace_id_workspaces_id_fk": {
+          "name": "service_assignments_workspace_id_workspaces_id_fk",
+          "tableFrom": "service_assignments",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "service_assignments_engagement_fk": {
+          "name": "service_assignments_engagement_fk",
+          "tableFrom": "service_assignments",
+          "tableTo": "service_engagements",
+          "columnsFrom": [
+            "workspace_id",
+            "service_engagement_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "service_assignments_membership_fk": {
+          "name": "service_assignments_membership_fk",
+          "tableFrom": "service_assignments",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "service_assignments_role_chk": {
+          "name": "service_assignments_role_chk",
+          "value": "assignment_role IN ('lead', 'member')"
+        }
+      }
+    },
+    "service_engagements": {
+      "name": "service_engagements",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "service_type_id": {
+          "name": "service_type_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "package_name": {
+          "name": "package_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'planned'"
+        },
+        "start_date": {
+          "name": "start_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "end_date": {
+          "name": "end_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "approval_preference": {
+          "name": "approval_preference",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "scope_notes": {
+          "name": "scope_notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "source_template_version_id": {
+          "name": "source_template_version_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "service_engagements_ws_id_uq": {
+          "name": "service_engagements_ws_id_uq",
+          "columns": [
+            "workspace_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "service_engagements_ws_client_id_uq": {
+          "name": "service_engagements_ws_client_id_uq",
+          "columns": [
+            "workspace_id",
+            "client_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "service_engagements_client_type_open_uq": {
+          "name": "service_engagements_client_type_open_uq",
+          "columns": [
+            "client_id",
+            "service_type_id"
+          ],
+          "isUnique": true,
+          "where": "status IN ('planned', 'onboarding', 'active', 'paused')"
+        },
+        "service_engagements_client_idx": {
+          "name": "service_engagements_client_idx",
+          "columns": [
+            "client_id"
+          ],
+          "isUnique": false
+        },
+        "service_engagements_ws_status_idx": {
+          "name": "service_engagements_ws_status_idx",
+          "columns": [
+            "workspace_id",
+            "status"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "service_engagements_workspace_id_workspaces_id_fk": {
+          "name": "service_engagements_workspace_id_workspaces_id_fk",
+          "tableFrom": "service_engagements",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "service_engagements_client_fk": {
+          "name": "service_engagements_client_fk",
+          "tableFrom": "service_engagements",
+          "tableTo": "bloomops_clients",
+          "columnsFrom": [
+            "workspace_id",
+            "client_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "service_engagements_service_type_fk": {
+          "name": "service_engagements_service_type_fk",
+          "tableFrom": "service_engagements",
+          "tableTo": "service_types",
+          "columnsFrom": [
+            "workspace_id",
+            "service_type_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "service_engagements_template_version_fk": {
+          "name": "service_engagements_template_version_fk",
+          "tableFrom": "service_engagements",
+          "tableTo": "template_versions",
+          "columnsFrom": [
+            "workspace_id",
+            "source_template_version_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "service_engagements_status_chk": {
+          "name": "service_engagements_status_chk",
+          "value": "status IN ('planned', 'onboarding', 'active', 'paused', 'completed', 'cancelled')"
+        }
+      }
+    },
+    "service_types": {
+      "name": "service_types",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "department_id": {
+          "name": "department_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "active": {
+          "name": "active",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "service_types_ws_id_uq": {
+          "name": "service_types_ws_id_uq",
+          "columns": [
+            "workspace_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "service_types_ws_slug_uq": {
+          "name": "service_types_ws_slug_uq",
+          "columns": [
+            "workspace_id",
+            "slug"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "service_types_workspace_id_workspaces_id_fk": {
+          "name": "service_types_workspace_id_workspaces_id_fk",
+          "tableFrom": "service_types",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "service_types_department_fk": {
+          "name": "service_types_department_fk",
+          "tableFrom": "service_types",
+          "tableTo": "departments",
+          "columnsFrom": [
+            "workspace_id",
+            "department_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "session": {
+      "name": "session",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "session_token_unique": {
+          "name": "session_token_unique",
+          "columns": [
+            "token"
+          ],
+          "isUnique": true
+        },
+        "session_userId_idx": {
+          "name": "session_userId_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "session_user_id_user_id_fk": {
+          "name": "session_user_id_user_id_fk",
+          "tableFrom": "session",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "template_versions": {
+      "name": "template_versions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "template_id": {
+          "name": "template_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "version_number": {
+          "name": "version_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'draft'"
+        },
+        "definition_json": {
+          "name": "definition_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "definition_hash": {
+          "name": "definition_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_by_membership_id": {
+          "name": "created_by_membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "template_versions_ws_id_uq": {
+          "name": "template_versions_ws_id_uq",
+          "columns": [
+            "workspace_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "template_versions_template_version_uq": {
+          "name": "template_versions_template_version_uq",
+          "columns": [
+            "template_id",
+            "version_number"
+          ],
+          "isUnique": true
+        },
+        "template_versions_published_uq": {
+          "name": "template_versions_published_uq",
+          "columns": [
+            "template_id"
+          ],
+          "isUnique": true,
+          "where": "status = 'published'"
+        }
+      },
+      "foreignKeys": {
+        "template_versions_workspace_id_workspaces_id_fk": {
+          "name": "template_versions_workspace_id_workspaces_id_fk",
+          "tableFrom": "template_versions",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "template_versions_template_fk": {
+          "name": "template_versions_template_fk",
+          "tableFrom": "template_versions",
+          "tableTo": "templates",
+          "columnsFrom": [
+            "workspace_id",
+            "template_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "template_versions_created_by_fk": {
+          "name": "template_versions_created_by_fk",
+          "tableFrom": "template_versions",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "created_by_membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "template_versions_status_chk": {
+          "name": "template_versions_status_chk",
+          "value": "status IN ('draft', 'published', 'retired')"
+        },
+        "template_versions_version_number_chk": {
+          "name": "template_versions_version_number_chk",
+          "value": "version_number >= 1"
+        }
+      }
+    },
+    "templates": {
+      "name": "templates",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "active": {
+          "name": "active",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "templates_ws_id_uq": {
+          "name": "templates_ws_id_uq",
+          "columns": [
+            "workspace_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "templates_ws_kind_slug_uq": {
+          "name": "templates_ws_kind_slug_uq",
+          "columns": [
+            "workspace_id",
+            "kind",
+            "slug"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "templates_workspace_id_workspaces_id_fk": {
+          "name": "templates_workspace_id_workspaces_id_fk",
+          "tableFrom": "templates",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "templates_kind_chk": {
+          "name": "templates_kind_chk",
+          "value": "kind IN ('onboarding', 'project', 'social', 'systems', 'ads')"
+        }
+      }
+    },
+    "user": {
+      "name": "user",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email_verified": {
+          "name": "email_verified",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "image": {
+          "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "user_email_unique": {
+          "name": "user_email_unique",
+          "columns": [
+            "email"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "verification": {
+      "name": "verification",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "identifier": {
+          "name": "identifier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "verification_identifier_idx": {
+          "name": "verification_identifier_idx",
+          "columns": [
+            "identifier"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "workspace_invitations": {
+      "name": "workspace_invitations",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "invitee_name": {
+          "name": "invitee_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "invited_by_membership_id": {
+          "name": "invited_by_membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "accepted_membership_id": {
+          "name": "accepted_membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "accepted_at": {
+          "name": "accepted_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "workspace_invitations_ws_client_id_uq": {
+          "name": "workspace_invitations_ws_client_id_uq",
+          "columns": [
+            "workspace_id",
+            "client_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "workspace_invitations_token_hash_uq": {
+          "name": "workspace_invitations_token_hash_uq",
+          "columns": [
+            "token_hash"
+          ],
+          "isUnique": true
+        },
+        "workspace_invitations_ws_email_idx": {
+          "name": "workspace_invitations_ws_email_idx",
+          "columns": [
+            "workspace_id",
+            "email"
+          ],
+          "isUnique": false
+        },
+        "workspace_invitations_pending_uq": {
+          "name": "workspace_invitations_pending_uq",
+          "columns": [
+            "workspace_id",
+            "email"
+          ],
+          "isUnique": true,
+          "where": "status = 'pending'"
+        }
+      },
+      "foreignKeys": {
+        "workspace_invitations_workspace_id_workspaces_id_fk": {
+          "name": "workspace_invitations_workspace_id_workspaces_id_fk",
+          "tableFrom": "workspace_invitations",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "workspace_invitations_client_fk": {
+          "name": "workspace_invitations_client_fk",
+          "tableFrom": "workspace_invitations",
+          "tableTo": "bloomops_clients",
+          "columnsFrom": [
+            "workspace_id",
+            "client_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "workspace_invitations_inviter_fk": {
+          "name": "workspace_invitations_inviter_fk",
+          "tableFrom": "workspace_invitations",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "invited_by_membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "workspace_invitations_accepted_fk": {
+          "name": "workspace_invitations_accepted_fk",
+          "tableFrom": "workspace_invitations",
+          "tableTo": "workspace_memberships",
+          "columnsFrom": [
+            "workspace_id",
+            "accepted_membership_id"
+          ],
+          "columnsTo": [
+            "workspace_id",
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "workspace_invitations_role_chk": {
+          "name": "workspace_invitations_role_chk",
+          "value": "role IN ('owner', 'admin', 'project_manager', 'team_member', 'client')"
+        },
+        "workspace_invitations_status_chk": {
+          "name": "workspace_invitations_status_chk",
+          "value": "status IN ('pending', 'accepted', 'expired', 'revoked')"
+        }
+      }
+    },
+    "workspace_memberships": {
+      "name": "workspace_memberships",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'invited'"
+        },
+        "invited_by_membership_id": {
+          "name": "invited_by_membership_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "joined_at": {
+          "name": "joined_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "suspended_at": {
+          "name": "suspended_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "removed_at": {
+          "name": "removed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "workspace_memberships_ws_id_uq": {
+          "name": "workspace_memberships_ws_id_uq",
+          "columns": [
+            "workspace_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "workspace_memberships_ws_user_uq": {
+          "name": "workspace_memberships_ws_user_uq",
+          "columns": [
+            "workspace_id",
+            "user_id"
+          ],
+          "isUnique": true
+        },
+        "workspace_memberships_user_idx": {
+          "name": "workspace_memberships_user_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "workspace_memberships_workspace_id_workspaces_id_fk": {
+          "name": "workspace_memberships_workspace_id_workspaces_id_fk",
+          "tableFrom": "workspace_memberships",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "workspace_memberships_user_id_user_id_fk": {
+          "name": "workspace_memberships_user_id_user_id_fk",
+          "tableFrom": "workspace_memberships",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "workspace_memberships_role_chk": {
+          "name": "workspace_memberships_role_chk",
+          "value": "role IN ('owner', 'admin', 'project_manager', 'team_member', 'client')"
+        },
+        "workspace_memberships_status_chk": {
+          "name": "workspace_memberships_status_chk",
+          "value": "status IN ('invited', 'active', 'suspended', 'removed')"
+        }
+      }
+    },
+    "workspaces": {
+      "name": "workspaces",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(lower(hex(randomblob(16))))"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'active'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ','now'))"
+        }
+      },
+      "indexes": {
+        "workspaces_slug_uq": {
+          "name": "workspaces_slug_uq",
+          "columns": [
+            "slug"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "workspaces_status_chk": {
+          "name": "workspaces_status_chk",
+          "value": "status IN ('active', 'suspended', 'archived')"
+        }
+      }
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}
