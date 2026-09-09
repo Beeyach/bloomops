@@ -325,6 +325,9 @@ test('the role matrix: every role against every representative action, allow and
     'content.platforms': [true, true, true, true, false],
     'content.transition': [true, true, true, true, false],
     'content.manage': [true, true, true, true, false],
+    'content.file.manage': [true, true, true, true, false],
+    'recording.view': [false, false, false, false, true],
+    'recording.upload': [false, false, false, false, true],
     'action.list': [true, true, true, true, false],
     'action.view': [true, true, true, true, false],
     'action.manage': [true, true, true, false, false],
@@ -335,6 +338,9 @@ test('the role matrix: every role against every representative action, allow and
   // Which record each resource action is asked about, so the matrix uses
   // the same descriptor the real routes do rather than a convenient one.
   const RESOURCE_OF = {
+    'content.file.manage': { ...jamesSocial, type: 'content', visibility: 'internal' },
+    'recording.view': { ...jamesSocial, type: 'recording_request', visibility: 'client' },
+    'recording.upload': { ...jamesSocial, type: 'recording_request', visibility: 'client' },
     'client.view': jamesClient,
     'onboarding.view': jamesClient,
     'onboarding.submit': jamesClient,
@@ -382,7 +388,7 @@ test('the role matrix: every role against every representative action, allow and
   }
   // All actors can see James. Clients cannot discover internal Actions or Content.
   assert.ok(seen.filter((l) => l.includes('forbidden')).every((l) => /forbidden:(role|capability)$/.test(l)), seen.join('\n'));
-  assert.deepEqual(seen.filter((l) => l.includes('not_found')), [...['create', 'view', 'platforms', 'transition', 'manage'].map(operation => `client content.${operation}: not_found:visibility`), ...['view', 'manage', 'progress', 'dependencies'].map(operation => `client action.${operation}: not_found:visibility`)]);
+  assert.deepEqual(seen.filter((l) => l.includes('not_found')), [...['create', 'view', 'platforms', 'transition', 'manage', 'file.manage'].map(operation => `client content.${operation}: not_found:visibility`), ...['view', 'manage', 'progress', 'dependencies'].map(operation => `client action.${operation}: not_found:visibility`)]);
 });
 
 // ── capabilities ─────────────────────────────────────────────────────────
