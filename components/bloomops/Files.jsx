@@ -23,14 +23,14 @@ export function FileDownload({ file }) {
     {error && <Notice tone="error">{error}</Notice>}</div>;
 }
 
-export function FileList({ items = [], controls = null, portal = false }) {
+export function FileList({ items = [], controls = null, portal = false, content = false }) {
   if (!items.length) return <p className="bo-body">No files to show yet.</p>;
-  return <ul className="bo-files" aria-label={portal ? 'Shared files' : 'Project files'}>{items.map(file => <li className="bo-file" data-file-id={file.id} key={file.id}>
-    <div className="bo-file-heading"><h3 className="bo-row-title">{file.filename}</h3>{!portal && <Status label={FILE_STATUS_LABELS[file.status]} tone={file.status === 'failed' ? 'error' : 'neutral'} />}</div>
+  return <ul className="bo-files" aria-label={portal ? content ? 'Your recordings' : 'Shared files' : content ? 'Content files' : 'Project files'}>{items.map(file => <li className="bo-file" data-file-id={file.id} key={file.id}>
+    <div className="bo-file-heading"><h3 className="bo-row-title">{file.filename}</h3>{(!portal || content) && <Status label={FILE_STATUS_LABELS[file.status]} tone={file.status === 'failed' ? 'error' : 'neutral'} />}</div>
     <p className="bo-small">{[fileSize(file.byteSize), file.mimeType, formatDate(file.readyAt || file.createdAt)].filter(Boolean).join(' · ')}</p>
     {(portal ? file.attachmentLabel : file.deliverableTitle) && <p className="bo-small">For {portal ? file.attachmentLabel : file.deliverableTitle}</p>}
-    {!portal && <p className="bo-small">{file.visibility === 'client' ? 'Client visible when the Project and attachment are shared' : file.visibility === 'restricted' ? 'Restricted' : 'Internal'}</p>}
-    <div className="bo-file-controls">{(portal || file.status === 'ready') && <FileDownload file={file} />}{controls?.(file)}</div>
+    {!portal && <p className="bo-small">{content && `${file.purpose === 'recording' ? 'Recording' : 'Production asset'} · `}{file.visibility === 'client' ? content ? 'Client eligible under the recording request rules' : 'Client visible when the Project and attachment are shared' : file.visibility === 'restricted' ? 'Restricted' : 'Internal'}</p>}
+    <div className="bo-file-controls">{((portal && !content) || file.status === 'ready') && <FileDownload file={file} />}{controls?.(file)}</div>
   </li>)}</ul>;
 }
 

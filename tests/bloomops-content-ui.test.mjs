@@ -13,10 +13,10 @@ const render=(C,p)=>renderToStaticMarkup(React.createElement(AppRouterContext.Pr
 test('real form exposes exact editorial fields, booleans and types; no future workflow controls',async()=>{
  const t=await setup(),options=await contentOptions(t.db,t.owner),html=render(ContentForm,{options});
  for(const field of['title','pillar','type','ownerMembershipId','hook','script','caption','cta','recordingRequired','internalReviewRequired','clientApprovalRequired','targetPublishDate','visibility'])assert.match(html,new RegExp(`id="content-${field}"`));
- assert.equal((html.match(/type="checkbox"/g)||[]).length,3);assert.match(html,/not shared in the client portal yet/);assert.doesNotMatch(html,/name="stage"|Upload|Approve|Calendar|Pipeline|type="file"/);
+ assert.equal((html.match(/type="checkbox"/g)||[]).length,3);assert.match(html,/shares only the title and recording request/);assert.doesNotMatch(html,/name="stage"|Upload|Approve|Calendar|Pipeline|type="file"/);
 });
 test('detail escapes long editorial text and presents current canonical facts',async()=>{
- const t=await setup(),{contentId}=await t.add({title:'A'.repeat(200),script:'<script>alert(1)</script>\n'+'Text '.repeat(3000),visibility:'client'}),item=await t.item(contentId),html=render(ContentDetail,{item});assert.match(html,/&lt;script&gt;/);assert.doesNotMatch(html,/<script>/);assert.match(html,/Idea/);assert.match(html,/Edit details/);assert.match(html,/not shared in the client portal yet/);
+ const t=await setup(),{contentId}=await t.add({title:'A'.repeat(200),script:'<script>alert(1)</script>\n'+'Text '.repeat(3000),visibility:'client'}),item=await t.item(contentId),html=render(ContentDetail,{item});assert.match(html,/&lt;script&gt;/);assert.doesNotMatch(html,/<script>/);assert.match(html,/Idea/);assert.match(html,/Edit details/);assert.match(html,/Only a recording request is shared/);
 });
 test('empty and visible overflow have truthful pagination and preserve filters',async()=>{
  const t=await setup(),options=await contentOptions(t.db,t.owner);const empty=render(ContentList,{result:await t.list(),options});assert.match(empty,/No Content here yet/);assert.doesNotMatch(empty,/Next page/);

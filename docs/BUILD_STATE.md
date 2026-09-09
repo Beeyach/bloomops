@@ -6,7 +6,60 @@ Release C: Social. Release B is closed on `c6509aa395a5db58310e2a0ae22a8a808082f
 
 ## Current Phase
 
-C3 Calendar + Platforms is implemented and locally verified on `codex/c3-calendar-platforms`, ready for independent ChatGPT audit. C3 is not closed. Independent ChatGPT audit, user-controlled merge and both post-merge workflows successful on the exact C3 merge SHA are required before C4.
+C4 Recordings + Content Assets is implemented and locally verified on `codex/c4-recordings-content-assets`, ready for independent ChatGPT audit. C4 is not closed. Independent ChatGPT audit, user-controlled merge, and both post-merge workflows successful on the exact C4 merge SHA are required before C5. Historical phase sections below describe their original handoffs, not current closure state.
+
+### Verified C3 closure and C4 base
+
+C3 PR #24 merged as `6be5b4d668545d630c463e0a6b457ce7d53d6338`, the exact requested C4 base. Read-only checks verified [Deploy staging 34296771989](https://github.com/Beeyach/bloomops/actions/runs/34296771989) and [Verify zero-to-current 34296772032](https://github.com/Beeyach/bloomops/actions/runs/34296772032) succeeded on that exact SHA, including the successful create/migrate/twice/verify/delete step. C4 preflight changed no remote resources. Branch history contained the authorized C4 contract and temporary prompt after this base.
+
+## Recordings + Content Assets (C4)
+
+Migration `0016_c4_content_assets.sql` adds one five-column fixed `content_asset_links` table: File primary key, workspace, Content, exact `recording|asset` purpose and creation timestamp. It has workspace/composite asset/composite Content FKs, a workspace/Content index, immutable update/delete triggers, and insert triggers excluding both attachment-family orders. The snapshot chain preserves every previous table exactly. Migrations 0012–0015 are unchanged. Current inventory: 17 domain migrations, 39 domain tables, 75 total fresh tables including inherited tables/ledgers, 93 migration-defined indexes and 27 triggers.
+
+Canonical `assets`, `asset_upload_attempts` and private `FILES` R2 bytes remain the sole storage system. A fixed-parent policy adapter shares B5's reserve/write/finalize, recovery generations, checksum validation, CAS changes, cleanup and download protocol. B5 `file.manage` stays coordinator-only. The common lost-finalize-response branch now also reauthorizes after its R2 head await. Ready still needs server-computed SHA-256 and matching R2 key/size/MIME/etag/checksum, one readiness timestamp and one canonical `FILE_UPLOADED` event. Unknown D1 outcomes never authorize blind deletion; recovery uses fresh keys and old writers cannot win. File operations never update Content, platform associations, dates, publication or parent lifecycles.
+
+Internal Content file management uses the dedicated `content.file.manage` action capped by current C1–C3 readability. Team requires exact Client or Social Service assignment; restricted Content or Files require that exact assignment for PM/Team. Department, owner, Project and Action relationships grant nothing. SQL rechecks current membership/workspace/identity/role/parents at every relevant read and committing batch.
+
+Client access is only `recording.view` / `recording.upload`: current contact linkage, shared Content, recording required, Waiting for Recording, canonical same-client optional Social service, and shared recording-purpose File. All eligibility is rechecked at reservation, retry, finalization and before/after R2 downloads. Clients retry only their own upload. They cannot choose visibility, change purpose/parent, archive, change visibility, or access production assets. Server-selected upload visibility is `client`.
+
+The conditional Home “Recording needed” section links to `/portal/recordings/[contentId]`; there is no general Content/Social portal destination. The request DTO is exactly `id,title`; title is explicitly client-safe for an eligible recording request. File DTO is exactly `id,filename,mimeType,byteSize,status,readyAt`. Non-ready entries are shown only to their uploader for retry; only Ready can download. Both Waiting and Revision Requested `stage_context`, all editorial copy except title, owner, revision, internal activity, service IDs, storage authority and hidden counts stay private. Request projection is at most 200 eligible rows, filtered before limiting, with no hidden-row overflow indicator.
+
+Content has a deliberate 200-File lifetime cap including archives, atomically enforced in reservation. Lists are bounded SQL with no R2 probes. Internal Content File history and Client history filter historical filenames through current File+Content authority, including archive. A separate bounded Content-file history query merges with B5 history by timestamp/rowid so the combined Client query stays below D1's 100-bind ceiling. B5 Home/Project projections remain B5-only.
+
+### Deliberate recording limitation
+
+Retained B5's 5 MiB (5,242,880 bytes) positive-byte limit and unchanged `assets` CHECK. Current [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) specify 128 MB per isolate, not per request. Existing bounded upload parsing plus `crypto.subtle.digest` holds the bounded bytes in memory; larger media requires a separately designed protocol/migration, not changing a number. Current [R2 binding docs](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/) and published Workers types `5.20260908.1` confirm server-supplied SHA-256 integrity checking and returned checksums. The exact 5 MiB boundary passed real R2. Unknown browser MIME uses `application/octet-stream`; MIME is syntactically validated, not a malware/content verdict. No scanner, transcoding, multipart protocol, public URL, presigned URL or third-party upload service was added. The portal explains short clips and asking the agency about larger recordings.
+
+### Verification evidence (2026-09-08 local session)
+
+| Check | Result |
+|---|---|
+| `npm ci` | Exit 0; 560 installed / 561 audited; no package/lock changes |
+| Focused C4 schema/domain/access/HTTP/R2/UI | 111/111 passed |
+| C3 / C2 / C1 focused regression | 111/105/133 passed |
+| B7 / B1 / B2 / B3 / B4 / B5 / B6 focused | 29/97/173/203/197/171/76 passed |
+| Release A/core command retained below | 421/421; updated shell included in full suite |
+| Full `npm test` | 4,490/4,490; zero failures/skips/cancellations |
+| `npm run build`; `npm run cf:build` | Both exit 0, including available lint/type checks |
+| `node .github/scripts/verify-zero-remote.mjs --local` | 22/22; fresh schema, complete ledgers, exact no-op second pass, disposable cleanup |
+| `node scripts/content-files-smoke-local.mjs` | 64/64 actual workerd/D1/R2; includes real Better Auth-issued Client/Team sessions revoked during binding awaits |
+| C3 / C2 / C1 runtime smokes | 57/54/43 passed |
+| B1/B2/B3/B4/B5/B6/B7/A11 runtime smokes | 25/28/47/38/42/34/86/26 passed |
+| Built `auth-smoke-local.mjs --url http://localhost:8787` | 144/144 passed |
+| Local external `verify-staging.mjs --url http://localhost:8787 --expect-env development` | 21/21 passed |
+| Browser/HTTP | Final complete run 75/75, 47 captures at 1440/1024/768/390/320; keyboard/focus, touch, reduced motion, two-Client story |
+| Changed JS/JSX syntax; `git diff --check` | 39 files parsed; no whitespace errors |
+| Dependency audit | Exact current base and head vulnerability objects identical: 53 (1 low, 43 moderate, 9 high, 0 critical) |
+
+Focused commands use `node --test tests/bloomops-content-files-*.test.mjs`, the existing C1/C2/C3 patterns, each B1–B7 pattern and the Release A/core command retained in B6 below. Full tests use a temporary PATH alias from `python` to installed `/usr/bin/python3` for five inherited packaged-skill ZIP checks; no application/test behavior was weakened. Browser dependencies were installed outside the repository in `/tmp/bloomops-c4-tools-SGrX9Q`, with extracted shared libraries on `LD_LIBRARY_PATH` because the host lacks them. The live design reference loaded successfully and was visually inspected.
+
+The checked-in browser harness is `scripts/content-files-review-local.mjs`; pass `--playwright /tmp/bloomops-c4-tools-SGrX9Q` in this environment. It uses only loopback development D1/R2 and synthetic identities. The local preview helper overrides only its in-memory app URL to its actual `http://localhost:8787` origin; the developer's existing `.dev.vars` remains untouched. Initial simultaneous fixture/bootstrap runs hit SQLite locking and auth rate limiting; completed evidence runs are serialized, and only complete passes count. Production auth limits remain unchanged. The C4 disposable runtime applies pinned Wrangler Node-compat shims with an unconditional dry-run and a generated config containing no remote bindings; this supports Better Auth's optional Node dependency imports without changing app compatibility flags.
+
+Raw evidence is local `/tmp/bloomops-c4-*`, not durable CI artifacts: focused/full/build/CF/zero/runtime/HTTP/verifier logs, base/head audit JSON and browser screenshots. The exact base audit ran from a detached temporary worktree. Byte authorization is checked before handing off the response stream; delivered bytes cannot be recalled. Cleanup remains B5's bounded explicit-retry cleanup, not an orphan sweeper. 53 inherited advisories remain out of scope, with zero C4 delta. No remote C4 migration/deployment, real email, staging business data, provider operation, production, DNS or Leadsthatbloom mutation occurred.
+
+Final scope is 47 changed paths against the exact C3 base, including the phase contract and generated migration snapshot. `C4_CODEX_PROMPT.txt` was removed as instructed and has zero net diff against that base. The final PR body carries the complete changed-path inventory and final commit SHA. Screenshot inspection included the live design gallery, internal long-filename layout, and client upload dialogs at 390/320 pixels; controls, focus rings and the short-clip explanation remain readable.
+
+C5 approval rounds/revision history and C6 general Content portal, notifications, comments, templates and provider publishing are intentionally absent. The next planned phase is C5, only after independent audit, user-controlled C4 merge and both exact-C4-merge-SHA gates, then a separate implementation instruction. C4 must remain OPEN/UNMERGED for independent audit.
 
 ### Verified C2 closure and C3 base
 
@@ -2213,19 +2266,21 @@ For the current phase and its audit, read:
 
 1. `AGENTS.md`
 2. this file
-3. `docs/phases/B7.md`
+3. `docs/phases/C4.md`
 
 Read additional canonical planning docs only when the phase file or `docs/INDEX.md` calls for them.
 
 ## Next Planned Phase
 
-Finish C1 independent ChatGPT audit and user-controlled merge, then verify Deploy staging and Verify zero-to-current on the exact C1 merge SHA. The next planned phase is C2 — the conditional Social pipeline, after those gates and a separate implementation instruction. C2+ remains unimplemented.
+Finish C4 independent ChatGPT audit and user-controlled merge, then verify Deploy staging and Verify zero-to-current on the exact C4 merge SHA. The next planned phase is C5 — Approvals + Revision History, after those gates and a separate implementation instruction. C5+ remains unimplemented.
 
 ### The A7 phase, for reference
 
 A7, Services and Departments. Complete. It seeds the four departments and the initial service types, gives one client several purchased service engagements with their own lifecycle, and builds assignment at both the client and the engagement level. The Services and Team tabs of the client detail (`app/(internal)/clients/[id]/page.jsx`) are where its screens land; both say today, honestly, that services and assignments are a later release. `service.view` and `service.manage` already exist in `ACTIONS`, and `loadServiceResource` already builds the descriptor; A7 adds whatever creation action it needs beside `client.create` and may widen `ownerCandidates` in `lib/bloomops/clients.mjs` once a manager can grant client access in the same place they name an owner. The A4 rule that a service assignment reaches the engagement and not the client record is load-bearing and is covered by tests in both `tests/bloomops-authorization.test.mjs` and `tests/bloomops-clients.test.mjs`.
 
 ## Last Verification
+
+2026-09-08, C4. 111 focused tests, all C1–C3/B1–B7/A-core regressions, 4,490 full tests, both builds, 39 JS/JSX syntax checks, clean diff check, 22 fresh/no-op checks, C4 real workerd/D1/R2 64, all prior runtime smokes, built HTTP 144, external verifier 21 and final browser/HTTP 75 with 47 captures passed. The leading C4 section is the current evidence and gate record; the paragraphs below are historical. Package/lock unchanged; exact current C3-base and C4 audit both 53, zero delta. C4 remains pending independent audit, user-controlled merge and exact-merge-SHA post-merge gates; C5+ is unimplemented.
 
 2026-09-08, C1. Canonical Content Items and the real Social list/create/detail/edit flow passed 133 focused tests, all B1–B7 and A/core regressions, and 4,163/4,163 full tests. Both builds, 33 JS/JSX syntax checks, whitespace checks, 22 fresh/no-op checks, C1 actual D1 43, prior B1/B2/B3/B4/B5/B6/B7/A11 actual D1/R2 25/28/47/38/42/34/86/26, built HTTP 144, external verifier 21, and final browser/HTTP 96 with 33 captures all passed. Package/lock unchanged; audit 49 advisories, zero current base/branch delta. The C1 section records the 44-path inventory, exact schema/field/auth choices, pagination/choice limits, complete commands and local evidence limitations. The temporary prompt is gone with no net diff. C1 awaits independent audit, user-controlled merge and both exact-C1-merge-SHA gates; C2+ is not implemented.
 

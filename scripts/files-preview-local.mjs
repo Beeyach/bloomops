@@ -25,6 +25,9 @@ try {
   assert.equal(options.d1Databases.DB.id, 'bloomops-dev-local');
   assert.equal(options.r2Buckets.FILES.id, 'bloomops-files-dev');
   assert.equal(config.externalWorkers.length, 0);
+  // The disposable browser harness always serves this loopback origin. Do not
+  // rewrite a developer's .dev.vars (which may name their separate dev server).
+  options.bindings.BLOOMOPS_APP_URL = 'http://localhost:8787';
   temporary = mkdtempSync(join(tmpdir(), 'bloomops-b5-preview-'));
   // Wrangler's local dry run supplies the same Node compatibility shims as
   // normal preview/deploy. A plain esbuild bundle would lose those shims.

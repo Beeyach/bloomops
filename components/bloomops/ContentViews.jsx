@@ -31,7 +31,7 @@ export function ContentDetail({ item }) {
     ]} />
     <ContentPipeline item={item} />
     <ContentPlatforms item={item} />
-    {item.visibility === 'client' && <p className="bo-hint">Client eligible. This item is not shared in the client portal yet.</p>}
+    {item.visibility === 'client' && <p className="bo-hint">Client eligible. Only a recording request is shared while recording is required and this item is Waiting for Recording. Editorial details and internal context stay private.</p>}
     {[['hook', 'Hook'], ['script', 'Script'], ['caption', 'Caption'], ['cta', 'Call to action']].map(([key, label]) => <Section key={key} id={`content-${key}`} title={label}><p className="bo-content-copy">{item[key] || 'Not written yet.'}</p></Section>)}
   </div>;
 }
