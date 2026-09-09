@@ -1,5 +1,6 @@
 'use client';
 import { PlatformInput,platformLines } from './ContentPlatforms';
+import { REVIEW_FROZEN_FIELDS } from '@/lib/bloomops/content-approval-values.mjs';
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/lib/toast.mjs';
@@ -22,7 +23,7 @@ export default function ContentForm({ item = null, options }) {
   const owners = item?.ownerMembershipId && !options.members.some(m => m.membershipId === item.ownerMembershipId)
     ? [{ membershipId: item.ownerMembershipId, name: `${item.ownerName || 'Previous owner'} (current selection)` }, ...options.members] : options.members;
   const set = key => e => setValues(v => ({ ...v, [key]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
-  const aria = key => fieldAria({ id: `content-${key}`, error: errors[key] });
+  const aria = key => ({...fieldAria({ id: `content-${key}`, error: errors[key] }),disabled:!!item?.approvalRequested&&REVIEW_FROZEN_FIELDS.includes(key)});
   async function submit(e) {
     e.preventDefault(); if (pending.current) return;
     const next = {};
@@ -41,6 +42,7 @@ export default function ContentForm({ item = null, options }) {
     } finally { pending.current = false; setBusy(false); }
   }
   return <form className="bo-form bo-content-form" onSubmit={submit} noValidate aria-busy={busy}>
+    {item?.approvalRequested&&<Notice>Reviewed copy, workflow requirements and target date are frozen. Withdraw the approval request to revise them. Visibility and internal ownership remain editable.</Notice>}
     <fieldset disabled={busy} className="bo-content-fields">
       <legend className="bo-h2">Content details</legend>
       {!item && <Field id="content-parent" label="Client and service" error={errors.parent} hint="Choose Client-level Content or one purchased Social service. This stays fixed after creation.">
@@ -56,7 +58,7 @@ export default function ContentForm({ item = null, options }) {
       <Field id="content-targetPublishDate" label="Target publish date" optional error={errors.targetPublishDate}><input {...aria('targetPublishDate')} className="bo-control" type="date" value={values.targetPublishDate} onChange={set('targetPublishDate')} /></Field>
       {!item && <PlatformInput error={errors.platforms} value={platformText} onChange={e=>setPlatformText(e.target.value)} disabled={busy} />}
       <fieldset className="bo-content-flags"><legend className="bo-label">Workflow requirements</legend>{Object.entries(flagLabels).map(([key, label]) => <div key={key}><label className="bo-content-check"><input {...aria(key)} type="checkbox" checked={values[key]} onChange={set(key)} />{label}</label>{errors[key] && <p id={`content-${key}-error`} role="alert">{errors[key]}</p>}</div>)}</fieldset>
-      <Field id="content-visibility" label="Visibility" error={errors.visibility} hint="Client eligible shares only the title and recording request while recording is required and this item is Waiting for Recording. Editorial details and internal context stay private."><select {...aria('visibility')} aria-describedby={`content-visibility-hint${errors.visibility ? ' content-visibility-error' : ''}`} className="bo-control" value={values.visibility} onChange={set('visibility')}>{Object.entries(CONTENT_VISIBILITY_LABELS).filter(([v]) => v !== 'restricted' || canRestrict).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select></Field>
+      <Field id="content-visibility" label="Visibility" error={errors.visibility} hint="Client eligible allows requested recordings and explicitly requested approval snapshots in the portal. Internal notes and unrestricted browsing of Content are never shared. Revoking visibility also hides an open approval request."><select {...aria('visibility')} aria-describedby={`content-visibility-hint${errors.visibility ? ' content-visibility-error' : ''}`} className="bo-control" value={values.visibility} onChange={set('visibility')}>{Object.entries(CONTENT_VISIBILITY_LABELS).filter(([v]) => v !== 'restricted' || canRestrict).map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select></Field>
     </fieldset>
     {error && <div id="content-save-error" tabIndex={-1}><Notice tone="error">{error}</Notice></div>}
     <div className="bo-form-actions"><Button href={item ? `/social/${item.id}` : '/social'}>Cancel</Button><Button type="submit" variant="primary" loading={busy} disabled={busy}>{item ? 'Save details' : 'Create Content'}</Button></div>

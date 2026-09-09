@@ -5,20 +5,26 @@ import { run } from './_bloomops-db.mjs';
 import { transitionContent } from '../lib/bloomops/content-pipeline.mjs';
 import { contentNextStages, contentNeedsContext } from '../lib/bloomops/content-pipeline-values.mjs';
 import { CONTENT_STAGES } from '../lib/bloomops/content-values.mjs';
+import { requestContentApproval,respondContentApproval } from '../lib/bloomops/content-approvals.mjs';
 const move=async(t,id,stage,extra={})=>transitionContent(t.db,{actor:t.owner,contentId:id,input:{targetStage:stage,expectedRevision:(await t.item(id)).revision,...(contentNeedsContext(stage)?{context:'Needed from James'}:{})},...extra});
 for(let mask=0;mask<8;mask++)test(`pipeline flags ${mask}: complete path, conditional skips, terminal timestamp and parent isolation`,async()=>{
- const t=await setup(),flags={recordingRequired:!!(mask&1),internalReviewRequired:!!(mask&2),clientApprovalRequired:!!(mask&4)},id=(await t.add(flags)).contentId,parents=t.parents();
+ const t=await setup(),flags={recordingRequired:!!(mask&1),internalReviewRequired:!!(mask&2),clientApprovalRequired:!!(mask&4)},id=(await t.add({...flags,visibility:'client'})).contentId,parents=t.parents();
  const expected=['idea','script',...(flags.recordingRequired?['waiting_for_recording']:[]),'editing',...(flags.internalReviewRequired?['internal_review']:[]),...(flags.clientApprovalRequired?['client_review']:[]),'approved','scheduled','published'];
  for(const [index,stage]of expected.entries()){
-  const item=await t.item(id);assert.equal(item.stage,stage);assert.equal(item.revision,index+1);
+  const item=await t.item(id);assert.equal(item.stage,stage);assert.equal(item.revision,index+1+(flags.clientApprovalRequired&&['approved','scheduled','published'].includes(stage)?1:0));
   assert.equal(item.stageContext,stage==='waiting_for_recording'?'Needed from James':null);
   if(stage==='published'){assert.ok(item.publishedAt);const before=t.snapshot();assert.deepEqual(contentNextStages(item),[]);assert.equal((await move(t,id,'idea')).reason,'invalid');assert.deepEqual(t.snapshot(),before);break;}
-  assert.equal(item.publishedAt,null);assert.equal(contentNextStages(item)[0],expected[index+1]);assert.ok((await move(t,id,expected[index+1])).ok);
+  assert.equal(item.publishedAt,null);
+  if(stage==='client_review'){
+    assert.equal((await move(t,id,'approved')).ok,false);
+    const request=await requestContentApproval(t.db,{actor:t.owner,contentId:id,input:{requestId:crypto.randomUUID(),expectedRevision:item.revision}});assert.equal(request.ok,true);
+    assert.equal((await respondContentApproval(t.db,{actor:await t.actor('james'),roundId:request.roundId,input:{decision:'approved'}})).ok,true);
+  }else{assert.equal(contentNextStages(item)[0],expected[index+1]);assert.ok((await move(t,id,expected[index+1])).ok);}
  }
  assert.equal(t.history().filter(e=>e.event_type==='CONTENT_STAGE_CHANGED').length,expected.length-1);assert.deepEqual(t.parents(),parents);
 });
 for(const source of CONTENT_STAGES)test(`${source}: every target obeys exact default transition graph`,async()=>{
- const t=await setup();const legal={idea:['script'],script:['waiting_for_recording'],waiting_for_recording:['editing'],editing:['internal_review'],internal_review:['client_review','revision_requested'],client_review:['approved','revision_requested'],revision_requested:['editing'],approved:['scheduled'],scheduled:['published'],published:[]};
+ const t=await setup();const legal={idea:['script'],script:['waiting_for_recording'],waiting_for_recording:['editing'],editing:['internal_review'],internal_review:['client_review','revision_requested'],client_review:['revision_requested'],revision_requested:['editing'],approved:['scheduled'],scheduled:['published'],published:[]};
  for(const target of CONTENT_STAGES){const id=(await t.add({recordingRequired:true})).contentId;run(t.raw,'UPDATE content_items SET stage=?, published_at=? WHERE id=?',source,source==='published'?'2026-09-01T00:00:00.000Z':null,id);const before=t.snapshot(),result=await move(t,id,target);assert.equal(result.ok,legal[source].includes(target),`${source} -> ${target}`);if(!result.ok)assert.deepEqual(t.snapshot(),before);}
 });
 for(const source of ['internal_review','client_review'])test(`${source} revision context persists, clears on Editing, and repeated passes do not confuse retries`,async()=>{

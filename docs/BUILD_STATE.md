@@ -6,7 +6,64 @@ Release C: Social. Release B is closed on `c6509aa395a5db58310e2a0ae22a8a808082f
 
 ## Current Phase
 
-C4 Recordings + Content Assets is implemented and locally verified on `codex/c4-recordings-content-assets`, ready for independent ChatGPT audit. C4 is not closed. Independent ChatGPT audit, user-controlled merge, and both post-merge workflows successful on the exact C4 merge SHA are required before C5. Historical phase sections below describe their original handoffs, not current closure state.
+C5 Approvals + Revision History is implemented and locally verified on `codex/c5-approvals-revision-history`, ready for independent ChatGPT audit. C5 is not closed. Independent ChatGPT audit, user-controlled merge, and both post-merge workflows successful on the exact C5 merge SHA are required before C6. Historical phase sections below describe their original handoffs, not current closure state.
+
+### Verified C4 closure and exact C5 base
+
+C4 PR #25 merged as `5b3e3c3ac3eae69b75310f73f9f54c7a85edc095`, the exact requested C5 base. Read-only checks confirmed [Deploy staging 34333717208](https://github.com/Beeyach/bloomops/actions/runs/34333717208) and [Verify zero-to-current 34333717121](https://github.com/Beeyach/bloomops/actions/runs/34333717121) both completed successfully on that SHA; the C5 contract records successful disposable cleanup. Branch preflight was clean and contained only the C5 phase contract and temporary prompt after the base. All requested preflight documents and relevant C1–C4 implementation/tests were read before implementation.
+
+## Approvals + Revision History (C5)
+
+Additive `0017_c5_content_approvals.sql` adds `content_review_revisions` (13 columns) and `content_approval_rounds` (18 columns), seven indexes and ten triggers. Composite workspace/Content/revision FKs and workspace membership provenance FKs prevent cross-parent references. Revision insertion validates the exact current structured copy and platform labels; updates/deletes are refused. Round insertion fixes its matching revision/number, a partial unique index permits one Requested round, and update/delete triggers allow exactly one terminal decision without rewriting earlier provenance or feedback. Current inventory: 18 domain migrations, 41 domain tables, 77 total fresh tables including inherited tables/ledgers, 100 migration-defined indexes, 37 triggers. Migrations 0013–0016 and every prior snapshot table definition are unchanged; Content is not rebuilt.
+
+### Implementation decisions
+
+- `content_items.revision` remains the shared CAS counter; every request/response/withdraw consumes it. Each request separately allocates a durable review ID and monotonic per-Content round number. No extra approval status lives on Content, and activity never owns approval state.
+- Owner/Admin/PM request and withdraw under current C1 scope. Team may read current scoped history, not coordinate formal approval. PM/Team restricted access requires exact Client/Social Service assignment; department/owner/Project/Action relationships grant nothing.
+- Request requires `client_review`, Client approval enabled, Client eligible visibility, valid live Client/optional canonical Social Service, expected CAS and no open round. One D1 batch captures current SQL fields/platform labels, inserts revision/round/activity and consumes CAS without changing stage. Immutable requester/request-key/consumed-revision evidence makes identical retries converge.
+- Requested freezes reviewed title/type/hook/script/caption/CTA/date, all workflow flags, platform associations and stage/context through conditional writes plus database triggers. Visibility, identity/membership/role/workspace, contacts and assignments remain live/revocable. Pillar and internal owner remain editable. Request/edit/platform/date and response/response/withdraw/edit/stage races cannot produce conflicting canonical facts.
+- Any currently linked active Client contact for the exact Client may respond via the narrow endpoint. Approve resolves that round and moves Content to Approved. Changes Requested requires 1–2,000 normalized UTF-16 units of plain-text feedback, stores durable round feedback and updates current C2 Revision Requested context. Withdraw preserves revision/history, records coordinator/time/reason, leaves Client Review and unlocks edits. New requests create new rounds, never overwrite old ones.
+- C2 direct internal Client Review → Approved is blocked when approval is required; Requested also fences direct internal Revision Requested. Internal Review rework, Revision Requested → Editing, approval-disabled skips and Published terminal behavior remain. C2 retry evidence excludes C5-generated stage events.
+- Portal Home adds only conditional “Approval needed” links and `/portal/approvals/[roundId]`. Exact snapshot keys: `title,type,hook,script,caption,cta,targetPublishDate,platforms`; envelope: `id,number,requestedAt,snapshot`. Plain-text rendering excludes internal pillar/owner/membership/CAS/context/activity/Service/Department/storage authority. C4 has no immutable File versions, so **all Files are explicitly excluded from review snapshots**. No R2 access or File mutations occur in approvals.
+- Client GET is actionable-only. A completed POST retry may acknowledge only the same responder and normalized decision/feedback under live current access; it returns no history or snapshot. The browser keeps a just-completed confirmation. Coordinator withdrawal retry similarly matches original coordinator/reason/consumed CAS.
+- Internal history is 20 rounds/page in descending round order, with safe current names for durable provenance memberships, timestamps, feedback/reason and expandable snapshots. Home uses an eligible-only 200+1 SQL bound; hidden rows cannot alter counts/overflow/empty state. Relational assignment predicates avoid bind-list growth; platform/snapshot/history reads perform no per-row API/File/R2 queries. Client operational history continues to filter each Content event by current Content readability.
+- Shared exact JSON/query, authorization-before-input, Origin, no-store and safe failure conventions remain. No new dependencies, providers, deployment configuration, queues or notifications were added. Cloudflare D1/Workers/Wrangler guidance informed atomic batches and disposable runtime verification; latest Workers types `5.20260908.1`, pinned Wrangler schema and current D1 batch documentation were inspected. The live design reference loaded and was visually inspected; existing Bloom primitives/editorial spacing are reused.
+
+### C5 verification evidence (2026-09-09 local session)
+
+| Check | Result |
+|---|---|
+| `npm ci` | Exit 0; 560 installed / 561 audited; no package/lock changes |
+| Focused C5 schema/domain/access/HTTP/UI/concurrency | 139/139 passed |
+| Combined C1–C5 Content regression | 599/599 passed (C1 133, C2 105, C3 111, C4 111, C5 139) |
+| B1–B7 Work regression | 946/946 passed |
+| Exact Release A/core command retained below | 421/421 passed |
+| Full `npm test` | 4,629/4,629; zero failures/skips/cancellations |
+| `npm run build`; `npm run cf:build` | Both exit 0, including available lint/type checks; final Worker rebuild includes the browser anchor correction |
+| `node .github/scripts/verify-zero-remote.mjs --local` | 22/22; fresh schema/ledgers, exact no-op second pass, disposable cleanup |
+| `node scripts/content-approvals-smoke-local.mjs` | 65/65 actual workerd/D1/R2 checks; two-round story, preserved C4 bytes, C3 projections, lock races, late rollback, retries, real issued-session revocation, large scopes |
+| C4/C3/C2/C1 runtime smokes | 64/57/54/43 passed |
+| B1/B2/B3/B4/B5/B6/B7/A11 runtime smokes | 25/28/47/38/42/34/86/26 passed |
+| Built `auth-smoke-local.mjs --url http://localhost:8787` | 144/144 passed |
+| Local external `verify-staging.mjs --url http://localhost:8787 --expect-env development` | 21/21 passed |
+| `content-approvals-review-local.mjs` browser/HTTP | Final complete run 91/91; 53 captures at 1440/1024/768/390/320; two-round long-copy/feedback story, keyboard/focus, touch, reduced motion, distinct Clients, current revocations |
+| Changed JS/JSX syntax; `git diff --check` | 44 files parsed; no whitespace errors |
+| Drizzle schema/snapshot consistency | Generate reports no schema changes; no additional migration created |
+| Dependency comparison against exact C4 base | Same 53 advisories/affected packages (1 low, 43 moderate, 9 high, 0 critical); zero advisory/package delta and byte-identical package manifests/lockfile |
+
+Focused commands: `node --test tests/bloomops-content-approvals-*.test.mjs`; combined Content uses the C1 `{access,domain,http,schema,ui}` pattern and C2 `content-pipeline-*`, C3 `content-calendar-*`, C4 `content-files-*`, C5 `content-approvals-*`. Work uses `tests/bloomops-{projects,milestones,actions,deliverables,files,projections,release-b}-*.test.mjs`. The exact 421-test Release A/core command remains in the B6 section below. Full tests use `PATH=/tmp/bloomops-c4-tools-SGrX9Q:$PATH npm test` for the host's missing `python` alias; installed `/usr/bin/python3` executes the five inherited packaged-skill ZIP tests without changing application/test behavior.
+
+The browser command is `LD_LIBRARY_PATH=/tmp/bloomops-c4-tools-SGrX9Q/browser-libs/usr/lib/x86_64-linux-gnu node scripts/content-approvals-review-local.mjs --playwright /tmp/bloomops-c4-tools-SGrX9Q`. Its final pass checks 53 layouts, including two expanded immutable history snapshots, 1,498-character feedback, request/approval/withdrawal dialogs, frozen edit fields and both Client/coordinator touch controls. Screenshot inspection included the live reference, narrow review copy, 320px request/feedback dialogs and their visible focus rings. During development the browser caught a missing history anchor (fixed locally in C5), optional-label selectors were corrected, and its feedback assertion was aligned with the existing outer-whitespace normalization after inspecting stored round/context equality. No production rule was weakened. Earlier incomplete browser runs do not count as final evidence.
+
+The exact-base audit ran from an isolated temporary extraction of `package.json` and `package-lock.json` at `5b3e3c3ac3eae69b75310f73f9f54c7a85edc095`, using `npm audit --package-lock-only --json` for a like-for-like comparison. Advisory IDs/affected package sets, ranges, severities and counts match. npm's transitive `effects` attribution differed for two Tiptap entries between installed-tree/lock-only reports; this is not a dependency or advisory change. No upgrade or audit-fix command ran.
+
+Raw evidence lives in `/tmp/bloomops-c5-*`, not durable CI artifacts. Browser tooling/libraries and the inherited Python alias are reused outside the repository at `/tmp/bloomops-c4-tools-SGrX9Q`; no app dependency change was made. The local preview's in-memory loopback origin override leaves the developer's `.dev.vars` unchanged. Browser fixtures use fresh synthetic local workspaces and example.com identities; they are not staging or production business data. Disposable workerd and zero-to-current databases/configs are removed by their harnesses; browser fixtures remain local development state. Existing login rate limits occasionally required bounded local waits and were not changed. The requested temporary prompt was deleted and has zero net diff against the exact C4 base. The final PR body carries the exact head SHA and complete changed-file inventory.
+
+Final net scope is 53 changed paths against the exact C4 base, including the C5 contract and generated migration snapshot. The owned loopback preview was stopped after verification; other development processes and `.dev.vars` were left untouched. The final external verifier was rerun after its first post-smoke attempt correctly hit the unchanged sign-in rate limit; only the complete 21-check pass is counted.
+
+Deliberate limitations: structured copy/date/platform review only (no File review/versioning), no named-reviewer assignment, no general Client Content portal/navigation/history, no comments, notifications/email, providers/publishing, templates, generalized Deliverable approvals, C6/C7, Ads/Systems, production/DNS, real payments, staging business-data writes or Leadsthatbloom changes. Existing 53 inherited dependency advisories remain out of scope. C5 closure and any remote C5 deployment/gate are not claimed. Next phase is C6 only after independent audit, delegated/user-controlled merge, both exact-merge-SHA gates, and a separate implementation instruction.
+
+## Historical C4 handoff
 
 ### Verified C3 closure and C4 base
 

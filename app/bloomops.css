@@ -2202,3 +2202,16 @@ select.bo-control {
 .bo-content-calendar > section, .bo-content-calendar .bo-content-summary > span { min-width: 0; overflow-wrap: anywhere; }
 .bo-content-calendar h2 { margin-bottom: 16px; }
 .bo-content-detail textarea { resize: vertical; }
+
+/* C5: a quiet, fixed-copy review and an ordered history, not another board. */
+.bo-approval-page, .bo-review-snapshot, .bo-approval-history > li { min-width: 0; overflow-wrap: anywhere; }
+.bo-review-snapshot { max-width: 840px; margin: 24px 0; }
+.bo-review-snapshot > h3 { margin-bottom: 24px; }
+.bo-review-copy, .bo-review-feedback { margin-top: 24px; }
+.bo-review-copy h4, .bo-review-feedback h4 { margin-bottom: 8px; }
+.bo-review-details { margin-top: 16px; }
+.bo-review-details > summary { cursor: pointer; padding: 12px 0; min-height: 44px; text-underline-offset: 4px; }
+.bo-review-details > summary:focus-visible { outline: 2px solid var(--bo-ink); outline-offset: 4px; }
+.bo-approval-history { list-style: none; padding: 0; margin: 24px 0; max-width: 840px; }
+.bo-approval-history > li { border-top: 1px solid var(--bo-border); padding: 24px 0; }
+.bo-approval-history .bo-section-head { flex-wrap: wrap; gap: 12px; }

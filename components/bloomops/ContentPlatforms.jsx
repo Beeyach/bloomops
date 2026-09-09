@@ -20,8 +20,9 @@ export default function ContentPlatforms({item}) {
     }catch{setError('The result could not be confirmed. Retry the same labels or reload to check.');}finally{pending.current=false;setBusy(false);}
   }
   return <Section id="content-platform-associations" title="Platforms"><form className="bo-form" onSubmit={save} aria-busy={busy}>
-    <PlatformInput value={text} onChange={e=>setText(e.target.value)} disabled={!ready||busy} />
+    {item.approvalRequested&&<Notice>Platforms are frozen while Client approval is requested.</Notice>}
+    <PlatformInput value={text} onChange={e=>setText(e.target.value)} disabled={!ready||busy||item.approvalRequested} />
     {error&&<Notice tone="error">{error} <a href={`/social/${item.id}`}>Reload Content</a></Notice>}{message&&<Notice tone="success">{message}</Notice>}
-    <div className="bo-form-actions"><Button type="submit" disabled={!ready||busy} loading={busy}>Save platforms</Button></div>
+    <div className="bo-form-actions"><Button type="submit" disabled={!ready||busy||item.approvalRequested} loading={busy}>Save platforms</Button></div>
   </form></Section>;
 }

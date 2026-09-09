@@ -424,7 +424,7 @@ Possible states:
 
 Accepted requests may be converted to an Action or Project.
 
-## Content (C1–C3)
+## Content (C1–C5)
 
 Additive `0013_c1_content.sql` implements canonical `content_items`; inherited tables have no name collision. Content is independent of Projects, Actions and Deliverables. C1 stores editorial work and workflow intent only.
 
@@ -456,7 +456,7 @@ Detail edits use strict positive-integer revision CAS. One competing request win
 
 Protected APIs are `GET /api/bloomops/content`, `GET/PATCH /api/bloomops/content/:contentId`, and `POST /api/bloomops/clients/:id/content` or `/api/bloomops/clients/:id/services/:serviceId/content`. Parent context comes from the authorized route, never arbitrary JSON. Real session/workspace authorization precedes exact query/body validation, including duplicate query rejection and malformed/non-object JSON. Responses use safe errors and no-store; mutations require Origin.
 
-C1 itself adds no platform table. C3 platforms and calendar are documented below; recording/File subjects, formal approvals, revision-history screens, Content portal, comments, notifications and templates remain future work.
+C1 itself adds no platform table. C3 platforms/calendar, C4 recording/assets, and C5 formal review snapshots/rounds are documented below. General Content portal navigation (C6), comments, notifications and templates remain unimplemented.
 
 ### Conditional production pipeline (C2)
 
@@ -466,13 +466,13 @@ The dedicated `POST /api/bloomops/content/:contentId/transition` takes exactly `
 
 Internal Review or Client Review may branch to Revision Requested; that branch returns only to Editing. Entering Waiting for Recording or Revision Requested requires normalized non-empty context, at most 2,000 UTF-16 code units. Waiting context describes what recording is needed and from whom. Context uses C1 text normalization and controls/bidi/malformed-Unicode rejection. It is stored on Content, survives ordinary editorial edits, and clears when leaving the contextual stage. SQL additionally limits non-null context to those two stages and bounded nonblank text. Historical C1 rows may retain null context; no fabricated backfill is created. Activity does not own mutable context.
 
-Published is terminal. Only the winning server transition sets `published_at`; its value survives all ordinary edits and retries. Approved remains a production marker, not proof of a formal Client approval; Scheduled adds no calendar/platform behavior. The contract's coordinator wording does not introduce a new role exception: currently assigned Team members retain C1 fulfillment rights for every legal production step, including Approved. Clients have no internal transition or approval authority.
+Published is terminal. Only the winning server transition sets `published_at`; its value survives all ordinary edits and retries. Approved alone remains a production marker, not proof of a formal Client decision for historical/approval-disabled Content. C5 blocks direct internal Client Review → Approved when Client approval is required; only a matching formal Client response can perform that transition. Scoped Team retains ordinary production fulfillment, not formal request/withdraw/response authority. Clients never gain access to the generic internal transition endpoint.
 
 `content.transition` uses the same role/scope/visibility rules as C1 management. The committing predicate rechecks current active workspace, membership/user/role identity, canonical Client/optional Social Service, assignment, visibility, source stage, expected revision, all three workflow flags and absence of publication. A conditional `CONTENT_STAGE_CHANGED` insert precedes its identically guarded update in one atomic D1 batch. A committed transition consumes one revision and appends one immutable event; either late failure rolls both back.
 
 No request-key column or shadow workflow table is needed. Content ID + consumed expected revision identifies one immutable operation. Its transition event records small `from`, `to`, normalized context and expected-revision facts. An identical retry under current read authorization acknowledges that operation without writing, even after later edits/stages or another revision pass. A different target/context or a revision consumed by an ordinary edit conflicts. Two identical concurrent transitions converge with one event; different transitions or transition/edit races have one canonical winner. Matching the current stage alone is never retry proof. Historical event evidence is queried relationally with the current Content visibility/scope predicate; inaccessible history cannot acknowledge a retry.
 
-The Social detail shows only legal actions, requires context in the existing focus-trapped dialog, preserves keyboard focus after transition, and offers safe reload feedback on conflicts/revocation. The list's exact stage filter projects `content_items.stage`; there is no duplicate pipeline state, drag/drop bypass, recording uploader, formal approval/revision history or Client Content portal.
+The Social detail shows only legal actions, requires context in the existing focus-trapped dialog, preserves keyboard focus after transition, and offers safe reload feedback on conflicts/revocation. The list's exact stage filter projects `content_items.stage`; there is no duplicate pipeline state or drag/drop bypass. C4 adds recordings and C5 adds approval history independently of this stage engine.
 
 ### Platforms and calendar (C3)
 
@@ -492,7 +492,7 @@ The calendar selects only currently readable rows, ordered by target date ascend
 
 `/social/calendar` defaults to the current UTC month and offers exact month, Client, stage and platform filters plus previous/next month and page navigation. It uses a monthly agenda grouped by date: the inherited `DatabaseViewNode` seven-column calendar is draggable and title-only, while C3 needs full long titles, Client/type/stage and multiple channel labels at narrow widths and dense dates. All returned same-day items remain visible without per-date clipping. Explicit date edits stay in the canonical Content form; no drag/drop write path exists. Social list retains stage filtering and adds platform filtering. Create, edit and detail expose the same channel-label model. Published presentation reads the current C2 stage and timestamp, with no copied scheduling state.
 
-Recordings/File subjects, formal approval rounds, revision-history models, Content portal, comments, notifications, templates and provider integrations remain C4+ work.
+C4 adds recordings/File subjects and C5 adds formal review revisions/rounds below. General Content portal navigation, comments, notifications, templates and provider integrations remain future work.
 
 ## Assets / Files (B5)
 
@@ -580,26 +580,38 @@ Project create/edit/status/assignment JSON accepts only its named fields; unknow
 
 Work resource and portal endpoints accept no query inputs. The internal Project collection accepts one `status` and one `clientId`; the Action collection retains its B3 filter allowlist. Unknown or duplicate query keys return a sanitized, uncached 400 after authorization. Unauthenticated or inaccessible resources keep their existing 401/403/404 behavior. Downloads preserve their post-R2 authorization check and cancel any prepared stream before rejecting unsupported query input. This adds no domain field, lifecycle, permission grant or migration.
 
-## Approvals
+## Content approvals and review history (C5)
 
-Approval history is append-only by round.
+Additive `0017_c5_content_approvals.sql` introduces two Content-specific relational tables, seven indexes and ten triggers. It does not rebuild Content or rewrite migrations 0013–0016. Current domain inventory is 41 tables / 18 migrations. General Deliverable approvals remain unimplemented.
 
-Possible states:
-- Requested
-- Approved
-- Changes Requested
-- Withdrawn
+`content_review_revisions` owns a distinct immutable ID, workspace, Content, positive per-Content sequence number, title, type, optional hook/script/caption/CTA/target date, ordered `platforms_json` label array, and creation timestamp. Composite workspace/Content ownership and unique workspace/Content/ID and sequence indexes prevent cross-parent references. Insert validation requires an exact capture of current eligible Content and its ordered platform labels; update/delete triggers make the captured revision immutable. This is formal review history, not a keystroke log.
 
-Store:
-- subject type/id
-- round number
-- requested by
-- requested from
-- status
-- feedback
-- requested/responded timestamps
+`content_approval_rounds` owns ID, workspace, Content, `revision_id`, per-Content `number`, request UUID, consumed `request_revision`, requester membership/time, and relational status `requested|approved|changes_requested|withdrawn`. Terminal fields are responder membership/time and feedback, or withdrawer membership/time and optional reason; an internal unique-operation receipt and consumed `completion_revision` fence the atomic Content mutation. Composite FKs require the revision to belong to that same workspace/Content and all provenance memberships to belong to the same workspace. Unique sequence, revision and request indexes prevent reuse; a partial unique workspace/Content index permits at most one Requested round. Insert/update triggers fix initial provenance and permit exactly one Requested → terminal transition. Terminal rounds and all round deletions are immutable. Earlier feedback cannot be rewritten.
 
-Do not overwrite prior approval rounds.
+### Requests, freeze and responses
+
+Owner/Admin/PM may request or withdraw within current C1 Content scope. PM/Team restricted history still needs the exact Client or Social Service assignment; Team can read history but cannot request/withdraw. Request requires Client approval enabled, current `client_review`, Client eligible visibility, canonical current Client/optional same-client Social Service, the expected Content CAS revision, and no Requested round. The D1 batch captures current SQL fields/platform labels under its write lock, allocates the next sequence, inserts revision/round and `CONTENT_APPROVAL_REQUESTED`, then consumes one Content CAS revision without changing stage. A request retry must match the original requester, request UUID and consumed revision; immutable round evidence acknowledges it without another write, even after later work, under current Content authorization.
+
+While Requested, title/type/hook/script/caption/CTA/target date, all three workflow flags, platform associations, stage and stage context are frozen by live conditional mutation predicates and additive database triggers. Internal pillar and ownership remain editable. Visibility, assignments, contact links, membership, role and workspace status remain live/revocable; changing these never edits the historical snapshot. C1/C3 mutations and C2 transitions compete with requests/responses through the one `content_items.revision` CAS counter. That counter is never the durable review identity, and Content has no duplicate approval-status field.
+
+Any currently linked active Client contact for the exact Content Client may respond; C5 does not snapshot a named reviewer grant. Live SQL rechecks active identity/membership/workspace/unchanged role, current contact linkage, Client Content visibility, canonical optional Social Service, Requested round and current `client_review`/approval-required facts. The Client supplies only decision and feedback, never internal IDs, stage, actor, snapshot or CAS authority. The transaction resolves the round first, then a unique terminal receipt gates the semantic approval event, stage event and strict current-stage/current-revision Content update. Any late failure rolls back all facts; a competing zero-row operation produces no event.
+
+Approved records responder/time and moves Content to `approved`. Changes Requested requires non-empty normalized plain-text feedback, up to 2,000 UTF-16 code units using the C2 context rules; it records immutable feedback/responder/time and moves Content to `revision_requested` with that feedback as current `stage_context`. Later Editing clears only current context, never round feedback. Withdraw records coordinator/time and optional normalized reason, preserves revision and round, leaves stage `client_review`, consumes CAS and unlocks editing. A later explicit request always creates a fresh revision and next round.
+
+C5 blocks generic internal Client Review → Approved for approval-required Content, even without an open round. An open round also blocks internal Client Review → Revision Requested. Internal Review → Revision Requested and Revision Requested → Editing remain valid. Approval-disabled Content keeps C2's existing conditional skips, and Published remains terminal. Generic C2 retries exclude C5 response events, so Client response evidence is not mistaken for an internal transition receipt.
+
+### Narrow API and portal projection
+
+- `POST /api/bloomops/content/:contentId/approvals`: exactly `requestId,expectedRevision`.
+- `POST /api/bloomops/approvals/:roundId/withdraw`: exactly `expectedRevision` and optional `reason`.
+- `GET /api/bloomops/portal/approvals/:roundId`: exactly `{item:{id,number,requestedAt,snapshot}}` for an actionable round.
+- `POST` to that same portal endpoint: exactly `decision` (`approved|changes_requested`) and optional/required `feedback` as above.
+
+All API routes reject unknown/duplicate query inputs after current authorization, reject malformed/non-object/extra JSON, enforce the shared Origin boundary, use no-store responses and sanitize 400/401/403/404/409/500 failures. Foreign/hidden/non-actionable IDs are opaque 404s. A completed POST retry is acknowledged only for the same responder and normalized decision/feedback (withdraw retries also match coordinator/reason/consumed CAS), under current live access. It returns only `ok,roundId,unchanged`: completed GET is unavailable and no Client historical snapshot browsing is added. The browser keeps a just-completed confirmation locally.
+
+The immutable snapshot allowlist is exactly `title,type,hook,script,caption,cta,targetPublishDate,platforms` (ordered display labels). It excludes pillar, owner, memberships, CAS, internal stage context/activity, raw rows/HTML, Service/Department internals, and all File/storage metadata. Rendering is escaped plain text. C4 has no immutable File versions, so **all Files are deliberately excluded from approval snapshots**; the UI states this explicitly. C4 remains the only File/R2 system and approval operations neither query R2 nor change File facts.
+
+Portal Home conditionally shows “Approval needed” and links to `/portal/approvals/:roundId`. Eligible requests are filtered in SQL before stable ordering and a 200+1 read; only eligible overflow is indicated, and more requests become visible as responses complete. Hidden rows cannot affect count/overflow/empty state. There is no general `/portal/content`, Social/calendar navigation or Client history endpoint. Internal Content detail shows 20 rounds per page (number descending), timestamps, current safe names for durable provenance memberships, terminal feedback/reason and expandable immutable snapshots. Reads use bounded SQL with relational assignment checks and no per-row API or File/R2 lookups. Client operational activity filters each Content event through current Content readability; activity is never the canonical approval state.
 
 ## Comments
 

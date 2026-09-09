@@ -2,7 +2,7 @@
 
 ## Current state
 
-C1 closed through PR #22 on `f1003c236cbce5102efcddd1bf7cda20e4f8ed8b`; C2 closed through PR #23 on `fed68697ff9f45e5c0228655bec2aaee3583f1c2`, with their exact-SHA post-merge gates recorded in `BUILD_STATE.md`. C3 PR #24 merged as `6be5b4d668545d630c463e0a6b457ce7d53d6338`; read-only checks verified [Deploy staging 34296771989](https://github.com/Beeyach/bloomops/actions/runs/34296771989) and [Verify zero-to-current 34296772032](https://github.com/Beeyach/bloomops/actions/runs/34296772032), including disposable cleanup, succeeded on that exact SHA. C4 Recordings + Content Assets is implemented on `codex/c4-recordings-content-assets`, with verification evidence in `BUILD_STATE.md`. C4 is not closed: independent audit, user-controlled merge and both exact-C4-merge-SHA gates remain required. C5+ is unimplemented.
+C1–C3 are closed through PRs #22–#24, with exact-SHA gates recorded in `BUILD_STATE.md`. C4 PR #25 merged as `5b3e3c3ac3eae69b75310f73f9f54c7a85edc095`; read-only checks confirmed [Deploy staging 34333717208](https://github.com/Beeyach/bloomops/actions/runs/34333717208) and [Verify zero-to-current 34333717121](https://github.com/Beeyach/bloomops/actions/runs/34333717121) succeeded on that exact SHA, with cleanup verified in the C5 contract. C5 formal Content review revisions and approval rounds are implemented on `codex/c5-approvals-revision-history`; exact local evidence and limitations are in `BUILD_STATE.md`. C5 is not closed: independent audit, user-controlled merge and both exact-C5-merge-SHA gates remain required. C6+ is unimplemented.
 
 ## Goal
 
