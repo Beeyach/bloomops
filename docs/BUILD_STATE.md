@@ -6,21 +6,63 @@ Release C: Social. Release B is closed on `c6509aa395a5db58310e2a0ae22a8a808082f
 
 ## Current Phase
 
-C2 Production Pipeline is implemented and locally verified on `codex/c2-production-pipeline`, pending independent ChatGPT audit. C1 and B1 through B7 are closed. C3+ remains unimplemented.
+C3 Calendar + Platforms is implemented and locally verified on `codex/c3-calendar-platforms`, ready for independent ChatGPT audit. C3 is not closed. Independent ChatGPT audit, user-controlled merge and both post-merge workflows successful on the exact C3 merge SHA are required before C4.
 
-Current implementation spec: `docs/phases/C2.md`; release sequence: `docs/RELEASE_C.md`.
+### Verified C2 closure and C3 base
 
-Documentation index: `docs/INDEX.md`
+C2 PR #23 merged as `fed68697ff9f45e5c0228655bec2aaee3583f1c2`, the exact requested C3 base/main SHA. Read-only preflight verified [Deploy staging 34291205923](https://github.com/Beeyach/bloomops/actions/runs/34291205923) and [Verify zero-to-current 34291205922](https://github.com/Beeyach/bloomops/actions/runs/34291205922), including the successful create/migrate/twice/verify/delete step, on that exact SHA. Branch history contains only the authorized C3 contract/prompt after that base before this implementation. C1 closure remains recorded in the historical sections below.
 
-## Branch State
+## Calendar + Platforms (C3)
 
-PRs #2 through #22 are merged. C2 starts from exact C1 merge/main `f1003c236cbce5102efcddd1bf7cda20e4f8ed8b`, followed by C2 contract `c3369ac` and temporary prompt carrier `cb07fb7`. Preflight verified requested branch, ancestry and exact remote main before implementation; remote main was checked again during verification. No rebase or merge was performed.
+The additive `0015_c3_calendar_platforms.sql` introduces only the four-column relational association table, its composite primary key, workspace and composite Content foreign keys, two bounded text checks and one platform-filter index. Content retains all 24 C2 columns and gains two indexes (seven total): workspace/id uniqueness for the FK and workspace/target-date/id for calendar ordering. The journal contains 16 migrations and domain schema 38 tables. C1/C2 migrations and triggers, dependencies/lockfile, Worker configuration and R2 subject model remain unchanged.
 
-C1 closed through PR #22. Read-only checks confirm [Deploy staging 34276571767](https://github.com/Beeyach/bloomops/actions/runs/34276571767) and [Verify zero-to-current 34276571760](https://github.com/Beeyach/bloomops/actions/runs/34276571760), including disposable-database cleanup, completed successfully on that exact C1 merge SHA. C2 requires independent ChatGPT audit, user-controlled merge and both workflows successful on its actual merge SHA before C3.
+### Implementation decisions
+
+- Canonical docs/history, including original model commit `0757d45`, specify associations but no fixed provider vocabulary. Labels are user-entered channels, normalized NFC/outer whitespace/internal spacing, with lowercase normalized keys. A set has 0–12 distinct labels, each 1–60 UTF-16 units; keys allow 120 units for case expansion. Controls, all Unicode format characters/bidi and malformed UTF-16 are rejected. Duplicate normalized keys reject atomically. Display spelling survives; case-only label edits are significant. Code-point sorting matches SQLite BINARY ordering for astral/BMP mixtures.
+- Initial platforms share the existing creation batch and immutable request provenance. Legacy creation events mean an empty initial set. The dedicated PUT accepts only platforms/expectedRevision, replaces the complete relational set, and shares strict Content CAS with details and C2 transitions. Current identical/empty-removal sets are silent no-ops. Significant changes append one `CONTENT_PLATFORMS_CHANGED` event. Current-readable immutable consumed-revision evidence acknowledges identical response-loss retries after later changes without restoring an old set; incompatible reuse conflicts.
+- Activity, conditional deletion/insertion and the final revision/timestamp update are one atomic D1 batch. Every committing predicate rechecks live Identity → Role → Scope → Visibility and the expected revision. Keeping the revision update last lets every statement use the same unconsumed CAS condition. Revocation/restriction fences writes; late failures roll back facts and history. Parent, stage, flags, context, target date and publication timestamp remain unchanged.
+- Calendar GET requires exact real start/end dates, inclusive 1–42 days, plus the existing exact Content filters and platform. Protected authorization precedes invalid/duplicate query and body handling, with Origin/no-store/safe error mapping preserved. The single SELECT uses relational assignments, date/ID ordering and visible 200+1 overflow; correlated bounded platform aggregation and EXISTS filtering avoid duplicate Content rows or N+1 requests. No R2 access or calendar writes exist.
+- Dates stay floating YYYY-MM-DD values in the existing helper's supported 0100–9999 range. The UI defaults to the UTC current month; published timestamps remain C2 instants and do not relocate planned dates. Undated Content stays in the list. Stable offset pages can shift under concurrent edits, just as C1 pages can.
+- The monthly agenda groups complete rows by date. Inspection found the inherited seven-column calendar draggable and title-only, unsuitable for long titles, multiple channel labels and 200 same-day items at narrow widths. C3 keeps explicit date edits in the canonical form. Social list retains stage filters, adds platform filtering, and create/edit/detail expose platform editing with field errors and safe conflict reload. No per-day item clipping or drag/drop mutation is introduced.
+
+### Verification evidence
+
+Only final completed runs count below. Node 22.22.1 is used. Browser tooling is installed outside the repository; local example.com identities and development R2 mail only. No staging business-data writes, production actions, provider calls, real email, DNS or Leadsthatbloom changes occur.
+
+| Command / check | Result |
+|---|---|
+| `npm ci` | Exit 0; 560 installed / 561 audited; package/lock unchanged |
+| Focused `bloomops-content-calendar-*.test.mjs` | 111/111: access 44, domain 48, HTTP 11, schema 2, UI 6; final strengthened access rerun 44/44 |
+| C2 pipeline / C1 Content regressions | 105/105 and 133/133 |
+| B7 / B1 / B2 / B3 / B4 / B5 / B6 focused regressions | 29/97/173/203/197/171/76, all passed |
+| Release A/core command in B6 below | 421/421; additional updated shell suite 17/17 |
+| Final `npm test` | 4,379/4,379; zero failures, cancellations or skips; exit 0 |
+| `npm run build` / final `npm run cf:build` | Both passed; final CF build includes Next/lint/type checks; exit 0 |
+| Fresh/no-op local zero-to-current | 22/22; all 16 migrations, identical second-run schema/ledgers, cleanup complete |
+| C3 actual disposable workerd/D1 | 57/57; no R2 binding |
+| C2 / C1 actual workerd/D1 | 54/54 and 43/43 |
+| B1/B2/B3/B4/B5/B6/B7/A11 actual D1/R2 smokes | 25/28/47/38/42/34/86/26, all passed |
+| Built Worker `auth-smoke-local.mjs` | Final isolated rerun 144/144; exit 0 |
+| Local external `verify-staging.mjs` | 21/21 on development loopback; exit 0 |
+| C3 browser/HTTP acceptance | 120/120; 38 captures at 1440/1024/768/390/320; keyboard/focus, touch, reduced motion, dense dates, range edges and issued-session revocation; exit 0 |
+| Changed JS/JSX syntax / `git diff --check` | 32 changed paths parsed; whitespace clean |
+| Dependency audit / exact-base comparison | 53 current advisories; complete base/current JSON identical; +4 high vs historical 49 |
+
+The full suite exposed a stale internal-shell page-count assertion, updated from 20 to 21 while retaining server authorization checks and adding the calendar to anonymous redirect coverage. Early source/test failures and interrupted runs are not counted as passes. Initial concurrent browser fixture setup and HTTP smoke collided on local SQLite and the HTTP harness's global user/membership counts; the completed HTTP and browser evidence runs are serialized. Browser harness selectors distinguish the named Platforms section from its textbox, and the workspace-revocation case retains its revision before revocation. Only a complete successful browser rerun counts. Protected application behavior and auth rate limits were not weakened.
+
+### Evidence limitations and gate
+
+The live design reference was successfully loaded past the “Design gallery” heading and visually inspected. The final browser captures are `/tmp/bloomops-c3-review-final3`; the final browser/full/HTTP logs are `/tmp/bloomops-c3-browser-final3.log`, `/tmp/bloomops-c3-full-final.log` and `/tmp/bloomops-c3-http-final.log`. Screenshots and raw logs/audit JSON are local `/tmp/bloomops-c3-*` artifacts, not permanent CI artifacts. Runtime harnesses are checked in and reproducible. The local zero verifier proves fresh/no-op schema and cleanup; it is not a C3 post-merge remote gate.
+
+Contemporary `npm audit --json` reports 53 advisories (1 low, 43 moderate, 9 high, 0 critical) for both C3 and an external directory containing the exact base package/lockfile. Their full JSON outputs are identical and package/lock diff is zero. This is +4 high advisories versus the historical 49-advisory baseline (previously 1 low, 43 moderate, 5 high), with zero C3-vs-current-base delta. Historical raw audit JSON is absent after the session environment reset, so historical advisory-by-advisory attribution is not claimed. Dependency remediation remains inherited work, outside C3.
+
+Final scope is 41 changed paths against the exact base; the temporary prompt has zero net diff. The owned local preview was stopped intentionally with SIGINT (wrapper exit 130), and port 8787 was confirmed closed; this is cleanup, not a failed verification check.
+
+C4 recordings/Content assets, formal approvals/revision history, Client Content portal, comments, notifications/templates and provider publishing/integrations are intentionally absent. The PR must stay OPEN and UNMERGED for independent ChatGPT audit. Only after audit, user-controlled merge, and Deploy staging plus Verify zero-to-current on that exact C3 merge SHA may C4 start.
 
 ## Production Pipeline (C2)
 
-C2 implementation and local verification are complete; independent ChatGPT audit, user-controlled merge and exact-merge-SHA gates remain outstanding. The narrow additive migration is `0014_c2_content_pipeline.sql`. It adds nullable current `stage_context` and one stage-filter index to canonical Content: 24 columns and five Content indexes. There is no new table, duplicate status, identity key or approval model. Historical migrations, C1 triggers, package/lock and Worker configuration remain unchanged.
+Historical C2 implementation evidence follows. C2 is now closed through PR #23 and the exact-SHA gates recorded above. The narrow additive migration is `0014_c2_content_pipeline.sql`. It adds nullable current `stage_context` and one stage-filter index to canonical Content: 24 columns and five Content indexes. There is no new table, duplicate status, identity key or approval model. Historical migrations, C1 triggers, package/lock and Worker configuration remain unchanged.
 
 ### Implementation decisions
 

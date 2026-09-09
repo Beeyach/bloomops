@@ -1,0 +1,12 @@
+import './_jsx.mjs';
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { contentMonth } from '../lib/bloomops/content-calendar-values.mjs';
+const {default:Calendar}=await import('../components/bloomops/ContentCalendar.jsx'),{default:Platforms,platformLines}=await import('../components/bloomops/ContentPlatforms.jsx'),{AppRouterContext}=await import('next/dist/shared/lib/app-router-context.shared-runtime.js');
+const render=(items=[],extra={})=>renderToStaticMarkup(React.createElement(Calendar,{result:{items,page:1,hasMore:false,...extra},month:contentMonth('2026-09'),options:{parents:[]}}));
+test('empty month stays useful and exposes bounded month navigation and canonical date guidance',()=>{const html=render();assert.match(html,/Nothing planned in this range/);assert.match(html,/Items without a target date/);assert.match(html,/month=2026-08/);assert.match(html,/month=2026-10/);assert.doesNotMatch(html,/draggable|onDrop|type="file"/);});
+for(const stage of ['idea','scheduled','published'])test(`${stage} renders canonical date, escaped labels and current publication fact`,()=>{const html=render([{id:'one',title:'<script>Title</script>',clientId:'james',clientName:'James',type:'reel',stage,targetPublishDate:'2026-09-08',publishedAt:stage==='published'?'2026-10-01T00:00:00.000Z':null,platforms:[{key:'channel',label:'<b>Channel</b>'}]}]);assert.match(html,/datetime="2026-09-08"/i);assert.match(html,/&lt;script&gt;/);assert.match(html,/&lt;b&gt;Channel/);assert.equal(html.includes('2026-10-01'),stage==='published');});
+test('dense date preserves every row and truthful overflow navigation',()=>{const html=render(Array.from({length:200},(_,i)=>({id:String(i),title:`Item ${i}`,clientId:'james',clientName:'James',type:'reel',stage:'idea',targetPublishDate:'2026-09-08',platforms:[]})),{hasMore:true});assert.equal((html.match(/class="bo-content-title"/g)||[]).length,200);assert.match(html,/Next page/);});
+test('platform form guards hydration, labels input and gives explicit save',()=>{const html=renderToStaticMarkup(React.createElement(AppRouterContext.Provider,{value:{refresh(){}}},React.createElement(Platforms,{item:{id:'one',revision:1,platforms:[{key:'channel',label:'Channel'}]}})));assert.match(html,/disabled/);assert.match(html,/Save platforms/);assert.match(html,/for="content-platforms"/);assert.deepEqual(platformLines('One\n\n Two \n'),['One',' Two ']);});
