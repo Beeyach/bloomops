@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Built Worker C5 acceptance; loopback, local D1/R2 mail, example.com only.
+// Built Worker C5 acceptance; --release-c adds integrated C7 checkpoints.
+// Loopback, local D1/R2 mail, example.com only.
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
@@ -8,6 +9,7 @@ import { createRequire } from 'node:module';
 import { resolve, join } from 'node:path';
 const arg = (name, fallback) => process.argv.includes(name) ? process.argv[process.argv.indexOf(name) + 1] : fallback;
 const base = arg('--url', 'http://localhost:8787'), out = resolve(arg('--out', '/tmp/bloomops-c5-review'));
+const releaseC = process.argv.includes('--release-c');
 assert.ok(['localhost','127.0.0.1'].includes(new URL(base).hostname));
 const require = createRequire(join(resolve(arg('--playwright', '/tmp/bloomops-a11-browser')), 'package.json'));
 const { chromium } = require('playwright'), browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
@@ -64,6 +66,9 @@ try {
   sql(`INSERT INTO service_engagements(id,workspace_id,client_id,service_type_id) VALUES(${lit(service)},${lit(ws)},${lit(cl)},${lit(dept)})`);
   const owner=await login(members.owner.email),client=await login(members.client.email),pm=await login(members.pm.email),team=await login(members.team.email),other=await login(members.other.email);
   const post=async(path,data,who=owner,expected=200)=>{const r=await who.context.request.post(base+path,{headers:{origin:base},data});assert.equal(r.status(),expected,await r.text());return r.json();};
+  const story = releaseC ? await (await import('./release-c-review-checks.mjs')).releaseCReview({
+    base, sql, lit, check, widths, layout, activate, post, owner, client, team, other, members, ws, cl, otherClient, dept, service,
+  }) : null;
   const title='A thoughtful garden update · '+ 'seasonal ideas '.repeat(9),script='An opening for a calm and useful garden update.\n'+ 'Explain the simple step, why it matters, and what to try next. '.repeat(55)+'\n<script>Not executable</script>',feedback=('Please make the opening more direct.\n'+ 'Keep the useful example, shorten the introduction, and end with one clear invitation. '.repeat(17)).trim();
   const id=(await post(`/api/bloomops/clients/${cl}/services/${service}/content`,{requestId:randomUUID(),title,type:'reel',visibility:'client',recordingRequired:true,pillar:'C5_PRIVATE_PILLAR',script,caption:'A short seasonal story.',cta:'Save this for the weekend.',platforms:['Instagram','TikTok'],targetPublishDate:'2026-09-22'},owner,201)).contentId;
   const itemPath=`/api/bloomops/content/${id}`,ui=`/social/${id}`,get=async()=>(await(await owner.context.request.get(base+itemPath)).json()).item;
@@ -71,8 +76,9 @@ try {
   const events=()=>sql(`SELECT * FROM activity_events WHERE subject_type='content' AND subject_id=${lit(id)} ORDER BY rowid`);
   const move=async targetStage=>post(itemPath+'/transition',{targetStage,expectedRevision:(await get()).revision,...targetStage==='waiting_for_recording'?{context:'C5_PRIVATE_WAITING'}:{}});
   for(const stage of ['script','waiting_for_recording'])await move(stage);
-  const bytes=Buffer.from('Browser acceptance recording'),fileInput={requestId:randomUUID(),filename:'C5_PRIVATE_RECORDING.mp4',mimeType:'video/mp4',byteSize:bytes.length,purpose:'recording'};
+  const bytes=Buffer.from('Browser acceptance recording'),fileInput={requestId:randomUUID(),filename:releaseC?'Garden recording '+ 'seasonal '.repeat(16)+'é.mp4':'C5_PRIVATE_RECORDING.mp4',mimeType:'video/mp4',byteSize:bytes.length,purpose:'recording'};
   const upload=await client.context.request.post(base+`/api/bloomops/portal/recordings/${id}/files`,{headers:{origin:base,'content-type':'application/octet-stream','x-bloomops-file':encodeURIComponent(JSON.stringify(fileInput))},data:bytes});assert.equal(upload.status(),201);const fileId=(await upload.json()).fileId;
+  await story?.recording(id, fileId, bytes);
   const fileFacts=()=>JSON.stringify(sql(`SELECT assets.* FROM assets JOIN content_asset_links ON asset_id=assets.id WHERE content_id=${lit(id)}`)),originalFiles=fileFacts();
   for(const stage of ['editing','internal_review','client_review'])await move(stage);
   await owner.page.goto(base+ui);await client.page.goto(base+'/portal');
@@ -92,6 +98,7 @@ try {
   const portalPath=`/portal/approvals/${first.id}`,apiPortal=`/api/bloomops/portal/approvals/${first.id}`;
   await client.page.reload();check('linked Client Home retains the narrow approval link alongside Content',await client.page.locator(`a[href="${portalPath}"]`).count()===1&&await client.page.locator('a[href="/social"],a[href="/portal/approvals"]').count()===0);
   await client.page.goto(base+portalPath);await other.page.goto(base+'/portal');check('another linked Client sees no approval module or guessed DTO',await other.page.getByRole('heading',{name:'Approval needed',exact:true}).count()===0&&(await other.context.request.get(base+apiPortal)).status()===404);
+  await story?.review(id, first.id, 1, fileId);
   check('Client HTML excludes internal copy and all storage authority',!/C5_PRIVATE|objectKey|sha256|ownerMembershipId|stageContext|completionRevision|requestRevision/.test(await client.page.content()));
   const dto=await(await client.context.request.get(base+apiPortal)).json();check('exact Client API envelope and immutable snapshot allowlist',Object.keys(dto.item).sort().join()==='id,number,requestedAt,snapshot'&&Object.keys(dto.item.snapshot).sort().join()==='caption,cta,hook,platforms,script,targetPublishDate,title,type');
   for(const width of widths){await layout('client-review-round-1',client.page,width);await layout('internal-requested',owner.page,width);}
@@ -113,6 +120,7 @@ try {
   for(const stage of ['internal_review','client_review'])await move(stage);
   const secondRequest=await post(itemPath+'/approvals',{requestId:randomUUID(),expectedRevision:(await get()).revision},owner,201),second=rounds()[1];
   check('round two has its own immutable revision and preserves prior feedback',secondRequest.roundId===second.id&&second.number===2&&second.revision_id!==first.revision_id&&JSON.stringify(rounds()[0])===round1Final&&JSON.stringify(revisions()[0])===revision1Final);
+  await story?.review(id, second.id, 2, fileId);
   await owner.page.goto(base+ui);await owner.page.locator('.bo-review-details > summary').first().click();await owner.page.locator('.bo-review-details > summary').last().click();
   for(const width of widths)await layout('two-round-history',owner.page,width);
   await client.page.goto(base+`/portal/approvals/${second.id}`);check('round two shows only revised submitted copy and platforms',await client.page.getByText('LinkedIn',{exact:true}).count()===1&&(await client.page.textContent('main')).includes('A more direct opening.')&&!(await client.page.textContent('main')).includes(feedback));
@@ -125,6 +133,7 @@ try {
   await client.page.goto(base+'/portal');check('completed rounds vanish from actionable Home and GET',await client.page.getByRole('heading',{name:'Approval needed',exact:true}).count()===0&&(await client.context.request.get(base+apiPortal)).status()===404);
   const fileResponse=await owner.context.request.get(base+`/api/bloomops/files/${fileId}/download`);check('C4 canonical File metadata and bytes survive two rounds',fileFacts()===originalFiles&&fileResponse.status()===200&&(await fileResponse.body()).equals(bytes));
   const calendar=await(await owner.context.request.get(base+`/api/bloomops/content/calendar?start=2026-09-01&end=2026-09-30&platform=linkedin`)).json();check('C3 calendar still reads revised canonical date/platform',calendar.items.some(row=>row.id===id&&row.targetPublishDate==='2026-09-23'));
+  await story?.published(id);
   const fresh=(await post(`/api/bloomops/clients/${cl}/services/${service}/content`,{requestId:randomUUID(),title:'A second review for withdrawal',type:'reel',visibility:'client'},owner,201)).contentId;
   sql(`UPDATE content_items SET stage='client_review' WHERE id=${lit(fresh)}`);const third=(await post(`/api/bloomops/content/${fresh}/approvals`,{requestId:randomUUID(),expectedRevision:1},owner,201)).roundId;
   sql(`INSERT INTO service_assignments(workspace_id,service_engagement_id,membership_id) VALUES(${lit(ws)},${lit(service)},${lit(members.team.membership)})`);
@@ -139,11 +148,12 @@ try {
   sql(`INSERT INTO service_assignments(workspace_id,service_engagement_id,membership_id) VALUES(${lit(ws)},${lit(service)},${lit(members.pm.membership)})`);await pm.page.goto(base+`/social/${fresh}`);check('exact Social assignment grants restricted coordinator history',await pm.page.getByRole('button',{name:'Withdraw request',exact:true}).count()===1);
   sql(`DELETE FROM service_assignments WHERE membership_id=${lit(members.pm.membership)}`);check('issued coordinator assignment revocation fences withdrawal',(await pm.context.request.post(base+`/api/bloomops/approvals/${reopened}/withdraw`,{headers:{origin:base},data:{expectedRevision:4}})).status()===404);
   sql(`UPDATE content_items SET visibility='client' WHERE id=${lit(fresh)}`);sql(`UPDATE client_contacts SET user_id=NULL WHERE client_id=${lit(cl)}`);check('issued Client contact revocation fences response',(await client.context.request.post(base+pendingPath,{headers:{origin:base},data:{decision:'approved'}})).status()===404);
+  await story?.revoked(id, fileId);
   sql(`UPDATE client_contacts SET user_id=${lit(members.client.id)} WHERE client_id=${lit(cl)}`);sql(`UPDATE workspace_memberships SET status='suspended' WHERE id=${lit(members.client.membership)}`);check('issued Client suspended membership is refused',(await client.context.request.get(base+pendingPath)).status()===403);
   await owner.page.emulateMedia({reducedMotion:'reduce'});await owner.page.goto(base+`/social/${fresh}`);await layout('reduced-motion',owner.page,320);check('reduced motion is respected',await owner.page.locator('.bo-btn').first().evaluate(n=>getComputedStyle(n).transitionDuration.split(',').every(v=>parseFloat(v)<=0.01)));
   const touch=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,storageState:await owner.context.storageState()}),touchPage=await touch.newPage();await touchPage.goto(base+`/social/${fresh}`);const withdrawControl=touchPage.getByRole('button',{name:'Withdraw request',exact:true});await touchPage.waitForFunction(n=>n&&!n.disabled,await withdrawControl.elementHandle());await withdrawControl.tap();check('touch opens coordinator withdrawal dialog',await touchPage.getByRole('dialog').isVisible());await layout('touch',touchPage,390);await touch.close();
   sql(`UPDATE workspace_memberships SET status='active' WHERE id=${lit(members.client.membership)}`);
   const clientTouch=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,storageState:await client.context.storageState()}),clientTouchPage=await clientTouch.newPage();await clientTouchPage.goto(base+`/portal/approvals/${reopened}`);const changesControl=clientTouchPage.getByRole('button',{name:'Request changes',exact:true});await clientTouchPage.waitForFunction(n=>n&&!n.disabled,await changesControl.elementHandle());await changesControl.tap();check('touch opens the narrow Client feedback dialog',await clientTouchPage.getByRole('dialog').isVisible());await layout('client-touch',clientTouchPage,390);await clientTouch.close();
-  console.log(`C5 browser/HTTP: ${checks} checks passed; ${screenshots} screenshots at ${widths.join(', ')}px. Exit 0.`);
-}catch(error){console.error('C5 browser acceptance failed:',String(error.message).split('\n').filter(l=>!/cookie:|authorization:|token=/i.test(l)).join('\n'));process.exitCode=1;}
+  console.log(`${releaseC ? 'C7 integrated C1–C6' : 'C5'} browser/HTTP: ${checks} checks passed; ${screenshots} screenshots at ${widths.join(', ')}px. Exit 0.`);
+}catch(error){console.error(`${releaseC ? 'C7 integrated' : 'C5'} browser acceptance failed:`,String(error.message).split('\n').filter(l=>!/cookie:|authorization:|token=/i.test(l)).join('\n'));process.exitCode=1;}
 finally{await browser.close();}
