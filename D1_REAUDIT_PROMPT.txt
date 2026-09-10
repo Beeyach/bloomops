@@ -1,0 +1,103 @@
+You are the independent re-auditor for BloomOps D1 Systems Foundation.
+
+Audit target
+- Repository: Beeyach/bloomops
+- PR: #31
+- Base: 1638e3ed9fd33c3725aa3449935b08335b73f1a9
+- Corrected implementation head to audit exactly: b3e4ef35a5f607e4424ba65476848851f292a803
+- Previous failed implementation head: da8f2ec4633352b673aa62392a49700fdd234f4c
+
+This is a fresh independent audit. Do not trust the implementation report or prior audit conclusions. Reproduce important claims from the repository and tests yourself. Do not modify application code. If you add an audit report or BUILD_STATE audit note on this audit branch, keep it clearly audit-only and do not alter PR #31's implementation branch.
+
+Read completely before auditing
+- AGENTS.md
+- docs/BUILD_STATE.md
+- docs/ROADMAP.md
+- docs/RELEASE_D.md
+- docs/PRODUCT_SPEC.md
+- docs/DOMAIN_MODEL.md
+- docs/DESIGN_SYSTEM.md
+- docs/DESIGN_CHECKLIST.md
+- docs/phases/D1.md
+- relevant B1-B7 and C1-C7 contracts/implementation/tests as needed
+- PR #31 diff from the exact base through the exact corrected head
+- the prior D1 audit report if present, but treat it as evidence to challenge, not authority
+
+Primary re-audit objective
+Determine whether PR #31 at exact head b3e4ef35a5f607e4424ba65476848851f292a803 now satisfies the binding D1 contract and is safe to merge.
+
+Mandatory regression re-check: previous blocker
+The prior independent audit failed D1 because app/(internal)/systems/loading.jsx hid completed Systems content behind a JavaScript-dependent streamed fallback. The old browser acceptance only counted hidden elements and did not prove visible no-JavaScript content or submit a real native filter. Local measurement also showed Systems warm navigation around 345 ms versus roughly 60-80 ms for Work/Social, while removing the loading boundary experimentally reduced Systems to about 93 ms.
+
+Verify the correction independently:
+1. Confirm the problematic route-level Systems loading boundary is genuinely removed or safely restructured, and that no equivalent JavaScript-dependent visibility trap remains.
+2. With JavaScript disabled, prove the completed /systems content is actually visible after navigation, not merely present in hidden DOM.
+3. With JavaScript disabled, perform a real native Systems filter submission and prove the filtered visible result is correct.
+4. Exercise this at the required responsive widths where the harness supports it: 1440, 1024, 768, 390 and 320.
+5. Confirm page/loading tests were corrected rather than weakened or deleted to hide the defect.
+6. Measure warm authenticated click-to-visible navigation for Systems and comparable Work/Social routes in the same controlled local environment. Report medians and methodology. The corrected Systems route should no longer show the previous ~250 ms loading-boundary regression. Do not require the broader staging-wide ~2-second issue to be solved in D1; that is deliberately deferred to a dedicated performance-hardening phase after D1.
+7. Check for new N+1 queries, duplicate auth/actor loads, unbounded projection reads, or unnecessary sequential work introduced by the fix.
+
+Full D1 contract audit
+Independently verify at least:
+- Systems eligibility comes only from canonical relational Project -> Service Engagement -> Service Type -> Systems Department truth, not name/platform text inference.
+- Systems remains a specialist projection over canonical Projects/Milestones/Actions/Deliverables/Files, with no parallel lifecycle or editor.
+- Owner/Admin/PM/Team behavior preserves current authorization rules.
+- Department membership alone grants nothing.
+- Project ownership alone grants nothing.
+- Action-only assignment stays narrow and does not inflate parent/sibling Systems summaries.
+- restricted visibility, service/project reassignment, membership suspension/removal and current database truth revoke access immediately.
+- foreign workspace/client/filter ids do not leak existence through rows, counts, facets, overflow or errors.
+- pagination/facets are bounded and deterministic and derive only from readable rows.
+- hidden/restricted children do not affect visible progress/counts/attention/order/empty states.
+- Files are metadata-only in projections and no R2 reads are performed merely to render Systems summaries.
+- Systems links route to canonical Project/Action management paths.
+- no D2+ blueprint generation, QA lifecycle changes, launch/handoff metadata, Client Systems nav, credential storage, Ads or unrelated scope was introduced.
+- D1 remains schema-free unless repository evidence proves otherwise.
+
+Required verification
+Use the strongest current repository-equivalent commands and harnesses. At minimum reproduce the meaningful current equivalents of:
+- npm ci
+- focused D1 Systems tests
+- Systems plus shell tests
+- relevant Service/auth/authorization tests
+- B1-B7 regressions used by the Systems projection
+- Release C regressions
+- full npm test
+- npm run build
+- npm run cf:build
+- local zero-to-current verifier
+- schema/drift verification and Drizzle generation/no-drift check
+- D1 Systems/B6/B7/C7 runtime smokes
+- built Worker auth smoke and local external verifier
+- corrected Systems browser acceptance including no-JavaScript visible content and real native filter submission
+- changed JS/JSX syntax validation
+- git diff --check
+- exact package/lock/schema/migration/Cloudflare-config diff against base
+
+Inspect the exact PR diff. Do not accept test counts alone as proof. Challenge tests for false positives, especially visibility, authorization, pagination, and hidden-count assertions.
+
+Performance observation for the next phase
+Because the user observed roughly 2-second per-click latency on deployed staging, include a separate non-blocking section describing what D1 evidence does and does not explain. Note any likely sources worth profiling next, such as server-component streaming, Better Auth session D1 reads, live membership/actor loads, sequential authorization reads, aggregate query cost, Cloudflare region/cold behavior, or navigation prefetch/visible commit timing. Do not turn this re-audit into the global performance fix.
+
+Result format
+Start with exactly one of:
+AUDIT RESULT: PASS
+or
+AUDIT RESULT: FAIL - CHANGES REQUIRED
+
+Then provide:
+1. Merge recommendation, naming exact audited head SHA.
+2. Findings, highest severity first, with file/line or precise location and reproduction evidence. If none, say no blocking or non-blocking findings.
+3. Verification performed with fresh result counts/outcomes.
+4. D1 contract coverage summary.
+5. Security and tenant-isolation conclusion.
+6. Previous performance-blocker conclusion, including fresh warm navigation measurements.
+7. PERFORMANCE OBSERVATION FOR NEXT PHASE covering the still-unresolved staging-wide latency without making it a D1 blocker unless D1 materially causes it.
+8. Remaining uncertainty.
+9. Final next action.
+
+Merge rule
+Recommend merge only if the exact corrected head b3e4ef35a5f607e4424ba65476848851f292a803 passes. If the implementation branch head moves during the audit, stop and report that the audited SHA is stale. Do not merge the PR yourself.
+
+If PASS, explicitly state that merge is recommended only while PR #31 head remains exactly b3e4ef35a5f607e4424ba65476848851f292a803.
