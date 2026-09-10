@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation';
+import { cache } from 'react';
 import { evaluate, loadInternalClientResource } from '@/lib/bloomops/authorization.mjs';
 import { requireShell } from '@/lib/bloomops/shell-server.mjs';
-import { authorizeProject, getProject, projectOptions } from '@/lib/bloomops/projects.mjs';
+import { authorizeProject, projectOptions } from '@/lib/bloomops/projects.mjs';
 import { listProjectAssignments } from '@/lib/bloomops/project-assignments.mjs';
 import { projectActivity } from '@/lib/bloomops/project-activity.mjs';
 import { Button, PageHeader, Section } from '@/components/bloomops/Primitives';
@@ -19,15 +20,20 @@ import { listFiles } from '@/lib/bloomops/files.mjs';
 import FileControls from '@/components/bloomops/FileControls';
 
 export const dynamic = 'force-dynamic';
-export async function generateMetadata({ params }) {
+// Metadata and the page share this request's authorized Project read. React
+// drops the result after rendering; the next navigation rechecks current data.
+const projectForRequest = cache(async id => {
   const { access, actor } = await requireShell('internal');
-  const project = await getProject(access.db, actor, (await params).id);
-  return { title: project?.name || 'Project' };
+  return { access, actor, result: await authorizeProject(access.db, actor, id, 'project.view') };
+});
+
+export async function generateMetadata({ params }) {
+  const { result } = await projectForRequest((await params).id);
+  return { title: result.project?.name || 'Project' };
 }
 
 export default async function ProjectPage({ params }) {
-  const { access, actor } = await requireShell('internal');
-  const result = await authorizeProject(access.db, actor, (await params).id, 'project.view');
+  const { access, actor, result } = await projectForRequest((await params).id);
   if (!result.ok) notFound();
   const { project, resource } = result;
   const mayManage = evaluate(actor, { action: 'project.manage', resource }).allowed;

@@ -30,7 +30,7 @@ Do not automatically load every planning document into context.
 
 Release D — Systems Delivery is the active release. Release C is closed for forward development on verified `main` baseline `1638e3ed9fd33c3725aa3449935b08335b73f1a9`.
 
-Current phase: **D1 — Systems Foundation implemented; independent audit pending**
+Current phase: **PERF1 — Navigation Performance Hardening implemented; independent audit and authenticated staging confirmation pending. D2 remains blocked.**
 
 Release A closed after A11 PR #14 merged as `3deed08d8db2a92fcf4dc29a6a879a9945260049`. Read-only preflight verified [Deploy staging 34175768644](https://github.com/Beeyach/bloomops/actions/runs/34175768644) and [remote zero-to-current 34175768643](https://github.com/Beeyach/bloomops/actions/runs/34175768643) completed successfully on that exact SHA.
 
@@ -54,7 +54,9 @@ C2 closed through PR #23 on `fed68697ff9f45e5c0228655bec2aaee3583f1c2`. Deploy s
 
 Release C and the automatic post-merge workflow follow-ups are verified on `1638e3ed9fd33c3725aa3449935b08335b73f1a9`: [Deploy staging 34478365157](https://github.com/Beeyach/bloomops/actions/runs/34478365157) and [Verify zero-to-current 34478365145](https://github.com/Beeyach/bloomops/actions/runs/34478365145) both succeeded on that exact SHA.
 
-Current phase file: `docs/phases/D1.md`; release sequence: `docs/RELEASE_D.md`. `BUILD_STATE.md` records the D1 implementation and verification. Independent audit, user-controlled merge and both automatic workflows on the exact D1 merge SHA are required before D2. Ads is Release E.
+D1 is closed through [PR #31](https://github.com/Beeyach/bloomops/pull/31) on `e5bc81630c47fb6eb51e9bdc6be1687947683643`. Read-only checks verified [Deploy staging 34496059835](https://github.com/Beeyach/bloomops/actions/runs/34496059835) and [Verify zero-to-current 34496059875](https://github.com/Beeyach/bloomops/actions/runs/34496059875) succeeded on that exact SHA.
+
+Current phase file: `docs/phases/PERF1.md`; release sequence: `docs/RELEASE_D.md`. `BUILD_STATE.md` records the PERF1 implementation and verification; [PERF1_RESULTS.md](PERF1_RESULTS.md) contains before/after measurements, query attribution, safe public staging evidence and reproduction instructions, with [numeric samples](evidence/PERF1_navigation.json). Authenticated staging confirmation remains outstanding. Independent audit, user-controlled merge, both automatic workflows on the exact PERF1 merge SHA and the phase's staging performance exit criteria are required before D2. Ads is Release E.
 
 ## Phase Reading Matrix
 
@@ -83,6 +85,7 @@ Current phase file: `docs/phases/D1.md`; release sequence: `docs/RELEASE_D.md`. 
 | C2 | `RELEASE_C.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/C1.md`, `phases/C2.md` |
 | C3 | `RELEASE_C.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/C1.md`, `phases/C2.md`, `phases/C3.md` |
 | D1 | `ROADMAP.md`, `RELEASE_D.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `RELEASE_B.md`, `phases/B1.md` through `phases/B7.md`, `phases/D1.md`, current Work Core/Service/authorization/shell code and verification harnesses |
+| PERF1 | `RELEASE_D.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/D1.md`, `phases/PERF1.md`, current internal/portal shell/navigation/auth/membership/authorization, Home/Clients/Work/Social/Systems/Team read models, OpenNext/Cloudflare configuration and verification harnesses; `PERF1_RESULTS.md` for implementation review |
 
 ## Minimal Coding-Agent Prompt Pattern
 

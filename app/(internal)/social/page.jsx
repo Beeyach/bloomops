@@ -1,5 +1,5 @@
 import { requireShell } from '@/lib/bloomops/shell-server.mjs';
-import { contentOptions, listContent } from '@/lib/bloomops/content.mjs';
+import { contentFilters, contentOptions, listContent } from '@/lib/bloomops/content.mjs';
 import { ContentList } from '@/components/bloomops/ContentViews';
 import { Button, Notice, PageHeader } from '@/components/bloomops/Primitives';
 export const dynamic = 'force-dynamic';
@@ -7,8 +7,12 @@ export const metadata = { title: 'Social' };
 export default async function SocialPage({ searchParams }) {
   const { access, actor } = await requireShell('internal');
   const query = await searchParams || {};
-  const result = await listContent(access.db, actor, query);
+  // Invalid filters retain the existing no-data error path. Valid list and
+  // choice reads independently enforce current authority and can overlap.
+  const [result, options] = await Promise.all([
+    listContent(access.db, actor, query),
+    contentFilters(query).ok ? contentOptions(access.db, actor) : null,
+  ]);
   if (!result.ok) return <><PageHeader title="Social" /><Notice tone="error">Choose only the available Content filters.</Notice><Button href="/social">Reset filters</Button></>;
-  const options = await contentOptions(access.db, actor);
   return <ContentList result={result} query={query} options={options} />;
 }
