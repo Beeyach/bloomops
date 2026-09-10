@@ -1,0 +1,62 @@
+You are implementing BloomOps Release D, phase D1: Systems Foundation.
+
+Repository: Beeyach/bloomops
+Branch: codex/d1-systems-foundation
+Exact base SHA: 1638e3ed9fd33c3725aa3449935b08335b73f1a9
+
+This branch already contains the new canonical Release D plan in docs/RELEASE_D.md, the updated Systems-only roadmap split in docs/ROADMAP.md, and the binding D1 contract in docs/phases/D1.md.
+
+Read completely before editing:
+1. AGENTS.md
+2. docs/BUILD_STATE.md
+3. docs/ROADMAP.md
+4. docs/RELEASE_D.md
+5. docs/PRODUCT_SPEC.md
+6. docs/DOMAIN_MODEL.md
+7. docs/DESIGN_SYSTEM.md
+8. docs/DESIGN_CHECKLIST.md
+9. docs/RELEASE_B.md
+10. docs/phases/B1.md through docs/phases/B7.md as required by docs/phases/D1.md
+11. docs/phases/D1.md
+12. current Systems placeholder, navigation, Service, Project, Milestone, Action, Deliverable, File, assignment, authorization, Home/Work and verification code/tests relevant to D1
+
+Then execute docs/phases/D1.md exactly.
+
+Key binding direction:
+- Replace /systems placeholder with a real bounded specialist projection.
+- Systems is a projection over the canonical Work Core, not a parallel project/task engine.
+- A D1 Systems Project is selected through current relational Project -> Service Engagement -> Service Type -> Systems Department truth.
+- Do not infer Systems eligibility or GHL/Kajabi platform from free-text names when relational truth exists.
+- Preserve current authorization, assignment and visibility semantics. Department membership grants nothing.
+- Summaries must use only currently readable canonical Milestones, Actions, Deliverables and Files. Hidden children must not affect visible counts/progress/ordering/empty states.
+- Reuse canonical Project/Action management paths rather than creating duplicate Systems editors.
+- D1 is expected to be schema-free. Do not add a Systems table merely to label Projects as Systems.
+- Do not implement D2 GHL blueprint generation, D3 Kajabi generation, QA lifecycle changes, launch/handoff metadata, Client Systems portal navigation, Ads or later-release work.
+- Do not store credentials or passwords.
+
+Verification:
+Use the repository's actual current scripts after inspecting package.json and docs/BUILD_STATE.md. Run the strongest relevant focused, shared-regression, full-suite, build, Worker/runtime, local zero-to-current, schema consistency, browser/responsive/accessibility, syntax and git diff checks required by docs/phases/D1.md. Do not claim checks you did not run.
+
+Documentation/finalization:
+- Update docs/BUILD_STATE.md with the current Release C closure baseline and exact D1 state/evidence.
+- Update docs/INDEX.md so Release D/D1 is current and add Release D/D1 to the reading matrix.
+- Update docs/DOMAIN_MODEL.md only if durable D1 Systems eligibility/read-model truth needs recording.
+- Preserve docs/RELEASE_D.md, docs/ROADMAP.md and docs/phases/D1.md unless repository evidence requires a precise correction consistent with the product decision.
+- Remove D1_CODEX_PROMPT.txt before the final implementation handoff so it has no net diff against the base.
+- Keep the working tree clean.
+- Push the final branch.
+- Open a PR to main.
+- Leave the PR open and unmerged for independent audit.
+
+Final report must include:
+- exact base SHA
+- exact final head SHA
+- whether D1 remained schema-free
+- concise implementation decisions
+- all verification results with real counts/outcomes
+- inherited advisories
+- complete changed-file inventory
+- deliberate limitations / anything not verified
+- confirmation PR is open and unmerged
+
+Do not begin D2.
