@@ -2,7 +2,7 @@
 
 ## Current state
 
-C1–C3 are closed through PRs #22–#24, with exact-SHA gates recorded in `BUILD_STATE.md`. C4 PR #25 merged as `5b3e3c3ac3eae69b75310f73f9f54c7a85edc095`; read-only checks confirmed [Deploy staging 34333717208](https://github.com/Beeyach/bloomops/actions/runs/34333717208) and [Verify zero-to-current 34333717121](https://github.com/Beeyach/bloomops/actions/runs/34333717121) succeeded on that exact SHA, with cleanup verified in the C5 contract. C5 formal Content review revisions and approval rounds are implemented on `codex/c5-approvals-revision-history`; exact local evidence and limitations are in `BUILD_STATE.md`. C5 is not closed: independent audit, user-controlled merge and both exact-C5-merge-SHA gates remain required. C6+ is unimplemented.
+C1–C5 are closed through PRs #22–#26. C5 PR #26 merged as `df4bfde1d3746d3517dbaff498f6eb17a5b732e0`; read-only checks confirmed [Deploy staging 34365507942](https://github.com/Beeyach/bloomops/actions/runs/34365507942) and [Verify zero-to-current 34365508005](https://github.com/Beeyach/bloomops/actions/runs/34365508005) succeeded on that exact SHA. C6 Client Content Portal is implemented on `codex/c6-client-content-portal`; exact local evidence and limitations are in `BUILD_STATE.md`. C6 remains open for independent audit, user-controlled merge and both exact-C6-merge-SHA gates. C7 is unimplemented.
 
 ## Goal
 

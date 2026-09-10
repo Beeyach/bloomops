@@ -1,14 +1,15 @@
 import AccountMenu from './AccountMenu';
 import ShellHosts from './ShellHosts';
+import PortalContentNav from './PortalContentNav';
 
 // The client portal chrome, rendered by app/portal/layout.jsx for Client
 // members only. Deliberately not the internal shell with parts hidden:
-// there is no sidebar, no destination list, and no internal link
+// there is no sidebar and no internal link
 // anywhere in this tree. A top bar names the agency's workspace and the
 // person; the page underneath is calm and short. Portal destinations
 // (Content, Projects, Files) join here only when the features behind them
 // exist and apply to this client.
-export default function PortalShell({ workspace, user, children }) {
+export default function PortalShell({ workspace, user, hasContent = false, children }) {
   return (
     <div className="bo-root bo-portal">
       <a className="bo-skip" href="#main">
@@ -26,6 +27,7 @@ export default function PortalShell({ workspace, user, children }) {
         </div>
         <AccountMenu name={user.name} email={user.email} roleLabel="Client" workspaceName={workspace.name} placement="down" compact />
       </header>
+      {hasContent && <PortalContentNav />}
       <main id="main" className="bo-portal-page" tabIndex={-1}>
         {children}
       </main>
