@@ -1,0 +1,154 @@
+You are the independent auditor for BloomOps D1 Systems Foundation.
+
+AUDIT EXACTLY THIS IMPLEMENTATION RANGE:
+base: 1638e3ed9fd33c3725aa3449935b08335b73f1a9
+head: da8f2ec4633352b673aa62392a49700fdd234f4c
+PR: #31
+
+Do not merge, deploy, start D2, or modify production/staging business data. Do not trust the implementation summary. Independently inspect the exact diff, relevant current code, tests, and canonical docs, then execute the strongest practical verification available.
+
+READ COMPLETELY BEFORE JUDGING:
+- AGENTS.md
+- docs/BUILD_STATE.md
+- docs/ROADMAP.md
+- docs/RELEASE_D.md
+- docs/PRODUCT_SPEC.md
+- docs/DOMAIN_MODEL.md
+- docs/DESIGN_SYSTEM.md
+- docs/DESIGN_CHECKLIST.md
+- docs/RELEASE_B.md
+- docs/phases/B1.md through B7.md where relevant to shared Work Core behavior
+- docs/phases/D1.md
+- current Service, Project, Milestone, Action, Deliverable, File, assignment, authorization, shell, Work/Home projection implementations and tests
+- every file changed in 1638e3ed9fd33c3725aa3449935b08335b73f1a9..da8f2ec4633352b673aa62392a49700fdd234f4c
+
+PRIMARY AUDIT GOAL
+Determine whether D1 safely replaces the Systems placeholder with a bounded specialist projection over canonical shared Work Core records, without creating parallel Systems state, widening authorization, leaking hidden data, weakening existing behavior, or pulling D2+ work forward.
+
+MANDATORY AUDIT AREAS
+
+1. Scope and architecture
+- Systems remains a specialist projection, not a second project/task engine.
+- Project remains lifecycle/status/health truth.
+- Milestones remain phase/progress truth.
+- Actions remain internal execution/dependency truth.
+- Deliverables remain client-output truth.
+- Files/activity/assignments remain canonical shared authorities.
+- No Systems lifecycle/status/task/deliverable/history/file duplicates.
+- No GHL/Kajabi blueprint generation, QA lifecycle expansion, launch/handoff metadata, Client Systems portal, Ads, Pages, Team workload, Finance, or other D2+ scope.
+
+2. Systems eligibility
+- Eligibility comes from the relational Project -> Service Engagement -> Service Type -> Department relationship.
+- No GHL/Kajabi/platform inference from labels, names, slugs, free text, or display strings where relational department truth exists.
+- Client-level Projects without a Systems Service Engagement are not silently included.
+- Same Client with Systems and non-Systems Services is handled correctly.
+
+3. Authorization and tenant isolation
+- Preserve Identity -> active Membership -> Workspace -> Role -> Scope -> Visibility.
+- Owner/Admin behavior follows existing canonical permissions.
+- PM behavior follows existing scope/restricted rules.
+- Team Member sees only existing Client/Service/Project/Action-assigned scope.
+- Department membership alone grants nothing.
+- Project ownership alone grants nothing.
+- Action-only assignment does not inflate parent/sibling Systems rows, counts, progress, facets, overflow metadata, Deliverables, Files, or attention summaries.
+- Restricted Projects and restricted/hidden children behave exactly according to existing B1-B6 rules.
+- Suspension/removal/reassignment/restriction is reflected from current DB truth on the next protected request.
+- Foreign workspace/client/service/project/filter ids do not change results or reveal existence.
+- Hidden rows never affect counts, pagination, filter facets, empty-state decisions, attention reasons, or overflow messages.
+
+4. Read-model correctness
+- Project rows/summaries use only current readable canonical facts.
+- Milestone progress is derived correctly from readable rows only.
+- Action summaries preserve dependency-blocked/Waiting/Review/Overdue semantics where reused.
+- Deliverable summaries preserve canonical status/visibility semantics.
+- File presence uses D1 metadata only and does not fetch R2 bytes merely for summary display.
+- Ordering, limits, pagination, and facet construction are deterministic and bounded.
+- Current selected authorized filter values remain usable if the facet cap would otherwise omit them.
+- No large bind-heavy in-memory authorization lists are introduced where relational predicates are expected.
+
+5. Navigation and UI
+- /systems is no longer a placeholder.
+- Existing canonical Project/Action screens remain the write/management path.
+- Internal navigation remains coherent and accessible.
+- Client navigation is unchanged.
+- Loading/error/empty states are safe and useful.
+- One meaningful page heading; keyboard-visible focus; touch-friendly controls; reduced-motion handling; no horizontal overflow at 1440, 1024, 768, 390, 320.
+- Long Client/Service/Project names do not break layout or accessibility.
+- JavaScript-disabled behavior remains safe where the implementation claims support.
+
+6. Test integrity
+- Inspect new and changed tests for mocked-away authorization, fixture shortcuts, weakened assertions, skipped/todo tests, inflated pass counts, or assertions that merely mirror implementation.
+- Specifically review the inherited Action test correction. Confirm it fixes only the flaky false-positive around random opaque IDs containing `199` and does not weaken the hidden-count/security invariant.
+- Where practical, reproduce at least one meaningful failure against the base or otherwise prove the new D1 tests are capable of catching regressions.
+
+7. Schema/dependency/config cleanliness
+- D1 should be schema-free.
+- Confirm no migration, schema, Drizzle config, package, lockfile, Cloudflare config, auth provider, storage provider, or infrastructure changes.
+- Confirm no prior migration edits.
+- Run git diff --check and syntax/build checks.
+
+8. PERFORMANCE REGRESSION CHECK - IMPORTANT USER CONCERN
+The user has observed that the current staging app often takes roughly 2 seconds per tab/click. D1 is NOT the phase to solve that global problem, but this audit must determine whether D1 makes it materially worse or introduces obvious avoidable performance regressions.
+
+Inspect and, where practical, measure:
+- warm authenticated navigation/request latency for /systems versus representative existing internal routes such as /work and /social in the local Worker/browser harness
+- query shape/count for the Systems page and whether it introduces obvious N+1 patterns or serial per-row round trips
+- whether pagination/facets cause repeated whole-workspace scans or excessive duplicate reads
+- whether D1 adds extra auth/actor loads beyond existing shell/page behavior
+- whether loading.jsx merely masks latency without reducing work
+- whether Systems read helpers reuse bounded relational queries rather than iterating rows and querying children one by one
+
+Do NOT fail D1 merely because the pre-existing global app navigation baseline is slow. FAIL D1 for performance only if D1 itself introduces a material regression, obvious N+1/unbounded query behavior, or avoidable duplicate work that should be corrected inside D1.
+
+In the final report, include a separate section named exactly:
+PERFORMANCE OBSERVATION FOR NEXT PHASE
+State:
+- what you measured or inspected
+- whether D1 materially worsens the baseline
+- the most likely global bottleneck(s) you observed, without implementing fixes
+- what should be investigated in the dedicated performance-hardening phase before D2
+
+9. Verification expectations
+Run the strongest supported equivalents of:
+- npm ci
+- focused D1 Systems tests
+- D1 + shell/navigation tests
+- Service/auth/authorization regressions
+- relevant B1-B7 regressions
+- relevant Release C regressions
+- full npm test
+- npm run build
+- npm run cf:build
+- local zero-to-current verifier
+- schema/drift checks
+- D1 local Worker smoke
+- B6/B7/C7 relevant runtime smokes
+- built Worker auth/external verifier where supported
+- browser acceptance at all established widths
+- changed JS/JSX syntax checks
+- git diff --check
+- exact package/lock/schema/migration/config diff against base
+
+Do not mutate remote staging or production business data. Synthetic local/disposable data only.
+
+FINAL OUTPUT FORMAT
+Begin with exactly one of:
+AUDIT RESULT: PASS
+AUDIT RESULT: PASS WITH NON-BLOCKING FINDINGS
+AUDIT RESULT: FAIL - CHANGES REQUIRED
+
+Then include these sections in this order:
+1. Merge recommendation
+2. Findings
+3. Verification performed
+4. D1 contract coverage
+5. Security and tenant-isolation conclusion
+6. PERFORMANCE OBSERVATION FOR NEXT PHASE
+7. Remaining uncertainty
+8. Final next action
+
+For every finding include severity, exact path/location, failure mode, violated invariant, and minimal fix. If there are no findings, say so explicitly.
+
+If PASS or PASS WITH NON-BLOCKING FINDINGS, state that PR #31 may merge only while its head remains exactly da8f2ec4633352b673aa62392a49700fdd234f4c. D1 closes only after Deploy staging and Verify zero-to-current migration both succeed on the exact resulting main merge SHA. After D1 closes, do NOT start D2. The next task is a dedicated performance-hardening phase addressing the user's observed ~2-second per-click navigation latency.
+
+If FAIL, provide only the minimal D1 fix list needed, and require a fresh independent re-audit on the corrected exact head before merge.
