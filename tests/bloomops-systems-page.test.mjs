@@ -10,7 +10,6 @@ const { workAsyncStorage } = await import('next/dist/server/app-render/work-asyn
 const { workUnitAsyncStorage } = await import('next/dist/server/app-render/work-unit-async-storage.external.js');
 const { getURLFromRedirectError } = await import('next/dist/client/components/redirect.js');
 const { default: Page } = await import('../app/(internal)/systems/page.jsx');
-const { default: Loading } = await import('../app/(internal)/systems/loading.jsx');
 const { default: ErrorView } = await import('../app/(internal)/systems/error.jsx');
 async function fixture(context, user = 'ellen') {
   const t = await setup({ auth:true }); context.after(()=>t.raw.close());
@@ -45,9 +44,10 @@ test('issued Team session cannot turn Action-only scope into parent summaries an
   run(t.raw,"UPDATE workspace_memberships SET status='suspended' WHERE id='m-sam'");
   await assert.rejects(t.render({}),e=>getURLFromRedirectError(e)==='/sign-in');
 });
-test('loading and error recovery preserve orientation without serializing the thrown error',()=>{
-  const loading=renderToStaticMarkup(Loading()), error=renderToStaticMarkup(ErrorView({reset:()=>{},error:new Error('PRIVATE_SQL')}));
-  assert.match(loading,/role="status" aria-busy="true"/); assert.match(loading,/<h1[^>]*>Systems/);
+test('error recovery preserves orientation without serializing the thrown error',()=>{
+  const error=renderToStaticMarkup(ErrorView({reset:()=>{},error:new Error('PRIVATE_SQL')}));
+  assert.equal((error.match(/<h1\b/g)||[]).length,1);
   assert.match(error,/<h1[^>]*>Systems/); assert.match(error,/role="alert"/); assert.match(error,/Try again/);
+  assert.match(error,/href="\/systems"/);
   assert.doesNotMatch(error,/PRIVATE_SQL/);
 });

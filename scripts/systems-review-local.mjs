@@ -239,7 +239,37 @@ try {
   await client.page.goto(base+'/systems', {waitUntil:'networkidle'});await client.page.waitForURL(/\/portal/);await client.page.waitForLoadState('networkidle');
   check('Client route redirects to portal without Systems navigation or internal work',!(await client.page.content()).includes('Confirm the access invitation')&&await client.page.locator('a[href="/systems"],a[href="/portal/systems"]').count()===0);
   const nojs=await browser.newContext({javaScriptEnabled:false,storageState:await owner.context.storageState()}),plain=await nojs.newPage();await plain.goto(base+'/systems', {waitUntil:'networkidle'});
-  check('server rendered Systems and native filters work without JavaScript',await plain.locator('[data-project-id]').count()===3&&await plain.getByLabel('Project status').count()===1);await nojs.close();
+  // Streamed HTML can contain hidden rows and controls while the user sees
+  // only a fallback. Prove completed, visible HTML without hydration, then
+  // submit the real GET form instead of navigating to a constructed URL.
+  const nojsView=async(label,expectedProjects)=>{
+    for(const width of widths){
+      await plain.setViewportSize({width,height:900});
+      check(`${label} ${width}px completed heading and filters are visible without JavaScript`,
+        await plain.locator('h1').count()===1&&await plain.getByRole('heading',{name:'Systems',level:1,exact:true}).isVisible()
+        &&(await Promise.all(['Client','Service','Project status'].map(name=>plain.getByLabel(name,{exact:true}).isVisible()))).every(Boolean)
+        &&!(await plain.locator('main').innerText()).includes('Loading Systems projects…'));
+      check(`${label} ${width}px exact readable Projects are visible without JavaScript`,
+        await plain.locator('[data-project-id]').count()===expectedProjects.length
+        &&(await Promise.all(expectedProjects.map(id=>plain.locator(`[data-project-id="${id}"]`).isVisible()))).every(Boolean));
+      await plain.screenshot({path:join(out,`${label}-${width}.png`),fullPage:true});screenshots++;
+    }
+  };
+  await nojsView('systems-nojs',[projects.build,projects.course,projects.secret]);
+  await plain.getByLabel('Client',{exact:true}).selectOption(clients[0]);
+  const [filteredResponse]=await Promise.all([
+    plain.waitForNavigation({waitUntil:'networkidle'}),
+    plain.getByRole('button',{name:'Apply filters',exact:true}).click(),
+  ]);
+  const filteredURL=new URL(plain.url());
+  check('no-JavaScript native filter submits GET and preserves the selected query',filteredResponse?.status()===200
+    &&filteredResponse.request().method()==='GET'&&filteredURL.pathname==='/systems'
+    &&filteredURL.searchParams.get('clientId')===clients[0]&&filteredURL.searchParams.get('serviceEngagementId')===''
+    &&filteredURL.searchParams.get('status')==='active');
+  await nojsView('systems-nojs-filtered',[projects.build]);
+  check('no-JavaScript filtered result retains Client selection and narrows Service choices',
+    await plain.getByLabel('Client',{exact:true}).inputValue()===clients[0]&&await plain.locator('#systems-service option').count()===2);
+  await nojs.close();
   // Valid local fixtures pressure the page boundary after the API-created story.
   sql('INSERT INTO projects(id,workspace_id,client_id,service_engagement_id,name) VALUES '+Array.from({length:48},(_,i)=>`(${lit(`${ws}-bound-${i}`)},${lit(ws)},${lit(clients[0])},${lit(services.build)},${lit(`Bounded delivery ${String(i).padStart(2,'0')}`)})`).join(','));
   await owner.page.goto(base+'/systems', {waitUntil:'networkidle'});

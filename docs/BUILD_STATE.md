@@ -6,7 +6,61 @@ Release D: Systems Delivery. Release C is closed for forward development on veri
 
 ## Current Phase
 
-D1 Systems Foundation is implemented on `codex/d1-systems-foundation` against exact base `1638e3ed9fd33c3725aa3449935b08335b73f1a9`. The implementation is prepared for independent audit; user-controlled merge and successful automatic Deploy staging / Verify zero-to-current workflows on the same resulting main SHA remain required. D2 has not begun. The historical Release C sections below retain their original handoff statements; this current section supersedes their release/phase status.
+D1 Systems Foundation is implemented on `codex/d1-systems-foundation` against exact base `1638e3ed9fd33c3725aa3449935b08335b73f1a9`. The independent audit of `da8f2ec4633352b673aa62392a49700fdd234f4c` returned **FAIL - CHANGES REQUIRED** for the Systems loading boundary and false-positive no-JavaScript browser assertion. The focused correction below is implemented; a fresh independent audit of the corrected exact head is required before PR #31 may merge. User-controlled merge and successful automatic Deploy staging / Verify zero-to-current workflows on the same resulting main SHA remain required before D1 closes. D2 has not begun. The broader staging-wide roughly two-second navigation problem remains deferred to a dedicated performance-hardening phase after D1 closes and before D2. This current section supersedes the historical implementation and Release C handoff statements below.
+
+## D1 independent audit correction (2026-09-10)
+
+### Reproduction and smallest correction
+
+The fix resumed on `codex/d1-systems-foundation` at `a1485ed` (the failed implementation plus the focused fix prompt). Required contracts and the complete build state are byte-identical to their complete prior audit reads; current Systems page, loading/error components, projection, browser harness, tests and relevant shell/navigation code were inspected again. Previous local independent-audit documents were preserved in a named Git stash before switching branches.
+
+Before editing, the actual original built Worker reproduced the failure with an issued Owner session and JavaScript disabled: after the complete response, the visible main contained only “Systems / Loading Systems projects…”, there were zero visible Project rows, and the Client filter was hidden. The independent visibility assertion failed. The strengthened repository browser harness was then run against that same original build and failed specifically at its new 1440px completed-heading/filter visibility assertion. Its earlier checks reached that point successfully. The original 101-check implementation run below is historical evidence; its named no-JavaScript check counted hidden DOM nodes and did not establish usable native filters. The first audit did not pass.
+
+The root cause was the route-level `app/(internal)/systems/loading.jsx` boundary. Next streamed the completed page into a hidden segment that needed client JavaScript to replace the loading fallback; the boundary also delayed the visible client-navigation commit. The production correction deletes that four-line file. The protected server page, sanitized `error.jsx`, shell authorization and every domain/query implementation remain unchanged. There is no replacement spinner, timeout, hydration workaround, duplicate state or additional fetch path.
+
+`tests/bloomops-systems-page.test.mjs` no longer imports or asserts the removed loading component. It retains error-message sanitization, the Systems heading, announced error and retry control, and explicitly checks one heading and the reset link. `scripts/systems-review-local.mjs` now verifies one visible completed Systems heading, visible native controls, absence of final loading text and the exact expected visible Project rows at 1440/1024/768/390/320px. In the same JavaScript-disabled context it selects a Client and clicks the actual Apply filters button; it verifies the resulting HTTP 200 GET, Client/Service/status query values, the exact narrowed Project, retained selection and narrowed Service choices. The completed filtered view is checked again at all five widths. Existing keyboard/focus/touch/reduced-motion, authorization, bounds and recovery checks are retained.
+
+The corrected browser harness passes **122/122 checks with 47 screenshots**, including ten no-JavaScript captures. Its native Client filter narrows the story's three readable Systems Projects to the selected Client's one Project. A separate unchanged audit-style probe also passes against the corrected build: 50 visible Projects, one heading, a visible Client filter, then native submission narrows to the other Client's two Projects and retains that Client selection. The live design reference and corrected desktop/narrow no-JavaScript screenshots were visually inspected. No hydration or browser runtime error occurred.
+
+### Local navigation comparison
+
+The same Playwright Chromium probe measured the original and corrected built OpenNext Workers at `http://localhost:8787`, using the same issued Owner session and synthetic audit workspace (51 Systems Projects, two excluded Projects). At 1440px, each run clicked Work → Social → Systems for eight rounds, discarded the first two rounds and retained six warm samples per route. In-page click timing ends when completed route content is visible plus two animation frames; Resource Timing records the RSC response separately. No artificial CPU/network throttling was used. The post-fix probe ran after builds, browser acceptance and the migration verifier completed, before auth stress tests.
+
+| Route | Before: median click to visible | Corrected: median click to visible | Before / corrected median RSC duration |
+|---|---:|---:|---:|
+| Systems | 345.6 ms | **78.6 ms** | 34.4 / 37.8 ms |
+| Work (default Actions view) | 70.2 ms | 77.9 ms | 30.9 / 33.8 ms |
+| Social | 62.7 ms | 62.3 ms | 23.4 / 25.9 ms |
+
+The correction removes approximately 267 ms of D1-local visible-navigation delay in this comparison while the Systems data response remains similar. Corrected Systems samples ranged from 78.1 to 80.6 ms. This is local measurement evidence, not an SLA or a claim that the staging-wide latency is fixed. No additional D1-specific performance defect was observed. Query shape and fresh per-request identity/membership/scope checks were not changed. The separate global performance-hardening phase remains required after D1 closes and before D2.
+
+### Fresh correction verification
+
+Logs, precise timing samples, the before-fix failure and corrected screenshots are under `/tmp/bloomops-d1-fix`. Counts below overlap; they are not additive. Every node:test suite has zero failures, skips, cancellations and todos.
+
+| Check / command | Result |
+|---|---|
+| `node --test tests/bloomops-systems-*.test.mjs` | 62/62 passed |
+| Systems plus `tests/bloomops-shell.test.mjs` | 79/79 passed |
+| Service/auth/authorization/membership/shell and relevant B1–B7 suites | 1043/1043 passed; same complete shared command documented in the original implementation evidence below |
+| Release C Content/portal/release suites | 665/665 passed |
+| `PATH=/tmp/bloomops-c6-tools/bin:$PATH npm test` | 4757/4757 passed; existing external Python alias only |
+| `npm run build`; `npm run cf:build` | Both passed, including available Next lint/type checks |
+| `node .github/scripts/verify-zero-remote.mjs --local` | 22/22 passed: fresh database, all migrations, integrity, identical no-op second pass and cleanup |
+| `npm run db:domain:generate` | No schema changes; nothing to migrate |
+| Schema/drift tests | 22/22 passed |
+| `node scripts/systems-smoke-local.mjs` | 23/23 actual workerd/D1 checks; 240 assignments, six queries, maximum 65 bindings / 13,419 SQL bytes; no R2 binding |
+| `node scripts/projections-smoke-local.mjs` | B6: 34/34 actual workerd/D1 checks |
+| `node scripts/release-b-smoke-local.mjs` | B7: 86/86 actual workerd/D1/R2 checks |
+| `node scripts/release-c-smoke-local.mjs` | C7: 29/29 actual workerd/D1/R2 checks |
+| `node scripts/auth-smoke-local.mjs --url http://localhost:8787` | 144/144 passed against the corrected built Worker |
+| `node .github/scripts/verify-staging.mjs --url http://localhost:8787 --expect-env development` | 21/21 passed against the corrected built Worker after the normal auth throttle window; no throttle setting changed |
+| Corrected `systems-review-local.mjs --playwright /tmp/bloomops-c6-tools --out /tmp/bloomops-d1-fix/browser-after` | 122/122 passed; 47 screenshots at all five established widths, including visible no-JavaScript pages and real native filter submission |
+| Independent no-JavaScript visibility/native-filter probe | Failed on original build; passed unchanged on corrected build |
+| Changed JS/JSX syntax; `git diff --check` | Both changed JavaScript modules parsed with Node; no whitespace errors |
+| Exact package/lock/schema/migration/Cloudflare config diff against D1 base | Empty; no prior migration edits, new migrations, dependency, provider or infrastructure change |
+
+`D1_FIX_PROMPT.txt` was removed before the implementation commit and has no net diff against the D1 base. The correction changes only the loading-file deletion, the two acceptance-test files and this build-state record, apart from that temporary-prompt cleanup. All operational verification uses synthetic local/disposable data and development mail. No staging/production business-data mutation, deployment, merge, second PR or D2 work was performed. PR #31 must remain open for a fresh independent exact-head re-audit.
 
 ## Systems Foundation (D1)
 
