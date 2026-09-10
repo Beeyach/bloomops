@@ -12,23 +12,14 @@ name: Verify zero-to-current migration
 # only D1 binding is the disposable database. See
 # .github/scripts/verify-zero-remote.mjs for the checks.
 #
-# Runs on demand, and on pushes that change this workflow, the script it runs,
-# the migration runner, canonical domain schema, or Drizzle migration state.
+# Runs on demand and on every push to main so each merged phase/release gets an
+# exact-SHA zero-to-current gate automatically.
 
 on:
   workflow_dispatch:
   push:
     branches:
       - main
-      - claude/a3-auth-membership-xo5r7e
-    paths:
-      - ".github/workflows/verify-zero-remote.yml"
-      - ".github/scripts/verify-zero-remote.mjs"
-      - ".github/scripts/zero-verify-safety.mjs"
-      - "tests/zero-verify-safety.test.mjs"
-      - "scripts/migrate.mjs"
-      - "lib/bloomops/schema.mjs"
-      - "drizzle/**"
 
 concurrency:
   group: bloomops-a2-zero-verify
