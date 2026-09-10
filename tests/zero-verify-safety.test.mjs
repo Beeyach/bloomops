@@ -97,13 +97,13 @@ test('an alternate, repeated, missing, or environment-overridden config cannot b
   assert.throws(() => guardWranglerCommand([...query, ...scoped, '--command', 'SELECT 1'], { ...context, configPath: '' }), /refusing/);
 });
 
-test('main schema and Drizzle pushes trigger the existing disposable verifier while preserving manual dispatch', async () => {
+test('every main push triggers the disposable verifier while preserving manual dispatch', async () => {
   const { readFileSync } = await import('node:fs');
   const { parse } = await import('yaml');
   const workflow=parse(readFileSync(new URL('../.github/workflows/verify-zero-remote.yml',import.meta.url),'utf8'));
   assert.ok(Object.hasOwn(workflow.on,'workflow_dispatch'));
   assert.ok(workflow.on.push.branches.includes('main'));
-  for(const path of ['lib/bloomops/schema.mjs','drizzle/**'])assert.ok(workflow.on.push.paths.includes(path));
+  assert.equal(Object.hasOwn(workflow.on.push,'paths'), false);
   assert.deepEqual(workflow.concurrency,{group:'bloomops-a2-zero-verify','cancel-in-progress':false});
   assert.equal(workflow.jobs['zero-to-current'].steps.at(-1).run,'node .github/scripts/verify-zero-remote.mjs');
 });
