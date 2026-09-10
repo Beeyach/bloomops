@@ -10,6 +10,8 @@ D1 Systems Foundation is implemented on `codex/d1-systems-foundation` against ex
 
 ## D1 independent audit correction (2026-09-10)
 
+The final corrected implementation commit is `729ff558e03d5e5c8a650f76827a04f4bbd223d6`. It contains the complete application/test correction, prompt cleanup and verification record below. The subsequent documentation-only commit records this SHA without changing the verified application or test content; fresh independent review must use the final PR #31 branch head, including that documentation commit.
+
 ### Reproduction and smallest correction
 
 The fix resumed on `codex/d1-systems-foundation` at `a1485ed` (the failed implementation plus the focused fix prompt). Required contracts and the complete build state are byte-identical to their complete prior audit reads; current Systems page, loading/error components, projection, browser harness, tests and relevant shell/navigation code were inspected again. Previous local independent-audit documents were preserved in a named Git stash before switching branches.
