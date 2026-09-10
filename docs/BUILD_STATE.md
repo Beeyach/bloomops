@@ -6,9 +6,104 @@ Release C: Social. Release B is closed on `c6509aa395a5db58310e2a0ae22a8a808082f
 
 ## Current Phase
 
-C5 Approvals + Revision History is implemented and locally verified on `codex/c5-approvals-revision-history`, ready for independent ChatGPT audit. C5 is not closed. Independent ChatGPT audit, user-controlled merge, and both post-merge workflows successful on the exact C5 merge SHA are required before C6. Historical phase sections below describe their original handoffs, not current closure state.
+C6 Client Content Portal is implemented on `codex/c6-client-content-portal`. C6 is not closed: independent audit, user-controlled merge, and both post-merge workflows successful on the exact C6 merge SHA remain required before C7. C7 has not started. Historical sections below retain their original handoff states.
 
-### Verified C4 closure and exact C5 base
+### Verified C5 closure and exact C6 base
+
+C5 PR #26 merged as `df4bfde1d3746d3517dbaff498f6eb17a5b732e0`, the exact C6 base. Read-only `gh run view` checks confirmed [Deploy staging 34365507942](https://github.com/Beeyach/bloomops/actions/runs/34365507942) and [Verify zero-to-current 34365508005](https://github.com/Beeyach/bloomops/actions/runs/34365508005) both completed successfully on that exact SHA. The C6 contract records successful disposable cleanup. The requested branch started clean and contained only the C6 phase contract and temporary prompt after the base. The complete prompt, phase contract, repository instructions and required preflight documentation were read before implementation.
+
+## Client Content Portal (C6)
+
+### Implementation decisions
+
+- Schema-free general Client Content index/detail, conditional Home/Content navigation and exact allowlisted JSON reads. All records remain canonical C1–C5 records; no portal cache, duplicated statuses, new writes, File policy expansion or notification side effect.
+- Shared `contentClientReadCondition` extracts the existing C5 live Client predicate. Membership/workspace/role, current contact, Content visibility and canonical optional Social parent are rechecked in SQL. C4 and C5 retain narrower recording/Requested-round gates; their internal scope and writes remain unchanged. Owner, department, Project, Action and unrelated-service relationships do not grant Client reads.
+- Current/upcoming includes every readable non-Published item. Needs you derives C4 recording and C5 approval eligibility. Recently published uses canonical `published_at` in the inclusive preceding 30 days and excludes future dates. Queries filter eligibility before 20+1 pagination; date/ID ordering is deterministic, null planned dates sort last, and only eligible `hasMore` is returned. Positive page input is bounded to 999999. No total or hidden overflow is exposed. Navigation uses any readable Content, including older publications.
+- General DTOs contain only ID, title/type, Client name, derived status label, dates, platform display labels and current action/File indicators. Detail adds the existing six-field File metadata projection. No script, hook, caption, CTA, pillar, internal context/owner, CAS, provenance, activity, service/member/workspace IDs or completed review history is serialized. Explicit C5 review remains the sole surface for its submitted snapshot copy.
+- Detail and File metadata are read in one D1 batch, with authorization predicates repeated after route resolution. File indicators correlate to this exact Content and reuse C4: only Ready, client-visible, unarchived recording Files while recording is required and Content is Waiting for Recording. Uploading/Failed retries remain on the existing recording page. Generic Content assets remain hidden; leaving the recording stage removes metadata and download access. C6 uses the existing opaque download endpoint with its post-R2 authority check.
+- Existing B portal Home/onboarding/Projects/Deliverables/Files are preserved. Recording and approval links reuse existing pages and mutations. Staff Content changes are limited to correcting visibility help text and shared helper extraction. Portal styles reuse the existing tokens/primitives, quiet rows, wrapping titles/filenames, active nav, loading/empty/error/no-action recovery and 44px controls.
+
+### C6 verification evidence (2026-09-09 local session)
+
+| Check / exact command | Result |
+|---|---|
+| `npm ci` | Exit 0; package manifests/lock byte-identical to exact C5 base |
+| `node --test tests/bloomops-portal-content*.test.mjs` | 41/41 passed, zero skips/cancellations |
+| `node --test tests/bloomops-content*.test.mjs tests/bloomops-portal-content*.test.mjs tests/bloomops-file*.test.mjs tests/bloomops-projection*.test.mjs tests/bloomops-shell.test.mjs tests/bloomops-authorization.test.mjs` | 921/921 passed, including C1–C6 and relevant B portal/File/shared authorization regressions |
+| `PATH=/tmp/bloomops-c6-tools/bin:$PATH npm test` | 4670/4670 passed, zero failures/skips/cancellations |
+| `npm run build`; `npm run cf:build` | Exit 0, including available Next lint/type checks; final Worker includes navigation styles |
+| `node .github/scripts/verify-zero-remote.mjs --local` | 22/22 passed; fresh schema/ledgers and exact no-op second pass, disposable cleanup |
+| `npm run db:schema:local`; `npm run db:migrate:local`; `npm run db:domain:migrate:local` | Exit 0; local preview schema current; domain path reports no migrations to apply |
+| `npm run db:domain:generate` | Exit 0; no schema changes, nothing to migrate |
+| `node scripts/portal-content-smoke-local.mjs` | 24/24 actual workerd/D1/R2 checks, including 240 linked Clients, filtered pagination, per-Content Files, C5 response, recent publication and stale-authority revocations |
+| `node scripts/content-approvals-smoke-local.mjs` | 65/65 passed |
+| `node scripts/content-files-smoke-local.mjs` | 64/64 passed |
+| `node scripts/content-calendar-smoke-local.mjs` | 57/57 passed |
+| `node scripts/content-pipeline-smoke-local.mjs` | 54/54 passed |
+| `node scripts/content-smoke-local.mjs` | 43/43 passed |
+| `node scripts/files-smoke-local.mjs` | 42/42 passed |
+| `node scripts/projections-smoke-local.mjs` | 34/34 passed |
+| `node scripts/release-b-smoke-local.mjs` | 86/86 passed |
+| `node scripts/release-a-hardening-smoke-local.mjs` | 26/26 passed |
+| `node scripts/auth-smoke-local.mjs --url http://localhost:8787` | 144/144 passed against built Worker |
+| `node .github/scripts/verify-staging.mjs --url http://localhost:8787 --expect-env development` | 21/21 passed |
+| Changed JS/JSX syntax; `git diff --check` | 30 files parsed with `node --check` / existing esbuild JSX transform; no whitespace errors |
+| `LD_LIBRARY_PATH=/tmp/bloomlab-webhook-browser-wraMkD/libs/usr/lib/x86_64-linux-gnu node scripts/portal-content-review-local.mjs` | 78/78 browser/HTTP checks passed; 52 screenshots at 1440/1024/768/390/320px |
+| `LD_LIBRARY_PATH=/tmp/bloomlab-webhook-browser-wraMkD/libs/usr/lib/x86_64-linux-gnu node scripts/content-approvals-review-local.mjs --playwright /tmp/bloomops-c6-tools --out /tmp/bloomops-c6-c5-review` | 91/91 C5 browser/HTTP regressions passed; 53 screenshots at all five widths |
+
+The focused D1 queries were also measured with the repository's SQLite adapter: current/action/published list queries use 33/44/35 bindings and 5154/6584/5178 SQL bytes; the detail's two reads use 33/15 bindings and 5022/2247 bytes; navigation uses 8 bindings and 1056 bytes. They stay below D1's 100 bound parameters and 100KB SQL limit, without per-item SQL, scope-expanded IN lists or R2 list calls. The actual D1 smoke independently exercised the large-contact case.
+
+There are no migrations, schema/snapshot edits or dependency changes. Inventory remains 18 domain migrations, 41 domain tables, 77 total fresh tables, 100 migration-defined indexes and 37 triggers. `npm audit --package-lock-only --json` was run against the working tree and isolated exact-base/head manifest extractions. All 53 inherited advisories match in IDs, affected packages, ranges, severity and fixes: 1 low, 43 moderate, 9 high, 0 critical. npm varied only the transitive `effects` attribution for `@tiptap/extension-drag-handle` and `@tiptap/react`; there is no package/advisory delta. No dependency update or audit-fix command ran.
+
+Browser/tooling evidence lives under `/tmp/bloomops-c6-*`, outside the repository. Playwright is installed only under `/tmp/bloomops-c6-tools`; existing Chromium libraries are reused from `/tmp/bloomlab-webhook-browser-wraMkD/libs/usr/lib/x86_64-linux-gnu`. The full suite initially hit the host's unavailable `python` command in five inherited packaged-skill ZIP tests; an external `python` → `/usr/bin/python3` alias, as documented in prior phases, made the complete rerun pass without changing test or product behavior. The C6 browser fixture initially exceeded the existing 180-character filename bound; the synthetic filename was corrected to 180 characters. Its recording-page assertion was also aligned with the existing C4 heading (Recording needed, with the Content title as subtitle). Only final complete runs count as acceptance evidence. Existing sign-in throttling was respected with bounded retries.
+
+The complete C6 browser story covers Social-only/non-Social/multi-service Home, retained Systems Project, upcoming and recent Published Content, recording navigation, canonical Ready File bytes and 180-character filename, explicit snapshot/approval response, no-action/empty/invalid-query states, long titles, keyboard, touch, reduced motion and live stage/visibility/contact/membership revocation. Screenshots inspected include the desktop list, 320px File detail, mobile list and recent publication view. Loading and sanitized server-error recovery are covered by focused UI tests; no remote C6 deployment or post-merge gate is claimed.
+
+The browser successfully fetched the live design reference with HTTP 200 and its full gallery screenshot was visually inspected. The initial web fetch failed; browser inspection is the evidence used. The local preview uses the existing safety-checked `scripts/files-preview-local.mjs`, with its in-memory loopback origin override and synthetic example.com identities. `.dev.vars` and unrelated developer processes remain untouched. No remote deployment, staging/production data mutation, real client communication, DNS, payment or Leadsthatbloom action was performed. Browser fixtures remain in local development D1/R2; disposable runtime/zero-check resources are removed by their harnesses.
+
+Deliberate limits: no general copy disclosure, Client history, generic Content asset sharing, File versioning, comments, notifications, provider publishing, templates, Ads/Systems buildout or C7. Offset pages reflect current truth and can shift as records change. Publication browsing is limited to the last 30 days; older readable Content can still be reached by its authorized detail URL and keeps navigation applicable. C6 awaits independent audit, user-controlled merge and both post-merge gates before a separately instructed C7.
+
+The owned loopback preview was stopped after verification and its cleanup completed. The temporary `C6_CODEX_PROMPT.txt` was removed and has zero net diff against the exact C5 base. Final scope is the 35 paths below; no secrets, production data or generated/debug artifacts entered the intended diff. The implementation commit and open/unmerged PR identify the exact final head.
+
+### Complete C6 changed-file inventory against the exact C5 base
+
+- `app/api/bloomops/portal/content/[contentId]/route.js`
+- `app/api/bloomops/portal/content/route.js`
+- `app/bloomops.css`
+- `app/portal/content/[contentId]/page.jsx`
+- `app/portal/content/error.jsx`
+- `app/portal/content/loading.jsx`
+- `app/portal/content/page.jsx`
+- `app/portal/layout.jsx`
+- `components/bloomops/ContentForm.jsx`
+- `components/bloomops/ContentViews.jsx`
+- `components/bloomops/PortalContent.jsx`
+- `components/bloomops/PortalContentNav.jsx`
+- `components/bloomops/PortalShell.jsx`
+- `docs/BUILD_STATE.md`
+- `docs/DOMAIN_MODEL.md`
+- `docs/RELEASE_C.md`
+- `docs/phases/C6.md`
+- `lib/bloomops/authorization.mjs`
+- `lib/bloomops/content-access.mjs`
+- `lib/bloomops/content-approval-access.mjs`
+- `lib/bloomops/content-file-access.mjs`
+- `lib/bloomops/content-files.mjs`
+- `lib/bloomops/portal-content-api.mjs`
+- `lib/bloomops/portal-content-values.mjs`
+- `lib/bloomops/portal-content.mjs`
+- `scripts/content-approvals-review-local.mjs`
+- `scripts/portal-content-review-local.mjs`
+- `scripts/portal-content-smoke-local.mjs`
+- `scripts/portal-content-smoke-worker.mjs`
+- `tests/bloomops-authorization.test.mjs`
+- `tests/bloomops-content-ui.test.mjs`
+- `tests/bloomops-portal-content-http.test.mjs`
+- `tests/bloomops-portal-content-ui.test.mjs`
+- `tests/bloomops-portal-content.test.mjs`
+- `tests/bloomops-shell.test.mjs`
+
+### Historical C5 preflight: verified C4 closure and exact C5 base
 
 C4 PR #25 merged as `5b3e3c3ac3eae69b75310f73f9f54c7a85edc095`, the exact requested C5 base. Read-only checks confirmed [Deploy staging 34333717208](https://github.com/Beeyach/bloomops/actions/runs/34333717208) and [Verify zero-to-current 34333717121](https://github.com/Beeyach/bloomops/actions/runs/34333717121) both completed successfully on that SHA; the C5 contract records successful disposable cleanup. Branch preflight was clean and contained only the C5 phase contract and temporary prompt after the base. All requested preflight documents and relevant C1–C4 implementation/tests were read before implementation.
 

@@ -283,6 +283,8 @@ test('the role matrix: every role against every representative action, allow and
   const jamesProject = projectResource({ id: 'project-james', workspaceId: s.A, clientId: 'c_james', visibility: 'client' }, [], { internal: false });
   const jamesAction = { ...jamesProject, type: 'action', projectId: jamesProject.id, id: 'action-james', visibility: 'internal', assigneeMembershipId: actors.team_member.membershipId };
   const cases = {
+    'portal.content.list': [false, false, false, false, true],
+    'portal.content.view': [false, false, false, false, true],
     'members.manage': [true, true, false, false, false],
     'invitations.manage': [true, true, false, false, false],
     'capabilities.manage': [true, true, false, false, false],
@@ -342,6 +344,7 @@ test('the role matrix: every role against every representative action, allow and
   // Which record each resource action is asked about, so the matrix uses
   // the same descriptor the real routes do rather than a convenient one.
   const RESOURCE_OF = {
+    'portal.content.view': { ...jamesClient, type: 'portal_content', visibility: 'client' },
     'content.file.manage': { ...jamesSocial, type: 'content', visibility: 'internal' },
     'recording.view': { ...jamesSocial, type: 'recording_request', visibility: 'client' },
     'recording.upload': { ...jamesSocial, type: 'recording_request', visibility: 'client' },

@@ -31,7 +31,7 @@ export function ContentDetail({ item }) {
     ]} />
     <ContentPipeline item={item} />
     <ContentPlatforms item={item} />
-    {item.visibility === 'client' && <p className="bo-hint">Client eligible. Only requested recordings and explicitly requested review snapshots are shared in the portal. Internal context stays private.</p>}
+    {item.visibility === 'client' && <p className="bo-hint">Client eligible. A Content summary, requested recordings and explicitly requested review snapshots are shared with linked Clients. Internal context stays private.</p>}
     {[['hook', 'Hook'], ['script', 'Script'], ['caption', 'Caption'], ['cta', 'Call to action']].map(([key, label]) => <Section key={key} id={`content-${key}`} title={label}><p className="bo-content-copy">{item[key] || 'Not written yet.'}</p></Section>)}
   </div>;
 }
