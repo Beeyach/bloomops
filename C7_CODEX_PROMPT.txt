@@ -1,0 +1,57 @@
+BLOOMOPS RELEASE C - PHASE C7 HARDENING PROMPT
+
+You are executing BloomOps Release C, Phase C7: Release C Hardening.
+
+Repository: Beeyach/bloomops
+Required branch: codex/c7-release-c-hardening
+Exact verified C6 base: 4dff635df8bb9268b18369eea05914c2c2534e3f
+
+This branch was intentionally created from that exact C6 merge SHA and initially contains only the C7 phase contract plus this temporary prompt.
+
+IMPLEMENTATION MODEL
+
+Use GPT-6 Astra with Extra High reasoning for this session.
+
+PRIMARY INSTRUCTION
+
+Read this file completely, then read the binding contract completely:
+
+- docs/phases/C7.md
+
+Then execute that contract exactly.
+
+The C7 contract is authoritative for scope.
+
+Do not add new product features merely because an improvement seems useful. C7 is a hardening/closure phase. Reproduce real defects where practical, make the smallest correct fixes, strengthen proof where needed, and preserve all C1-C6 product boundaries.
+
+Before editing, read every document and implementation area required by docs/phases/C7.md. Inspect package.json and the current BUILD_STATE before choosing verification commands.
+
+SAFETY BOUNDARIES
+
+Do not:
+
+- modify production or DNS
+- send real email/SMS
+- perform payment actions
+- touch Leadsthatbloom
+- write staging or production business data
+- begin Release D
+- merge the final PR
+
+Use synthetic/local/disposable data for runtime and browser proof.
+
+FINAL HANDOFF
+
+When C7 is complete:
+
+- run the required focused, combined, full, build, migration/schema, runtime and browser verification supported by the repo
+- document exact results and any limitations
+- update canonical docs only where justified by actual corrections
+- remove C7_CODEX_PROMPT.txt before final handoff
+- keep the working tree clean
+- push the completed branch
+- open a PR against main
+- leave it open and unmerged for independent audit
+- report the exact C6 base SHA, final C7 head SHA, complete changed-file inventory, verification evidence, inherited advisories and anything not verified
+
+Do not claim Release C closed. Closure requires a passing independent audit, merge, Deploy staging and Verify zero-to-current on the exact resulting main SHA.
