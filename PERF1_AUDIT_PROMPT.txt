@@ -1,0 +1,97 @@
+You are the independent auditor for BloomOps PERF1 Navigation Performance Hardening.
+
+Repository: Beeyach/bloomops
+Base SHA: e5bc81630c47fb6eb51e9bdc6be1687947683643
+Implementation SHA under audit: 96e8a6b0cfd6aeef181177df29e8c40f6acc5c1e
+Implementation PR: #32
+Audit branch: perf/navigation-hardening-independent-audit
+
+You are auditing only. Do not modify application code. Do not merge PR #32. Do not deploy production, mutate production/staging business data, send real email, alter DNS, or begin D2. You may create an audit report/documentation update on this audit branch if useful, but application code must remain unchanged.
+
+Read completely before auditing:
+- AGENTS.md
+- docs/BUILD_STATE.md
+- docs/INDEX.md
+- docs/phases/PERF1.md
+- docs/PERF1_RESULTS.md
+- docs/evidence/PERF1_navigation.json
+- docs/RELEASE_D.md
+- docs/phases/D1.md
+- relevant current auth/access/membership/authorization/shell/navigation/read-model code and tests
+- the full diff from e5bc81630c47fb6eb51e9bdc6be1687947683643 to 96e8a6b0cfd6aeef181177df29e8c40f6acc5c1e
+
+Treat the implementation report as a claim to verify, not as evidence by itself.
+
+Primary audit questions:
+
+1. Performance attribution and measurement
+- Reproduce the before/after controlled measurements with the repository's harnesses.
+- Verify sample counts, warmup handling, median/range calculations, click-to-visible definition, D1-call counting, and that the before/after comparison is apples-to-apples.
+- Inspect the 100 ms-per-D1-call simulation. Confirm it is clearly labeled as a controlled sensitivity experiment, not a claim about staging latency.
+- Verify the claimed reductions in database round trips/query shape for Home, Clients, Work, Social, Systems, Team, and Project detail.
+- Look for hidden regressions, N+1 patterns, duplicated work, increased query payloads, serialization/streaming delays, or slower routes that medians conceal.
+- Confirm no loading/skeleton/spinner trick is being counted as a performance improvement.
+- Reconfirm the D1 no-JavaScript visible-content behavior is intact.
+
+2. Security and correctness under the optimizations
+- This is the highest-priority audit area.
+- Verify every protected request still rechecks current database truth.
+- Verify there is no cross-request permission, membership, actor, scope, visibility, capability, or contact-link cache that can permit stale authorization.
+- Verify Better Auth cookie/session caching remains disabled unless the implementation proves equivalent next-request revocation semantics.
+- Test issued-session revocation after membership suspension/removal.
+- Test Client/Service/Project assignment revocation.
+- Test Project/child visibility restriction where applicable.
+- Test capability revocation where affected by the changed actor-loading path.
+- Test Client contact unlinking for portal access.
+- Preserve foreign-workspace isolation, guessed-ID existence hiding, Department non-grant, Project-ownership non-grant, Team Member scope, and Client DTO/portal allowlists.
+- Pay special attention to query consolidation and ORM joins: a faster query must not widen rows, change null/absence semantics, select inaccessible records, or turn a 404-style hidden resource into an existence leak.
+
+3. Request-local deduplication correctness
+- Verify duplicate Project fetching is deduplicated only within a request and does not persist stale Project/access facts into later requests.
+- Verify page metadata and body can share request-local work without authorization being evaluated only once across navigations.
+- Test a same-session next request after relevant DB truth changes and confirm metadata/body both reflect revocation immediately.
+
+4. Query consolidation / parallelization semantics
+- Inspect every changed query and relationship.
+- Verify primary-contact joining preserves the old semantics for zero, one, and malformed/edge-case contact states allowed by the schema.
+- Verify parallel reads are truly independent and do not introduce races where one read depended on the result/current truth of another.
+- Verify owner capability shortcuts are semantically equivalent to prior authorization rules and do not broaden Owner/Admin/PM/Team behavior.
+- Verify skipping Action timezone reads on non-date views cannot change Today/Upcoming/Overdue or any date-sensitive path.
+- Verify ORM relationship additions describe existing foreign keys only and generate no DDL/schema drift.
+
+5. Regression and scope
+- Re-run focused PERF1 tests plus the strongest current auth/membership/shell/authorization, Team/Client revocation, B1-B7, Release C, D1 Systems, full-suite, build, Worker/runtime, browser, zero-to-current, schema/drift, syntax, and whitespace checks available in the repo.
+- Confirm no schema migration, dependency, package/lock, Cloudflare workflow/config, auth provider, database, cache service, or infrastructure expansion slipped in.
+- Confirm no D2, Ads, Pages, Finance, notifications, commercialization, production provisioning, DNS, or Leadsthatbloom work is included.
+
+6. Staging limitation and closure semantics
+- Independently assess any safe remote/public staging measurements available without mutating business data.
+- Do not fabricate authenticated staging results if the environment cannot be safely authenticated from the audit harness.
+- A missing authenticated staging measurement is not automatically a code-audit failure if PERF1's avoidable application costs are convincingly reduced and security remains intact. However, clearly state that PERF1 itself must remain operationally open after merge until the merged build is deployed and authenticated staging navigation is confirmed by the strongest safe means available.
+- The user's observed roughly two-second staging delay is the motivating issue. Do not declare that issue solved from localhost or injected-latency simulation alone.
+
+Performance expectations from the binding contract:
+- controlled local warm ordinary top-level navigation should remain comfortably below 200 ms median
+- no changed route should materially regress from D1 baselines
+- query counts must remain bounded/deterministic under large assignment scope
+- staging target is sub-500 ms median warm click-to-visible where network conditions permit, otherwise remaining latency must be attributed with evidence
+
+Required final report format:
+
+AUDIT RESULT: PASS
+or
+AUDIT RESULT: FAIL - CHANGES REQUIRED
+
+Then include:
+1. Merge recommendation, explicitly locked to exact head 96e8a6b0cfd6aeef181177df29e8c40f6acc5c1e
+2. Findings, ordered by severity with exact file/line references and minimal corrective action for each finding
+3. Verification performed with fresh counts/results
+4. Performance-measurement conclusion, including your independently reproduced before/after medians/ranges and D1-call/query-shape findings
+5. Security and tenant-isolation conclusion
+6. Request-local deduplication / query-consolidation correctness conclusion
+7. Staging evidence and what remains unverified
+8. Schema/dependency/infrastructure conclusion
+9. Remaining uncertainty
+10. Final next action
+
+If there are no findings, say so explicitly. If PASS, recommend merge only while PR #32 head remains exactly 96e8a6b0cfd6aeef181177df29e8c40f6acc5c1e. Even on PASS, do not call PERF1 fully closed until post-merge Deploy staging + Verify zero-to-current pass on the exact merge SHA AND authenticated staging performance is confirmed or remaining latency is proven outside BloomOps application control.
