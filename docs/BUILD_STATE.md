@@ -6,9 +6,106 @@ Release C: Social. Release B is closed on `c6509aa395a5db58310e2a0ae22a8a808082f
 
 ## Current Phase
 
-C6 Client Content Portal and its conditional-destination audit correction are implemented on `codex/c6-client-content-portal` for PR #27. The audited head `50c196a7ca47e537dcf053f632bc2fb6834f91e3` required changes because irrelevant Clients could open the empty Content index and old publications could activate navigation. The correction requires a fresh independent audit. C6 is not closed: user-controlled merge and both post-merge workflows successful on the exact C6 merge SHA remain required before C7. C7 has not started. Historical sections below retain their original handoff states.
+C7 Release C Hardening is implemented and locally verified on `codex/c7-release-c-hardening`, based on the exact closed C6 merge `4dff635df8bb9268b18369eea05914c2c2534e3f`, and awaits independent audit through its open, unmerged PR. Release C remains open. C7 must receive a passing independent audit, user-controlled merge and successful Deploy staging / Verify zero-to-current workflows on the same resulting main SHA before closure. Release D requires separate instructions. Historical C1–C6 sections below retain their original handoff states; this section supersedes their phase-status statements.
 
-### Verified C5 closure and exact C6 base
+## Release C Hardening (C7)
+
+### Verified entry and scope
+
+Read-only `gh run view` checks confirmed [Deploy staging 34446462522](https://github.com/Beeyach/bloomops/actions/runs/34446462522) and [Verify zero-to-current 34446699082](https://github.com/Beeyach/bloomops/actions/runs/34446699082) both completed successfully on `4dff635df8bb9268b18369eea05914c2c2534e3f`. The branch started clean and contained only its binding contract (`d01e1de`) and temporary execution prompt (`3aaff1f`) after that base. The complete prompt and C7 contract were read; required repository/product/design/C1–C6 documentation and current implementation, tests and verification harnesses were inspected before editing. Required pre-C7 documents were byte-identical to the complete C6 re-audit reads in this session.
+
+C7 adds no product feature, lifecycle, schema, dependency or infrastructure change. Existing C1–C6 authorization, storage, snapshot, pagination and concurrency rules survived the review and fresh regressions. The only product correction restores page orientation on invalid staff Social filters.
+
+### Reproduced defect and smallest correction
+
+The staff Social list's invalid-query response and both calendar invalid-query branches rendered an announced error and reset link with no page heading. Real Next server-page tests, using actual request stores, migrated SQLite and issued Better Auth sessions, reproduced three failures (zero `h1` elements). Six companion checks confirmed anonymous/Client redirects happened before error rendering. The two pages now prepend the existing `PageHeader` with their ordinary title. The tests prove one named heading, the existing alert and the appropriate reset link; shell authorization is not mocked. No filter semantics, route status or permission rule changed.
+
+The live Bloom design gallery loaded with HTTP 200 and was visually inspected. The correction reuses its existing typography/spacing primitives; no redesign or CSS change was needed.
+
+During browser-harness development, an overbroad alert count also matched the hydrated shell's empty live region; direct inspection confirmed the reset control already had a 2px keyboard focus outline. The new check now targets the announced filter error and drives the real Tab order. The direct-index check also waits for Next's redirect, matching the existing C6 harness. These were harness corrections, not additional product defects. Initial diagnostic runs are retained under `/tmp/bloomops-c7-browser-*-diagnostic.log`; only complete successful reruns count as acceptance evidence.
+
+### Connected acceptance evidence
+
+`scripts/release-c-story.mjs` is a test-only story shared by `node:test` and disposable workerd/D1/R2. It creates a synthetic two-Client agency with Social and Systems engagements, an exact Social contractor, PM and Client identities, plus another workspace. Better Auth issues real cookies through an in-memory mailer; every subsequent access reloads current membership/scope, while sensitive domain calls also exercise actors loaded before revocation. No mail leaves the process. All Content stage, detail, platform, recording and review operations use the canonical domains; SQL seeds parents and changes assignment/contact facts only.
+
+Its 29 assertions connect C1 creation and different conditional pipelines, C3 date/platform changes, a C4 Client recording and response-loss retry, two formal C5 rounds, and C6 discovery/actions/recent publication. Prior review copy and finalized rounds remain identical through rework. Old request/response retries cannot overwrite or complete round two. The contractor demonstrably reads current history/Files before reassignment, loses old list/calendar counts, detail, review/File history and bytes after reassignment, and regains them only with the exact assignment. Contact unlinking removes navigation, recordings, metadata, upload retry and download authority while identity survives. Restriction removes broad PM and Client access while retaining the canonical Requested round; exact PM assignment restores only internal authority. A real C2 transition to Editing during an R2 GET fences the in-flight Client download and simultaneously removes C6 recording/File indicators. Actual canonical publication drives inclusive 30-day and future-date discovery checks without duplicate schedule state. Client/Service lifecycle facts and relational integrity remain unchanged.
+
+`node scripts/content-approvals-review-local.mjs --release-c` extends the current C5 browser journey with C7 checkpoints in the same workspace and issued browser sessions. The optional checkpoints add multi-service/other-Client/hidden work, invalid-filter recovery and visible keyboard focus, recording/action/detail/File presentation, each round's C6 action link, contractor reassignment and disappearance of old history/Files, publication through different pipelines, recent-only navigation, contact revocation and portal reduced motion. The existing C5 journey supplies double-submit/retry checks, immutable two-round copy/feedback, frozen fields, dialog focus/trap/restoration, touch and withdrawal controls. All integrated layouts use 1440/1024/768/390/320px and check one heading, overflow and readable controls; long titles, copy and filenames are included.
+
+Existing convincing adversarial coverage was retained and rerun rather than duplicated:
+
+| Invariant | Existing proof retained |
+|---|---|
+| Tenant/Client IDs, current membership/role/workspace, assignment/contact/visibility/Social truth; owner/department/Project/Action do not grant Content | C1–C6 access/HTTP tests, shared authorization and shell tests; corresponding runtime smokes |
+| Every conditional flag combination, legal stages, terminal Published, context/revision/event integrity | C2 domain/HTTP/runtime matrix, including formal C5 approval for the Client gate |
+| Edit/stage/platform races; same/different request retries; late-write rollback | C1–C3 domain/HTTP/runtime suites and C5 concurrency tests |
+| Requested uniqueness/freeze, immutable prior rounds, stale response, response/withdraw/edit winners, late rollback | C5 domain/concurrency/HTTP/runtime suites |
+| C4-only storage authority, retry recovery/generations, changed parents, post-R2 PUT/GET/HEAD checks and File history visibility | C4 access/domain/HTTP/R2/runtime plus B5 File regressions |
+| Date/null/order/range/page limits, Unicode platforms, dense pages and large assignment/contact scopes | C3 and C6 domain/HTTP/runtime suites (including 205 dense rows and 240 scopes) |
+| Exact general DTOs, hidden-row pagination, current/Needs you/recent windows, conditional navigation/direct index, no-client/suspended behavior | C6 domain/HTTP/real-page/UI/runtime/browser suites |
+| Loading, sanitized errors, disabled pending controls and recovery | Existing Content/recording/approval/portal UI tests plus browser error, empty and dialog paths |
+
+### C7 verification
+
+All commands run from the repository root. Logs and browser artifacts use `/tmp/bloomops-c7-*`, outside Git. Results below are fresh C7 runs, not historical C6 counts.
+
+| Check / command | Result |
+|---|---|
+| `npm ci` | Exit 0; 560 installed / 561 audited; 53 inherited advisories (1 low, 43 moderate, 9 high) |
+| `node --test tests/bloomops-release-c-*.test.mjs` | 10/10 passed, including 29 integrated story assertions; zero skips/cancellations |
+| `node --test tests/bloomops-content-*.test.mjs tests/bloomops-portal-content*.test.mjs tests/bloomops-release-c-*.test.mjs` | 665/665 passed; zero skips/cancellations |
+| `node --test tests/bloomops-file*.test.mjs tests/bloomops-projection*.test.mjs tests/bloomops-shell.test.mjs tests/bloomops-authorization.test.mjs tests/bloomops-auth.test.mjs tests/bloomops-membership.test.mjs` | 311/311 passed; zero skips/cancellations |
+| `PATH=/tmp/bloomops-c6-tools/bin:$PATH npm test` | 4695/4695 passed; zero failures/skips/cancellations |
+| `npm run build`; `npm run cf:build` | Both exit 0, including available Next lint/type checks |
+| `node .github/scripts/verify-zero-remote.mjs --local` | 22/22 passed; fresh schema, exact no-op second pass and disposable cleanup |
+| `npm run db:domain:generate` | Exit 0; no schema changes, nothing to migrate |
+| `node --test tests/bloomops-schema.test.mjs tests/bloomops-content-schema.test.mjs tests/bloomops-content-pipeline-schema.test.mjs tests/bloomops-content-calendar-schema.test.mjs tests/bloomops-content-files-schema.test.mjs tests/bloomops-content-approvals-schema.test.mjs tests/schema-drift.test.mjs` | 72/72 passed |
+| `node scripts/content-smoke-local.mjs` | 43/43 actual workerd/D1 checks passed |
+| `node scripts/content-pipeline-smoke-local.mjs` | 54/54 passed |
+| `node scripts/content-calendar-smoke-local.mjs` | 57/57 passed |
+| `node scripts/content-files-smoke-local.mjs` | 64/64 actual workerd/D1/R2 checks passed |
+| `node scripts/content-approvals-smoke-local.mjs` | 65/65 passed |
+| `node scripts/portal-content-smoke-local.mjs` | 30/30 passed |
+| `node scripts/release-c-smoke-local.mjs` | 29/29 passed on real workerd/D1/R2 with issued sessions |
+| `node scripts/files-smoke-local.mjs`; `node scripts/projections-smoke-local.mjs`; `node scripts/release-b-smoke-local.mjs` | 42/42, 34/34 and 86/86 passed |
+| `node scripts/auth-smoke-local.mjs --url http://localhost:8787` | 144/144 passed against the built Worker; identity, invitation, scopes, suspension and sign-out |
+| `node .github/scripts/verify-staging.mjs --url http://localhost:8787 --expect-env development` | 21/21 passed against the built Worker |
+| `LD_LIBRARY_PATH=/tmp/bloomlab-webhook-browser-wraMkD/libs/usr/lib/x86_64-linux-gnu node scripts/content-approvals-review-local.mjs --release-c --playwright /tmp/bloomops-c6-tools --out /tmp/bloomops-c7-review` | 206/206 browser/HTTP checks passed; 134 screenshots at 1440/1024/768/390/320px |
+| `LD_LIBRARY_PATH=/tmp/bloomlab-webhook-browser-wraMkD/libs/usr/lib/x86_64-linux-gnu node scripts/portal-content-review-local.mjs --playwright /tmp/bloomops-c6-tools --out /tmp/bloomops-c7-c6-review` | 86/86 browser/HTTP regressions passed; 52 screenshots at all five widths |
+| Changed JS/JSX syntax; `git diff --check 4dff635df8bb9268b18369eea05914c2c2534e3f` | Nine JS/JSX files parsed with Node/esbuild; no whitespace errors |
+| `git diff --exit-code 4dff635df8bb9268b18369eea05914c2c2534e3f -- package.json package-lock.json drizzle lib/bloomops/schema.mjs` | Exit 0; byte-identical dependencies, schema, migrations and snapshots |
+
+No migration or schema correction was necessary. No prior migration was edited, no migration was added and no dependency/audit-fix command ran. The fresh database has 60 inherited ledger entries, 18 domain migrations, 41 domain / 77 total tables, 100 migration-defined indexes and 37 triggers; the second pass changed neither schema nor ledgers. The pinned manifest/lockfile remain identical to the exact C6 base. npm's 53 advisories are inherited; the available build checks pass but do not resolve those advisories. The external Python alias already used by prior phases supports inherited packaged-skill ZIP tests without changing repository behavior. Playwright remains external at `/tmp/bloomops-c6-tools`; Chromium uses the existing libraries under `/tmp/bloomlab-webhook-browser-wraMkD/libs/usr/lib/x86_64-linux-gnu`.
+
+Screenshots visually inspected include the live design reference, the 320px Social reset/focus state, calendar invalid-query heading, long recording detail/filename and reassigned contractor calendar, plus the desktop recent-publication list. The integrated browser checks preserve real auth throttling with bounded retries. Loading/error-state assertions also remain in the focused UI regressions; no remote browser acceptance is claimed.
+
+### Deliberate limits and handoff
+
+Only synthetic local/disposable data is used. Runtime harnesses remove their temporary resources. The built Worker uses the safety-checked local preview with `r2-dev` mail and an in-memory loopback origin override. `.dev.vars`, unrelated developer processes, staging/production business data and Leadsthatbloom are untouched. No deployment, real email/SMS, payment, DNS change or Release D work is authorized or performed. Remote C7 deployment/migration gates, independent audit and merge are intentionally not verified by this implementation; those are the remaining release-closure gates.
+
+All required local checks ran and passed. The owned preview was stopped after browser/auth verification. Its SIGTERM exit left the local dry-run bundle behind; after confirming both owned processes and port 8787 were gone, that specific temporary directory was removed explicitly. Unrelated older preview directories were left untouched. Synthetic browser/auth fixtures remain only in local development D1/R2; disposable runtime/zero-check resources were removed by their harnesses.
+
+Historical C1/C2/C4 browser scripts still contain phase-local absence/bypass assertions superseded by C5/C6. C7 runs the current C5 journey extended across C1–C6 and the current C6 browser regression, plus every current C1–C6 runtime smoke. It does not alter historical harnesses merely to inflate passing counts. Earlier contracts' limits remain: C4-only eligible recording sharing, C5-only explicit review copy, no Client history/general assets/provider publishing/notifications or future modules. There is no behavior correction requiring DOMAIN_MODEL or RELEASE_C edits.
+
+The implementation handoff is an open, unmerged PR for independent audit. The final exact head is reported with that PR and identifies the content reviewed; Release C is not closed by this work. The next step is independent C7 audit, not Release D implementation.
+
+### Complete C7 changed-file inventory against the exact C6 base
+
+- `app/(internal)/social/calendar/page.jsx`
+- `app/(internal)/social/page.jsx`
+- `docs/BUILD_STATE.md`
+- `docs/phases/C7.md`
+- `scripts/content-approvals-review-local.mjs`
+- `scripts/release-c-review-checks.mjs`
+- `scripts/release-c-smoke-local.mjs`
+- `scripts/release-c-smoke-worker.mjs`
+- `scripts/release-c-story.mjs`
+- `tests/bloomops-release-c-page.test.mjs`
+- `tests/bloomops-release-c-story.test.mjs`
+
+The temporary `C7_CODEX_PROMPT.txt` is removed, giving zero net diff against the C6 base. No generated output, local data, secrets or browser artifacts belong in the final diff.
+
+### Historical C6 entry: verified C5 closure and exact C6 base
 
 C5 PR #26 merged as `df4bfde1d3746d3517dbaff498f6eb17a5b732e0`, the exact C6 base. Read-only `gh run view` checks confirmed [Deploy staging 34365507942](https://github.com/Beeyach/bloomops/actions/runs/34365507942) and [Verify zero-to-current 34365508005](https://github.com/Beeyach/bloomops/actions/runs/34365508005) both completed successfully on that exact SHA. The C6 contract records successful disposable cleanup. The requested branch started clean and contained only the C6 phase contract and temporary prompt after the base. The complete prompt, phase contract, repository instructions and required preflight documentation were read before implementation.
 
