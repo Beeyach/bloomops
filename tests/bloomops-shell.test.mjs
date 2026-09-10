@@ -106,7 +106,7 @@ test('the internal navigation is the eleven PRODUCT_SPEC destinations, in order,
     assert.ok(['now', 'later'].includes(item.availability), item.key);
     assert.ok(NAV_GROUPS.some((g) => g.key === item.group), `${item.key} belongs to a group`);
   }
-  assert.deepEqual(INTERNAL_NAV.filter((i) => i.availability === 'now').map((i) => i.key), ['home', 'clients', 'onboarding', 'work', 'social', 'team', 'settings'], 'Release A areas, Work and C1 Social are live');
+  assert.deepEqual(INTERNAL_NAV.filter((i) => i.availability === 'now').map((i) => i.key), ['home', 'clients', 'onboarding', 'work', 'social', 'systems', 'team', 'settings'], 'Release A areas, Work, Social and D1 Systems are live');
   assert.equal(JSON.stringify(INTERNAL_NAV).match(/prospect|leads?that|outreach|gmail/i), null, 'no prospecting destination in BloomOps navigation');
   assert.equal(navGroups().reduce((n, g) => n + g.items.length, 0), 11, 'every destination is in exactly one group');
 });
@@ -314,8 +314,8 @@ test('Home tells the truth about zero, by scope, and maps every area with its av
   assert.match(some, /3 service engagements in delivery/);
   assert.match(some, /1 client with onboarding still open/);
   const map = render(AreaMap);
-  assert.equal((map.match(/Available now/g) || []).length, 6, 'Clients, Onboarding, Work, Social, Team, Settings');
-  assert.equal((map.match(/Not available yet/g) || []).length, 4, 'Ads, Systems, Pages, Finance');
+  assert.equal((map.match(/Available now/g) || []).length, 7, 'Clients, Onboarding, Work, Social, Systems, Team, Settings');
+  assert.equal((map.match(/Not available yet/g) || []).length, 3, 'Ads, Pages, Finance');
   assert.doesNotMatch(map, /Welcome back/i);
 });
 

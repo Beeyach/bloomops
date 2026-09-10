@@ -57,5 +57,10 @@ test('Project creation bound is atomic, retry-safe and never returns hidden row 
   const t = await setup(); for (let i = 0; i < 199; i++) t.seedAction(`existing-${i}`, { visibility: 'restricted' });
   const actor = await t.actor('pm'), results = await Promise.all([t.addAction({ title: 'Last' }, { actor }), t.addAction({ title: 'Too many' }, { actor })]);
   assert.equal(results.filter(r => r.ok).length, 1); assert.equal(results.filter(r => r.reason === 'conflict').length, 1); assert.equal(t.actionHistory().length, 1);
-  assert.equal((await t.actions(actor)).items.length, 1); assert.doesNotMatch(JSON.stringify(results), /existing-|count|199/);
+  const visible = (await t.actions(actor)).items;
+  assert.equal(visible.length, 1);
+  // Exact result envelopes exclude hidden names/counts without mistaking a
+  // random opaque Action id containing "199" for a leaked row count.
+  assert.deepEqual(results.find(r => r.ok), { ok: true, actionId: visible[0].id });
+  assert.deepEqual(results.find(r => !r.ok), { ok: false, reason: 'conflict' });
 });
