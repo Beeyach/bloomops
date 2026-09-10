@@ -1,4 +1,5 @@
 import { requireShell } from '@/lib/bloomops/shell-server.mjs';
+import { readTogether } from '@/lib/bloomops/read-batch.mjs';
 import { ROLE_DESCRIPTIONS, teamViewFor } from '@/lib/bloomops/shell.mjs';
 import { ROLE_LABELS, listWorkspaceMembers } from '@/lib/bloomops/membership.mjs';
 import { listInvitations } from '@/lib/bloomops/invitations.mjs';
@@ -35,7 +36,7 @@ export default async function TeamPage() {
     );
   }
 
-  const [rows, invitations] = await Promise.all([listWorkspaceMembers(access.db, access.workspace.id), listInvitations(access.db, access.workspace.id)]);
+  const [rows, invitations] = await readTogether(access.db, db => Promise.all([listWorkspaceMembers(db, access.workspace.id), listInvitations(db, access.workspace.id)]));
   const members = rows.map((m) => ({ ...m, roleLabel: ROLE_LABELS[m.role] || m.role }));
   return <TeamManager members={members} invitations={invitations.map((i) => ({ ...i, roleLabel: ROLE_LABELS[i.role] || i.role }))} selfMembershipId={access.membership.id} workspaceName={access.workspace.name} />;
 }

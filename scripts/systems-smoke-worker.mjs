@@ -43,7 +43,12 @@ export default { async fetch(request, env) {
     await run("INSERT INTO projects(id,workspace_id,client_id,name,health) VALUES('foreign','b','foreign','FOREIGN_SECRET','at_risk')");
     await run("UPDATE actions SET assignee_membership_id='m-action-only' WHERE id='a-p-000'");
     const queries = [];
-    const db = drizzle(env.DB, { schema, logger: { logQuery(query, params) {
+    let batches = 0;
+    const binding = new Proxy(env.DB, { get(target, key) {
+      if (key === 'batch') return statements => { batches++; return target.batch(statements); };
+      const value = Reflect.get(target, key); return typeof value === 'function' ? value.bind(target) : value;
+    } });
+    const db = drizzle(binding, { schema, logger: { logQuery(query, params) {
       queries.push({ bindings:params.length, sqlBytes:Buffer.byteLength(query) });
       assert.ok(params.length <= 100 && Buffer.byteLength(query) <= 100000, 'D1 statement limits');
       assert.doesNotMatch(query, /^\s*(INSERT|UPDATE|DELETE|CREATE|ALTER)\b/i);
@@ -55,12 +60,12 @@ export default { async fetch(request, env) {
     const team=await actor('team'), owner=await actor('owner'), pm=await actor('pm'), actionOnly=await actor('action-only');
     const read=(who=owner, filters={})=>systemsProjection(db,who,filters,{now});
     const snapshot=async()=>JSON.stringify(await Promise.all(['projects','milestones','actions','deliverables','assets','asset_links','activity_events','service_engagements'].map(table=>all(`SELECT * FROM ${table} ORDER BY rowid`))));
-    const before=await snapshot(); queries.length=0;
-    const first=await read(team), queryCount=queries.length;
+    const before=await snapshot(); queries.length=0; batches=0;
+    const first=await read(team), queryCount=queries.length, batchCount=batches;
     check('240 assignments yield 50 current Systems Projects and a readable overflow',first.projects.items.length===50&&first.projects.hasMore);
     check('all Projects follow current Systems engagement truth',first.projects.items.every(p=>Number(p.id.slice(2))%2===0));
     check('correlated child summaries reuse all Work Core permissions',first.projects.items.every(p=>p.milestones.total===1&&p.milestones.finished===1&&p.actions.open===1&&p.deliverables.clientReview===1&&p.readyFiles===1));
-    check('Systems issues six metadata queries without R2',queryCount===6&&!env.FILES);
+    check('Systems issues five metadata statements in two native D1 batches without R2',queryCount===5&&batchCount===2&&!env.FILES);
     const second=await read(team,{page:'2'}),third=await read(team,{page:'3'});
     check('all 120 Systems Projects are reachable in deterministic pages',second.projects.items.length===50&&third.projects.items.length===20&&!third.projects.hasMore&&new Set([...first.projects.items,...second.projects.items,...third.projects.items].map(p=>p.id)).size===120);
     check('bounded delivery and facet options exclude non-Systems Services',first.deliverables.items.length===6&&first.deliverables.hasMore&&first.options.services.items.length===1&&first.options.services.items[0].id==='systems');
@@ -88,6 +93,6 @@ export default { async fetch(request, env) {
     const suspended=await read(owner);
     check('suspension revokes current rows, filters and output',!suspended.projects.items.length&&!suspended.options.clients.items.length&&!suspended.deliverables.items.length);
     check('D1 integrity and foreign keys remain valid',(await all('PRAGMA foreign_key_check')).length===0&&(await one('PRAGMA quick_check')).quick_check==='ok');
-    return Response.json({ checks:messages.length,messages,metrics:{assignments:240,queryCount,maxBindings:Math.max(...queries.map(q=>q.bindings)),maxSqlBytes:Math.max(...queries.map(q=>q.sqlBytes))} });
+    return Response.json({ checks:messages.length,messages,metrics:{assignments:240,queryCount,batchCount,maxBindings:Math.max(...queries.map(q=>q.bindings)),maxSqlBytes:Math.max(...queries.map(q=>q.sqlBytes))} });
   } catch(error) { return Response.json({messages,error:String(error.stack||error)},{status:500}); }
 } };

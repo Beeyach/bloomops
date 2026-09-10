@@ -6,6 +6,7 @@ import { createRequire } from 'node:module';
 import { execFileSync } from 'node:child_process';
 import { readFileSync, mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { navigationRoutes, completedContent } from './navigation-content.mjs';
 const arg=(name,fallback)=>{const i=process.argv.indexOf(name);return i<0?fallback:process.argv[i+1];};
 const base='http://localhost:8787', fixtureDir=resolve(arg('--fixture','/tmp/bloomops-perf1-fixture')), out=resolve(arg('--out','/tmp/bloomops-perf1-review'));
 const fixture=JSON.parse(readFileSync(join(fixtureDir,'fixture.json')));
@@ -22,12 +23,14 @@ try {
  for(const javaScriptEnabled of [true,false]) {
   const context=await browser.newContext({storageState:join(fixtureDir,'owner-state.json'),javaScriptEnabled}),page=await context.newPage();
   page.on('pageerror',()=>errors.push('runtime error'));
-  for(const path of ['/','/clients','/work','/social','/systems','/team',`/work/projects/${fixture.projects[0]}`]) {
+  for(const route of navigationRoutes(fixture.projects[0])) {
+   const { path } = route;
    const response=await page.goto(base+path,{waitUntil:'networkidle'});check('protected page responds without caching',response.status()===200&&/no-store/.test(response.headers()['cache-control']||''));
    for(const width of [1440,1024,768,390,320]) {
     await page.setViewportSize({width,height:900});
+    await completedContent(page, route, { animationFrames: javaScriptEnabled });
     const fits=await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth);
-    check(`${javaScriptEnabled?'JS':'no-JS'} ${path.includes('/projects/')?'Project':path} ${width}: completed heading visible and viewport fits`,await page.locator('main h1').count()===1&&await page.locator('main h1').isVisible()&&fits);
+    check(`${javaScriptEnabled?'JS':'no-JS'} ${path.includes('/projects/')?'Project':path} ${width}: completed destination visible and viewport fits`,await page.locator('main h1').count()===1&&await page.locator('main h1').isVisible()&&fits);
     const label=path.includes('/projects/')?'project':path.replace('/','')||'home';
     await page.screenshot({path:join(out,`${label}-${javaScriptEnabled?'js':'nojs'}-${width}.png`),fullPage:true});screenshots++;
    }

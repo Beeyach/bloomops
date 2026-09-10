@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import { testAuth, run, APP_URL } from './_bloomops-db.mjs';
 import { getAccess, getActor, requireAuthorized } from '../lib/bloomops/access.mjs';
 import { loadInternalClientResource, loadInternalServiceResource, evaluate, CAPABILITIES } from '../lib/bloomops/authorization.mjs';
-import { getProject, portalProjects } from '../lib/bloomops/projects.mjs';
+import { authorizeProject, getProject, portalProjects } from '../lib/bloomops/projects.mjs';
 import { portalMilestones } from '../lib/bloomops/milestones.mjs';
+import { readTogether } from '../lib/bloomops/read-batch.mjs';
 
 async function scenario(context) {
   const t = testAuth(); context.after(() => t.raw.close());
@@ -102,4 +103,25 @@ test('explicit capability revocation remains current for Admin and Team members'
     run(t.raw,'DELETE FROM member_capabilities WHERE membership_id=?',`m-${role}`);
     assert.equal(evaluate(await t.actor(role),{action:'finance.view'}).allowed,false);
   }
+});
+
+test('native actor support is one invocation; consolidated restricted Project reads revoke with an issued session', async context => {
+  const t = await scenario(context);
+  run(t.raw, "UPDATE projects SET visibility='restricted' WHERE id='project'");
+  run(t.raw, "INSERT INTO project_assignments(workspace_id,project_id,membership_id) VALUES('a','project','m-team_member')");
+  await t.request('team_member');
+  const counts = [], batch = t.d1.batch;
+  t.d1.batch = statements => { counts.push(statements.length); return batch(statements); };
+  const actor = await t.actor('team_member');
+  assert.deepEqual(counts, [4], 'capabilities plus three independent assignment reads use native D1 batch');
+  const read = async () => {
+    const access = await t.access('team_member'), current = await getActor(access);
+    return readTogether(access.db, db => authorizeProject(db, current, 'project', 'project.view'));
+  };
+  assert.equal((await read()).ok, true);
+  run(t.raw, "DELETE FROM project_assignments WHERE membership_id='m-team_member'");
+  assert.deepEqual(await read(), { ok: false, reason: 'not_found' });
+  assert.deepEqual(await readTogether(t.db, db => authorizeProject(db, actor, 'project', 'project.view')),
+    { ok: false, reason: 'not_found' }, 'even the earlier actor cannot bypass current SQL scope');
+  assert.ok((await t.access('team_member')).session);
 });
