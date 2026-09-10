@@ -72,7 +72,7 @@ try {
   const read=async(id)=>(await(await client.context.request.get(base+`/api/bloomops/portal/content/${id}`)).json()).item;
   const upcoming=await add({title:'A seasonal update · '+'A calm editorial idea '.repeat(8)}),recording=await add({title:'Your next recording',recordingRequired:true}),review=await add({title:'Your next approval'});
   const hidden=await add({title:'C6_HIDDEN_TITLE',visibility:'internal'});
-  await add({title:'Social only story'},socialClient,socialService);
+  const socialStory=await add({title:'Social only story'},socialClient,socialService);
   const project=(await post(`/api/bloomops/clients/${cl}/projects`,{name:'Your systems setup',visibility:'client',serviceEngagementId:ghl},owner,201)).projectId;
   check('canonical multi-service project created',Boolean(project));
   for(const stage of ['script','waiting_for_recording'])await move(recording,stage);
@@ -89,8 +89,25 @@ try {
     for(const width of widths)await layout(`${label}-home`,who.page,width);
   }
   check('multi-service Home keeps the existing Project',await client.page.getByText('Your systems setup',{exact:true}).count()>0);
-  await other.page.goto(base+'/portal/content');check('irrelevant direct Content route has useful empty state',await other.page.getByText('No Content in progress',{exact:true}).count()===1);
-  for(const width of widths)await layout('empty-content',other.page,width);
+  const redirectedHome=async(who,label)=>{
+    await who.page.goto(base+'/portal/content');await who.page.waitForURL(base+'/portal');
+    check(label,who.page.url()===base+'/portal'&&await who.page.locator('.bo-portal-content-nav').count()===0&&await who.page.getByRole('heading',{name:'Your content',exact:true}).count()===0);
+  };
+  await redirectedHome(other,'no eligible Content redirects direct index access to Home');
+  await social.page.goto(base+'/portal/content');
+  check('current-only Client can open the Content destination',social.page.url()===base+'/portal/content'&&await social.page.getByRole('link',{name:'Social only story',exact:true}).count()===1);
+  sql(`UPDATE content_items SET stage='published',published_at=${lit(new Date(Date.now()-31*86400000).toISOString())} WHERE id=${lit(socialStory)}`);
+  await social.page.goto(base+'/portal');
+  check('old-publication-only Client has no Content navigation',await social.page.locator('.bo-portal-content-nav').count()===0);
+  await redirectedHome(social,'old-publication-only Client cannot remain on the Content index');
+  sql(`UPDATE content_items SET published_at=${lit(new Date(Date.now()-86400000).toISOString())} WHERE id=${lit(socialStory)}`);
+  await social.page.goto(base+'/portal/content');
+  check('recent-publication-only Client keeps Content navigation and a valid empty Current view',social.page.url()===base+'/portal/content'&&await social.page.locator('.bo-portal-content-nav a[href="/portal/content"]').count()===1&&await social.page.getByText('No Content in progress',{exact:true}).count()===1);
+  for(const width of widths)await layout('empty-current-with-recent-content',social.page,width);
+  await social.page.goto(base+'/portal/content?view=published');
+  check('recent-publication-only Client discovers its Published item',await social.page.getByRole('link',{name:'Social only story',exact:true}).count()===1);
+  await social.page.goto(base+'/portal/content?view=action');
+  check('recent-publication-only Client keeps the empty Needs you view',await social.page.getByText('You’re all set for now',{exact:true}).count()===1);
   await client.page.goto(base+'/portal/content');
   for(const width of widths)await layout('content-index',client.page,width);
   const body=await client.page.textContent('main');check('general list excludes hidden Content, internal copy and old publications',!/C6_PRIVATE|C6_HIDDEN|C6_OLD/.test(body));
@@ -121,7 +138,9 @@ try {
   const touch=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,storageState:await client.context.storageState()}),touchPage=await touch.newPage();await touchPage.goto(base+'/portal');await touchPage.locator('.bo-portal-content-nav a[href="/portal/content"]').tap();await touchPage.waitForURL(base+'/portal/content');await layout('touch',touchPage,390);await touch.close();
   check('touch navigates to Content',true);
   sql(`UPDATE content_items SET visibility='internal' WHERE client_id=${lit(cl)}`);await client.page.goto(base+'/portal');check('live visibility removes general Content navigation',await client.page.locator('.bo-portal-content-nav').count()===0&&(await client.context.request.get(base+`/api/bloomops/portal/content/${upcoming}`)).status()===404);
+  await redirectedHome(client,'visibility revocation also gates a direct index visit');
   sql(`UPDATE content_items SET visibility='client' WHERE id=${lit(upcoming)}`);sql(`UPDATE client_contacts SET user_id=NULL WHERE client_id=${lit(cl)}`);await client.page.goto(base+'/portal');check('contact revocation removes navigation and direct reads',await client.page.locator('.bo-portal-content-nav').count()===0&&(await client.context.request.get(base+`/api/bloomops/portal/content/${upcoming}`)).status()===404);
+  await redirectedHome(client,'contact revocation also gates a direct index visit');
   sql(`UPDATE client_contacts SET user_id=${lit(members.client.id)} WHERE client_id=${lit(cl)}`);sql(`UPDATE workspace_memberships SET status='suspended' WHERE id=${lit(members.client.membership)}`);check('issued session suspension is refused',(await client.context.request.get(base+'/api/bloomops/portal/content')).status()===403);
   console.log(`C6 browser/HTTP: ${checks} checks passed; ${screenshots} screenshots at ${widths.join(', ')}px. Exit 0.`);
 }catch(error){console.error('C6 browser acceptance failed:',String(error.message).split('\n').filter(l=>!/cookie:|authorization:|token=/i.test(l)).join('\n'));process.exitCode=1;}

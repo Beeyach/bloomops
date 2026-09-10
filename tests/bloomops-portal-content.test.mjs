@@ -31,6 +31,33 @@ test('canonical service-less and multi-service Content is readable; unrelated se
   run(t.raw,"UPDATE content_items SET visibility='internal'");assert.equal(await p.nav(),false);
   assert.deepEqual((await p.list()).items,[]);
 });
+for (const [label, publishedAt, eligible] of [
+  ['older than 30 days', '2026-08-31T11:59:59.999Z', false],
+  ['exactly 30 days', '2026-08-31T12:00:00.000Z', true],
+  ['recent', '2026-09-29T12:00:00.000Z', true],
+  ['now', '2026-09-30T12:00:00.000Z', true],
+  ['future', '2026-09-30T12:00:00.001Z', false],
+]) test(`Published-only destination ${label} agrees with discoverable Content`, async () => {
+  const t = await setup(), actor = await t.actor('james'), now = new Date('2026-09-30T12:00:00.000Z');
+  run(t.raw, "UPDATE content_items SET stage='published',stage_context=NULL,published_at=? WHERE id=?", publishedAt, t.contentId);
+  assert.equal(await hasPortalContent(t.db, actor, { now }), eligible);
+  for (const view of ['current', 'action']) assert.deepEqual((await portalContent(t.db, actor, { view }, { now })).items, []);
+  const published = await portalContent(t.db, actor, { view: 'published' }, { now });
+  assert.deepEqual(published.items.map(item => item.id), eligible ? [t.contentId] : []);
+  assert.equal(published.hasMore, false);
+});
+test('only hidden or foreign current/recent rows cannot activate the Content destination', async () => {
+  const t = await setup(), actor = await t.actor('james'), now = new Date('2026-09-30T12:00:00.000Z');
+  run(t.raw, "UPDATE content_items SET visibility='internal'");
+  for (const visibility of ['internal', 'restricted', 'client']) {
+    const parent = visibility === 'client' ? { clientId: 'lawrence' } : {};
+    await t.add({ visibility }, parent);
+    const id = (await t.add({ visibility }, parent)).contentId;
+    run(t.raw, "UPDATE content_items SET stage='published',published_at='2026-09-29T00:00:00.000Z' WHERE id=?", id);
+  }
+  assert.equal(await hasPortalContent(t.db, actor, { now }), false);
+  for (const view of ['current', 'action', 'published']) assert.deepEqual((await portalContent(t.db, actor, { view }, { now })).items, []);
+});
 for (const who of ['ellen','ary','pm','sam','other','foreign','lawrence']) test(`${who} cannot reuse Client Content reads outside a linked Client role`,async()=>{
   const t=await setup(),actor=await t.actor(who);
   t.assign('sam','social-service');run(t.raw,"UPDATE content_items SET owner_membership_id='m-sam'");

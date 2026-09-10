@@ -28,6 +28,14 @@ export default { async fetch(request,env) {
     const owner=await actor('owner'),client=await actor('client');
     const add=async(input={},extra={})=>{const r=await createContent(db,{actor:owner,clientId:'james',serviceEngagementId:'service',requestId:crypto.randomUUID(),input:{title:'Garden update',type:'reel',visibility:'client',script:'PRIVATE_SCRIPT',pillar:'PRIVATE_PILLAR',platforms:['Instagram','TikTok'],targetPublishDate:'2026-09-22',...input},...extra});assert.equal(r.ok,true);return r.contentId;};
     check('no Content means no navigation',!await hasPortalContent(db,client));
+    const destinationId=await add(),now=new Date('2026-09-30T12:00:00.000Z');
+    check('current work activates the destination',await hasPortalContent(db,client,{now}));
+    for(const [label,publishedAt,eligible] of [['old','2026-08-31T11:59:59.999Z',false],['boundary','2026-08-31T12:00:00.000Z',true],['recent','2026-09-29T12:00:00.000Z',true],['future','2026-09-30T12:00:00.001Z',false]]){
+      await run("UPDATE content_items SET stage='published',published_at=? WHERE id=?",publishedAt,destinationId);
+      check(`${label} Published-only destination agrees with list discovery`,(await hasPortalContent(db,client,{now}))===eligible&&(await portalContent(db,client,{view:'published'},{now})).items.length===Number(eligible)&&(await portalContent(db,client,{}, {now})).items.length===0);
+    }
+    await run("UPDATE content_items SET visibility='internal',published_at='2026-09-29T12:00:00.000Z' WHERE id=?",destinationId);
+    check('hidden recent Content and another Client cannot activate navigation',!await hasPortalContent(db,client,{now})&&!await hasPortalContent(db,await actor('other'),{now}));
     const id=await add({recordingRequired:true});await run("UPDATE content_items SET stage='waiting_for_recording',stage_context='PRIVATE_WAITING' WHERE id=?",id);
     const empty=await add();
     const bytes=new TextEncoder().encode('C6 original recording'),file=await uploadContentFile(db,{actor:client,portal:true,bucket:env.FILES,contentId:id,input:{requestId:crypto.randomUUID(),filename:'Recording.mp4',mimeType:'video/mp4',byteSize:bytes.length,purpose:'recording'},bytes});
@@ -46,7 +54,7 @@ export default { async fetch(request,env) {
       await run("INSERT INTO bloomops_clients(id,workspace_id,name,slug) VALUES(?,'a',?,?)",`large-${i}`,`Large ${i}`,`large-${i}`);
       await run("INSERT INTO client_contacts(workspace_id,client_id,name,user_id) VALUES('a',?,'Contact','client')",`large-${i}`);
     }
-    const large=await actor('client');check('240 linked Clients fit D1 limits without IN-list expansion',(await portalContent(db,large,{view:'action'})).items.length===1&&Boolean(await getPortalContent(db,large,id)));
+    const large=await actor('client');check('240 linked Clients fit D1 limits without IN-list expansion',await hasPortalContent(db,large)&&(await portalContent(db,large,{view:'action'})).items.length===1&&Boolean(await getPortalContent(db,large,id)));
     await run("UPDATE content_items SET stage='client_review',stage_context=NULL WHERE id=?",id);
     const requestRound=await requestContentApproval(db,{actor:owner,contentId:id,input:{requestId:crypto.randomUUID(),expectedRevision:(await getContent(db,owner,id)).revision}});
     check('C5 requested round drives the general action link',requestRound.ok&&(await getPortalContent(db,client,id)).approvalRoundId===requestRound.roundId);
