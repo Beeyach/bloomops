@@ -1,0 +1,194 @@
+BLOOMOPS RELEASE C - PHASE C6 INDEPENDENT RE-AUDIT
+
+Repository: Beeyach/bloomops
+PR under review: #27
+Exact C5 base: df4bfde1d3746d3517dbaff498f6eb17a5b732e0
+Exact corrected C6 head: b30a75bb90ea45b8e17f8d65d95c562f827cdcec
+Audit branch: codex/c6-independent-reaudit
+
+This is a fresh independent re-audit after the first audit failed on one blocker. Do not merge PR #27. Do not start C7. Do not deploy to staging or production. Do not modify DNS, real email, payments, production resources, or Leadsthatbloom.
+
+MODEL INTENT
+Use GPT-5.6 Sol with Extra High reasoning for this audit. The implementation and blocker fix were performed by Astra, so preserve model independence.
+
+PRIMARY TASK
+Independently determine whether corrected head b30a75bb90ea45b8e17f8d65d95c562f827cdcec now satisfies the full binding C6 contract and is safe to merge.
+
+Do not trust the implementation summary, previous audit, or claimed test counts as proof. Re-read the relevant repository files, inspect the exact base-to-head diff, execute the important verification commands yourself where the environment allows, and distinguish executed evidence from code inspection.
+
+READ FIRST
+Read completely before concluding:
+- AGENTS.md
+- docs/BUILD_STATE.md
+- docs/RELEASE_C.md
+- docs/PRODUCT_SPEC.md
+- docs/DOMAIN_MODEL.md
+- docs/DESIGN_SYSTEM.md
+- docs/DESIGN_CHECKLIST.md
+- docs/phases/C1.md
+- docs/phases/C2.md
+- docs/phases/C3.md
+- docs/phases/C4.md
+- docs/phases/C5.md
+- docs/phases/C6.md
+- package.json
+- all C6 portal implementation, authorization, File, approval, recording, HTTP, UI and browser-test code touched by PR #27
+
+PREVIOUS AUDIT BLOCKER TO RE-VERIFY
+The first independent audit failed because Content navigation was conditional but direct /portal/content access was still available for Clients with no meaningful discoverable Content. It also found an old-Published-only case where navigation could appear while all C6 list views were empty.
+
+The correction claims to fix this by making navigation and /portal/content use the same discoverable-content eligibility, where eligibility is the union of:
+- currently readable non-Published Content that belongs in the C6 current/upcoming experience
+- Published Content inside the supported 30-day recent window
+
+The correction also claims:
+- ineligible Clients are redirected from /portal/content to /portal
+- Clients with an eligible destination may still see a valid empty selected subview when another C6 view contains discoverable Content
+- old-Published-only Content does not activate navigation or the index
+- documentation and browser assertions were corrected
+
+Do not assume those claims are true. Prove them.
+
+MANDATORY RE-AUDIT CASES FOR THE FIX
+At minimum verify all of these independently:
+1. Client with no eligible Content: no Content nav, direct /portal/content redirects safely to /portal.
+2. Client with only Published Content older than 30 days: no Content nav, direct /portal/content redirects safely.
+3. Client with recent Published Content only: Content nav exists and /portal/content is reachable.
+4. Client with current non-Published Content only: Content nav exists and /portal/content is reachable.
+5. Eligible destination with a selected empty subview: page remains valid rather than incorrectly redirecting.
+6. Hidden, foreign, unauthorized, future-only or otherwise ineligible rows do not activate destination eligibility.
+7. Current visibility/contact/membership/workspace/service revocation removes destination access on the next request even with an issued session.
+8. Navigation and route gating use the same canonical server-side eligibility semantics, not two drifting implementations.
+9. Hidden rows and old publications do not affect counts, overflow, empty-state messaging, pagination metadata or redirect decisions.
+10. docs/DOMAIN_MODEL.md and docs/BUILD_STATE.md no longer contradict docs/phases/C6.md on conditional destination behavior.
+
+FULL C6 AUDIT
+Do not limit the audit to the old blocker. Re-check the entire C6 PR from exact base df4bfde1d3746d3517dbaff498f6eb17a5b732e0 to exact head b30a75bb90ea45b8e17f8d65d95c562f827cdcec.
+
+Verify:
+
+A. CONTRACT SCOPE
+- C6 remains a Client-safe projection/interaction layer over C1-C5 canonical state.
+- No C7 hardening/product expansion is pulled forward beyond required C6 proof.
+- No new schema, migration, dependency, provider, queue, notification, publishing, comments, Ads, Systems, Pages, Finance or Release D+ behavior.
+
+B. AUTHORIZATION AND TENANT ISOLATION
+- Every Client-facing list/detail/File/action read is enforced server-side under current database truth.
+- Client A cannot read Client B Content or Files by guessed IDs.
+- Hidden/internal Content cannot be retrieved directly.
+- Revoked membership, contact linkage, workspace state, visibility, parent Client or optional Social service removes access immediately.
+- UI hiding is never treated as authorization.
+
+C. DTO / DATA-EXPOSURE SAFETY
+- Client responses are exact allowlists.
+- No internal owner, assignment, pillar, CAS/revision, private stage context, staff notes, activity/audit internals, service/member/workspace IDs, storage keys, hashes, request keys, provider metadata or hidden counts leak.
+- General C6 Content visibility does not expose hook/script/caption/CTA merely because C5 approval snapshots may contain them.
+- C5 review copy remains confined to the explicit Requested approval authority.
+
+D. BOUNDED QUERIES / PAGINATION
+- Eligibility filtering happens before limits/counts that influence Client-visible output.
+- Ordering is deterministic.
+- hasMore/empty/overflow/navigation decisions are based only on eligible rows.
+- No large unbounded bind-list regression or hidden-row enumeration leak.
+
+E. C4 RECORDING / FILE REUSE
+- Recording actions only appear when C4 says they are currently eligible.
+- Existing C4 recording endpoint remains the only upload path.
+- Client-visible File metadata/downloads preserve C4 authorization and Ready/download rules.
+- Generic Content assets are not accidentally exposed.
+- C6 does not broaden uploader retry exceptions or File visibility.
+
+F. C5 APPROVAL REUSE
+- Requested approval actions only appear under C5 eligibility.
+- Existing C5 approval endpoint remains the only Client response path.
+- No duplicate approval mutation or stage transition path was introduced.
+- Immutable snapshot/round behavior remains intact.
+- Completed/withdrawn/ineligible approvals are not exposed as active actions.
+
+G. INTERNAL REGRESSION
+- Shared helper changes do not widen internal PM/Team/Owner/Admin scope.
+- Internal Social forms/views/pipeline semantics remain unchanged.
+- Existing Release B portal/File behavior remains intact where shared code was touched.
+
+H. UI / ROUTING
+- Loading, empty, error, no-action and long-content states are intentional.
+- Desktop/tablet/mobile behavior is sound at the established widths.
+- Keyboard focus, touch targets and reduced-motion behavior remain acceptable.
+- Direct route behavior and redirects do not create loops or leak hidden existence.
+
+I. TEST INTEGRITY
+- Tests prove the dangerous cases rather than merely matching implementation behavior.
+- Specifically inspect the new no-eligible, old-publication-only and route-gating regressions for whether they would fail against the previously audited broken head.
+- Look for weakened assertions, skipped tests, hardcoded outcomes, mocks that bypass authorization, or browser expectations that encode incorrect behavior.
+
+J. REPOSITORY CLEANLINESS
+- No temporary prompt, debug file, generated junk, secret, disabled safeguard, broad catch, TODO correctness gap, accidental package/lock change, or schema drift remains in the PR.
+
+VERIFICATION
+Inspect package.json and docs/BUILD_STATE.md for the real repository commands. Where supported, independently execute the important C6 verification set, including:
+- npm ci
+- focused C6 tests
+- combined Content/portal/File/authorization regression
+- full npm test
+- npm run build
+- npm run cf:build
+- local zero-to-current verification
+- schema/Drizzle consistency
+- C6 workerd/D1/R2 smoke
+- C4 File and C5 approval runtime regressions
+- C6 browser/HTTP acceptance
+- C5 browser regression
+- changed JS/JSX syntax checks
+- git diff --check
+
+Do not weaken tests or configuration to make a check pass. If the environment prevents a check, report it as NOT VERIFIED, not passing.
+
+OUTPUT FORMAT
+Start with exactly one of:
+AUDIT RESULT: PASS
+AUDIT RESULT: PASS WITH NON-BLOCKING FINDINGS
+AUDIT RESULT: FAIL - CHANGES REQUIRED
+
+Then provide:
+
+## Merge recommendation
+State clearly whether PR #27 should be merged now.
+
+## Previous blocker disposition
+State whether the conditional-destination blocker is fully fixed. Cite exact files/symbols/tests and describe the independently reproduced behavior for the mandatory cases above.
+
+## Findings
+For every real issue include:
+- Severity: BLOCKER / HIGH / MEDIUM / LOW
+- exact file and line or symbol
+- what is wrong
+- concrete failure scenario
+- why it violates the C6 contract or creates real risk
+- smallest correct fix
+
+Do not invent findings for thoroughness.
+
+## Verification performed
+Separate into:
+- VERIFIED BY EXECUTION
+- VERIFIED BY CODE/DIFF INSPECTION
+- NOT VERIFIED
+
+## C6 contract coverage
+Briefly map the major C6 requirements to the implementation/tests that satisfy or fail them.
+
+## Security and tenant-isolation conclusion
+State whether any cross-client, hidden-data, stale-authorization, File, approval, recording or enumeration path remains.
+
+## Remaining uncertainty
+List only genuine uncertainty.
+
+## Final next action
+If PASS: state that the user may perform the user-controlled merge of PR #27. After merge, C6 is NOT closed until both required post-merge workflows succeed on the exact resulting main merge SHA:
+1. Deploy staging
+2. Verify zero-to-current migration
+Only then may C7 begin under a separate instruction.
+
+If FAIL: do not suggest C7. Give the smallest C6-only fix list.
+
+Do not merge, deploy, mutate PR #27, or start C7 yourself.
