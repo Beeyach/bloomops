@@ -1,0 +1,435 @@
+BLOOMOPS RELEASE C - PHASE C6 INDEPENDENT AUDIT PROMPT
+
+You are performing an independent pre-merge audit of BloomOps Release C, Phase C6: Client Content Portal.
+
+Repository: Beeyach/bloomops
+Pull request: #27
+Exact C5 base: df4bfde1d3746d3517dbaff498f6eb17a5b732e0
+Exact C6 implementation head to audit: 50c196a7ca47e537dcf053f632bc2fb6834f91e3
+Implementation branch: codex/c6-client-content-portal
+Audit branch containing this prompt: codex/c6-independent-audit
+
+IMPORTANT AUDIT BOUNDARY
+
+This audit branch was created from the exact C6 implementation head only so this audit prompt can live in GitHub. The audit prompt commit itself is NOT part of PR #27 and is NOT part of the C6 implementation diff.
+
+Audit exactly:
+
+df4bfde1d3746d3517dbaff498f6eb17a5b732e0..50c196a7ca47e537dcf053f632bc2fb6834f91e3
+
+Do not audit the extra C6_AUDIT_PROMPT.txt commit as product code. Do not merge PR #27. Do not push fixes unless the user separately instructs you to do so after the audit. Do not start C7.
+
+MODEL / PURPOSE
+
+This session is the independent reviewer. The implementation was produced in a separate Astra session. Do not trust the implementation handoff as proof. Verify the repository yourself.
+
+PRIMARY INSTRUCTION
+
+Read this file completely, then independently audit PR #27 against the binding C6 contract and the existing C1-C5 architecture.
+
+READ FIRST
+
+Read completely before reaching conclusions:
+
+- AGENTS.md
+- docs/BUILD_STATE.md
+- docs/RELEASE_C.md
+- docs/PRODUCT_SPEC.md
+- docs/DOMAIN_MODEL.md
+- docs/DESIGN_SYSTEM.md
+- docs/DESIGN_CHECKLIST.md
+- docs/phases/C1.md
+- docs/phases/C2.md
+- docs/phases/C3.md
+- docs/phases/C4.md
+- docs/phases/C5.md
+- docs/phases/C6.md at the exact C6 head
+- package.json
+
+Then inspect the full exact diff from the C5 base to the C6 head, all touched code, relevant unchanged helpers that define authorization semantics, and the tests/harnesses that supposedly prove correctness.
+
+CURRENT IMPLEMENTATION CLAIMS TO VERIFY, NOT ASSUME
+
+The implementation reports:
+
+- conditional Client portal Content navigation
+- bounded current/upcoming Content lists
+- safe Content detail pages
+- reuse of existing C4 recording actions, C5 approval actions and existing File links
+- server-side workspace, membership, current contact, visibility and parent-scope checks before pagination
+- unchanged C4 File permission semantics
+- no migrations, schema or dependency changes
+- 41 focused C6 tests
+- 921 combined Content/portal/File/authorization regressions
+- 4,670 full-suite tests
+- both builds passing
+- zero-to-current local verification passing
+- no Drizzle migration drift
+- 24 workerd/D1/R2 C6 smoke checks
+- 78 C6 browser checks with 52 screenshots
+- 91 C5 browser regression checks with 53 screenshots
+- clean syntax and whitespace checks
+- same 53 inherited dependency advisories
+
+Treat every one of these as a claim requiring independent inspection or execution.
+
+AUDIT GOALS
+
+1. C6 CONTRACT COMPLIANCE
+
+Determine whether PR #27 implements docs/phases/C6.md exactly enough to merge.
+
+Check for both omissions and scope creep. C6 is a Client-safe projection/integration phase. It must not create a second Content model, visibility authority, approval flow, recording flow, File system, status store or hidden analytics layer.
+
+Confirm that C7 hardening or unrelated product work was not silently pulled forward.
+
+2. EXACT AUTHORIZATION AND TENANT ISOLATION
+
+Review every Client-facing C6 read and every path that exposes action links or File metadata.
+
+Prove current database truth is checked server-side for the relevant canonical conditions, including:
+
+- active workspace
+- active authenticated Client membership
+- unchanged/allowed role semantics
+- current client_contacts linkage
+- exact Client parent binding
+- Content client visibility
+- optional same-Client canonical Social service binding where relevant
+- narrower C4 recording eligibility where relevant
+- narrower C5 Requested approval eligibility where relevant
+- current File authority where relevant
+
+Attack direct API access, guessed ids, stale sessions, cross-Client access and revoked access. Navigation hiding or browser filtering does not count as authorization.
+
+Check revocation after session issuance. A revoked membership/contact/visibility/parent/service relationship must stop later reads without requiring sign-out.
+
+3. CLIENT DTO LEAKAGE
+
+Inspect actual serialized C6 responses, not just React rendering.
+
+Confirm general C6 Content does NOT leak internal fields such as:
+
+- script
+- hook
+- caption
+- CTA
+- internal stage context
+- owner identities
+- assignment details
+- pillar/classification
+- CAS/revision numbers
+- workspace/service/member ids beyond route identity that is intentionally needed
+- activity/audit internals
+- approval history
+- storage keys
+- hashes/checksums
+- request keys
+- uploader/recovery internals
+- hidden counts
+
+Remember that C5 may disclose review copy only through its explicit Requested approval snapshot. That does not make those fields generally C6-readable.
+
+4. CONDITIONAL CONTENT NAVIGATION
+
+Verify the Content destination appears only when the current Client has at least one currently eligible Content Item.
+
+Attack cases where:
+
+- only hidden Content exists
+- only another Client's Content exists
+- client access is disabled
+- current contact linkage disappears
+- membership/workspace is revoked
+- optional service binding becomes invalid
+- pagination/limits are reached
+
+Hidden rows must not make the nav appear and must not influence any count/overflow indicator.
+
+Preserve existing Projects/Home/Files behavior for Social-only, non-Social and multi-service Clients.
+
+5. BOUNDED LISTS, PAGINATION AND ENUMERATION SAFETY
+
+Inspect SQL/projection order carefully.
+
+Eligibility must be applied before any limit/count/hasMore/overflow value that affects the Client-visible response.
+
+Look for:
+
+- fetching N raw rows then filtering in JavaScript
+- counting all rows before visibility filtering
+- another Client's rows shifting pages
+- hidden rows causing hasMore or empty-state differences
+- unstable ordering
+- offset/page behavior that leaks ids or counts
+- large-scope bind-list failures
+
+Validate current/upcoming and recent-published bounds against the C6 contract and repository conventions.
+
+6. CONTENT STATUS AND DATE/PLATFORM PROJECTION
+
+Confirm Client-facing status labels are pure projections of canonical Content state, not a second mutable status.
+
+Verify stage/date/platform presentation cannot disagree with canonical facts and does not expose internal workflow detail beyond the intended allowlist.
+
+Required-action flags must come from C4/C5 authorization/eligibility, not from label text or guessed stage-only shortcuts.
+
+7. C4 RECORDING INTEGRATION
+
+C6 must reuse C4 rather than recreate upload semantics.
+
+Verify:
+
+- recording action appears only under exact C4 eligibility
+- direct C4 endpoint remains authoritative
+- C6 does not create or mutate duplicate recording state
+- leaving the eligible recording state removes action/File authority as C4 requires
+- retry/recovery, size/lifetime limits and private R2 semantics are unchanged
+- C6 cannot broaden Client-selected visibility, purpose or storage authority
+
+8. C5 APPROVAL INTEGRATION
+
+C6 must reuse C5 rather than recreate approval semantics.
+
+Verify:
+
+- Approval needed appears only for the correct current Requested round
+- completed/withdrawn/ineligible rounds are not exposed as actionable
+- C5 immutable snapshot remains the approval review source
+- C6 never lets a Client perform generic stage transitions
+- no duplicate approval write path exists
+- retries, stale rounds, response/withdraw races and authorization remain C5-controlled
+- C6 does not expose completed approval history unless the binding contract explicitly allows it
+
+9. CONTENT FILE AUTHORIZATION
+
+Audit carefully because the implementation claim says C4 File permissions remain unchanged.
+
+Confirm exactly what Files C6 exposes and whether that matches the binding contract plus existing C4 semantics.
+
+Prove:
+
+- Client A cannot see/download Client B files
+- hidden/internal-only files are never returned
+- non-Ready files are not broadly exposed
+- storage internals are not serialized
+- hidden File rows do not affect counts/empty states
+- File metadata and download authority use current Content/File authorization
+- any transaction used for Content + File metadata does not introduce stale or inconsistent authorization
+- C6 does not retroactively place mutable Files into C5 immutable review snapshots
+
+If C6 intentionally surfaces only the narrower currently-authorized C4 recording files rather than generic assets, verify that this is consistent with the exact C6 contract and documented implementation decision rather than silently under-implementing required safe assets.
+
+10. RECENT RESULTS / RECENT PUBLISHED CONTENT
+
+Verify the chosen last-30-days recent publication behavior against the contract.
+
+Confirm it uses canonical facts only and does not invent analytics/performance metrics, duplicate publication state or provider records.
+
+Check date boundaries, deterministic ordering, visibility filtering and hidden-count behavior.
+
+11. HTTP AND PRIVATE-CACHE SAFETY
+
+Inspect C6 routes and shared helpers for repository conventions:
+
+- authorization before sensitive input-dependent work where required
+- exact query validation
+- safe malformed id handling
+- no-store/private response behavior
+- sanitized errors
+- cross-Client safe not-found/forbidden semantics
+- no hidden existence oracle
+- Origin/same-origin handling where relevant
+
+Do not assume GET routes are harmless simply because they do not mutate data.
+
+12. SHARED HELPER REFACTORS AND REGRESSIONS
+
+PR #27 changes shared authorization and Content/File helpers used by earlier phases.
+
+Audit those diffs especially hard:
+
+- lib/bloomops/authorization.mjs
+- lib/bloomops/content-access.mjs
+- lib/bloomops/content-approval-access.mjs
+- lib/bloomops/content-file-access.mjs
+- lib/bloomops/content-files.mjs
+- components/bloomops/ContentForm.jsx
+- components/bloomops/ContentViews.jsx
+- components/bloomops/PortalShell.jsx
+
+Prove C1-C5 and Release B behavior did not subtly widen or narrow access.
+
+Look for helper signatures whose new defaults accidentally change existing callers.
+
+13. UI / UX / ACCESSIBILITY
+
+C6 should be calm, premium, understandable and responsive without redesigning the portal.
+
+Inspect actual browser behavior or existing screenshots/harness where possible at the repository's required widths.
+
+Check:
+
+- Social-only Client
+- non-Social Client
+- multi-service Client
+- current/upcoming Content
+- recording needed
+- approval needed
+- safe File entry
+- recent Published Content
+- empty/no-action state
+- loading state
+- error/recovery state
+- long titles and filenames
+- keyboard focus
+- touch targets
+- narrow wrapping
+- reduced motion where relevant
+
+Do not invent design findings merely for preference. Report only real usability/accessibility regressions or contract violations.
+
+14. TEST QUALITY, NOT JUST TEST COUNT
+
+Inspect whether the new tests actually prove dangerous cases.
+
+Look especially for missing or weak negative coverage around:
+
+- cross-Client Content reads
+- direct detail-route guessing
+- contact revocation
+- membership/workspace revocation
+- visibility revocation
+- invalid service binding
+- hidden rows before pagination
+- hidden rows and navigation eligibility
+- hidden File rows
+- storage-field leakage
+- C4 recording action eligibility
+- C5 approval action eligibility
+- stale approval state
+- existing no-client / disabled-client behavior
+- shared helper regressions
+- 240+ scope behavior claimed by runtime tests
+
+Passing tests are not evidence if the asserted behavior is weaker than the contract.
+
+15. NO-SCHEMA / NO-DEPENDENCY CLAIM
+
+Verify the exact diff contains no migration, Drizzle schema, package.json or package-lock changes.
+
+Confirm docs do not falsely claim a schema state inconsistent with the repository.
+
+If db:domain:generate was used, independently verify there is no accidental drift.
+
+16. REPOSITORY CLEANLINESS
+
+Check for:
+
+- temporary prompt artifacts accidentally included in PR #27
+- debug logging
+- test-only bypasses
+- weakened assertions
+- skipped tests
+- broad catches hiding failures
+- TODO/FIXME correctness gaps
+- secrets or machine-specific paths committed
+- accidental generated files
+- unrelated changes
+- misleading BUILD_STATE / RELEASE_C / DOMAIN_MODEL claims
+
+The implementation says C6_CODEX_PROMPT.txt has zero net diff. Verify that.
+
+INDEPENDENT VERIFICATION
+
+Inspect package.json and BUILD_STATE first, then run the real supported commands appropriate to C6 where the environment allows it.
+
+At minimum independently verify or inspect:
+
+- focused C6 tests
+- combined Content/portal/File/authorization regression suite
+- full npm test
+- npm run build
+- npm run cf:build
+- local zero-to-current verifier
+- schema/Drizzle no-drift check
+- C6 workerd/D1/R2 smoke
+- relevant C4/C5 runtime regressions
+- browser/HTTP C6 acceptance
+- C5 browser regression if practical
+- changed JS/JSX syntax checks
+- git diff --check
+
+Use existing repository commands/harnesses. Do not invent replacement commands merely to obtain green output.
+
+If host tooling or credentials prevent a check, clearly label it NOT EXECUTED. Do not treat environment unavailability as a pass.
+
+Do not modify production, staging business data, DNS, real email, payments or Leadsthatbloom. Synthetic/local verification only unless an existing read-only remote check is explicitly safe and already part of repository practice.
+
+FINDING STANDARD
+
+Do not manufacture findings to appear thorough.
+
+A finding should represent a concrete correctness, authorization, tenant-isolation, data-leakage, regression, test-integrity, migration/dependency, or binding-contract problem.
+
+For every finding include:
+
+- Severity: BLOCKER / HIGH / MEDIUM / LOW
+- Exact file and relevant line/symbol
+- What is wrong
+- Concrete failure scenario
+- Why it violates the contract or creates real risk
+- Smallest correct fix
+
+If there are no real findings, say so.
+
+OUTPUT FORMAT
+
+Start with exactly one of:
+
+AUDIT RESULT: PASS
+AUDIT RESULT: PASS WITH NON-BLOCKING FINDINGS
+AUDIT RESULT: FAIL - CHANGES REQUIRED
+
+Then provide:
+
+## Merge recommendation
+Say explicitly whether PR #27 should be merged now.
+
+## Findings
+List only real findings under the standard above.
+
+## Verification performed
+For each important check classify it as:
+- VERIFIED BY EXECUTION
+- VERIFIED BY CODE/DIFF INSPECTION
+- NOT VERIFIED
+
+Include exact commands/results where executed.
+
+## C6 contract coverage
+Map the major C6 contract requirements to the actual implementation and tests that satisfy them.
+
+## Security and tenant-isolation conclusion
+State specifically whether you found any path for cross-Client Content/File access, hidden data leakage, stale authorization, hidden-count leakage or C4/C5 action bypass.
+
+## Remaining uncertainty
+List anything you could not independently establish.
+
+## Final next action
+
+If PASS or PASS WITH NON-BLOCKING FINDINGS and no merge-blocking issue exists:
+- state that the user may perform the user-controlled merge of PR #27
+- do NOT merge it yourself
+- after merge, require both post-merge workflows to succeed on the exact resulting main merge SHA:
+  1. Deploy staging
+  2. Verify zero-to-current migration
+- C6 is not closed until both are successful on that same exact merge SHA
+- do not start C7 until closure is confirmed
+
+If FAIL:
+- do not suggest merging
+- give the smallest C6-only fix list
+- do not start C7
+
+Do not merge, deploy, edit PR #27, push fixes, or start C7 during this audit unless the user separately instructs you after receiving the audit result.
