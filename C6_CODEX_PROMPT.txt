@@ -1,0 +1,277 @@
+BLOOMOPS RELEASE C - PHASE C6 IMPLEMENTATION PROMPT
+
+You are implementing BloomOps Release C, Phase C6: Client Content Portal.
+
+Repository: Beeyach/bloomops
+Required branch: codex/c6-client-content-portal
+Exact verified C5 base: df4bfde1d3746d3517dbaff498f6eb17a5b732e0
+
+This branch was intentionally created from that exact C5 merge SHA and initially contains only the C6 phase contract plus this temporary implementation prompt.
+
+Do not implement from another branch or silently rebase onto a newer base. If branch/base facts differ from the above, inspect and report the mismatch before making product changes.
+
+IMPLEMENTATION MODEL
+
+Use Astra for this implementation session.
+
+PRIMARY INSTRUCTION
+
+Read this file completely, then read the binding C6 contract completely:
+
+- docs/phases/C6.md
+
+Then execute that contract exactly.
+
+Do not treat this prompt as a substitute for the contract. If wording differs, docs/phases/C6.md is authoritative for C6 scope.
+
+MANDATORY READS BEFORE EDITING
+
+Read completely before implementation:
+
+- AGENTS.md
+- docs/BUILD_STATE.md
+- docs/RELEASE_C.md
+- docs/PRODUCT_SPEC.md
+- docs/DOMAIN_MODEL.md
+- docs/DESIGN_SYSTEM.md
+- docs/DESIGN_CHECKLIST.md
+- docs/phases/C1.md
+- docs/phases/C2.md
+- docs/phases/C3.md
+- docs/phases/C4.md
+- docs/phases/C5.md
+- docs/phases/C6.md
+- package.json
+
+Then inspect the actual implementation and tests for:
+
+- Client portal shell, navigation and Home
+- C1 Content authorization, scope and visibility
+- C2 Content pipeline/stage semantics
+- C3 platforms, dates and calendar projections
+- C4 Content Files, recording uploads and private R2 download authorization
+- C5 approval rounds, review snapshots and Client approval responses
+- existing portal, Content, File, auth, HTTP and browser test harnesses
+
+Do not code from assumptions when repository evidence exists.
+
+VERIFIED STARTING STATE
+
+C5 is closed.
+
+- PR #26 merged into main.
+- Exact C5 merge SHA: df4bfde1d3746d3517dbaff498f6eb17a5b732e0
+- Deploy staging run 34365507942 succeeded on that exact SHA.
+- Verify zero-to-current migration run 34365508005 succeeded on that exact SHA.
+
+C6 may proceed from this exact base.
+
+C6 PRODUCT GOAL
+
+Give authorized Clients one calm, conditional Content destination that safely exposes relevant Social Content using canonical C1-C5 facts.
+
+C6 should let a Client understand:
+
+- what Content is in progress
+- what is coming next
+- what requires their action
+- what was recently completed/published
+- which safe Client-visible Content Files are available
+
+Required recording and approval actions must reuse the existing C4 and C5 action flows. C6 is not permission to duplicate them.
+
+NON-NEGOTIABLE SAFETY RULES
+
+1. Reuse existing authorization and visibility authority.
+Do not create a second definition of client-visible Content or Files.
+
+2. Server-side authorization is mandatory.
+Navigation hiding and browser filtering do not count as authorization.
+
+3. Use exact allowlisted Client DTOs.
+Do not serialize internal Content/File/domain rows and strip them client-side.
+
+4. Preserve live revocation.
+Current membership, contact linkage, workspace, Content visibility, parent scope, service validity and other canonical authorization facts must be rechecked according to existing C1-C5 semantics.
+
+5. Do not expose internal-only information.
+This includes internal owner/assignment facts, pillar/classification, revision/CAS values, private stage context, staff notes, internal activity/audit data, service or membership internals, storage keys, upload internals, request keys, hidden counts or unrelated Client data.
+
+6. C5 approval snapshots are special review packages.
+General C6 Content visibility does not automatically expose script, hook, caption, CTA or every field that may exist inside an explicit C5 review snapshot. Reuse the C5 approval route for requested review content.
+
+7. Reuse C4 Files/R2.
+Do not create another upload/download/storage system. Do not broaden recording retry or File visibility rules.
+
+8. No schema by default.
+C6 is a projection/portal phase over existing C1-C5 canonical facts. Do not add a migration for labels, nav state, counts, action flags, duplicate visibility or result caches. If an unavoidable data-model blocker appears, document the blocker instead of inventing schema outside the contract.
+
+9. Do not weaken existing tests, auth limits, concurrency rules, visibility rules or runtime safety to make C6 pass.
+
+10. No production-side changes.
+Do not touch production, DNS, real email/SMS, payments, production Cloudflare resources, staging business data or Leadsthatbloom.
+
+IMPLEMENTATION EXPECTATIONS
+
+Implement the smallest coherent C6 solution that satisfies docs/phases/C6.md.
+
+Expected shape, subject to repository evidence:
+
+- conditional Client portal Content nav
+- Client-safe bounded Content list/index
+- narrow Client Content detail if it is the cleanest architecture
+- Client-safe status/date/platform presentation derived from canonical facts
+- recording-needed links that reuse C4
+- approval-needed links that reuse C5
+- Client-visible Content Files using current C4 File/download authority
+- bounded recent Published presentation when safe canonical data exists
+- explicit loading/empty/error/no-action states
+- responsive desktop/tablet/mobile behavior using the existing BloomOps design system
+
+Do not reproduce the internal Social pipeline dashboard for Clients.
+
+QUERY / ENUMERATION REQUIREMENTS
+
+Authorization and eligibility must be applied before Client-visible limits/counts wherever the current architecture safely allows.
+
+Hidden rows must not influence:
+
+- whether Content navigation appears
+- empty states
+- counts
+- overflow indicators
+- pagination metadata
+- File counts
+- errors that reveal record existence
+
+Do not fetch an internal superset and leak its size after client-side filtering.
+
+EXISTING C4 RECORDING FLOW
+
+When Content is currently eligible for Client recording upload, C6 may surface the existing recording action.
+
+Do not create a second recording endpoint or mutation.
+
+Preserve C4 eligibility, current authorization, private R2, size/lifetime bounds, retry/recovery rules and Client restrictions.
+
+EXISTING C5 APPROVAL FLOW
+
+When Content has a currently actionable Requested approval round, C6 may surface the existing approval action.
+
+Do not create a second approval endpoint, response mutation or Client stage-transition path.
+
+Preserve C5 immutable snapshots, append-only rounds, safe feedback, authorization, conflict handling, retries and concurrency semantics.
+
+FILES
+
+Expose only Files the current Client is currently authorized to see for the exact Content Item.
+
+Use existing Client-safe File DTO fields where possible.
+
+Never expose R2/storage authority or internal upload/recovery facts.
+
+C5 review snapshots must remain File-free.
+
+TESTING
+
+Add focused C6 tests that prove the contract, including negative cases.
+
+At minimum prove:
+
+- Client A cannot read Client B Content by direct route/API id
+- Client A cannot read Client B Content Files
+- hidden/internal Content cannot be directly retrieved
+- internal-only Files cannot be directly retrieved
+- current contact/membership/workspace/visibility revocation removes access
+- conditional Content navigation is based only on eligible Content
+- hidden rows cannot affect nav/count/overflow/empty state
+- exact DTO allowlists do not leak internal fields
+- recording-needed presentation reuses and preserves C4
+- approval-needed presentation reuses and preserves C5
+- Content Files preserve C4 download authorization
+- no-client/disabled-client-access behavior remains intact
+- C1-C5 focused regressions remain green
+- relevant Release B portal/File regressions remain green when shared plumbing changes
+- internal Social surfaces remain unchanged when helpers are refactored
+
+Browser acceptance must exercise the integrated Client story at the existing representative widths, including Social-only, irrelevant/non-Social, multi-service, upcoming Content, recording action, approval action, safe Files, recent Published Content, empty/no-action, long content/filename, keyboard, touch/mobile and live revocation cases.
+
+Use synthetic/local data only.
+
+VERIFICATION
+
+Inspect package.json and current BUILD_STATE before choosing commands. Use actual repository-supported commands and harnesses.
+
+Where supported, complete at least:
+
+- npm ci
+- focused C6 tests
+- combined C1-C6 Content regression suites
+- relevant Release B portal/File regression suites if touched
+- full npm test
+- npm run build
+- npm run cf:build
+- local zero-to-current verification
+- relevant local Worker/runtime auth/File/recording/approval smokes
+- C6 browser/HTTP acceptance
+- changed JS/JSX syntax checks if consistent with current repository practice
+- git diff --check
+- schema/Drizzle consistency check showing no accidental migration drift
+
+If the environment genuinely prevents a check, state exactly what could not be verified. Do not claim a pass you did not execute.
+
+DEPENDENCIES
+
+Do not add or upgrade dependencies unless C6 genuinely requires it and repository evidence proves the existing stack cannot safely implement the contract.
+
+If dependencies remain unchanged, explicitly compare/report that fact in the final handoff, including inherited advisory state when the repository workflow currently records it.
+
+DOCUMENTATION
+
+After implementation and verification:
+
+- update docs/BUILD_STATE.md with C6 current state, implementation decisions, exact verification evidence, limitations and changed-file scope
+- update docs/DOMAIN_MODEL.md and/or docs/RELEASE_C.md only if necessary to accurately record implemented canonical behavior
+- keep docs/phases/C6.md as the binding phase record
+
+TEMPORARY PROMPT CLEANUP
+
+Before the final implementation commit/handoff, delete this file:
+
+C6_CODEX_PROMPT.txt
+
+The prompt is temporary setup material and should have zero net diff in the implementation PR.
+
+FINAL REPOSITORY STATE
+
+Before handing back:
+
+- inspect git status and complete diff
+- remove temporary/debug/generated junk that is not intentionally tracked
+- confirm no secrets or production data entered the repository
+- confirm no accidental schema/dependency drift
+- commit all intended C6 changes
+- push codex/c6-client-content-portal
+- open/update the C6 pull request if this repository's current workflow supports it
+- DO NOT MERGE THE PR
+- DO NOT START C7
+
+FINAL HANDOFF FORMAT
+
+Return a concise but complete implementation handoff containing:
+
+- exact final implementation head SHA
+- C6 PR number and link if created
+- whether it is open/unmerged
+- concise implementation summary
+- authorization/tenant-isolation summary
+- migration/schema statement
+- dependency/advisory delta statement
+- exact verification commands/results actually completed
+- environment limitations or evidence gaps
+- complete changed-file inventory against exact C5 base
+- confirmation that C6_CODEX_PROMPT.txt was removed
+- confirmation that working tree is clean
+- explicit statement that C6 still awaits independent audit, user-controlled merge and both post-merge gates before C7
+
+Do not describe C6 as closed merely because implementation tests pass.
