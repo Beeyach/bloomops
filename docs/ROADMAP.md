@@ -38,21 +38,28 @@ This is where BloomOps begins replacing much of the operational Notion system.
 
 This is where BloomOps becomes materially better than Notion for social fulfillment.
 
-## Release D — Systems + Ads
+## Release D — Systems Delivery
 
-Systems:
-- GHL
-- Kajabi
+- Systems specialist workspace
+- GHL build blueprints
+- Kajabi build blueprints
 - QA
+- Client Review
 - Launches
+- Handoff
 
-Ads:
+Systems remains a specialist projection over the canonical Work Core rather than a second task/project engine.
+
+## Release E — Ads
+
 - Campaigns
 - Creative
 - Approvals
 - Lightweight performance
 
-## Release E — Operations Layer
+Do not build a giant attribution platform in V1.
+
+## Release F — Operations Layer
 
 - Pages/SOP Library
 - Team workload
@@ -60,7 +67,7 @@ Ads:
 - Finance Lite
 - Template management UI
 
-## Release F — Reliability + Automation
+## Release G — Reliability + Automation
 
 - Expanded notifications
 - Queues
@@ -81,4 +88,4 @@ Possible later work:
 - data export
 - tenant deletion
 
-Do not build commercialization features during Release A.
+Do not build commercialization features before internal use proves the product.
