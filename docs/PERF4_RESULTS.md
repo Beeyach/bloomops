@@ -1,4 +1,94 @@
-# PERF4 — staging correlation blocked before upload
+# PERF4 — signed-in staging correlation
+
+**The exact authorized application candidate is deployed to staging, and signed-in correlation is complete: 7 discarded warmups, 21 retained navigations, 21 unique IDs and 63 retrieved Analytics Engine records. The live latency target is not met. PERF3/PERF4 remain OPEN pending review; D2 remains BLOCKED.** No performance fix, production deployment, migration, PR or merge was performed.
+
+## New deployed run (2026-09-11 UTC)
+
+Deployed application SHA: **`6da1c2467ae0a4ae31bcefcd1ca16482c7f5bae5`**. Cloudflare Worker version: `a96a03e1-fd2f-4d8b-ae26-87cc4ea5f5ab`; created `2026-09-11T12:00:42.214987Z`, staging deployment `2026-09-11T12:00:44.805Z`, 100% traffic. Wrangler 4.129.0 reported successful upload/deployment.
+
+The resume prompt's corrected provenance gate passed before and after capture: **HTTP 200, sha `6da1c24`, branch `perf/perf4-staging-timing-integration`**, builtAt `2026-09-11T11:59:39.871Z`. Build identity was derived immediately from the clean detached exact-candidate Git HEAD using the explicitly authorized process-local CI variables; no version source was edited. The evidence branch started at `2807704f29e39d2d0918167e9be3baf855fb33ba`, whose later documentation-only content was not deployed.
+
+Cloudflare authentication and the existing signed-in Windows Chrome session passed the pre-deploy gates. The Windows-native MCP autoConnect transport was used; no new login, email or cookie export. A first build exhausted the temporary filesystem **before upload**. The exact detached worktree was moved to the main filesystem and repaired; retrying the same candidate completed Next compilation/lint/type checking, OpenNext bundling and staging deployment. The detached candidate remains clean. No workflow/migration substitute was used.
+
+The new complete sanitized artifact is [PERF4_staging_correlation_live.json](evidence/PERF4_staging_correlation_live.json). The earlier blocked-attempt artifact and all historical evidence remain unchanged.
+
+## Browser method and observed results
+
+One bootstrap document navigation after deployment is excluded. Seven route warmups were discarded, followed by exactly three complete retained cycles in Home → Clients → Work → Social → Systems → Team → Ads order. The same existing authenticated Windows Chrome session was used without CPU/network throttling, with foreground state checked throughout each sample.
+
+Timing starts immediately before in-page DOM activation of the existing navigation anchor (`link.click()`), exercising the actual Next router and root RSC fetch. This is programmatic DOM activation, not a measurement of physical pointer/input-device latency. Completion requires the matching visible heading and route-specific completed-content marker, not merely request start or headers. The artifact separately records visibility, two subsequent animation frames, and settled time (root EOF, completed content, two frames, then a 100 ms main-mutation-free guard). That deliberate guard is not presented as rendering cost.
+
+Browser TTFB is ResourceTiming responseStart minus requestStart. Request start, headers, root RSC EOF, visibility and settlement are also recorded as offsets from anchor activation. A bounded 4 MiB clone reader discards bytes without decoding while immediately returning the original response to Next; ResourceTiming supplies root EOF. No bodies, resource URLs or private DOM content are saved. The temporary fetch wrapper/observers were removed after capture.
+
+All times below are **milliseconds**. With only three retained observations per route, the reported range is more informative than a population p95; nearest-rank sample p95 equals the observed maximum.
+
+| Route | Visible cycle 1 / 2 / 3 | Visible median | Visible range | TTFB median | RSC EOF median | Settled median |
+|---|---|---:|---|---:|---:|---:|
+| Home | 821.9 / 811.2 / 828.8 | 821.9 | 811.2–828.8 | 211.6 | 817.2 | 928.4 |
+| Clients | 568.8 / 575.6 / 583.0 | 575.6 | 568.8–583.0 | 204.5 | 569.6 | 676.2 |
+| Work | 676.3 / 601.2 / 596.1 | 601.2 | 596.1–676.3 | 203.8 | 594.4 | 703.0 |
+| Social | 592.2 / 592.2 / 581.3 | 592.2 | 581.3–592.2 | 210.0 | 583.5 | 695.0 |
+| Systems | 777.6 / 775.1 / 770.0 | 775.1 | 770.0–777.6 | 207.9 | 768.5 | 877.9 |
+| Team | 592.2 / 568.3 / 573.3 | 573.3 | 568.3–592.2 | 205.7 | 567.5 | 677.9 |
+| Ads | 396.1 / 391.6 / 397.7 | 396.1 | 391.6–397.7 | 210.7 | 390.9 | 498.5 |
+
+Across all **21 routeWarm samples**, median / nearest-rank p95: TTFB **207.9 / 214.9**, RSC EOF **585.6 / 817.2**, visible **592.2 / 821.9**, two-frames **600.5 / 831.1**, settled **695.0 / 928.4**. Maximum retained visible is 828.8 ms; maximum settled is 930.9 ms. No retained navigation exceeds one second, but six route visible medians exceed ~500 ms and Home exceeds ~800 ms. This is not live acceptance.
+
+All 21 retained navigations completed HTTP 200 with one root RSC fetch and one matching ResourceTiming entry, no redirect, no prefetch, and no-store. Each retained navigation recorded one same-origin resource and one data resource, with no post-visible main mutation. Thus this capture supports the previous shape: no additional client request waterfall, substantial post-header/pre-EOF delay, and only a small EOF-to-visible interval. Route-median post-header body intervals are Home 600.3, Clients 362.3, Work 383.0, Social 371.5, Systems 558.7, Team 361.1 and Ads 175.3 ms. Median EOF-to-visible gaps are 4.7–7.1 ms.
+
+All retained initial application Server-Timing snapshots are `response;dur=0.0`; they do not describe subsequent streamed work. Non-PERF4 platform entries/descriptions were excluded from the snapshot. The first discarded Home warmup has a null snapshot because the initial strict parser rejected the combined platform header; the parser was narrowed to the fixed PERF4 entries before all remaining warmups and retained measurements. No warmup was repeated or promoted into the retained set.
+
+## Actual Analytics Engine correlation and server phases
+
+The existing authorized Cloudflare dashboard session queried only the fixed columns for the 21 retained opaque IDs in `bloomops_perf4_staging_timing`. No credential was extracted and no logs/tailing were used. Expected **63** records; retrieved **63**; unique IDs **21**; missing **0**; duplicates **0**; incomplete triplets **0**; visible sampled records **0** (all `_sample_interval = 1`). This is observed successful delivery for this sample, not a guarantee that the three writes are atomic.
+
+Each ID has one `metrics-v1`, one `spans-a-v1` and one `spans-b-v1`, the expected fixed route, and normal completion. Metrics decode the documented 18 positions, span records the documented 20 and 6 start/duration values. Analytics SQL exposes double1–double20 with zero padding, so source schema plus unused-slot validation—not SQL column count alone—establishes the interpreted lengths. All extra blob slots are empty and unused double slots zero. No invalid rows were found.
+
+| Route | Server total median | Identity median | Native wait medians in order | Inclusive projection median |
+|---|---:|---:|---|---:|
+| Home | 586 | 183 | 183 → 196 → 205 | Home 404 |
+| Clients | 358 | 181 | 181 → 177 | Absent |
+| Work | 371 | 178 | 178 → 195 | Absent |
+| Social | 365 | 179 | 179 → 186 | Absent |
+| Systems | 550 | 184 | 184 → 178 → 189 | Systems 366 |
+| Team | 359 | 177 | 177 → 177 | Absent |
+| Ads | 179 | 179 | 179 | Absent |
+
+These are separately computed column medians, not a synthetic request whose components must sum. Every retained normal request records response = 0, first = 0, actor = 0; separate membership and elapsed are absent (-1). Wait4–wait8 are absent. Unattributed is zero except two Team samples recording 1 ms. The artifact contains every decoded metric and span for every retained request.
+
+Representative **Home cycle 1**: identity/wait1 **0–183**, actor at 183, inclusive Home projection **183–587**; wait2 **183–379** and wait3 **379–587**; total **587**. Home projection durations across cycles are 404, 400 and 405 ms; totals 587, 585 and 586 ms. Identity overlaps wait1; Home contains waits2/3. Do not sum those inclusive spans again.
+
+Representative **Systems cycle 1**: identity/wait1 **0–184**, actor at 184, inclusive Systems projection **184–550**; wait2 **184–360** and wait3 **360–550**; total **550**. Systems projection durations are 366, 370 and 365 ms; totals 550, 556 and 548 ms. Again, the projection contains the final two waits.
+
+**Ads control:** one identity/native wait per request, with total durations **179, 177, 182** ms; no Home/Systems projection span. It has similar browser TTFB to the heavier routes but a much shorter post-header body interval.
+
+The dominant **measured deployed server intervals** are sequential native D1 binding waits: three on Home/Systems versus one on Ads, individually 172–208 ms in the retained set. Browser completion closely follows RSC EOF; the evidence does not identify browser reconciliation as the principal delay. Ordinals identify native calls, not SQL categories or query execution time. No absolute Worker/browser timestamps are compared and no overlap is double-counted.
+
+**Clock limitation:** deployed Workers' `performance.now()` and `Date.now()` advance after I/O, unlike ordinary browser clocks and local workerd behavior. Therefore the recorded zero response/first/actor/unattributed values do **not** establish zero CPU, rendering or instrumentation cost. They also limit how precisely a residual can be attributed. See [Cloudflare's runtime timer documentation](https://developers.cloudflare.com/workers/runtime-apis/performance/). These server intervals must not be treated as a complete CPU profile.
+
+## Historical comparison and diagnosis boundary
+
+The historical signed-in PERF3 browser evidence remains a separate layer. Its TTFB / EOF / visible / settled medians were Home 199.5 / 801.0 / 814.5 / 922.6, Systems 200.0 / 764.3 / 778.2 / 887.9, and Ads 204.3 / 387.5 / 396.9 / 502.0 ms; all seven route references and numeric deltas are in the new artifact. New minus historical EOF medians are Home +16.2, Clients +6.5, Work +4.2, Social -15.6, Systems +4.2, Team -3.3 and Ads +3.4 ms.
+
+Completed-content visibility and the 100 ms settlement guard are comparable in intent, but exact historical request-start instrumentation and all 21 old raw samples are unavailable. Do not infer historical overall p95 from seven route medians, and do not treat this as a controlled off/on overhead or improvement/regression experiment. The same broad latency pattern remains; there is no evidence of a material visible acceleration relative to historical PERF3 on any route. A manual subjective “feels faster” assessment was not separately performed.
+
+The supported optimization **hypothesis** is that the number and latency of serial native database round trips drive the route differences. Uniformly large per-call waits justify a separately authorized placement/transport-versus-query-cost investigation before choosing a change. The capture does not distinguish D1 service transport, Worker/database placement, and internal query execution, nor identify a safe specific SQL rewrite. It is sufficient to localize the measured critical path, **not yet sufficient to choose the smallest exact optimization confidently**. No query, auth, caching, projection, placement or performance code was changed.
+
+## Privacy, authentication and handoff
+
+Live record privacy validation passes for all 63 retained records: only opaque IDs, fixed record/route/lifecycle enums and bounded numeric schema fields; no unexpected blobs or sensitive payloads. A separate bounded harmless marker probe outside the 7 + 21 navigations returned HTTP 200, completed with no-store, and no marker in timing headers. Its first retrieval returned zero rows before ingestion; the later retrieval returned all three fixed records, no marker/schema violations, and sample interval 1. Its separate ID/records are preserved in the artifact and are **not** counted as retained navigation evidence.
+
+Resolved source configuration explicitly disables observability, logs, invocation logs and traces. A read-only live Worker settings check returned observability null and logpush false; the exact candidate's disabled configuration is recorded separately rather than pretending the API returned each individual flag. No Worker Logs, invocation logs, traces, tailing or blanket observability were enabled or accessed. The artifact stores no full URL, query contents, SQL/binds, response bodies, customer/user/workspace identifiers, email, cookies, authorization data, error/stack, IP, user agent or referrer in timing records. Build/deployment provenance is kept separately from the fixed telemetry schema.
+
+Existing signed-in auth returned 200 without redirect before and after capture; all seven protected destinations completed. No real session or membership was altered or revoked, no email was sent, and no clearly disposable staging identity was established for a safe revocation test: **deployed remote revocation remains unproven; local active-workerd revocation passed**.
+
+The five evidence layers remain distinct: (1) historical PERF3 browser capture, (2) historical Node primitive evidence, (3) inactive/default integration CI, (4) active local workerd verification, and (5) **this new deployed signed-in correlation**. The historical blocked attempt below is retained as history, not current status.
+
+Verification for this handoff: the exact-candidate Next/lint/type/OpenNext build and staging deployment passed; independent JSON/schema/correlation/distribution/privacy consistency checks and diff hygiene passed. No new application test-suite run is claimed for these documentation-only changes. Only this report, BUILD_STATE and the new sanitized evidence artifact change from evidence starting SHA `2807704`; runtime/config/schema/package/workflow files remain unchanged. Commit/push is confined to `perf/perf4-staging-timing-integration`; the later evidence commit is **not** the deployed application SHA. No production, migrations, PR, merge, D2 or optimization. Next action is review of this diagnosis and authorization of a bounded follow-up; PERF3/PERF4 remain OPEN and D2 BLOCKED.
+
+---
+
+## Historical blocked attempt — superseded by the deployed run above
 
 **The authorized staging deployment attempt failed before upload because this execution environment has no Cloudflare API token. No candidate deployment or signed-in capture occurred.** The public version endpoint still serves `2b89227` (`main`), so the prompt's provenance gate requires stopping measurements. PERF3/PERF4 remain OPEN; D2 remains BLOCKED. This supersedes the current-status wording in the historical local handoff below.
 

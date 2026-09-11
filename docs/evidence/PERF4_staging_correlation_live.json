@@ -1,0 +1,5791 @@
+{
+  "kind": "PERF4-deployed-staging-correlation",
+  "status": "captured-awaiting-review",
+  "date": "2026-09-11",
+  "provenance": {
+    "applicationSha": "6da1c2467ae0a4ae31bcefcd1ca16482c7f5bae5",
+    "evidenceStartingSha": "2807704f29e39d2d0918167e9be3baf855fb33ba",
+    "evidenceBranch": "perf/perf4-staging-timing-integration",
+    "deployment": {
+      "environment": "staging",
+      "workerVersionId": "a96a03e1-fd2f-4d8b-ae26-87cc4ea5f5ab",
+      "versionCreatedOn": "2026-09-11T12:00:42.214987Z",
+      "deploymentCreatedOn": "2026-09-11T12:00:44.805Z",
+      "trafficPercent": 100,
+      "source": "wrangler",
+      "wranglerVersion": "4.129.0",
+      "buildExitCode": 0,
+      "deployExitCode": 0,
+      "priorAttempt": "temporary-filesystem-full-before-upload; identical candidate retried on main filesystem"
+    },
+    "version": {
+      "status": 200,
+      "sha": "6da1c24",
+      "branch": "perf/perf4-staging-timing-integration",
+      "builtAt": "2026-09-11T11:59:39.871Z"
+    },
+    "browserVersionGateMatched": true,
+    "afterCaptureVersionGateMatched": true,
+    "buildIdentityDerivedFromDetachedGitHead": true,
+    "candidateTreeCleanAfterBuild": true
+  },
+  "method": {
+    "browser": "existing-authenticated-Windows-Chrome",
+    "transport": "Windows-MCP-autoConnect",
+    "cpuThrottling": false,
+    "networkThrottling": false,
+    "foregroundCheckedEverySample": true,
+    "navigation": "in-page DOM activation of existing navigation anchors; actual Next router and root RSC fetch",
+    "clock": "browser-performance-now; all browser offsets relative to anchor activation; Worker spans use independent request-relative clock",
+    "ttfbDefinition": "ResourceTiming.responseStart minus ResourceTiming.requestStart",
+    "rscEofDefinition": "ResourceTiming.responseEnd relative to anchor activation, supported by bounded clone drain",
+    "visibilityDefinition": "matching fixed route heading and route-specific completed-content selector visible",
+    "twoFramesDefinition": "two animation frames after completed-content visibility",
+    "settledDefinition": "completed content plus root EOF plus two frames plus 100ms without observed main mutations",
+    "guardMs": 100,
+    "resourceMonitoring": "current navigation same-origin resource counts only; no resource names retained",
+    "reader": "bounded 4MiB clone; chunks discarded without decoding; real response returned immediately",
+    "captureSourceSha256": "dff3435150a1c072a206ab82d2a701d5683dcb2f03cb077eceb74d96887d4f8c",
+    "warmupsPerRoute": 1,
+    "retainedPerRoute": 3,
+    "discardedWarmups": 7,
+    "retained": 21,
+    "bootstrapDocumentNavigationsExcluded": 1,
+    "headerSnapshot": "initial allowlisted PERF4 duration entries only; platform-added entries and all descriptions excluded",
+    "warmupNote": "First Home warmup strict header filter rejected the combined platform header. Filter narrowed to fixed PERF4 entries before other warmups and all retained samples. No navigation repeated."
+  },
+  "browser": {
+    "warmups": [
+      {
+        "route": "home",
+        "cycle": 0,
+        "warmup": true,
+        "requestStartMs": 3.9,
+        "fetchStartMs": 2.2,
+        "resourceStartMs": 2.3,
+        "headersMs": 244,
+        "ttfbMs": 240.1,
+        "headersAvailableMs": 245.2,
+        "firstChunkMs": 245.6,
+        "rscEofMs": 889.1,
+        "readerEofMs": 898.1,
+        "firstVisibleMs": 897.5,
+        "twoFramesMs": 903.1,
+        "settledMs": 999.4,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "3d796ef92c8ac6a6c6da91d1d6a46fff",
+        "serverTiming": null,
+        "headerSchemaValid": false,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "clients",
+        "cycle": 0,
+        "warmup": true,
+        "requestStartMs": 3.3,
+        "fetchStartMs": 1.8,
+        "resourceStartMs": 1.8,
+        "headersMs": 1362,
+        "ttfbMs": 1358.7,
+        "headersAvailableMs": 1363,
+        "firstChunkMs": 1363.6,
+        "rscEofMs": 1749.6,
+        "readerEofMs": 1755.6,
+        "firstVisibleMs": 1755.4,
+        "twoFramesMs": 1764.6,
+        "settledMs": 1857.1,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "ae129d41e00de54aee9182cef10756b9",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "work",
+        "cycle": 0,
+        "warmup": true,
+        "requestStartMs": 2.1,
+        "fetchStartMs": 1,
+        "resourceStartMs": 1.1,
+        "headersMs": 233.6,
+        "ttfbMs": 231.5,
+        "headersAvailableMs": 234.8,
+        "firstChunkMs": 235.1,
+        "rscEofMs": 659.3,
+        "readerEofMs": 667.8,
+        "firstVisibleMs": 667.6,
+        "twoFramesMs": 673.3,
+        "settledMs": 767.6,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "c64453878512fd45645bfc1e9c43d543",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "social",
+        "cycle": 0,
+        "warmup": true,
+        "requestStartMs": 4,
+        "fetchStartMs": 2.8,
+        "resourceStartMs": 3,
+        "headersMs": 234.6,
+        "ttfbMs": 230.6,
+        "headersAvailableMs": 235.6,
+        "firstChunkMs": 235.9,
+        "rscEofMs": 613.9,
+        "readerEofMs": 622.1,
+        "firstVisibleMs": 622,
+        "twoFramesMs": 626.5,
+        "settledMs": 727.6,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "ab5b4fb75a836098598818bfb3cff7de",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "systems",
+        "cycle": 0,
+        "warmup": true,
+        "requestStartMs": 2.2,
+        "fetchStartMs": 0.9,
+        "resourceStartMs": 1.1,
+        "headersMs": 211.1,
+        "ttfbMs": 208.9,
+        "headersAvailableMs": 212.1,
+        "firstChunkMs": 212.8,
+        "rscEofMs": 777.4,
+        "readerEofMs": 778,
+        "firstVisibleMs": 784.8,
+        "twoFramesMs": 791.4,
+        "settledMs": 888.1,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 2,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "02e086ebbacafe1beebd24a8abfa56d5",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "team",
+        "cycle": 0,
+        "warmup": true,
+        "requestStartMs": 2.1,
+        "fetchStartMs": 0.8,
+        "resourceStartMs": 1,
+        "headersMs": 218.7,
+        "ttfbMs": 216.6,
+        "headersAvailableMs": 219.7,
+        "firstChunkMs": 220.1,
+        "rscEofMs": 584.9,
+        "readerEofMs": 585.8,
+        "firstVisibleMs": 953.8,
+        "twoFramesMs": 961.3,
+        "settledMs": 1059.3,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 2,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "746c0d16b2217de3484cb0fc02b2d81a",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "ads",
+        "cycle": 0,
+        "warmup": true,
+        "requestStartMs": 2.1,
+        "fetchStartMs": 1.1,
+        "resourceStartMs": 1.2,
+        "headersMs": 204.9,
+        "ttfbMs": 202.8,
+        "headersAvailableMs": 205.9,
+        "firstChunkMs": 206.3,
+        "rscEofMs": 395.8,
+        "readerEofMs": 401.3,
+        "firstVisibleMs": 401.1,
+        "twoFramesMs": 410.4,
+        "settledMs": 504.6,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "73fa8dc68ae99217f125083ca6c9aad9",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      }
+    ],
+    "retained": [
+      {
+        "route": "home",
+        "cycle": 1,
+        "warmup": false,
+        "requestStartMs": 2,
+        "fetchStartMs": 0.9,
+        "resourceStartMs": 1.1,
+        "headersMs": 216.9,
+        "ttfbMs": 214.9,
+        "headersAvailableMs": 218,
+        "firstChunkMs": 218.3,
+        "rscEofMs": 817.2,
+        "readerEofMs": 822.6,
+        "firstVisibleMs": 821.9,
+        "twoFramesMs": 831.1,
+        "settledMs": 928.4,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "ded341554d6160d3b17b58628d92e55e",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "clients",
+        "cycle": 1,
+        "warmup": false,
+        "requestStartMs": 2.4,
+        "fetchStartMs": 0.8,
+        "resourceStartMs": 1,
+        "headersMs": 206.9,
+        "ttfbMs": 204.5,
+        "headersAvailableMs": 208,
+        "firstChunkMs": 208.2,
+        "rscEofMs": 563,
+        "readerEofMs": 569.6,
+        "firstVisibleMs": 568.8,
+        "twoFramesMs": 575.8,
+        "settledMs": 670.8,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "d85a704770ff9c4a2b7b04d49a08185c",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "work",
+        "cycle": 1,
+        "warmup": false,
+        "requestStartMs": 2.1,
+        "fetchStartMs": 1,
+        "resourceStartMs": 1,
+        "headersMs": 287.3,
+        "ttfbMs": 285.2,
+        "headersAvailableMs": 288.3,
+        "firstChunkMs": 288.5,
+        "rscEofMs": 670.3,
+        "readerEofMs": 676.5,
+        "firstVisibleMs": 676.3,
+        "twoFramesMs": 685.1,
+        "settledMs": 780.2,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "17de675e9e7dcc791fe9673ce99ad665",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "social",
+        "cycle": 1,
+        "warmup": false,
+        "requestStartMs": 2,
+        "fetchStartMs": 0.8,
+        "resourceStartMs": 0.9,
+        "headersMs": 213,
+        "ttfbMs": 211,
+        "headersAvailableMs": 232.9,
+        "firstChunkMs": 233.2,
+        "rscEofMs": 586,
+        "readerEofMs": 592.5,
+        "firstVisibleMs": 592.2,
+        "twoFramesMs": 600.5,
+        "settledMs": 695,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "90fa092612b7b9747b04bd9216392766",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "systems",
+        "cycle": 1,
+        "warmup": false,
+        "requestStartMs": 2.3,
+        "fetchStartMs": 0.9,
+        "resourceStartMs": 1,
+        "headersMs": 210.1,
+        "ttfbMs": 207.8,
+        "headersAvailableMs": 211.3,
+        "firstChunkMs": 211.6,
+        "rscEofMs": 771,
+        "readerEofMs": 771.5,
+        "firstVisibleMs": 777.6,
+        "twoFramesMs": 784.6,
+        "settledMs": 879.9,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "c20c966b074448cfc2d28e6777507186",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "team",
+        "cycle": 1,
+        "warmup": false,
+        "requestStartMs": 6.4,
+        "fetchStartMs": 0.8,
+        "resourceStartMs": 0.9,
+        "headersMs": 219.7,
+        "ttfbMs": 213.3,
+        "headersAvailableMs": 220.7,
+        "firstChunkMs": 221,
+        "rscEofMs": 585.6,
+        "readerEofMs": 592.4,
+        "firstVisibleMs": 592.2,
+        "twoFramesMs": 602.1,
+        "settledMs": 694.4,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "587b871013e0a21aa68c4007005d8aeb",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "ads",
+        "cycle": 1,
+        "warmup": false,
+        "requestStartMs": 2,
+        "fetchStartMs": 0.9,
+        "resourceStartMs": 0.9,
+        "headersMs": 215.6,
+        "ttfbMs": 213.6,
+        "headersAvailableMs": 216.7,
+        "firstChunkMs": 217.1,
+        "rscEofMs": 390.9,
+        "readerEofMs": 396.3,
+        "firstVisibleMs": 396.1,
+        "twoFramesMs": 405.6,
+        "settledMs": 496.7,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "d99a14ce1c5361b7cc9f287006a0043f",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "home",
+        "cycle": 2,
+        "warmup": false,
+        "requestStartMs": 1.9,
+        "fetchStartMs": 1,
+        "resourceStartMs": 1,
+        "headersMs": 213.5,
+        "ttfbMs": 211.6,
+        "headersAvailableMs": 214.5,
+        "firstChunkMs": 214.8,
+        "rscEofMs": 806,
+        "readerEofMs": 811.3,
+        "firstVisibleMs": 811.2,
+        "twoFramesMs": 824,
+        "settledMs": 912.5,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "ee4c2b764892b12ad6abeb1679c0bd61",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "clients",
+        "cycle": 2,
+        "warmup": false,
+        "requestStartMs": 2.6,
+        "fetchStartMs": 1,
+        "resourceStartMs": 1.1,
+        "headersMs": 205.5,
+        "ttfbMs": 202.9,
+        "headersAvailableMs": 206.6,
+        "firstChunkMs": 206.9,
+        "rscEofMs": 569.6,
+        "readerEofMs": 576.3,
+        "firstVisibleMs": 575.6,
+        "twoFramesMs": 578.2,
+        "settledMs": 676.2,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "9f361b43d8c233077563a1abcba5e3b9",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "work",
+        "cycle": 2,
+        "warmup": false,
+        "requestStartMs": 2.5,
+        "fetchStartMs": 1,
+        "resourceStartMs": 1.1,
+        "headersMs": 206.3,
+        "ttfbMs": 203.8,
+        "headersAvailableMs": 207.6,
+        "firstChunkMs": 208,
+        "rscEofMs": 594.4,
+        "readerEofMs": 602.3,
+        "firstVisibleMs": 601.2,
+        "twoFramesMs": 604.3,
+        "settledMs": 703,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "284cc026a80af197f2498db926961406",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "social",
+        "cycle": 2,
+        "warmup": false,
+        "requestStartMs": 2,
+        "fetchStartMs": 1,
+        "resourceStartMs": 1,
+        "headersMs": 212,
+        "ttfbMs": 210,
+        "headersAvailableMs": 213.4,
+        "firstChunkMs": 213.8,
+        "rscEofMs": 583.5,
+        "readerEofMs": 593.2,
+        "firstVisibleMs": 592.2,
+        "twoFramesMs": 594.9,
+        "settledMs": 695.3,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "9473ba8d678db0ee299c05c31c153ff3",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "systems",
+        "cycle": 2,
+        "warmup": false,
+        "requestStartMs": 1.9,
+        "fetchStartMs": 0.8,
+        "resourceStartMs": 0.9,
+        "headersMs": 209.8,
+        "ttfbMs": 207.9,
+        "headersAvailableMs": 210.8,
+        "firstChunkMs": 211.2,
+        "rscEofMs": 768.5,
+        "readerEofMs": 768.9,
+        "firstVisibleMs": 775.1,
+        "twoFramesMs": 781.3,
+        "settledMs": 877.9,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "162af00a64ec4042a183fe63ebd86e48",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "team",
+        "cycle": 2,
+        "warmup": false,
+        "requestStartMs": 2.7,
+        "fetchStartMs": 1.6,
+        "resourceStartMs": 1.8,
+        "headersMs": 208.4,
+        "ttfbMs": 205.7,
+        "headersAvailableMs": 209.4,
+        "firstChunkMs": 209.7,
+        "rscEofMs": 561.2,
+        "readerEofMs": 569.2,
+        "firstVisibleMs": 568.3,
+        "twoFramesMs": 573.8,
+        "settledMs": 671.4,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "fcc75651825508708367f8ffe320547f",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "ads",
+        "cycle": 2,
+        "warmup": false,
+        "requestStartMs": 2.1,
+        "fetchStartMs": 0.8,
+        "resourceStartMs": 0.9,
+        "headersMs": 212.8,
+        "ttfbMs": 210.7,
+        "headersAvailableMs": 213.8,
+        "firstChunkMs": 214.1,
+        "rscEofMs": 386.9,
+        "readerEofMs": 391.8,
+        "firstVisibleMs": 391.6,
+        "twoFramesMs": 401.8,
+        "settledMs": 498.5,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "a989aa23e785e9c09a26fc9652e4f16f",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "home",
+        "cycle": 3,
+        "warmup": false,
+        "requestStartMs": 2,
+        "fetchStartMs": 0.9,
+        "resourceStartMs": 0.9,
+        "headersMs": 204.7,
+        "ttfbMs": 202.7,
+        "headersAvailableMs": 205.9,
+        "firstChunkMs": 206.1,
+        "rscEofMs": 824.2,
+        "readerEofMs": 829,
+        "firstVisibleMs": 828.8,
+        "twoFramesMs": 841.2,
+        "settledMs": 930.9,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "8d81a2329535bb7a5ca104b4a5a35892",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "clients",
+        "cycle": 3,
+        "warmup": false,
+        "requestStartMs": 2.4,
+        "fetchStartMs": 1.1,
+        "resourceStartMs": 1.2,
+        "headersMs": 215.9,
+        "ttfbMs": 213.5,
+        "headersAvailableMs": 217,
+        "firstChunkMs": 217.3,
+        "rscEofMs": 578.2,
+        "readerEofMs": 583.2,
+        "firstVisibleMs": 583,
+        "twoFramesMs": 592.2,
+        "settledMs": 683.2,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "19db7ef45ab4e376c12ed8e80dfb5f13",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "work",
+        "cycle": 3,
+        "warmup": false,
+        "requestStartMs": 12.3,
+        "fetchStartMs": 0.8,
+        "resourceStartMs": 0.9,
+        "headersMs": 216.1,
+        "ttfbMs": 203.8,
+        "headersAvailableMs": 217.1,
+        "firstChunkMs": 217.4,
+        "rscEofMs": 589.4,
+        "readerEofMs": 590.1,
+        "firstVisibleMs": 596.1,
+        "twoFramesMs": 603.2,
+        "settledMs": 697.5,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "a477e500dbfb87bd70ecedb485381079",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "social",
+        "cycle": 3,
+        "warmup": false,
+        "requestStartMs": 1.9,
+        "fetchStartMs": 0.9,
+        "resourceStartMs": 1.1,
+        "headersMs": 206.1,
+        "ttfbMs": 204.2,
+        "headersAvailableMs": 207.1,
+        "firstChunkMs": 207.4,
+        "rscEofMs": 574.2,
+        "readerEofMs": 581.5,
+        "firstVisibleMs": 581.3,
+        "twoFramesMs": 587.9,
+        "settledMs": 682.7,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "ddd4182b19d24508cb9b1284a0aaebcf",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "systems",
+        "cycle": 3,
+        "warmup": false,
+        "requestStartMs": 2.4,
+        "fetchStartMs": 0.9,
+        "resourceStartMs": 1,
+        "headersMs": 211.7,
+        "ttfbMs": 209.3,
+        "headersAvailableMs": 212.9,
+        "firstChunkMs": 213.2,
+        "rscEofMs": 763.8,
+        "readerEofMs": 764.2,
+        "firstVisibleMs": 770,
+        "twoFramesMs": 776,
+        "settledMs": 874.3,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "78cb4d942dcbffc448597b6cf2163b5e",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "team",
+        "cycle": 3,
+        "warmup": false,
+        "requestStartMs": 2.1,
+        "fetchStartMs": 0.8,
+        "resourceStartMs": 1,
+        "headersMs": 206.4,
+        "ttfbMs": 204.3,
+        "headersAvailableMs": 207.5,
+        "firstChunkMs": 207.8,
+        "rscEofMs": 567.5,
+        "readerEofMs": 574.1,
+        "firstVisibleMs": 573.3,
+        "twoFramesMs": 582.4,
+        "settledMs": 677.9,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "ecf422a6c39447f09a1e8a5ce609368c",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      },
+      {
+        "route": "ads",
+        "cycle": 3,
+        "warmup": false,
+        "requestStartMs": 2.7,
+        "fetchStartMs": 0.9,
+        "resourceStartMs": 1.1,
+        "headersMs": 207.3,
+        "ttfbMs": 204.6,
+        "headersAvailableMs": 208.4,
+        "firstChunkMs": 208.7,
+        "rscEofMs": 392.9,
+        "readerEofMs": 397.9,
+        "firstVisibleMs": 397.7,
+        "twoFramesMs": 407.3,
+        "settledMs": 499.2,
+        "status": 200,
+        "rootRscRequests": 1,
+        "rootResourceCount": 1,
+        "sameOriginResources": 1,
+        "sameOriginDataResources": 1,
+        "postVisibleMutationBatches": 0,
+        "id": "e141c3005c18bbf0bdf2da798f058366",
+        "serverTiming": "response;dur=0.0",
+        "headerSchemaValid": true,
+        "noStore": true,
+        "prefetch": false,
+        "redirected": false,
+        "event": "complete",
+        "failure": null
+      }
+    ],
+    "summary": [
+      {
+        "route": "home",
+        "ttfbMs": {
+          "samples": 3,
+          "median": 211.6,
+          "p95": 214.9,
+          "min": 202.7,
+          "max": 214.9
+        },
+        "headersMs": {
+          "samples": 3,
+          "median": 213.5,
+          "p95": 216.9,
+          "min": 204.7,
+          "max": 216.9
+        },
+        "rscEofMs": {
+          "samples": 3,
+          "median": 817.2,
+          "p95": 824.2,
+          "min": 806,
+          "max": 824.2
+        },
+        "firstVisibleMs": {
+          "samples": 3,
+          "median": 821.9,
+          "p95": 828.8,
+          "min": 811.2,
+          "max": 828.8
+        },
+        "twoFramesMs": {
+          "samples": 3,
+          "median": 831.1,
+          "p95": 841.2,
+          "min": 824,
+          "max": 841.2
+        },
+        "settledMs": {
+          "samples": 3,
+          "median": 928.4,
+          "p95": 930.9,
+          "min": 912.5,
+          "max": 930.9
+        },
+        "postHeadersMs": {
+          "samples": 3,
+          "median": 600.3,
+          "p95": 619.5,
+          "min": 592.5,
+          "max": 619.5
+        },
+        "eofToVisibleMs": {
+          "samples": 3,
+          "median": 4.7,
+          "p95": 5.2,
+          "min": 4.6,
+          "max": 5.2
+        }
+      },
+      {
+        "route": "clients",
+        "ttfbMs": {
+          "samples": 3,
+          "median": 204.5,
+          "p95": 213.5,
+          "min": 202.9,
+          "max": 213.5
+        },
+        "headersMs": {
+          "samples": 3,
+          "median": 206.9,
+          "p95": 215.9,
+          "min": 205.5,
+          "max": 215.9
+        },
+        "rscEofMs": {
+          "samples": 3,
+          "median": 569.6,
+          "p95": 578.2,
+          "min": 563,
+          "max": 578.2
+        },
+        "firstVisibleMs": {
+          "samples": 3,
+          "median": 575.6,
+          "p95": 583,
+          "min": 568.8,
+          "max": 583
+        },
+        "twoFramesMs": {
+          "samples": 3,
+          "median": 578.2,
+          "p95": 592.2,
+          "min": 575.8,
+          "max": 592.2
+        },
+        "settledMs": {
+          "samples": 3,
+          "median": 676.2,
+          "p95": 683.2,
+          "min": 670.8,
+          "max": 683.2
+        },
+        "postHeadersMs": {
+          "samples": 3,
+          "median": 362.3,
+          "p95": 364.1,
+          "min": 356.1,
+          "max": 364.1
+        },
+        "eofToVisibleMs": {
+          "samples": 3,
+          "median": 5.8,
+          "p95": 6,
+          "min": 4.8,
+          "max": 6
+        }
+      },
+      {
+        "route": "work",
+        "ttfbMs": {
+          "samples": 3,
+          "median": 203.8,
+          "p95": 285.2,
+          "min": 203.8,
+          "max": 285.2
+        },
+        "headersMs": {
+          "samples": 3,
+          "median": 216.1,
+          "p95": 287.3,
+          "min": 206.3,
+          "max": 287.3
+        },
+        "rscEofMs": {
+          "samples": 3,
+          "median": 594.4,
+          "p95": 670.3,
+          "min": 589.4,
+          "max": 670.3
+        },
+        "firstVisibleMs": {
+          "samples": 3,
+          "median": 601.2,
+          "p95": 676.3,
+          "min": 596.1,
+          "max": 676.3
+        },
+        "twoFramesMs": {
+          "samples": 3,
+          "median": 604.3,
+          "p95": 685.1,
+          "min": 603.2,
+          "max": 685.1
+        },
+        "settledMs": {
+          "samples": 3,
+          "median": 703,
+          "p95": 780.2,
+          "min": 697.5,
+          "max": 780.2
+        },
+        "postHeadersMs": {
+          "samples": 3,
+          "median": 383,
+          "p95": 388.1,
+          "min": 373.3,
+          "max": 388.1
+        },
+        "eofToVisibleMs": {
+          "samples": 3,
+          "median": 6.7,
+          "p95": 6.8,
+          "min": 6,
+          "max": 6.8
+        }
+      },
+      {
+        "route": "social",
+        "ttfbMs": {
+          "samples": 3,
+          "median": 210,
+          "p95": 211,
+          "min": 204.2,
+          "max": 211
+        },
+        "headersMs": {
+          "samples": 3,
+          "median": 212,
+          "p95": 213,
+          "min": 206.1,
+          "max": 213
+        },
+        "rscEofMs": {
+          "samples": 3,
+          "median": 583.5,
+          "p95": 586,
+          "min": 574.2,
+          "max": 586
+        },
+        "firstVisibleMs": {
+          "samples": 3,
+          "median": 592.2,
+          "p95": 592.2,
+          "min": 581.3,
+          "max": 592.2
+        },
+        "twoFramesMs": {
+          "samples": 3,
+          "median": 594.9,
+          "p95": 600.5,
+          "min": 587.9,
+          "max": 600.5
+        },
+        "settledMs": {
+          "samples": 3,
+          "median": 695,
+          "p95": 695.3,
+          "min": 682.7,
+          "max": 695.3
+        },
+        "postHeadersMs": {
+          "samples": 3,
+          "median": 371.5,
+          "p95": 373,
+          "min": 368.1,
+          "max": 373
+        },
+        "eofToVisibleMs": {
+          "samples": 3,
+          "median": 7.1,
+          "p95": 8.7,
+          "min": 6.2,
+          "max": 8.7
+        }
+      },
+      {
+        "route": "systems",
+        "ttfbMs": {
+          "samples": 3,
+          "median": 207.9,
+          "p95": 209.3,
+          "min": 207.8,
+          "max": 209.3
+        },
+        "headersMs": {
+          "samples": 3,
+          "median": 210.1,
+          "p95": 211.7,
+          "min": 209.8,
+          "max": 211.7
+        },
+        "rscEofMs": {
+          "samples": 3,
+          "median": 768.5,
+          "p95": 771,
+          "min": 763.8,
+          "max": 771
+        },
+        "firstVisibleMs": {
+          "samples": 3,
+          "median": 775.1,
+          "p95": 777.6,
+          "min": 770,
+          "max": 777.6
+        },
+        "twoFramesMs": {
+          "samples": 3,
+          "median": 781.3,
+          "p95": 784.6,
+          "min": 776,
+          "max": 784.6
+        },
+        "settledMs": {
+          "samples": 3,
+          "median": 877.9,
+          "p95": 879.9,
+          "min": 874.3,
+          "max": 879.9
+        },
+        "postHeadersMs": {
+          "samples": 3,
+          "median": 558.7,
+          "p95": 560.9,
+          "min": 552.1,
+          "max": 560.9
+        },
+        "eofToVisibleMs": {
+          "samples": 3,
+          "median": 6.6,
+          "p95": 6.6,
+          "min": 6.2,
+          "max": 6.6
+        }
+      },
+      {
+        "route": "team",
+        "ttfbMs": {
+          "samples": 3,
+          "median": 205.7,
+          "p95": 213.3,
+          "min": 204.3,
+          "max": 213.3
+        },
+        "headersMs": {
+          "samples": 3,
+          "median": 208.4,
+          "p95": 219.7,
+          "min": 206.4,
+          "max": 219.7
+        },
+        "rscEofMs": {
+          "samples": 3,
+          "median": 567.5,
+          "p95": 585.6,
+          "min": 561.2,
+          "max": 585.6
+        },
+        "firstVisibleMs": {
+          "samples": 3,
+          "median": 573.3,
+          "p95": 592.2,
+          "min": 568.3,
+          "max": 592.2
+        },
+        "twoFramesMs": {
+          "samples": 3,
+          "median": 582.4,
+          "p95": 602.1,
+          "min": 573.8,
+          "max": 602.1
+        },
+        "settledMs": {
+          "samples": 3,
+          "median": 677.9,
+          "p95": 694.4,
+          "min": 671.4,
+          "max": 694.4
+        },
+        "postHeadersMs": {
+          "samples": 3,
+          "median": 361.1,
+          "p95": 365.9,
+          "min": 352.8,
+          "max": 365.9
+        },
+        "eofToVisibleMs": {
+          "samples": 3,
+          "median": 6.6,
+          "p95": 7.1,
+          "min": 5.8,
+          "max": 7.1
+        }
+      },
+      {
+        "route": "ads",
+        "ttfbMs": {
+          "samples": 3,
+          "median": 210.7,
+          "p95": 213.6,
+          "min": 204.6,
+          "max": 213.6
+        },
+        "headersMs": {
+          "samples": 3,
+          "median": 212.8,
+          "p95": 215.6,
+          "min": 207.3,
+          "max": 215.6
+        },
+        "rscEofMs": {
+          "samples": 3,
+          "median": 390.9,
+          "p95": 392.9,
+          "min": 386.9,
+          "max": 392.9
+        },
+        "firstVisibleMs": {
+          "samples": 3,
+          "median": 396.1,
+          "p95": 397.7,
+          "min": 391.6,
+          "max": 397.7
+        },
+        "twoFramesMs": {
+          "samples": 3,
+          "median": 405.6,
+          "p95": 407.3,
+          "min": 401.8,
+          "max": 407.3
+        },
+        "settledMs": {
+          "samples": 3,
+          "median": 498.5,
+          "p95": 499.2,
+          "min": 496.7,
+          "max": 499.2
+        },
+        "postHeadersMs": {
+          "samples": 3,
+          "median": 175.3,
+          "p95": 185.6,
+          "min": 174.1,
+          "max": 185.6
+        },
+        "eofToVisibleMs": {
+          "samples": 3,
+          "median": 4.8,
+          "p95": 5.2,
+          "min": 4.7,
+          "max": 5.2
+        }
+      }
+    ],
+    "routeWarm": {
+      "ttfbMs": {
+        "samples": 21,
+        "median": 207.9,
+        "p95": 214.9,
+        "min": 202.7,
+        "max": 285.2
+      },
+      "headersMs": {
+        "samples": 21,
+        "median": 211.7,
+        "p95": 219.7,
+        "min": 204.7,
+        "max": 287.3
+      },
+      "rscEofMs": {
+        "samples": 21,
+        "median": 585.6,
+        "p95": 817.2,
+        "min": 386.9,
+        "max": 824.2
+      },
+      "firstVisibleMs": {
+        "samples": 21,
+        "median": 592.2,
+        "p95": 821.9,
+        "min": 391.6,
+        "max": 828.8
+      },
+      "twoFramesMs": {
+        "samples": 21,
+        "median": 600.5,
+        "p95": 831.1,
+        "min": 401.8,
+        "max": 841.2
+      },
+      "settledMs": {
+        "samples": 21,
+        "median": 695,
+        "p95": 928.4,
+        "min": 496.7,
+        "max": 930.9
+      }
+    }
+  },
+  "analytics": {
+    "dataset": "bloomops_perf4_staging_timing",
+    "retrieval": "read-only SQL API through existing authenticated Cloudflare dashboard; only retained opaque IDs queried",
+    "counts": {
+      "expected": 63,
+      "retrieved": 63,
+      "uniqueIds": 21,
+      "missing": 0,
+      "duplicates": 0,
+      "incomplete": 0,
+      "invalid": 0,
+      "sampledRecords": 0,
+      "sampleIntervals": [
+        1
+      ]
+    },
+    "schema": {
+      "metrics": [
+        "response",
+        "identity",
+        "membership",
+        "actor",
+        "home",
+        "systems",
+        "wait1",
+        "wait2",
+        "wait3",
+        "wait4",
+        "wait5",
+        "wait6",
+        "wait7",
+        "wait8",
+        "first",
+        "total",
+        "elapsed",
+        "unattributed"
+      ],
+      "spans": [
+        "identity",
+        "membership",
+        "actor",
+        "home",
+        "systems",
+        "wait1",
+        "wait2",
+        "wait3",
+        "wait4",
+        "wait5",
+        "wait6",
+        "wait7",
+        "wait8"
+      ],
+      "recordDoubleLengths": {
+        "metrics-v1": 18,
+        "spans-a-v1": 20,
+        "spans-b-v1": 6
+      },
+      "missingSentinel": -1
+    },
+    "records": [
+      {
+        "id": "162af00a64ec4042a183fe63ebd86e48",
+        "kind": "spans-b-v1",
+        "route": "systems",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "162af00a64ec4042a183fe63ebd86e48",
+        "kind": "spans-a-v1",
+        "route": "systems",
+        "event": "complete",
+        "doubles": [
+          0,
+          186,
+          -1,
+          -1,
+          186,
+          0,
+          -1,
+          -1,
+          186,
+          370,
+          0,
+          186,
+          186,
+          181,
+          367,
+          189,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "162af00a64ec4042a183fe63ebd86e48",
+        "kind": "metrics-v1",
+        "route": "systems",
+        "event": "complete",
+        "doubles": [
+          0,
+          186,
+          -1,
+          0,
+          -1,
+          370,
+          186,
+          181,
+          189,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          556,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "284cc026a80af197f2498db926961406",
+        "kind": "spans-b-v1",
+        "route": "work",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "284cc026a80af197f2498db926961406",
+        "kind": "spans-a-v1",
+        "route": "work",
+        "event": "complete",
+        "doubles": [
+          0,
+          178,
+          -1,
+          -1,
+          178,
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          178,
+          178,
+          193,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "284cc026a80af197f2498db926961406",
+        "kind": "metrics-v1",
+        "route": "work",
+        "event": "complete",
+        "doubles": [
+          0,
+          178,
+          -1,
+          0,
+          -1,
+          -1,
+          178,
+          193,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          371,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "78cb4d942dcbffc448597b6cf2163b5e",
+        "kind": "spans-a-v1",
+        "route": "systems",
+        "event": "complete",
+        "doubles": [
+          0,
+          183,
+          -1,
+          -1,
+          183,
+          0,
+          -1,
+          -1,
+          183,
+          365,
+          0,
+          183,
+          183,
+          178,
+          361,
+          187,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "78cb4d942dcbffc448597b6cf2163b5e",
+        "kind": "metrics-v1",
+        "route": "systems",
+        "event": "complete",
+        "doubles": [
+          0,
+          183,
+          -1,
+          0,
+          -1,
+          365,
+          183,
+          178,
+          187,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          548,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "78cb4d942dcbffc448597b6cf2163b5e",
+        "kind": "spans-b-v1",
+        "route": "systems",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "8d81a2329535bb7a5ca104b4a5a35892",
+        "kind": "metrics-v1",
+        "route": "home",
+        "event": "complete",
+        "doubles": [
+          0,
+          181,
+          -1,
+          0,
+          405,
+          -1,
+          181,
+          202,
+          203,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          586,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "8d81a2329535bb7a5ca104b4a5a35892",
+        "kind": "spans-b-v1",
+        "route": "home",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "8d81a2329535bb7a5ca104b4a5a35892",
+        "kind": "spans-a-v1",
+        "route": "home",
+        "event": "complete",
+        "doubles": [
+          0,
+          181,
+          -1,
+          -1,
+          181,
+          0,
+          181,
+          405,
+          -1,
+          -1,
+          0,
+          181,
+          181,
+          202,
+          383,
+          203,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "9473ba8d678db0ee299c05c31c153ff3",
+        "kind": "spans-a-v1",
+        "route": "social",
+        "event": "complete",
+        "doubles": [
+          0,
+          181,
+          -1,
+          -1,
+          181,
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          181,
+          181,
+          184,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "9473ba8d678db0ee299c05c31c153ff3",
+        "kind": "metrics-v1",
+        "route": "social",
+        "event": "complete",
+        "doubles": [
+          0,
+          181,
+          -1,
+          0,
+          -1,
+          -1,
+          181,
+          184,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          365,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "9473ba8d678db0ee299c05c31c153ff3",
+        "kind": "spans-b-v1",
+        "route": "social",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "9f361b43d8c233077563a1abcba5e3b9",
+        "kind": "spans-a-v1",
+        "route": "clients",
+        "event": "complete",
+        "doubles": [
+          0,
+          181,
+          -1,
+          -1,
+          181,
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          181,
+          181,
+          177,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "9f361b43d8c233077563a1abcba5e3b9",
+        "kind": "spans-b-v1",
+        "route": "clients",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "9f361b43d8c233077563a1abcba5e3b9",
+        "kind": "metrics-v1",
+        "route": "clients",
+        "event": "complete",
+        "doubles": [
+          0,
+          181,
+          -1,
+          0,
+          -1,
+          -1,
+          181,
+          177,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          358,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "ddd4182b19d24508cb9b1284a0aaebcf",
+        "kind": "spans-a-v1",
+        "route": "social",
+        "event": "complete",
+        "doubles": [
+          0,
+          179,
+          -1,
+          -1,
+          179,
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          179,
+          179,
+          186,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "ddd4182b19d24508cb9b1284a0aaebcf",
+        "kind": "metrics-v1",
+        "route": "social",
+        "event": "complete",
+        "doubles": [
+          0,
+          179,
+          -1,
+          0,
+          -1,
+          -1,
+          179,
+          186,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          365,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "ddd4182b19d24508cb9b1284a0aaebcf",
+        "kind": "spans-b-v1",
+        "route": "social",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "e141c3005c18bbf0bdf2da798f058366",
+        "kind": "metrics-v1",
+        "route": "ads",
+        "event": "complete",
+        "doubles": [
+          0,
+          182,
+          -1,
+          0,
+          -1,
+          -1,
+          182,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          182,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "e141c3005c18bbf0bdf2da798f058366",
+        "kind": "spans-b-v1",
+        "route": "ads",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "e141c3005c18bbf0bdf2da798f058366",
+        "kind": "spans-a-v1",
+        "route": "ads",
+        "event": "complete",
+        "doubles": [
+          0,
+          182,
+          -1,
+          -1,
+          182,
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          182,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "ecf422a6c39447f09a1e8a5ce609368c",
+        "kind": "metrics-v1",
+        "route": "team",
+        "event": "complete",
+        "doubles": [
+          0,
+          177,
+          -1,
+          0,
+          -1,
+          -1,
+          177,
+          181,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          359,
+          -1,
+          1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "ecf422a6c39447f09a1e8a5ce609368c",
+        "kind": "spans-a-v1",
+        "route": "team",
+        "event": "complete",
+        "doubles": [
+          0,
+          177,
+          -1,
+          -1,
+          177,
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          177,
+          177,
+          181,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "ecf422a6c39447f09a1e8a5ce609368c",
+        "kind": "spans-b-v1",
+        "route": "team",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "fcc75651825508708367f8ffe320547f",
+        "kind": "metrics-v1",
+        "route": "team",
+        "event": "complete",
+        "doubles": [
+          0,
+          173,
+          -1,
+          0,
+          -1,
+          -1,
+          173,
+          177,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          350,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "fcc75651825508708367f8ffe320547f",
+        "kind": "spans-b-v1",
+        "route": "team",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "fcc75651825508708367f8ffe320547f",
+        "kind": "spans-a-v1",
+        "route": "team",
+        "event": "complete",
+        "doubles": [
+          0,
+          173,
+          -1,
+          -1,
+          173,
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          173,
+          173,
+          177,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "17de675e9e7dcc791fe9673ce99ad665",
+        "kind": "spans-a-v1",
+        "route": "work",
+        "event": "complete",
+        "doubles": [
+          0,
+          188,
+          -1,
+          -1,
+          188,
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          188,
+          188,
+          204,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "17de675e9e7dcc791fe9673ce99ad665",
+        "kind": "spans-b-v1",
+        "route": "work",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "17de675e9e7dcc791fe9673ce99ad665",
+        "kind": "metrics-v1",
+        "route": "work",
+        "event": "complete",
+        "doubles": [
+          0,
+          188,
+          -1,
+          0,
+          -1,
+          -1,
+          188,
+          204,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          392,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "d85a704770ff9c4a2b7b04d49a08185c",
+        "kind": "spans-a-v1",
+        "route": "clients",
+        "event": "complete",
+        "doubles": [
+          0,
+          175,
+          -1,
+          -1,
+          175,
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          175,
+          175,
+          175,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "d85a704770ff9c4a2b7b04d49a08185c",
+        "kind": "spans-b-v1",
+        "route": "clients",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "d85a704770ff9c4a2b7b04d49a08185c",
+        "kind": "metrics-v1",
+        "route": "clients",
+        "event": "complete",
+        "doubles": [
+          0,
+          175,
+          -1,
+          0,
+          -1,
+          -1,
+          175,
+          175,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          350,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "d99a14ce1c5361b7cc9f287006a0043f",
+        "kind": "spans-a-v1",
+        "route": "ads",
+        "event": "complete",
+        "doubles": [
+          0,
+          179,
+          -1,
+          -1,
+          179,
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          179,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "d99a14ce1c5361b7cc9f287006a0043f",
+        "kind": "spans-b-v1",
+        "route": "ads",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "d99a14ce1c5361b7cc9f287006a0043f",
+        "kind": "metrics-v1",
+        "route": "ads",
+        "event": "complete",
+        "doubles": [
+          0,
+          179,
+          -1,
+          0,
+          -1,
+          -1,
+          179,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          179,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "19db7ef45ab4e376c12ed8e80dfb5f13",
+        "kind": "metrics-v1",
+        "route": "clients",
+        "event": "complete",
+        "doubles": [
+          0,
+          186,
+          -1,
+          0,
+          -1,
+          -1,
+          186,
+          179,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          365,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "19db7ef45ab4e376c12ed8e80dfb5f13",
+        "kind": "spans-a-v1",
+        "route": "clients",
+        "event": "complete",
+        "doubles": [
+          0,
+          186,
+          -1,
+          -1,
+          186,
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          186,
+          186,
+          179,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "19db7ef45ab4e376c12ed8e80dfb5f13",
+        "kind": "spans-b-v1",
+        "route": "clients",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "a477e500dbfb87bd70ecedb485381079",
+        "kind": "spans-a-v1",
+        "route": "work",
+        "event": "complete",
+        "doubles": [
+          0,
+          172,
+          -1,
+          -1,
+          172,
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          172,
+          172,
+          195,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "a477e500dbfb87bd70ecedb485381079",
+        "kind": "metrics-v1",
+        "route": "work",
+        "event": "complete",
+        "doubles": [
+          0,
+          172,
+          -1,
+          0,
+          -1,
+          -1,
+          172,
+          195,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          367,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "a477e500dbfb87bd70ecedb485381079",
+        "kind": "spans-b-v1",
+        "route": "work",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "a989aa23e785e9c09a26fc9652e4f16f",
+        "kind": "spans-b-v1",
+        "route": "ads",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "a989aa23e785e9c09a26fc9652e4f16f",
+        "kind": "spans-a-v1",
+        "route": "ads",
+        "event": "complete",
+        "doubles": [
+          0,
+          177,
+          -1,
+          -1,
+          177,
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          177,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "a989aa23e785e9c09a26fc9652e4f16f",
+        "kind": "metrics-v1",
+        "route": "ads",
+        "event": "complete",
+        "doubles": [
+          0,
+          177,
+          -1,
+          0,
+          -1,
+          -1,
+          177,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          177,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "587b871013e0a21aa68c4007005d8aeb",
+        "kind": "metrics-v1",
+        "route": "team",
+        "event": "complete",
+        "doubles": [
+          0,
+          184,
+          -1,
+          0,
+          -1,
+          -1,
+          184,
+          177,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          362,
+          -1,
+          1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "587b871013e0a21aa68c4007005d8aeb",
+        "kind": "spans-a-v1",
+        "route": "team",
+        "event": "complete",
+        "doubles": [
+          0,
+          184,
+          -1,
+          -1,
+          184,
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          184,
+          184,
+          177,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "587b871013e0a21aa68c4007005d8aeb",
+        "kind": "spans-b-v1",
+        "route": "team",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "90fa092612b7b9747b04bd9216392766",
+        "kind": "metrics-v1",
+        "route": "social",
+        "event": "complete",
+        "doubles": [
+          0,
+          179,
+          -1,
+          0,
+          -1,
+          -1,
+          179,
+          186,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          365,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "90fa092612b7b9747b04bd9216392766",
+        "kind": "spans-b-v1",
+        "route": "social",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "90fa092612b7b9747b04bd9216392766",
+        "kind": "spans-a-v1",
+        "route": "social",
+        "event": "complete",
+        "doubles": [
+          0,
+          179,
+          -1,
+          -1,
+          179,
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          179,
+          179,
+          186,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "c20c966b074448cfc2d28e6777507186",
+        "kind": "spans-b-v1",
+        "route": "systems",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "c20c966b074448cfc2d28e6777507186",
+        "kind": "spans-a-v1",
+        "route": "systems",
+        "event": "complete",
+        "doubles": [
+          0,
+          184,
+          -1,
+          -1,
+          184,
+          0,
+          -1,
+          -1,
+          184,
+          366,
+          0,
+          184,
+          184,
+          176,
+          360,
+          190,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "c20c966b074448cfc2d28e6777507186",
+        "kind": "metrics-v1",
+        "route": "systems",
+        "event": "complete",
+        "doubles": [
+          0,
+          184,
+          -1,
+          0,
+          -1,
+          366,
+          184,
+          176,
+          190,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          550,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "ded341554d6160d3b17b58628d92e55e",
+        "kind": "metrics-v1",
+        "route": "home",
+        "event": "complete",
+        "doubles": [
+          0,
+          183,
+          -1,
+          0,
+          404,
+          -1,
+          183,
+          196,
+          208,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          587,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "ded341554d6160d3b17b58628d92e55e",
+        "kind": "spans-b-v1",
+        "route": "home",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "ded341554d6160d3b17b58628d92e55e",
+        "kind": "spans-a-v1",
+        "route": "home",
+        "event": "complete",
+        "doubles": [
+          0,
+          183,
+          -1,
+          -1,
+          183,
+          0,
+          183,
+          404,
+          -1,
+          -1,
+          0,
+          183,
+          183,
+          196,
+          379,
+          208,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "ee4c2b764892b12ad6abeb1679c0bd61",
+        "kind": "spans-a-v1",
+        "route": "home",
+        "event": "complete",
+        "doubles": [
+          0,
+          185,
+          -1,
+          -1,
+          185,
+          0,
+          185,
+          400,
+          -1,
+          -1,
+          0,
+          185,
+          185,
+          195,
+          380,
+          205,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "ee4c2b764892b12ad6abeb1679c0bd61",
+        "kind": "spans-b-v1",
+        "route": "home",
+        "event": "complete",
+        "doubles": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "sampleInterval": 1
+      },
+      {
+        "id": "ee4c2b764892b12ad6abeb1679c0bd61",
+        "kind": "metrics-v1",
+        "route": "home",
+        "event": "complete",
+        "doubles": [
+          0,
+          185,
+          -1,
+          0,
+          400,
+          -1,
+          185,
+          195,
+          205,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          0,
+          585,
+          -1,
+          0
+        ],
+        "sampleInterval": 1
+      }
+    ],
+    "summary": [
+      {
+        "route": "home",
+        "waitCount": [
+          3
+        ],
+        "metrics": {
+          "response": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "identity": {
+            "samples": 3,
+            "median": 183,
+            "p95": 185,
+            "min": 181,
+            "max": 185
+          },
+          "membership": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "actor": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "home": {
+            "samples": 3,
+            "median": 404,
+            "p95": 405,
+            "min": 400,
+            "max": 405
+          },
+          "systems": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait1": {
+            "samples": 3,
+            "median": 183,
+            "p95": 185,
+            "min": 181,
+            "max": 185
+          },
+          "wait2": {
+            "samples": 3,
+            "median": 196,
+            "p95": 202,
+            "min": 195,
+            "max": 202
+          },
+          "wait3": {
+            "samples": 3,
+            "median": 205,
+            "p95": 208,
+            "min": 203,
+            "max": 208
+          },
+          "wait4": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait5": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait6": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait7": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait8": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "first": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "total": {
+            "samples": 3,
+            "median": 586,
+            "p95": 587,
+            "min": 585,
+            "max": 587
+          },
+          "elapsed": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "unattributed": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          }
+        }
+      },
+      {
+        "route": "clients",
+        "waitCount": [
+          2
+        ],
+        "metrics": {
+          "response": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "identity": {
+            "samples": 3,
+            "median": 181,
+            "p95": 186,
+            "min": 175,
+            "max": 186
+          },
+          "membership": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "actor": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "home": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "systems": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait1": {
+            "samples": 3,
+            "median": 181,
+            "p95": 186,
+            "min": 175,
+            "max": 186
+          },
+          "wait2": {
+            "samples": 3,
+            "median": 177,
+            "p95": 179,
+            "min": 175,
+            "max": 179
+          },
+          "wait3": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait4": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait5": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait6": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait7": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait8": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "first": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "total": {
+            "samples": 3,
+            "median": 358,
+            "p95": 365,
+            "min": 350,
+            "max": 365
+          },
+          "elapsed": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "unattributed": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          }
+        }
+      },
+      {
+        "route": "work",
+        "waitCount": [
+          2
+        ],
+        "metrics": {
+          "response": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "identity": {
+            "samples": 3,
+            "median": 178,
+            "p95": 188,
+            "min": 172,
+            "max": 188
+          },
+          "membership": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "actor": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "home": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "systems": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait1": {
+            "samples": 3,
+            "median": 178,
+            "p95": 188,
+            "min": 172,
+            "max": 188
+          },
+          "wait2": {
+            "samples": 3,
+            "median": 195,
+            "p95": 204,
+            "min": 193,
+            "max": 204
+          },
+          "wait3": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait4": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait5": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait6": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait7": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait8": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "first": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "total": {
+            "samples": 3,
+            "median": 371,
+            "p95": 392,
+            "min": 367,
+            "max": 392
+          },
+          "elapsed": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "unattributed": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          }
+        }
+      },
+      {
+        "route": "social",
+        "waitCount": [
+          2
+        ],
+        "metrics": {
+          "response": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "identity": {
+            "samples": 3,
+            "median": 179,
+            "p95": 181,
+            "min": 179,
+            "max": 181
+          },
+          "membership": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "actor": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "home": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "systems": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait1": {
+            "samples": 3,
+            "median": 179,
+            "p95": 181,
+            "min": 179,
+            "max": 181
+          },
+          "wait2": {
+            "samples": 3,
+            "median": 186,
+            "p95": 186,
+            "min": 184,
+            "max": 186
+          },
+          "wait3": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait4": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait5": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait6": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait7": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait8": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "first": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "total": {
+            "samples": 3,
+            "median": 365,
+            "p95": 365,
+            "min": 365,
+            "max": 365
+          },
+          "elapsed": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "unattributed": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          }
+        }
+      },
+      {
+        "route": "systems",
+        "waitCount": [
+          3
+        ],
+        "metrics": {
+          "response": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "identity": {
+            "samples": 3,
+            "median": 184,
+            "p95": 186,
+            "min": 183,
+            "max": 186
+          },
+          "membership": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "actor": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "home": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "systems": {
+            "samples": 3,
+            "median": 366,
+            "p95": 370,
+            "min": 365,
+            "max": 370
+          },
+          "wait1": {
+            "samples": 3,
+            "median": 184,
+            "p95": 186,
+            "min": 183,
+            "max": 186
+          },
+          "wait2": {
+            "samples": 3,
+            "median": 178,
+            "p95": 181,
+            "min": 176,
+            "max": 181
+          },
+          "wait3": {
+            "samples": 3,
+            "median": 189,
+            "p95": 190,
+            "min": 187,
+            "max": 190
+          },
+          "wait4": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait5": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait6": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait7": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait8": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "first": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "total": {
+            "samples": 3,
+            "median": 550,
+            "p95": 556,
+            "min": 548,
+            "max": 556
+          },
+          "elapsed": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "unattributed": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          }
+        }
+      },
+      {
+        "route": "team",
+        "waitCount": [
+          2
+        ],
+        "metrics": {
+          "response": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "identity": {
+            "samples": 3,
+            "median": 177,
+            "p95": 184,
+            "min": 173,
+            "max": 184
+          },
+          "membership": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "actor": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "home": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "systems": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait1": {
+            "samples": 3,
+            "median": 177,
+            "p95": 184,
+            "min": 173,
+            "max": 184
+          },
+          "wait2": {
+            "samples": 3,
+            "median": 177,
+            "p95": 181,
+            "min": 177,
+            "max": 181
+          },
+          "wait3": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait4": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait5": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait6": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait7": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait8": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "first": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "total": {
+            "samples": 3,
+            "median": 359,
+            "p95": 362,
+            "min": 350,
+            "max": 362
+          },
+          "elapsed": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "unattributed": {
+            "samples": 3,
+            "median": 1,
+            "p95": 1,
+            "min": 0,
+            "max": 1
+          }
+        }
+      },
+      {
+        "route": "ads",
+        "waitCount": [
+          1
+        ],
+        "metrics": {
+          "response": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "identity": {
+            "samples": 3,
+            "median": 179,
+            "p95": 182,
+            "min": 177,
+            "max": 182
+          },
+          "membership": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "actor": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "home": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "systems": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait1": {
+            "samples": 3,
+            "median": 179,
+            "p95": 182,
+            "min": 177,
+            "max": 182
+          },
+          "wait2": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait3": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait4": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait5": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait6": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait7": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "wait8": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "first": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          },
+          "total": {
+            "samples": 3,
+            "median": 179,
+            "p95": 182,
+            "min": 177,
+            "max": 182
+          },
+          "elapsed": {
+            "samples": 0,
+            "median": null,
+            "p95": null,
+            "min": null,
+            "max": null
+          },
+          "unattributed": {
+            "samples": 3,
+            "median": 0,
+            "p95": 0,
+            "min": 0,
+            "max": 0
+          }
+        }
+      }
+    ],
+    "joined": [
+      {
+        "id": "ded341554d6160d3b17b58628d92e55e",
+        "route": "home",
+        "cycle": 1,
+        "metrics": {
+          "response": 0,
+          "identity": 183,
+          "membership": -1,
+          "actor": 0,
+          "home": 404,
+          "systems": -1,
+          "wait1": 183,
+          "wait2": 196,
+          "wait3": 208,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 587,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 183
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 183,
+            "duration": 0
+          },
+          "home": {
+            "start": 183,
+            "duration": 404
+          },
+          "systems": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 183
+          },
+          "wait2": {
+            "start": 183,
+            "duration": 196
+          },
+          "wait3": {
+            "start": 379,
+            "duration": 208
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "d85a704770ff9c4a2b7b04d49a08185c",
+        "route": "clients",
+        "cycle": 1,
+        "metrics": {
+          "response": 0,
+          "identity": 175,
+          "membership": -1,
+          "actor": 0,
+          "home": -1,
+          "systems": -1,
+          "wait1": 175,
+          "wait2": 175,
+          "wait3": -1,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 350,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 175
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 175,
+            "duration": 0
+          },
+          "home": {
+            "start": -1,
+            "duration": -1
+          },
+          "systems": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 175
+          },
+          "wait2": {
+            "start": 175,
+            "duration": 175
+          },
+          "wait3": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "17de675e9e7dcc791fe9673ce99ad665",
+        "route": "work",
+        "cycle": 1,
+        "metrics": {
+          "response": 0,
+          "identity": 188,
+          "membership": -1,
+          "actor": 0,
+          "home": -1,
+          "systems": -1,
+          "wait1": 188,
+          "wait2": 204,
+          "wait3": -1,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 392,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 188
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 188,
+            "duration": 0
+          },
+          "home": {
+            "start": -1,
+            "duration": -1
+          },
+          "systems": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 188
+          },
+          "wait2": {
+            "start": 188,
+            "duration": 204
+          },
+          "wait3": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "90fa092612b7b9747b04bd9216392766",
+        "route": "social",
+        "cycle": 1,
+        "metrics": {
+          "response": 0,
+          "identity": 179,
+          "membership": -1,
+          "actor": 0,
+          "home": -1,
+          "systems": -1,
+          "wait1": 179,
+          "wait2": 186,
+          "wait3": -1,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 365,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 179
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 179,
+            "duration": 0
+          },
+          "home": {
+            "start": -1,
+            "duration": -1
+          },
+          "systems": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 179
+          },
+          "wait2": {
+            "start": 179,
+            "duration": 186
+          },
+          "wait3": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "c20c966b074448cfc2d28e6777507186",
+        "route": "systems",
+        "cycle": 1,
+        "metrics": {
+          "response": 0,
+          "identity": 184,
+          "membership": -1,
+          "actor": 0,
+          "home": -1,
+          "systems": 366,
+          "wait1": 184,
+          "wait2": 176,
+          "wait3": 190,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 550,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 184
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 184,
+            "duration": 0
+          },
+          "home": {
+            "start": -1,
+            "duration": -1
+          },
+          "systems": {
+            "start": 184,
+            "duration": 366
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 184
+          },
+          "wait2": {
+            "start": 184,
+            "duration": 176
+          },
+          "wait3": {
+            "start": 360,
+            "duration": 190
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "587b871013e0a21aa68c4007005d8aeb",
+        "route": "team",
+        "cycle": 1,
+        "metrics": {
+          "response": 0,
+          "identity": 184,
+          "membership": -1,
+          "actor": 0,
+          "home": -1,
+          "systems": -1,
+          "wait1": 184,
+          "wait2": 177,
+          "wait3": -1,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 362,
+          "elapsed": -1,
+          "unattributed": 1
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 184
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 184,
+            "duration": 0
+          },
+          "home": {
+            "start": -1,
+            "duration": -1
+          },
+          "systems": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 184
+          },
+          "wait2": {
+            "start": 184,
+            "duration": 177
+          },
+          "wait3": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "d99a14ce1c5361b7cc9f287006a0043f",
+        "route": "ads",
+        "cycle": 1,
+        "metrics": {
+          "response": 0,
+          "identity": 179,
+          "membership": -1,
+          "actor": 0,
+          "home": -1,
+          "systems": -1,
+          "wait1": 179,
+          "wait2": -1,
+          "wait3": -1,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 179,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 179
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 179,
+            "duration": 0
+          },
+          "home": {
+            "start": -1,
+            "duration": -1
+          },
+          "systems": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 179
+          },
+          "wait2": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait3": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "ee4c2b764892b12ad6abeb1679c0bd61",
+        "route": "home",
+        "cycle": 2,
+        "metrics": {
+          "response": 0,
+          "identity": 185,
+          "membership": -1,
+          "actor": 0,
+          "home": 400,
+          "systems": -1,
+          "wait1": 185,
+          "wait2": 195,
+          "wait3": 205,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 585,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 185
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 185,
+            "duration": 0
+          },
+          "home": {
+            "start": 185,
+            "duration": 400
+          },
+          "systems": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 185
+          },
+          "wait2": {
+            "start": 185,
+            "duration": 195
+          },
+          "wait3": {
+            "start": 380,
+            "duration": 205
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "9f361b43d8c233077563a1abcba5e3b9",
+        "route": "clients",
+        "cycle": 2,
+        "metrics": {
+          "response": 0,
+          "identity": 181,
+          "membership": -1,
+          "actor": 0,
+          "home": -1,
+          "systems": -1,
+          "wait1": 181,
+          "wait2": 177,
+          "wait3": -1,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 358,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 181
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 181,
+            "duration": 0
+          },
+          "home": {
+            "start": -1,
+            "duration": -1
+          },
+          "systems": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 181
+          },
+          "wait2": {
+            "start": 181,
+            "duration": 177
+          },
+          "wait3": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "284cc026a80af197f2498db926961406",
+        "route": "work",
+        "cycle": 2,
+        "metrics": {
+          "response": 0,
+          "identity": 178,
+          "membership": -1,
+          "actor": 0,
+          "home": -1,
+          "systems": -1,
+          "wait1": 178,
+          "wait2": 193,
+          "wait3": -1,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 371,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 178
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 178,
+            "duration": 0
+          },
+          "home": {
+            "start": -1,
+            "duration": -1
+          },
+          "systems": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 178
+          },
+          "wait2": {
+            "start": 178,
+            "duration": 193
+          },
+          "wait3": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "9473ba8d678db0ee299c05c31c153ff3",
+        "route": "social",
+        "cycle": 2,
+        "metrics": {
+          "response": 0,
+          "identity": 181,
+          "membership": -1,
+          "actor": 0,
+          "home": -1,
+          "systems": -1,
+          "wait1": 181,
+          "wait2": 184,
+          "wait3": -1,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 365,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 181
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 181,
+            "duration": 0
+          },
+          "home": {
+            "start": -1,
+            "duration": -1
+          },
+          "systems": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 181
+          },
+          "wait2": {
+            "start": 181,
+            "duration": 184
+          },
+          "wait3": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "162af00a64ec4042a183fe63ebd86e48",
+        "route": "systems",
+        "cycle": 2,
+        "metrics": {
+          "response": 0,
+          "identity": 186,
+          "membership": -1,
+          "actor": 0,
+          "home": -1,
+          "systems": 370,
+          "wait1": 186,
+          "wait2": 181,
+          "wait3": 189,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 556,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 186
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 186,
+            "duration": 0
+          },
+          "home": {
+            "start": -1,
+            "duration": -1
+          },
+          "systems": {
+            "start": 186,
+            "duration": 370
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 186
+          },
+          "wait2": {
+            "start": 186,
+            "duration": 181
+          },
+          "wait3": {
+            "start": 367,
+            "duration": 189
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "fcc75651825508708367f8ffe320547f",
+        "route": "team",
+        "cycle": 2,
+        "metrics": {
+          "response": 0,
+          "identity": 173,
+          "membership": -1,
+          "actor": 0,
+          "home": -1,
+          "systems": -1,
+          "wait1": 173,
+          "wait2": 177,
+          "wait3": -1,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 350,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 173
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 173,
+            "duration": 0
+          },
+          "home": {
+            "start": -1,
+            "duration": -1
+          },
+          "systems": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 173
+          },
+          "wait2": {
+            "start": 173,
+            "duration": 177
+          },
+          "wait3": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "a989aa23e785e9c09a26fc9652e4f16f",
+        "route": "ads",
+        "cycle": 2,
+        "metrics": {
+          "response": 0,
+          "identity": 177,
+          "membership": -1,
+          "actor": 0,
+          "home": -1,
+          "systems": -1,
+          "wait1": 177,
+          "wait2": -1,
+          "wait3": -1,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 177,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 177
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 177,
+            "duration": 0
+          },
+          "home": {
+            "start": -1,
+            "duration": -1
+          },
+          "systems": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 177
+          },
+          "wait2": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait3": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "8d81a2329535bb7a5ca104b4a5a35892",
+        "route": "home",
+        "cycle": 3,
+        "metrics": {
+          "response": 0,
+          "identity": 181,
+          "membership": -1,
+          "actor": 0,
+          "home": 405,
+          "systems": -1,
+          "wait1": 181,
+          "wait2": 202,
+          "wait3": 203,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 586,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 181
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 181,
+            "duration": 0
+          },
+          "home": {
+            "start": 181,
+            "duration": 405
+          },
+          "systems": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 181
+          },
+          "wait2": {
+            "start": 181,
+            "duration": 202
+          },
+          "wait3": {
+            "start": 383,
+            "duration": 203
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "19db7ef45ab4e376c12ed8e80dfb5f13",
+        "route": "clients",
+        "cycle": 3,
+        "metrics": {
+          "response": 0,
+          "identity": 186,
+          "membership": -1,
+          "actor": 0,
+          "home": -1,
+          "systems": -1,
+          "wait1": 186,
+          "wait2": 179,
+          "wait3": -1,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 365,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 186
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 186,
+            "duration": 0
+          },
+          "home": {
+            "start": -1,
+            "duration": -1
+          },
+          "systems": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 186
+          },
+          "wait2": {
+            "start": 186,
+            "duration": 179
+          },
+          "wait3": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "a477e500dbfb87bd70ecedb485381079",
+        "route": "work",
+        "cycle": 3,
+        "metrics": {
+          "response": 0,
+          "identity": 172,
+          "membership": -1,
+          "actor": 0,
+          "home": -1,
+          "systems": -1,
+          "wait1": 172,
+          "wait2": 195,
+          "wait3": -1,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 367,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 172
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 172,
+            "duration": 0
+          },
+          "home": {
+            "start": -1,
+            "duration": -1
+          },
+          "systems": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 172
+          },
+          "wait2": {
+            "start": 172,
+            "duration": 195
+          },
+          "wait3": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "ddd4182b19d24508cb9b1284a0aaebcf",
+        "route": "social",
+        "cycle": 3,
+        "metrics": {
+          "response": 0,
+          "identity": 179,
+          "membership": -1,
+          "actor": 0,
+          "home": -1,
+          "systems": -1,
+          "wait1": 179,
+          "wait2": 186,
+          "wait3": -1,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 365,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 179
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 179,
+            "duration": 0
+          },
+          "home": {
+            "start": -1,
+            "duration": -1
+          },
+          "systems": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 179
+          },
+          "wait2": {
+            "start": 179,
+            "duration": 186
+          },
+          "wait3": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "78cb4d942dcbffc448597b6cf2163b5e",
+        "route": "systems",
+        "cycle": 3,
+        "metrics": {
+          "response": 0,
+          "identity": 183,
+          "membership": -1,
+          "actor": 0,
+          "home": -1,
+          "systems": 365,
+          "wait1": 183,
+          "wait2": 178,
+          "wait3": 187,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 548,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 183
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 183,
+            "duration": 0
+          },
+          "home": {
+            "start": -1,
+            "duration": -1
+          },
+          "systems": {
+            "start": 183,
+            "duration": 365
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 183
+          },
+          "wait2": {
+            "start": 183,
+            "duration": 178
+          },
+          "wait3": {
+            "start": 361,
+            "duration": 187
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "ecf422a6c39447f09a1e8a5ce609368c",
+        "route": "team",
+        "cycle": 3,
+        "metrics": {
+          "response": 0,
+          "identity": 177,
+          "membership": -1,
+          "actor": 0,
+          "home": -1,
+          "systems": -1,
+          "wait1": 177,
+          "wait2": 181,
+          "wait3": -1,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 359,
+          "elapsed": -1,
+          "unattributed": 1
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 177
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 177,
+            "duration": 0
+          },
+          "home": {
+            "start": -1,
+            "duration": -1
+          },
+          "systems": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 177
+          },
+          "wait2": {
+            "start": 177,
+            "duration": 181
+          },
+          "wait3": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      },
+      {
+        "id": "e141c3005c18bbf0bdf2da798f058366",
+        "route": "ads",
+        "cycle": 3,
+        "metrics": {
+          "response": 0,
+          "identity": 182,
+          "membership": -1,
+          "actor": 0,
+          "home": -1,
+          "systems": -1,
+          "wait1": 182,
+          "wait2": -1,
+          "wait3": -1,
+          "wait4": -1,
+          "wait5": -1,
+          "wait6": -1,
+          "wait7": -1,
+          "wait8": -1,
+          "first": 0,
+          "total": 182,
+          "elapsed": -1,
+          "unattributed": 0
+        },
+        "spans": {
+          "identity": {
+            "start": 0,
+            "duration": 182
+          },
+          "membership": {
+            "start": -1,
+            "duration": -1
+          },
+          "actor": {
+            "start": 182,
+            "duration": 0
+          },
+          "home": {
+            "start": -1,
+            "duration": -1
+          },
+          "systems": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait1": {
+            "start": 0,
+            "duration": 182
+          },
+          "wait2": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait3": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait4": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait5": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait6": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait7": {
+            "start": -1,
+            "duration": -1
+          },
+          "wait8": {
+            "start": -1,
+            "duration": -1
+          }
+        }
+      }
+    ]
+  },
+  "privacy": {
+    "verdict": "pass-for-inspected-fixed-application-schema",
+    "retainedRecordsInspected": 63,
+    "violations": 0,
+    "blob4Through20Empty": true,
+    "unusedDoubleSlotsZero": true,
+    "numericBoundsAndEnumsValid": true,
+    "credentialExported": false,
+    "businessContentRetained": false,
+    "workerLogsEnabled": false,
+    "invocationLogsEnabled": false,
+    "tracesEnabled": false,
+    "tailingUsed": false,
+    "resolvedObservability": {
+      "enabled": false,
+      "logs": {
+        "enabled": false,
+        "invocation_logs": false
+      },
+      "traces": {
+        "enabled": false
+      }
+    },
+    "remoteSettings": {
+      "status": 200,
+      "observability": null,
+      "logpush": false
+    },
+    "probe": {
+      "outsidePerformanceSamples": true,
+      "kind": "safe-query-and-header-marker-on-ads",
+      "status": 200,
+      "complete": true,
+      "markerInTimingHeaders": false,
+      "firstRetrievalRecords": 0,
+      "subsequentRetrievalRecords": 3,
+      "privacyViolations": 0,
+      "records": [
+        {
+          "id": "32c6be821fd63cfe8fee3e8b85966de8",
+          "kind": "spans-a-v1",
+          "route": "ads",
+          "event": "complete",
+          "doubles": [
+            0,
+            279,
+            -1,
+            -1,
+            279,
+            0,
+            -1,
+            -1,
+            -1,
+            -1,
+            0,
+            279,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          "sampleInterval": 1
+        },
+        {
+          "id": "32c6be821fd63cfe8fee3e8b85966de8",
+          "kind": "metrics-v1",
+          "route": "ads",
+          "event": "complete",
+          "doubles": [
+            279,
+            279,
+            -1,
+            0,
+            -1,
+            -1,
+            279,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            279,
+            279,
+            -1,
+            0
+          ],
+          "sampleInterval": 1
+        },
+        {
+          "id": "32c6be821fd63cfe8fee3e8b85966de8",
+          "kind": "spans-b-v1",
+          "route": "ads",
+          "event": "complete",
+          "doubles": [
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          "sampleInterval": 1
+        }
+      ]
+    },
+    "limitations": "fixed SQL API columns are padded; original submitted array lengths are established by source schema, unused columns verified empty or zero; platform storage metadata is separate"
+  },
+  "auth": {
+    "beforeCaptureStatus": 200,
+    "afterCaptureStatus": 200,
+    "redirected": false,
+    "allProtectedDestinationsCompleted": true,
+    "realSessionRevoked": false,
+    "realMembershipMutated": false,
+    "remoteRevocation": "deployed remote revocation remains unproven; local active-workerd revocation passed",
+    "knownDisposableIdentityAvailable": false
+  },
+  "historicalComparison": {
+    "source": "committed historical PERF3 acceptedLive evidence",
+    "applicationSha": "2b892275abf0856dff10f31d49b2ff2da57acd5f",
+    "fields": [
+      "ttfbMs",
+      "rscEofMs",
+      "firstVisibleMs",
+      "settledMs"
+    ],
+    "medians": {
+      "home": [
+        199.5,
+        801,
+        814.5,
+        922.6
+      ],
+      "clients": [
+        202.6,
+        563.1,
+        578.3,
+        678.3
+      ],
+      "work": [
+        204.6,
+        590.2,
+        601.1,
+        701.7
+      ],
+      "social": [
+        201,
+        599.1,
+        604.8,
+        715.1
+      ],
+      "systems": [
+        200,
+        764.3,
+        778.2,
+        887.9
+      ],
+      "team": [
+        203,
+        570.8,
+        577.5,
+        678.7
+      ],
+      "ads": [
+        204.3,
+        387.5,
+        396.9,
+        502
+      ]
+    },
+    "currentMinusHistorical": [
+      {
+        "route": "home",
+        "ttfbMs": 12.1,
+        "rscEofMs": 16.2,
+        "firstVisibleMs": 7.4,
+        "settledMs": 5.8
+      },
+      {
+        "route": "clients",
+        "ttfbMs": 1.9,
+        "rscEofMs": 6.5,
+        "firstVisibleMs": -2.7,
+        "settledMs": -2.1
+      },
+      {
+        "route": "work",
+        "ttfbMs": -0.8,
+        "rscEofMs": 4.2,
+        "firstVisibleMs": 0.1,
+        "settledMs": 1.3
+      },
+      {
+        "route": "social",
+        "ttfbMs": 9,
+        "rscEofMs": -15.6,
+        "firstVisibleMs": -12.6,
+        "settledMs": -20.1
+      },
+      {
+        "route": "systems",
+        "ttfbMs": 7.9,
+        "rscEofMs": 4.2,
+        "firstVisibleMs": -3.1,
+        "settledMs": -10
+      },
+      {
+        "route": "team",
+        "ttfbMs": 2.7,
+        "rscEofMs": -3.3,
+        "firstVisibleMs": -4.2,
+        "settledMs": -0.8
+      },
+      {
+        "route": "ads",
+        "ttfbMs": 6.4,
+        "rscEofMs": 3.4,
+        "firstVisibleMs": -0.8,
+        "settledMs": -3.5
+      }
+    ],
+    "qualification": "directional comparison only: same 100ms settle guard and completed-route criterion; original full capture code and exact network clock origin unavailable. No controlled instrumentation overhead or improvement/regression claim.",
+    "overallHistoricalRawSamplesAvailable": false
+  },
+  "analysis": {
+    "dominant": "serial native D1 invocation wall waits",
+    "home": "three sequential waits; identity includes wait1; inclusive home contains wait2 and wait3; median total586ms",
+    "systems": "three sequential waits; identity includes wait1; inclusive systems contains wait2 and wait3; median total550ms",
+    "ads": "one identity/native wait; median total179ms",
+    "waterfall": "one root RSC and one same-origin resource in every retained sample; no follow-up client data waterfall observed",
+    "clockLimitation": "deployed Workers performance.now advances after I/O; zero response/first/actor/unattributed does not prove zero CPU, render, or scheduling cost",
+    "safeHypothesis": "Reduce per-invocation Worker-to-D1 wait cost; a separately authorized controlled placement/transport experiment is a narrow hypothesis. Ordinals cannot identify SQL or prove placement is the cause.",
+    "exactOptimizationChosen": false,
+    "liveTargetsMet": false,
+    "retainedClicksOverOneSecond": 0,
+    "openPhases": [
+      "PERF3",
+      "PERF4"
+    ],
+    "blockedPhase": "D2"
+  }
+}
