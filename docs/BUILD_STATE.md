@@ -6,7 +6,7 @@ Release D: Systems Delivery. Release C is closed for forward development on veri
 
 ## Current Phase
 
-**D2 Slice 2A — binding storage — is implemented locally on `feat/d2-slice2a-binding-storage`, from exact canonical main `77bbb6b3ea7dff0b873e6fa72c583027159942b1` (merged Slice 1 / PR #38).** Only 2A is authorized: one configuration table, bound-Template identity protection, migration, direct constraint tests and state documentation. No push, PR or deployment; 2B and later work has not begun. See [D2_SLICE2A.md](phases/D2_SLICE2A.md) for the contract, adversarial matrix and verification. Older Slice 1 unmerged/unauthorized-Slice-2 statements below are historical.
+**D2 Slice 2A — binding storage — is implemented on `feat/d2-slice2a-binding-storage`, from exact canonical main `77bbb6b3ea7dff0b873e6fa72c583027159942b1` (merged Slice 1 / PR #38).** Independent audit of `7ba4fc1e1c1fd8f56efae754f7bd82c534b1b1fc` returned **PASS WITH NONBLOCKING NOTES**. The authorized follow-up adds only a fail-closed compatibility regression and state documentation, then pushes/opens a Slice 2A-only PR against `main`; **leave it unmerged**. No deployment; 2B and later work has not begun. See [D2_SLICE2A.md](phases/D2_SLICE2A.md) for the contract, adversarial matrix and verification. Older no-push/PR and audit-pending statements below describe the implementation handoff.
 
 **Performance remains CLOSED.** PR #36's accepted application is `cb2ef0bea2900a46583e86c75840e8ba6639d663`; its exact-SHA gates and staging smoke are recorded below. Smart Placement was rejected/reverted, the approximately 500 ms target was not fully met, and additional performance work remains deliberately deferred.
 

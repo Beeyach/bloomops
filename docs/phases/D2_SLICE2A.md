@@ -13,8 +13,8 @@ tables, Project eligibility, lookup/preview/management API, UI, provisioning,
 default initialization, publishing, provider execution or generation transaction
 is implemented. An empty binding table is correct. A Service Type's name or
 slug (including `ghl`) grants nothing. Performance remains closed. 2B and later
-slices require separate authorization; this branch must not be pushed or opened
-as a PR during this task.
+slices require separate authorization. The audit follow-up now authorizes a
+Slice 2A-only push/PR; leave the PR open and unmerged, with no deployment.
 
 ## Storage contract
 
@@ -101,8 +101,12 @@ explicit-rowid replacement bypass. Repository-generated physical rowids are
 positive; a manually assigned protected rowid such as -1 can therefore cause a
 conservative refusal of an otherwise fresh implicit-rowid INSERT on the tested
 SQLite runtime. Explicit negative/zero/max-int collisions are still refused.
-This edge and engine portability deserve independent audit; no trigger disabling
-or delete/recreate workaround is introduced. See [SQLite BEFORE-trigger cautions](https://www.sqlite.org/lang_createtrigger.html#cautions_on_the_use_of_before_triggers).
+The independent audit reproduced this as a low-severity compatibility limitation:
+the protected row survives and no integrity contract is violated. It does not
+block push/PR or later separately authorized 2B work, provided future writers
+never expose or depend on physical rowids. No positive-rowid application
+invariant, trigger disabling or delete/recreate workaround is introduced. See
+[SQLite BEFORE-trigger cautions](https://www.sqlite.org/lang_createtrigger.html#cautions_on_the_use_of_before_triggers).
 
 ## Acceptance matrix and evidence
 
@@ -174,7 +178,35 @@ constraint failure was hidden or skipped. Final tests additionally cover shared
 parents and stale binding identity after delete/recreate. Build artifacts and
 test logs remain outside the commit.
 
-## Deferred review gates
+## Audit follow-up and PR gate
+
+Independent audit of candidate `7ba4fc1e1c1fd8f56efae754f7bd82c534b1b1fc`
+returned **PASS WITH NONBLOCKING NOTES**. The follow-up retains the narrow
+regression already present as an uncommitted edit at session start: with
+recursive triggers OFF and ON, create a protected binding at physical rowid
+`-1`, refuse an unrelated implicit-rowid INSERT, and compare full binding and
+Template snapshots to prove the protected row survives without partial mutation.
+This documents conservative fail-closed behavior, not supported application input.
+Production schema, migrations, revision/CAS and attribution semantics are unchanged.
+
+Fresh follow-up verification: **208/208 focused** and **600/600 affected** tests
+passed, with zero failures/skips, using the focused/affected commands above.
+All replacement protections still pass with recursive triggers OFF and ON.
+The local zero-to-current verifier passed **22 checks**, applying 60 inherited
+and 19 domain migrations; its second pass applied no new migrations and left
+the schema and both ledgers identical. It removed only its disposable local
+database/config; no remote database was queried or changed.
+Snapshot comparison confirms all 41 prior table definitions are unchanged and
+exactly one table is added. Syntax checks and diff hygiene pass. The full suite
+and Cloudflare build above remain evidence for the audited implementation;
+they are not rerun for this test-only follow-up, as the follow-up prompt permits.
+
+All required follow-up gates passed. Push/open this branch against `main`,
+preserving the implementation and audit-follow-up commits separately. The remote
+follow-up prompt is read without modification and is excluded from this branch.
+**Leave the PR open and unmerged.** No deployment or 2B+ implementation is authorized.
+
+## Deferred review gates (original implementation handoff)
 
 Independent audit should verify replacement identity coverage, revision/CAS
 semantics and historical-vs-current actor handling. No independent audit verdict

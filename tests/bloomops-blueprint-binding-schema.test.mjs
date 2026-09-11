@@ -238,6 +238,13 @@ for (const recursive of [0, 1]) {
       refused(db, () => run(db, "INSERT OR REPLACE INTO templates(rowid,id,workspace_id,kind,name,slug) VALUES (?,'new','w','onboarding','New','new')", rowid), /collision/);
     });
   }
+  check('compatibility: nonpositive protected rowid makes unrelated implicit insert fail closed', db => {
+    // Physical rowids are not application input. This records conservative
+    // BEFORE INSERT behavior only; it does not make negative rowids supported.
+    insert(db, { rowid:-1, id:'protected' });
+    refused(db, () => insert(db, { id:'unrelated',service_type_id:'s2',template_id:'alternate' }), /collision/);
+    assert.equal(binding(db).id, 'protected');
+  });
   check('26–27: allowed Template metadata/activity edits leave binding unchanged', db => {
     insert(db); const before = binding(db);
     for (const active of [0,1]) {
