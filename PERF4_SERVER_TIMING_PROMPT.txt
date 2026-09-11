@@ -1,0 +1,293 @@
+PERF4 CONTINUATION — CORRELATED SERVER TIMING BEFORE ANY PRODUCT FIX
+
+You are continuing BloomOps PERF4 after its first investigation correctly stopped at the ambiguity gate instead of making a speculative performance change.
+
+This is an implementation task for minimal, sanitized, staging-safe observability only. It is not authorization to optimize the product path, merge, deploy, start D2, change infrastructure, or weaken security.
+
+Repository: Beeyach/bloomops
+Exact main/staging application SHA under investigation: 2b892275abf0856dff10f31d49b2ff2da57acd5f
+Prompt branch starting commit: c06f87a5250d799a77a5f1398e5e4d8a1dd4ddad
+Working branch: perf/perf4-server-timing
+Original PERF4 branch: perf/perf4-live-bottleneck
+Original PERF4 prompt: PERF4_EXECUTION_PROMPT.txt
+
+The prior Codex session reported a local diagnosis commit dd9fe8e7a40b48724b9a012bc6c09c5dac5105d0, but that commit is not on GitHub and must not be treated as an available base or silently fabricated. The verified evidence from that session is reproduced below. Preserve it in durable PERF4 documentation as part of this task.
+
+STATUS AND NON-NEGOTIABLE BOUNDARIES
+
+- PERF3 remains operationally OPEN.
+- PERF4 remains OPEN.
+- D2 remains BLOCKED.
+- Do not merge anything.
+- Do not deploy to staging or production.
+- Do not alter DNS, Cloudflare resources, workflows, secrets, environment variables, or bindings.
+- Do not change schema, migrations, dependencies, lockfiles, Next/OpenNext/Worker configuration, placement, or infrastructure.
+- Do not mutate staging or production data.
+- Do not send email or external messages.
+- Do not introduce a speculative product optimization in this task.
+- Do not add cross-request session/authorization caches, protected prefetch, stale protected output, or cosmetic loading tricks.
+- Do not weaken Better Auth signature, expiry, refresh, revocation, session/user binding, authorization, tenant isolation, existence hiding, membership state, role/capability checks, assignment scope, visibility, or client allowlists.
+- Do not record or expose cookies, tokens, session IDs, user IDs, membership IDs, workspace IDs, client data, SQL text, SQL bindings, request/response bodies, personal data, or secrets.
+
+PRIMARY OUTCOME
+
+Prepare the smallest coherent observability candidate that can be independently audited, merged, deployed to staging through the normal gates, and then used to distinguish the dominant time inside the single protected RSC response.
+
+The candidate should provide sanitized Server-Timing response metrics and a non-sensitive opaque correlation identifier for protected top-level navigation requests. It must measure fixed, bounded server phases without exposing customer or authorization data. It must be inactive or absent outside the explicitly intended diagnostic environment, with a safe default.
+
+Do not claim that the dominant live stage is proven in this task. This task prepares the measurement mechanism; live attribution happens only after independent audit, merge, staging deployment, exact-SHA verification, and a signed-in timing run.
+
+READ COMPLETELY BEFORE EDITING
+
+- AGENTS.md
+- PERF4_EXECUTION_PROMPT.txt
+- docs/BUILD_STATE.md
+- docs/INDEX.md
+- docs/PERF1_RESULTS.md
+- docs/PERF2_RESULTS.md
+- docs/PERF3_RESULTS.md
+- docs/phases/PERF1.md
+- docs/phases/PERF2.md
+- docs/phases/PERF3.md
+- docs/DOMAIN_MODEL.md
+- docs/PRODUCT_SPEC.md
+- all current timing, diagnostic, version, staging-verification, and navigation harness code
+- all tests for those modules
+- app/(internal)/layout.jsx
+- app/(internal)/page.jsx
+- app/(internal)/clients/page.jsx if present
+- app/(internal)/work/page.jsx if present
+- app/(internal)/social/page.jsx if present
+- app/(internal)/systems/page.jsx
+- app/(internal)/team/page.jsx if present
+- app/(internal)/ads/page.jsx if present
+- lib/bloomops/shell-server.mjs
+- lib/bloomops/shell.mjs
+- lib/bloomops/access.mjs
+- lib/bloomops/auth.mjs
+- lib/bloomops/membership.mjs
+- lib/bloomops/authorization.mjs
+- lib/bloomops/read-batch.mjs
+- relevant Next.js and OpenNext response/streaming boundaries
+- recent history for PERF1, PERF2, PERF3, and PERF4
+
+Before editing, verify:
+
+1. HEAD is on perf/perf4-server-timing and contains c06f87a5250d799a77a5f1398e5e4d8a1dd4ddad in its history.
+2. origin/main is exactly 2b892275abf0856dff10f31d49b2ff2da57acd5f.
+3. The working tree is clean except for this committed prompt file.
+
+If any exact-SHA or branch condition is false, STOP and report it. Do not silently rebase or substitute a different base.
+
+ACCEPTED LIVE BROWSER EVIDENCE — DO NOT RERUN STAGE A
+
+The following signed-in Chrome DevTools evidence is accepted input. Do not block because Chrome DevTools MCP is unavailable, and do not spend time repeating the same hosted Stage A run.
+
+Staging /api/version returned HTTP 200 with build label 2b89227, the configured seven-character prefix of exact SHA 2b892275abf0856dff10f31d49b2ff2da57acd5f.
+
+Conditions:
+- authenticated staging session
+- no CPU throttling
+- no network throttling
+- one warmup, then three retained warm cycles per route
+- 21/21 navigations completed
+- completion stages: click to TTFB, RSC/body EOF, first visible destination, and 100 ms mutation-free settled guard
+
+Retained medians in milliseconds:
+
+Route     TTFB    RSC/body EOF    First visible    Settled
+Home      199.5   801.0           814.5            922.6
+Clients   202.6   563.1           578.3            678.3
+Work      204.6   590.2           601.1            701.7
+Social    201.0   599.1           604.8            715.1
+Systems   200.0   764.3           778.2            887.9
+Team      203.0   570.8           577.5            678.7
+Ads       204.3   387.5           396.9            502.0
+
+Home retained cycles, TTFB / EOF / first visible / settled:
+- 216.2 / 872.7 / 881.1 / 986.7
+- 199.5 / 801.0 / 811.8 / 920.5
+- 196.1 / 792.2 / 814.5 / 922.6
+
+Systems retained cycles, TTFB / EOF / first visible / settled:
+- 202.4 / 762.7 / 765.2 / 870.3
+- 200.0 / 771.0 / 778.2 / 887.9
+- 199.2 / 764.3 / 778.7 / 888.9
+
+Network and browser findings:
+- exactly one same-origin HTTP 200 root RSC GET per navigation
+- no dependent, overlapping, or sequential follow-up request waterfall
+- no extra redirect or duplicate protected navigation was observed
+- Home became visible 8.4–22.3 ms after RSC EOF
+- Systems became visible 2.5–14.4 ms after RSC EOF
+- no post-visible DOM mutations were observed
+- the approximately 100–110 ms first-visible-to-settled interval is the intentional 100 ms mutation-free guard, not application work
+- response headers included Cache-Control: no-store and Content-Encoding: zstd
+- CF-Ray showed SJC but was sanitized/truncated in retained evidence
+- Server-Timing, CF-Cache-Status, Age, Content-Length, x-* timing headers, and a usable safe correlation identifier were absent
+
+Accepted conclusion:
+- client DOM/paint and browser request waterfalls are not the primary bottleneck
+- most delay occurs after response headers and before the single RSC body reaches EOF
+- Home and Systems are consistently slower in that interval
+- the current live evidence cannot distinguish Better Auth/session work, D1/query/projection work, RSC render/serialization, Worker execution/scheduling, stream buffering, or network delivery
+
+ACCEPTED LOCAL DIAGNOSIS EVIDENCE
+
+The prior PERF4 investigation reported:
+
+- Home and Systems retain three sequential native D1 stages, including timezone-dependent projections.
+- Adding 100 ms per native D1 invocation adds approximately 300 ms to Home and Systems RSC EOF.
+- The same injection adds approximately 200 ms to two-stage routes and 100 ms to Ads.
+- This behavior held at representative and exact-3x fixture scales.
+- 336 local navigations were measured.
+- Full tests passed: 4,786/4,786.
+- Next and OpenNext builds passed.
+- Exact-3x fixtures, evidence consistency, syntax, and whitespace checks passed.
+- The aggregate browser timings did not include headers/request counts and correlated server spans, so the deployed dominant stage remained unproven.
+- No product implementation was changed.
+
+Treat these as accepted reported results, but be precise about provenance: the reported dd9fe8e7 commit was not pushed and its detailed docs/PERF4_RESULTS.md cannot be recovered from the remote branch. Recreate a concise durable PERF4 results record from this prompt and clearly label the accepted prior evidence instead of claiming to have inspected the missing commit.
+
+IMPLEMENTATION REQUIREMENTS
+
+First inspect the existing diagnostic/event vocabulary and response construction. Reuse existing fixed-label instrumentation where it is safe and appropriate. Avoid parallel timing systems for the same phases.
+
+Implement the smallest mechanism that can report, where technically measurable and causally meaningful:
+
+- total server request duration through final response/stream completion
+- current session / Better Auth lookup
+- active membership and workspace binding
+- shared shell and actor authorization
+- route projection/data phases, preserving the distinction that explains Home/Systems sequential stages
+- server component render/serialization or response creation
+- first response chunk and final stream completion when the actual runtime boundary permits honest measurement
+- residual/unattributed server time rather than forcing elapsed time into a misleading category
+
+Rules for metrics:
+
+- Use a fixed allowlist of short metric names and descriptions.
+- Durations must be non-negative, finite, and consistently rounded.
+- Do not label wall time as D1 execution time unless it truly measures that boundary. Names such as wait, phase, or elapsed are safer when appropriate.
+- Do not create unbounded metric cardinality.
+- Do not expose route parameters, database identifiers, SQL, bind counts containing values, arbitrary errors, stack traces, or user-controlled labels.
+- Do not include a metric merely because a hook exists; every reported phase must have clear start/end semantics and tests.
+- If first-chunk/final-flush timing cannot be represented truthfully in a response header because headers are committed earlier, document that limitation and use a safe correlated runtime log/event instead. Never backfill a header with a guessed duration.
+- The correlation identifier must be newly generated, opaque, short enough for headers/logs, and must not encode identity, tenant, request contents, timestamps that reveal sensitive information, or Cloudflare credentials.
+- The browser-visible correlation header and server-side diagnostic event must match exactly.
+- Do not reuse or expose session IDs, CF-Ray, traceparent contents, or database keys as the application correlation ID.
+- Add Vary or cache changes only if they are genuinely required; protected responses remain no-store.
+
+ENVIRONMENT AND ACTIVATION GATE
+
+The mechanism must default off unless the existing deployment model provides an already-safe, explicit staging diagnostic signal. Prefer an existing environment/build label or narrowly scoped server-controlled gate rather than adding new infrastructure.
+
+If no safe activation signal exists without a config/workflow/binding change, implement the reusable measurement primitive and tests, document the exact minimal activation decision needed, and STOP before inventing or changing infrastructure. Do not weaken the gate just to finish.
+
+Production must not emit these diagnostic metrics or correlated diagnostic logs by default. Unit/local test activation must be explicit and deterministic.
+
+LOGGING AND PRIVACY
+
+Server-side correlated output, if required for post-header phases, must contain only:
+
+- fixed event/phase name
+- opaque correlation ID
+- monotonic duration or bounded numeric measurements
+- coarse route key from a fixed allowlist: home, clients, work, social, systems, team, ads
+- build/version label when already safely available
+
+No raw URL, query string, header set, cookie, token, email, name, user ID, membership/workspace/client/project ID, IP, user agent, SQL, SQL bindings, row counts tied to customer data, response body, stack trace, or arbitrary message text may be logged.
+
+Correct failure behavior is more important than diagnostics. Instrumentation failure must not grant access, bypass canonical reads, change response bodies, or make a protected route succeed. Prefer dropping diagnostics over changing product behavior, while retaining ordinary error behavior.
+
+TESTS AND VERIFICATION
+
+Add focused tests that prove at minimum:
+
+- the activation gate is off by default and deterministic when enabled
+- production/default responses do not emit the diagnostic headers/logs
+- intended diagnostic responses emit only the fixed allowlisted names
+- malformed, missing, negative, infinite, or out-of-order measurements are rejected or safely omitted
+- correlation IDs match the required opaque format and do not reuse sensitive identifiers
+- headers contain no cookies, tokens, emails, UUIDs/known fixture identifiers, SQL, bindings, URLs, or arbitrary user data
+- route labels are fixed and unknown routes do not create new labels
+- instrumentation does not change status, redirect behavior, authorization decisions, body content, cache-control, or next-request revocation
+- Home/Systems can represent their separate sequential projection phases without route-specific data leakage
+- post-header/final-stream metrics, if logged, correlate to the browser-visible identifier
+- instrumentation failure does not alter protected route behavior
+- measurable overhead is bounded and reported honestly
+
+Run the strongest proportionate checks for the actual diff. At minimum:
+
+- focused new diagnostic tests
+- relevant PERF1/PERF2/PERF3 timing tests
+- auth/current-session/membership/shell/authorization regressions
+- affected route tests
+- issued-session immediate-revocation regressions
+- full npm test
+- Next build
+- OpenNext/Cloudflare build
+- built Worker auth/runtime smoke if the touched boundary participates there
+- local zero-to-current if required by the repository gate
+- relevant native Systems/Home/projection smokes
+- changed-file syntax checks
+- git diff --check
+
+Do not claim a check ran if it did not. If a broad check is unavailable for a concrete environmental reason, preserve the exact error and continue with every safe applicable alternative.
+
+LOCAL PERFORMANCE CHECK
+
+Measure the diagnostic candidate's overhead with diagnostics off and on using the existing representative and exact-3x fixtures. Use enough retained samples to detect a material regression. Report median and range/p95 for the affected completion timing and the additional response bytes. This is an overhead check, not evidence that live PERF4 acceptance passes.
+
+The candidate fails if diagnostics-off materially regresses the normal path, or if enabled overhead is unreasonable for a temporary staging diagnostic mechanism.
+
+DOCUMENTATION
+
+Create or update:
+
+- docs/PERF4_RESULTS.md with the accepted live decomposition, accepted prior local diagnosis, missing-commit provenance, the observability candidate, verification, limitations, and exact next gate
+- a sanitized numeric evidence file under docs/evidence/ if the repository's established format supports it
+- docs/BUILD_STATE.md and docs/INDEX.md only as required by the repository's state conventions
+
+Do not rewrite PERF1, PERF2, or PERF3 history. Do not mark PERF3 or PERF4 closed. Do not unblock D2.
+
+FINALIZATION AND HANDOFF
+
+When the implementation and verification are complete:
+
+1. Remove PERF4_SERVER_TIMING_PROMPT.txt from the implementation tip. Its committed prompt-only history remains recoverable.
+2. Leave PERF4_EXECUTION_PROMPT.txt untouched unless repository history/policy clearly requires otherwise; explain any change.
+3. Confirm the working tree is clean.
+4. Create coherent commits and push perf/perf4-server-timing.
+5. Open a PR from perf/perf4-server-timing to main only if the candidate is complete and ready for independent audit. Leave it open and unmerged.
+6. Do not deploy the branch.
+
+The PR body must state:
+
+- exact base SHA 2b892275abf0856dff10f31d49b2ff2da57acd5f
+- this is staging-safe observability, not the performance fix
+- accepted live medians and the single-RSC/body-EOF conclusion
+- exact headers/log events introduced and their activation gate
+- privacy/security constraints
+- verification and overhead results
+- known limitations
+- PERF3/PERF4 remain OPEN and D2 remains BLOCKED
+- independent audit is required before merge/deploy
+
+FINAL REPORT
+
+Return a concise report containing:
+
+1. Exact starting SHA and final candidate SHA.
+2. Files changed and the honest measurement boundaries.
+3. Activation behavior in local/test, staging, and production.
+4. Header names, Server-Timing metric names, correlation format, and fixed log vocabulary without including any live sensitive value.
+5. Security/privacy and immediate-revocation evidence.
+6. Full verification results.
+7. Diagnostics-off/on overhead at representative and exact-3x scale.
+8. Schema, migration, dependency, lockfile, config, workflow, binding, and infrastructure changes; explicitly state none where none.
+9. Remaining uncertainty and the exact post-audit staging measurement required to prove the dominant live phase.
+10. PR URL and exact head SHA if opened.
+11. Confirmation that no merge, deployment, production change, staging-data mutation, or D2 work occurred.
+
+If the candidate cannot truthfully measure the needed boundaries without a configuration/workflow/infrastructure decision, stop with the tested reusable primitive and a precise decision request. Do not manufacture completeness or broaden authority.
