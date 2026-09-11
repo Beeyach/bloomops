@@ -1,0 +1,2818 @@
+{
+  "status": "fallback-primitive-only; PERF3/PERF4 OPEN; D2 BLOCKED",
+  "startingSha": "e9030164d2602fe944d36d6cd5631af9573565a4",
+  "acceptedLive": {
+    "provenance": "Accepted input from committed PERF4_SERVER_TIMING_PROMPT.txt at e9030164d2602fe944d36d6cd5631af9573565a4; not recaptured in this task.",
+    "applicationSha": "2b892275abf0856dff10f31d49b2ff2da57acd5f",
+    "versionStatus": 200,
+    "versionLabel": "2b89227",
+    "conditions": {
+      "authenticated": true,
+      "cpuThrottling": false,
+      "networkThrottling": false,
+      "warmupsPerRoute": 1,
+      "retainedPerRoute": 3,
+      "completed": 21
+    },
+    "fields": [
+      "ttfbMs",
+      "bodyEofMs",
+      "firstVisibleMs",
+      "settledMs"
+    ],
+    "medians": {
+      "home": [
+        199.5,
+        801,
+        814.5,
+        922.6
+      ],
+      "clients": [
+        202.6,
+        563.1,
+        578.3,
+        678.3
+      ],
+      "work": [
+        204.6,
+        590.2,
+        601.1,
+        701.7
+      ],
+      "social": [
+        201,
+        599.1,
+        604.8,
+        715.1
+      ],
+      "systems": [
+        200,
+        764.3,
+        778.2,
+        887.9
+      ],
+      "team": [
+        203,
+        570.8,
+        577.5,
+        678.7
+      ],
+      "ads": [
+        204.3,
+        387.5,
+        396.9,
+        502
+      ]
+    },
+    "retainedCycles": {
+      "home": [
+        [
+          216.2,
+          872.7,
+          881.1,
+          986.7
+        ],
+        [
+          199.5,
+          801,
+          811.8,
+          920.5
+        ],
+        [
+          196.1,
+          792.2,
+          814.5,
+          922.6
+        ]
+      ],
+      "systems": [
+        [
+          202.4,
+          762.7,
+          765.2,
+          870.3
+        ],
+        [
+          200,
+          771,
+          778.2,
+          887.9
+        ],
+        [
+          199.2,
+          764.3,
+          778.7,
+          888.9
+        ]
+      ]
+    },
+    "network": {
+      "sameOriginRootRscGetsPerNavigation": 1,
+      "status": 200,
+      "followupWaterfall": false,
+      "duplicateNavigation": false,
+      "extraRedirect": false,
+      "cacheControl": "no-store",
+      "contentEncoding": "zstd",
+      "sanitizedColo": "SJC",
+      "absent": [
+        "Server-Timing",
+        "CF-Cache-Status",
+        "Age",
+        "Content-Length",
+        "x-* timing headers",
+        "safe correlation identifier"
+      ]
+    },
+    "bodyToVisibleRangesMs": {
+      "home": [
+        8.4,
+        22.3
+      ],
+      "systems": [
+        2.5,
+        14.4
+      ]
+    },
+    "postVisibleMutations": 0,
+    "intentionalSettledGuardMs": 100,
+    "conclusion": "Most delay lies between headers and single RSC body EOF. Browser paint/waterfalls are not primary. Live server phase remains unproven."
+  },
+  "acceptedPriorLocal": {
+    "provenance": "Accepted reported results from prompt; unpublished commit and original detailed results were not available or inspected.",
+    "unavailableReportedCommit": "dd9fe8e7a40b48724b9a012bc6c09c5dac5105d0",
+    "localNavigations": 336,
+    "fullTestsPassed": 4786,
+    "nextBuildPassed": true,
+    "openNextBuildPassed": true,
+    "fixtureEvidenceSyntaxDiffPassed": true,
+    "productChanged": false,
+    "injectedPerNativeInvocationMs": 100,
+    "observedAddedEofApproxMs": {
+      "home": 300,
+      "systems": 300,
+      "twoStageRoutes": 200,
+      "ads": 100
+    },
+    "scales": [
+      "representative",
+      "exact-3x"
+    ],
+    "limitation": "No correlated live spans; no recovered individual local samples."
+  },
+  "currentPrimitiveSourceSha256": {
+    "lib/bloomops/server-timing.mjs": "c568d37532a9ee089a5e1c16c7c583d3d21b1b964c560b76c2e6e7b4f2e56f9f",
+    "tests/server-timing.test.mjs": "0d285923d6737489be4f9f62c6fa69a8d719bfde7d6e8aa34a799214b022deff",
+    "scripts/server-timing-overhead.mjs": "4112459c15a841c6940d55fa604b411eb9ba487375599690f1b5057a2f9644bb"
+  },
+  "currentLocalOverhead": {
+    "kind": "PERF4-in-memory-authorized-data-completion-overhead",
+    "limitations": "Node SQLite + issued session + projection only; no RSC/Worker/stream/browser, native invocation adapter or real logging cost. Header bytes are uncompressed field lines, not wire bytes.",
+    "rounds": 44,
+    "warmups": 4,
+    "results": [
+      {
+        "scale": "representative",
+        "counts": {
+          "clients": 50,
+          "projects": 100,
+          "milestones": 300,
+          "actions": 1000,
+          "deliverables": 300,
+          "content": 250,
+          "files": 200,
+          "projectAssignments": 100
+        },
+        "summary": [
+          {
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": {
+              "samples": 40,
+              "median": 11.19,
+              "min": 10.747,
+              "p95": 12.532,
+              "max": 12.868
+            },
+            "headerBytes": {
+              "samples": 40,
+              "median": 0,
+              "min": 0,
+              "p95": 0,
+              "max": 0
+            }
+          },
+          {
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": {
+              "samples": 40,
+              "median": 11.24,
+              "min": 10.707,
+              "p95": 12.562,
+              "max": 12.927
+            },
+            "headerBytes": {
+              "samples": 40,
+              "median": 135,
+              "min": 134,
+              "p95": 135,
+              "max": 135
+            }
+          },
+          {
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": {
+              "samples": 40,
+              "median": 6.108,
+              "min": 5.678,
+              "p95": 7.65,
+              "max": 7.888
+            },
+            "headerBytes": {
+              "samples": 40,
+              "median": 0,
+              "min": 0,
+              "p95": 0,
+              "max": 0
+            }
+          },
+          {
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": {
+              "samples": 40,
+              "median": 6.148,
+              "min": 5.741,
+              "p95": 7.724,
+              "max": 8.187
+            },
+            "headerBytes": {
+              "samples": 40,
+              "median": 136,
+              "min": 136,
+              "p95": 136,
+              "max": 136
+            }
+          }
+        ],
+        "rows": [
+          {
+            "cycle": 0,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 26.377749999999992,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 0,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 13.205624999999998,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 0,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 7.766292000000021,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 0,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.85979199999997,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 1,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 13.02170799999999,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 1,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 12.22791699999999,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 1,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.095958999999993,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 1,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.460332999999991,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 2,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.37179100000003,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 2,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.582082999999898,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 2,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.174833999999919,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 2,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.328708000000006,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 3,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.635208000000034,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 3,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 13.057333000000085,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 3,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.561166999999955,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 3,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.241499999999974,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 4,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.173916000000077,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 4,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.398625000000038,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 4,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.899667000000022,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 4,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.479124999999954,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 5,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.39312499999994,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 5,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 12.531999999999925,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 5,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.290165999999999,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 5,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 5.890790999999922,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 6,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.279833999999937,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 6,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.392833999999993,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 6,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.138791000000083,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 6,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 5.807833999999957,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 7,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.25933299999997,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 7,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 12.597833000000037,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 7,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.195750000000089,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 7,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 5.875499999999988,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 8,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 12.182332999999971,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 8,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.547958999999992,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 8,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.110916000000088,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 8,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.106167000000028,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 9,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 10.951125000000047,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 9,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 12.492917000000034,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 9,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.090667000000053,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 9,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.476125000000025,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 10,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.18891700000006,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 10,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.088624999999979,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 10,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.340582999999924,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 10,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.0637910000000375,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 11,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.027582999999936,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 11,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 10.863582999999949,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 11,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.30154200000004,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 11,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 7.8879590000000235,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 12,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.774874999999952,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 12,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.308582999999999,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 12,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.1989580000000615,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 12,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 5.834958000000029,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 13,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.274041000000011,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 13,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.226791999999932,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 13,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.118665999999962,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 13,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 5.787000000000035,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 14,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 12.868249999999989,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 14,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.471915999999965,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 14,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.403666000000044,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 14,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.29104099999995,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 15,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.070666999999958,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 15,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.095000000000027,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 15,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.086000000000013,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 15,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.105291999999963,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 16,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.03308299999992,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 16,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 12.74716699999999,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 16,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.146792000000005,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 16,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.53754200000003,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 17,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.15079199999991,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 17,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.261000000000195,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 17,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.359459000000015,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 17,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.056332999999995,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 18,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.033874999999853,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 18,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.186707999999953,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 18,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 7.785125000000107,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 18,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.098457999999937,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 19,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 12.140875000000051,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 19,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.19354199999998,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 19,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.890583000000106,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 19,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.0678750000001855,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 20,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.950833000000102,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 20,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.307250000000067,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 20,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.209084000000075,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 20,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 7.677167000000054,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 21,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 12.04766699999982,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 21,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.43991700000015,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 21,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.239874999999984,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 21,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.067749999999933,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 22,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.136957999999822,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 22,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.047833999999966,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 22,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 5.96508300000005,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 22,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.10695799999985,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 23,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 12.439916999999923,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 23,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.104291999999987,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 23,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 5.942500000000109,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 23,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.353584000000183,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 24,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 10.746666999999889,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 24,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.268750000000182,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 24,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.096791999999823,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 24,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.136291999999912,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 25,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.062750000000051,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 25,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 12.338417000000163,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 25,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.262457999999924,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 25,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 5.843499999999949,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 26,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 10.939708999999993,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 26,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 10.7071669999998,
+            "headerBytes": 134
+          },
+          {
+            "cycle": 26,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.082625000000007,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 26,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.09133299999985,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 27,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 10.899499999999989,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 27,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 10.97483299999999,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 27,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 7.724416999999903,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 27,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 5.919458000000077,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 28,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.290000000000191,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 28,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.137666999999965,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 28,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.278790999999956,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 28,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 5.8132080000000315,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 29,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.112333000000035,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 29,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.057416999999987,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 29,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.061791000000085,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 29,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 7.380666999999903,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 30,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.183833999999933,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 30,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.401084000000083,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 30,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.079833000000008,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 30,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 5.755792000000156,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 31,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.221457999999984,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 31,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.352082999999993,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 31,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.160125000000107,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 31,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.8556670000000395,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 32,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.519750000000158,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 32,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 12.927042000000029,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 32,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.320124999999962,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 32,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 7.058875000000171,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 33,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.177166999999827,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 33,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.19074999999998,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 33,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.189334000000144,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 33,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.283792000000176,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 34,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.174790999999914,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 34,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 10.951083000000153,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 34,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 7.649916999999959,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 34,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 5.943624999999884,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 35,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.06425000000013,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 35,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.017374999999902,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 35,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.529125000000022,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 35,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.01566600000001,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 36,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.240958000000091,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 36,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.159042,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 36,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.35308299999997,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 36,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 7.319459000000052,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 37,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.451708000000053,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 37,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.864709000000175,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 37,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.0538749999998345,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 37,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 5.678165999999919,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 38,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.097167000000127,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 38,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.13675000000012,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 38,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.0113340000000335,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 38,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 5.741375000000062,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 39,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 12.561791999999969,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 39,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.090374999999995,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 39,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.042165999999952,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 39,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.025541999999859,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 40,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 10.94337500000006,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 40,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.551125000000184,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 40,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.09720799999991,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 40,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 5.99895800000013,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 41,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.058624999999893,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 41,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 12.525540999999976,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 41,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.089541999999938,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 41,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.085209000000077,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 42,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 10.804916999999932,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 42,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.874749999999949,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 42,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 6.487540999999965,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 42,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 6.249917000000096,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 43,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 11.18166599999995,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 43,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 11.14666699999998,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 43,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.187250000000176,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 43,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 5.957583999999997,
+            "headerBytes": 0
+          }
+        ]
+      },
+      {
+        "scale": "stress",
+        "counts": {
+          "clients": 150,
+          "projects": 300,
+          "milestones": 900,
+          "actions": 3000,
+          "deliverables": 900,
+          "content": 750,
+          "files": 600,
+          "projectAssignments": 300
+        },
+        "summary": [
+          {
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": {
+              "samples": 40,
+              "median": 19.08,
+              "min": 18.505,
+              "p95": 21.044,
+              "max": 21.764
+            },
+            "headerBytes": {
+              "samples": 40,
+              "median": 0,
+              "min": 0,
+              "p95": 0,
+              "max": 0
+            }
+          },
+          {
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": {
+              "samples": 40,
+              "median": 19.137,
+              "min": 18.69,
+              "p95": 20.907,
+              "max": 21.002
+            },
+            "headerBytes": {
+              "samples": 40,
+              "median": 135,
+              "min": 135,
+              "p95": 135,
+              "max": 135
+            }
+          },
+          {
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": {
+              "samples": 40,
+              "median": 8.737,
+              "min": 8.238,
+              "p95": 10.447,
+              "max": 11.094
+            },
+            "headerBytes": {
+              "samples": 40,
+              "median": 0,
+              "min": 0,
+              "p95": 0,
+              "max": 0
+            }
+          },
+          {
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": {
+              "samples": 40,
+              "median": 8.869,
+              "min": 8.302,
+              "p95": 10.291,
+              "max": 10.551
+            },
+            "headerBytes": {
+              "samples": 40,
+              "median": 136,
+              "min": 136,
+              "p95": 137,
+              "max": 137
+            }
+          }
+        ],
+        "rows": [
+          {
+            "cycle": 0,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 20.08337500000016,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 0,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.19425000000001,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 0,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 9.029875000000175,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 0,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.761457999999948,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 1,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.22616700000026,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 1,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 19.128250000000207,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 1,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.890333000000282,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 1,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.681250000000091,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 2,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 20.37112500000012,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 2,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 20.816833999999744,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 2,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 15.641499999999724,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 2,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.894125000000258,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 3,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.289708000000246,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 3,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 19.040665999999874,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 3,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 9.112290999999914,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 3,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.813499999999749,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 4,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 19.085833000000093,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 4,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.298667000000023,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 4,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 9.179999999999836,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 4,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 9.941165999999612,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 5,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.050249999999778,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 5,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 19.00799999999981,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 5,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.923875000000407,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 5,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.640416000000187,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 6,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 18.920040999999856,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 6,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.37737500000003,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 6,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 9.106249999999818,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 6,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 9.784165999999914,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 7,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.26025000000027,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 7,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 18.777333,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 7,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.655541999999969,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 7,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.5300000000002,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 8,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 18.855375000000095,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 8,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 18.887583000000177,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 8,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.524834000000283,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 8,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.907333999999992,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 9,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 20.457334000000174,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 9,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 18.925166999999874,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 9,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.822834000000057,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 9,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.238084000000072,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 10,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 19.915083000000322,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 10,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 20.907084000000395,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 10,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 9.145125000000007,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 10,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 9.169415999999728,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 11,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 20.300583000000188,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 11,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 21.648959000000104,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 11,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 9.26279199999999,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 11,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 9.213583000000199,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 12,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 21.044124999999894,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 12,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 21.00166599999966,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 12,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 9.085791999999856,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 12,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.908167000000049,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 13,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 18.974500000000262,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 13,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 18.898165999999947,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 13,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 10.550834000000123,
+            "headerBytes": 137
+          },
+          {
+            "cycle": 13,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 9.699292000000241,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 14,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 21.763500000000022,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 14,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 20.96374999999989,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 14,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 9.054999999999836,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 14,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.681540999999925,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 15,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 18.959707999999864,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 15,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 19.24212499999976,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 15,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.755291999999827,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 15,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.65804100000014,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 16,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 18.820999999999913,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 16,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 20.1262499999998,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 16,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.612959000000046,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 16,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.913500000000113,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 17,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 18.91604200000029,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 17,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 19.163250000000062,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 17,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.927000000000135,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 17,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.489665999999943,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 18,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 18.953625000000102,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 18,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.403917000000092,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 18,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 9.95483299999978,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 18,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.815082999999959,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 19,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.13995900000009,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 19,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 19.18454100000008,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 19,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.872749999999996,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 19,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.874708999999712,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 20,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 19.07483299999967,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 20,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.032416000000012,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 20,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.810625000000073,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 20,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 10.291374999999789,
+            "headerBytes": 137
+          },
+          {
+            "cycle": 21,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 18.951540999999906,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 21,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 18.82929200000035,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 21,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.737125000000106,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 21,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.965666000000056,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 22,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 19.151292000000012,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 22,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.018499999999676,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 22,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.801082999999835,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 22,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.635084000000006,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 23,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 20.44379200000003,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 23,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 19.157416000000012,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 23,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.603625000000193,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 23,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.57095900000013,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 24,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 18.946750000000065,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 24,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 18.766541000000416,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 24,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.513084000000163,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 24,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.63558299999977,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 25,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 18.690000000000055,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 25,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 20.602542000000085,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 25,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 10.362082999999984,
+            "headerBytes": 137
+          },
+          {
+            "cycle": 25,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 10.447375000000193,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 26,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 20.395791000000372,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 26,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 18.994874999999865,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 26,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.660957999999937,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 26,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.721708000000035,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 27,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.05466699999988,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 27,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 18.892166999999972,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 27,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 9.589542000000165,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 27,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.67337499999985,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 28,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 20.155666999999994,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 28,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.018332999999984,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 28,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.633958000000348,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 28,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.864915999999994,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 29,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.133624999999938,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 29,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 18.729417000000012,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 29,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.58404100000007,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 29,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.547832999999628,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 30,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 18.75387499999988,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 30,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 20.51120899999978,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 30,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.80712500000027,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 30,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.7704590000003,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 31,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 20.500666999999794,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 31,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 19.00237500000003,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 31,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 9.022707999999966,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 31,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 9.962458999999853,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 32,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 19.795082999999977,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 32,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.36025000000018,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 32,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 10.484292000000096,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 32,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.471916999999848,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 33,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.200582999999824,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 33,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 19.18120799999997,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 33,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.6923340000003,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 33,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.472415999999612,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 34,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 18.908374999999978,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 34,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 18.77479200000016,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 34,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.589665999999852,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 34,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 9.926250000000437,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 35,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 18.89520900000025,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 35,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 19.020457999999962,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 35,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 9.050833000000239,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 35,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.61645899999985,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 36,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 19.154207999999926,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 36,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 18.984083000000282,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 36,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.584541000000172,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 36,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.67712500000016,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 37,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 20.286000000000058,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 37,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 18.875458000000435,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 37,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.836874999999964,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 37,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.545082999999977,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 38,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 18.504750000000058,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 38,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 18.705832999999984,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 38,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.880874999999833,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 38,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.302332999999635,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 39,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.181166000000303,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 39,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 20.139208000000508,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 39,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 9.75262500000008,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 39,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 11.094207999999526,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 40,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 20.769792000000052,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 40,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 18.784958000000188,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 40,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 9.063833000000159,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 40,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.401166999999987,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 41,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.156667000000198,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 41,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 18.930249999999432,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 41,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.89233300000069,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 41,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.609707999999955,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 42,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 20.287999999999556,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 42,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 18.91270799999984,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 42,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.905999999999949,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 42,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.72649999999976,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 43,
+            "route": "home",
+            "enabled": true,
+            "elapsedMs": 19.194625000000087,
+            "headerBytes": 135
+          },
+          {
+            "cycle": 43,
+            "route": "home",
+            "enabled": false,
+            "elapsedMs": 19.219750000000204,
+            "headerBytes": 0
+          },
+          {
+            "cycle": 43,
+            "route": "systems",
+            "enabled": true,
+            "elapsedMs": 8.932333000000654,
+            "headerBytes": 136
+          },
+          {
+            "cycle": 43,
+            "route": "systems",
+            "enabled": false,
+            "elapsedMs": 8.375958999999966,
+            "headerBytes": 0
+          }
+        ]
+      }
+    ]
+  }
+}
