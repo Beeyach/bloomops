@@ -3,11 +3,13 @@
 // enter the metrics. Synthetic latency is explicitly marked in every sample.
 import { AsyncLocalStorage } from 'node:async_hooks';
 import app from '../.open-next/worker.js';
+import { beginInvocation, completeSample } from './navigation-perf-metrics.mjs';
 
 const requests = new AsyncLocalStorage();
 const environments = new WeakMap();
 const samples = new Map();
 const originals = new WeakMap();
+const metadata = new WeakMap();
 const stages = new Set(['session', 'user', 'workspace_memberships', 'member_capabilities', 'project_assignments', 'client_assignments', 'service_assignments', 'client_contacts']);
 function outerTable(query) {
   let depth = 0, quote = null;
@@ -24,6 +26,7 @@ function outerTable(query) {
   }
 }
 function category(query) {
+  query = query.match(/^WITH bo_read\((?:bo_c\d+,?)+\) AS \(([\s\S]*)\) SELECT \* FROM bo_read$/)?.[1] || query;
   // Authorization loaders select plain columns. Do not mistake an EXISTS
   // subquery in a page projection for the top-level actor loader.
   const table = outerTable(query);
@@ -35,27 +38,33 @@ function category(query) {
   return 'page';
 }
 function measured(db, delayMs) {
-  async function execute(kind, count, bindings, bytes, operation) {
+  async function execute(statements, operation) {
     const sample = requests.getStore();
     if (!sample) return operation();
-    const query = { kind, count, bindings, bytes, startMs: performance.now() - sample.started };
-    sample.queries.push(query);
+    const query = beginInvocation(sample, statements, performance.now() - sample.started);
     if (delayMs) await new Promise(resolve => setTimeout(resolve, delayMs));
-    try { return await operation(); }
+    try {
+      const result = await operation();
+      // raw() has no metadata. Do not substitute wall time for SQL duration.
+      const results = Array.isArray(result) ? result : [result];
+      query.sqlMs = results.filter(r => Number.isFinite(r?.meta?.duration)).map(r => r.meta.duration);
+      return result;
+    }
     finally { query.durationMs = performance.now() - sample.started - query.startMs; }
   }
   function statement(raw, query, bindings = 0) {
     const proxy = new Proxy(raw, { get(target, key) {
       if (key === 'bind') return (...values) => statement(target.bind(...values), query, values.length);
-      if (['all', 'first', 'raw', 'run'].includes(key)) return (...args) => execute(category(query), 1, bindings, query.length, () => target[key](...args));
+      if (['all', 'first', 'raw', 'run'].includes(key)) return (...args) => execute([metadata.get(proxy)], () => target[key](...args));
       const value = Reflect.get(target, key); return typeof value === 'function' ? value.bind(target) : value;
     } });
     originals.set(proxy, raw);
+    metadata.set(proxy, { kind: category(query), bindings, bytes: query.length });
     return proxy;
   }
   return new Proxy(db, { get(target, key) {
     if (key === 'prepare') return query => statement(target.prepare(query), query);
-    if (key === 'batch') return statements => execute('batch', statements.length, 0, 0, () => target.batch(statements.map(s => originals.get(s) || s)));
+    if (key === 'batch') return statements => execute(statements.map(s => metadata.get(s) || { kind: 'unknown' }), () => target.batch(statements.map(s => originals.get(s) || s)));
     const value = Reflect.get(target, key); return typeof value === 'function' ? value.bind(target) : value;
   } });
 }
@@ -81,7 +90,9 @@ export default { async fetch(request, env, ctx) {
     if (samples.size > 300) samples.delete(samples.keys().next().value);
     const body = response.body?.pipeThrough(new TransformStream({
       transform(chunk, controller) { controller.enqueue(chunk); },
-      flush() { sample.completeMs = performance.now() - sample.started; },
+      flush() {
+        completeSample(sample, performance.now() - sample.started);
+      },
     }));
     return new Response(body, { status: response.status, statusText: response.statusText, headers });
   });

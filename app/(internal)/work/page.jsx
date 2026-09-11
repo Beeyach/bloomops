@@ -1,4 +1,5 @@
 import { requireShell } from '@/lib/bloomops/shell-server.mjs';
+import { readTogether } from '@/lib/bloomops/read-batch.mjs';
 import { ACTIONS } from '@/lib/bloomops/authorization.mjs';
 import { listProjectSummaries } from '@/lib/bloomops/work-projections.mjs';
 import { PROJECT_STATUSES, PROJECT_STATUS_LABELS } from '@/lib/bloomops/project-values.mjs';
@@ -18,7 +19,7 @@ export default async function WorkPage({ searchParams }) {
     const { tab: _tab, ...input } = query || {};
     const normalized = normalizeActionFilters(input);
     const { view, filters, page } = normalized.ok ? normalized : { view: 'mine', filters: {}, page: 1 };
-    const [result, options] = await Promise.all([listActions(access.db, actor, { ...filters, view, page }), actionFilterOptions(access.db, actor)]);
+    const [result, options] = await readTogether(access.db, db => Promise.all([listActions(db, actor, { ...filters, view, page }), actionFilterOptions(db, actor)]));
     return <>
       <PageHeader title="Actions" subtitle="Work · The next steps across your clients and projects." />
       <WorkTabs />

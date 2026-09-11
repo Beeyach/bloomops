@@ -44,7 +44,12 @@ export default { async fetch(request, env) {
     await run("INSERT INTO projects(id,workspace_id,client_id,name,health) VALUES('foreign','b','foreign','FOREIGN_SECRET','at_risk')");
     await run("UPDATE actions SET assignee_membership_id='m-action-only' WHERE id='a-p-000'");
     const queries = [];
-    const db = drizzle(env.DB, { schema, logger: { logQuery(query, params) {
+    let batches = 0;
+    const binding = new Proxy(env.DB, { get(target, key) {
+      if (key === 'batch') return statements => { batches++; return target.batch(statements); };
+      const value = Reflect.get(target, key); return typeof value === 'function' ? value.bind(target) : value;
+    } });
+    const db = drizzle(binding, { schema, logger: { logQuery(query, params) {
       queries.push({ bindings:params.length, sqlBytes:Buffer.byteLength(query) });
       assert.ok(params.length <= 100 && Buffer.byteLength(query) <= 100000, 'D1 statement limits');
       assert.doesNotMatch(query, /^\s*(INSERT|UPDATE|DELETE|CREATE|ALTER)\b/i);
@@ -57,10 +62,10 @@ export default { async fetch(request, env) {
     const summary = async who => (await listProjectSummaries(db, who, { projectId:'p-000', now })).items[0];
     const snapshot = async () => JSON.stringify(await Promise.all(['projects','milestones','actions','action_dependencies','deliverables','assets','asset_links','asset_upload_attempts','activity_events','bloomops_clients','service_engagements','onboarding_instances','onboarding_items'].map(table => all(`SELECT * FROM ${table} ORDER BY rowid`))));
     const team = await actor('team'), owner = await actor('owner'), pm = await actor('pm'), actionOnly = await actor('action-only');
-    const before = await snapshot(); queries.length = 0;
-    const dashboard = await home(team), homeQueries = queries.length;
+    const before = await snapshot(); queries.length = 0; batches = 0;
+    const dashboard = await home(team), homeQueries = queries.length, homeBatches = batches;
     check('240 live Project assignments fit actual D1 with bounded Home lists', dashboard.projects.items.length===5 && dashboard.projects.hasMore && dashboard.actions.overdue.items.length===4 && dashboard.actions.overdue.hasMore && dashboard.deliverables.items.length===6 && dashboard.deliverables.hasMore && dashboard.recent.items.length===6 && dashboard.recent.hasMore);
-    check('Home issues at most sixteen metadata queries without any R2 binding', homeQueries<=16 && !env.FILES);
+    check('Home issues ten metadata statements in two native D1 batches without any R2 binding', homeQueries===10 && homeBatches===2 && !env.FILES);
     const work = await listProjectSummaries(db, team, { now });
     check('Work returns 200 visible rows plus an overflow signal', work.items.length===200 && work.hasMore);
     check('all Work counts are correlated to their canonical Project', work.items.every(row => row.milestones.finished===1 && row.milestones.total===1 && row.milestones.percentage===100 && row.actions.open===1 && row.actions.overdue===1 && row.deliverables.clientReview===1 && row.readyFiles===1));
@@ -95,6 +100,6 @@ export default { async fetch(request, env) {
     const suspended = await home(owner);
     check('stale suspended Owner cannot read dashboard data', !suspended.projects.items.length && !suspended.deliverables.items.length && !suspended.recent.items.length && Object.values(suspended.actions).every(s=>!s.items.length));
     check('D1 integrity and foreign keys remain valid', (await all('PRAGMA foreign_key_check')).length===0 && (await one('PRAGMA quick_check')).quick_check==='ok');
-    return Response.json({ checks:messages.length, messages, metrics:{ assignments:240, homeQueries, maxBindings:Math.max(...queries.map(q=>q.bindings)), maxSqlBytes:Math.max(...queries.map(q=>q.sqlBytes)) } });
+    return Response.json({ checks:messages.length, messages, metrics:{ assignments:240, homeQueries, homeBatches, maxBindings:Math.max(...queries.map(q=>q.bindings)), maxSqlBytes:Math.max(...queries.map(q=>q.sqlBytes)) } });
   } catch (error) { return Response.json({ messages, error:String(error.stack || error) }, { status:500 }); }
 } };

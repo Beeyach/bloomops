@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
+import { readTogether } from '@/lib/bloomops/read-batch.mjs';
 import { evaluate, loadInternalClientResource } from '@/lib/bloomops/authorization.mjs';
 import { requireShell } from '@/lib/bloomops/shell-server.mjs';
 import { authorizeProject, projectOptions } from '@/lib/bloomops/projects.mjs';
@@ -37,15 +38,15 @@ export default async function ProjectPage({ params }) {
   if (!result.ok) notFound();
   const { project, resource } = result;
   const mayManage = evaluate(actor, { action: 'project.manage', resource }).allowed;
-  const [assignments, activity, options, clientResource, milestones, actions, deliverables, files] = await Promise.all([
-    listProjectAssignments(access.db, actor, project.id), projectActivity(access.db, actor, project.id),
-    mayManage ? projectOptions(access.db, actor, { clientId: project.clientId }) : null,
-    loadInternalClientResource(access.db, actor.workspaceId, project.clientId),
-    listMilestones(access.db, actor, project.id),
-    listActions(access.db, actor, { projectId: project.id, view: 'all' }),
-    listDeliverables(access.db, actor, project.id),
-    listFiles(access.db, actor, project.id),
-  ]);
+  const [assignments, activity, options, clientResource, milestones, actions, deliverables, files] = await readTogether(access.db, db => Promise.all([
+    listProjectAssignments(db, actor, project.id), projectActivity(db, actor, project.id),
+    mayManage ? projectOptions(db, actor, { clientId: project.clientId }) : null,
+    loadInternalClientResource(db, actor.workspaceId, project.clientId),
+    listMilestones(db, actor, project.id),
+    listActions(db, actor, { projectId: project.id, view: 'all' }),
+    listDeliverables(db, actor, project.id),
+    listFiles(db, actor, project.id),
+  ]));
   const clientHref = clientResource && evaluate(actor, { action: 'client.view', resource: clientResource }).allowed ? `/clients/${project.clientId}` : null;
   return <>
     <Button href="/work?tab=projects" variant="ghost" size="sm">Back to projects</Button>
