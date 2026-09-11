@@ -1,7 +1,7 @@
 {
   "format": "PERF3 numeric table v1; primary-run milliseconds rounded to 0.001; cross-check/exploratory values retain original precision; all local; no private identifiers/payloads",
   "baseSha": "62bcf019226db1e7e939fbcffc8909f41fbd577a",
-  "provenance": "Base application plus fixed-label markers versus candidate working tree; embedded build label 000557c is not a candidate source hash. Same persisted PERF2 representative and exact 3x fixtures. No concurrent benchmark/build/test load.",
+  "provenance": "Base application plus fixed-label markers versus candidate working tree; every benchmark reports the unstamped local default dev, not a source hash. Same persisted PERF2 representative and exact 3x fixtures; intervening verification adds other isolated synthetic workspaces. No concurrent benchmark/build/test load. Application/test implementation commit e347c57631106dd3761234528e732efc691a961f; final PR head includes documentation-only corrections.",
   "rowColumns": [
     "round",
     "route",
