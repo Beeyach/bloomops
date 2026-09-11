@@ -6,7 +6,17 @@ Release D: Systems Delivery. Release C is closed for forward development on veri
 
 ## Current Phase
 
-**PERF3 Authenticated RSC Completion is the active implementation on `perf/perf3-rsc-completion`; phase closure is not claimed.** Its exact base is `62bcf019226db1e7e939fbcffc8909f41fbd577a`: [PERF2 PR #33](https://github.com/Beeyach/bloomops/pull/33) merged, and [Deploy staging 34557953977](https://github.com/Beeyach/bloomops/actions/runs/34557953977) / [Verify zero-to-current 34557953992](https://github.com/Beeyach/bloomops/actions/runs/34557953992) passed on that exact SHA. The user's signed-in retest still measured Home at 1.05–1.10 seconds and Systems at 1.02–1.04 seconds, with early first-response proxies around 0.27 seconds. PERF2's reduced invocation count did not close the navigation blocker. This supersedes historical audit-pending/staging-SHA statements below. D1 is closed. D2 has not begun and remains blocked until PERF3 passes independent audit, is user-merged, passes both exact-merge-SHA gates and passes signed-in staging completion acceptance (or directly attributes remaining latency outside BloomOps control).
+**Performance work for this phase is complete and deliberately deferred beyond the accepted changes. Clean integration branch: `perf/accepted-navigation-integration`, based on `main` at `2b892275abf0856dff10f31d49b2ff2da57acd5f`. Accepted deployed application remains `68580d7fdff779ec9cdfec7f67381af9cf5e7724`. No merge is authorized; D2 remains blocked.** The approximately 500 ms target was not fully reached. Smart Placement was rejected and reverted; no further performance diagnostics or optimization are planned.
+
+## Accepted performance integration (2026-09-11)
+
+Read [PERFORMANCE_INTEGRATION.md](PERFORMANCE_INTEGRATION.md) for exact commit mappings, artifact review, historical evidence and final checks. Only the two accepted optimization commits were cherry-picked onto main: `008fa500ed84dea15fecd4726271ac3aab10ba9a` from `137773b`, and `4f8af586aff6eceec9dab7902d2ea37c64fd082d` from `68580d7`. Their four runtime modules/tests/supporting scripts remain byte-identical to the accepted application. Later integration documentation is not a deployed application revision.
+
+Historical Home median improves **821.9 → 672.9 ms**, Systems **775.1 → 587.8 ms**; the accepted Home candidate's later Systems control was 618.8 ms. Ordinary Home/Systems serial D1 waits fall **3 → 2**, preserving fresh identity/membership checks and exact timezone-alias fallback. Home's repeated JSON timezone scans are removed. Smart Placement did not establish a repeatable additional improvement and is absent.
+
+The clean PR intentionally excludes all intervening PERF4 diagnostic runtime, opt-in, Analytics Engine binding, active diagnostic runners and transport prompts. Wrangler configuration, workflows, dependencies and migrations are unchanged from main. Sanitized round-trip, Home-query and rejected-placement evidence is retained as historical documentation, not new diagnostics. The existing deployed staging candidate was not changed during integration preparation.
+
+Final clean-branch verification passes **163 focused / 4,788 full tests**, **40 Home / 24 Systems native D1 checks**, Cloudflare/Next build, external type generation, staging dry-run, resolved configuration assertions and diff hygiene. The full count excludes 46 PERF4-only diagnostic tests; none are skipped. No new code fix was needed. No deployment, production action, PR merge or D2 was performed.
 
 ## PERF3 implementation and evidence (2026-09-11 UTC)
 

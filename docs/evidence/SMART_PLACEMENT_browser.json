@@ -1,0 +1,600 @@
+{
+  "applicationSha": "68580d7fdff779ec9cdfec7f67381af9cf5e7724",
+  "experimentSha": "1e427324034ad0d8d37c8429e0646764edb1321a",
+  "experimentWorkerVersion": "92aa00d6-877a-4967-90b8-52265e3fd3f8",
+  "placementAnalysis": {
+    "status": "SUCCESS",
+    "lastAnalyzedAt": "2026-09-11T13:40:31.378371Z",
+    "confirmedBeforeRetainedAt": "2026-09-11T13:40:42.641Z",
+    "confirmedAfterRetainedAt": "2026-09-11T13:41:08.920Z"
+  },
+  "d1": {
+    "name": "bloomops-staging",
+    "region": "APAC",
+    "readReplication": "disabled",
+    "tables": 77,
+    "sizeBytes": 1499136
+  },
+  "method": "Existing signed-in Windows Chrome, visible foreground 1920x855, no throttle. Five retained rounds of Home/Systems/Home/Ads, preceded by one discarded Home/Systems/Ads warmup. Click actual visible navigation link to final visible main h1 and Home .bo-home completion; two frames before separate Resource Timing read. Same method before and after. No retained outliers excluded. Null RSC timing means unavailable, not zero. Additional post-deploy settling clicks are all explicitly discarded. An initial pre-change attempt lost its execution context on navigation and produced no timing; it was repeated after browser readiness. No cookie, business content, request identifiers, or credentials retained.",
+  "historicalBaselines": {
+    "Home": {
+      "median": 672.9,
+      "min": 634.4,
+      "max": 938.4
+    },
+    "Systems": {
+      "previousMedian": 587.8,
+      "latestMedian": 618.8,
+      "min": 616.5,
+      "max": 626.8
+    },
+    "Ads": {
+      "previousMedian": 374.8,
+      "latestMedian": 410.5,
+      "min": 401.2,
+      "max": 412.7
+    }
+  },
+  "beforeSummary": {
+    "Home": {
+      "n": 10,
+      "median": 791.15,
+      "min": 655.7,
+      "max": 1145.3
+    },
+    "Systems": {
+      "n": 5,
+      "median": 640,
+      "min": 606.1,
+      "max": 711.8
+    },
+    "Ads": {
+      "n": 5,
+      "median": 405.6,
+      "min": 394.6,
+      "max": 412.3
+    }
+  },
+  "afterSummary": {
+    "Home": {
+      "n": 10,
+      "median": 681.2,
+      "min": 654.8,
+      "max": 775.6
+    },
+    "Systems": {
+      "n": 5,
+      "median": 623.4,
+      "min": 605.4,
+      "max": 635.2
+    },
+    "Ads": {
+      "n": 5,
+      "median": 403.7,
+      "min": 393.5,
+      "max": 590.4
+    }
+  },
+  "beforeSamples": [
+    {
+      "round": 0,
+      "route": "Home",
+      "retained": false,
+      "visibleMs": 1136.4,
+      "rscTtfbMs": 253.7,
+      "rscEofMs": 1131
+    },
+    {
+      "round": 0,
+      "route": "Systems",
+      "retained": false,
+      "visibleMs": 683.1,
+      "rscTtfbMs": 246.4,
+      "rscEofMs": 672.1
+    },
+    {
+      "round": 0,
+      "route": "Ads",
+      "retained": false,
+      "visibleMs": 406.3,
+      "rscTtfbMs": 222.8,
+      "rscEofMs": 399.6
+    },
+    {
+      "round": 1,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 792.2,
+      "rscTtfbMs": 221.4,
+      "rscEofMs": 785.3
+    },
+    {
+      "round": 1,
+      "route": "Systems",
+      "retained": true,
+      "visibleMs": 711.8,
+      "rscTtfbMs": null,
+      "rscEofMs": null
+    },
+    {
+      "round": 1,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 773,
+      "rscTtfbMs": 212.2,
+      "rscEofMs": 767.3
+    },
+    {
+      "round": 1,
+      "route": "Ads",
+      "retained": true,
+      "visibleMs": 394.6,
+      "rscTtfbMs": 219.3,
+      "rscEofMs": 388.2
+    },
+    {
+      "round": 2,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 963,
+      "rscTtfbMs": 221.2,
+      "rscEofMs": 957.7
+    },
+    {
+      "round": 2,
+      "route": "Systems",
+      "retained": true,
+      "visibleMs": 606.1,
+      "rscTtfbMs": 220.3,
+      "rscEofMs": 598.3
+    },
+    {
+      "round": 2,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 1145.3,
+      "rscTtfbMs": 221.3,
+      "rscEofMs": 1138.4
+    },
+    {
+      "round": 2,
+      "route": "Ads",
+      "retained": true,
+      "visibleMs": 405.6,
+      "rscTtfbMs": 204.1,
+      "rscEofMs": 398.9
+    },
+    {
+      "round": 3,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 681.2,
+      "rscTtfbMs": 225.4,
+      "rscEofMs": 678.9
+    },
+    {
+      "round": 3,
+      "route": "Systems",
+      "retained": true,
+      "visibleMs": 645.9,
+      "rscTtfbMs": 430.5,
+      "rscEofMs": 641.7
+    },
+    {
+      "round": 3,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 938.5,
+      "rscTtfbMs": 224.4,
+      "rscEofMs": 932.5
+    },
+    {
+      "round": 3,
+      "route": "Ads",
+      "retained": true,
+      "visibleMs": 396.7,
+      "rscTtfbMs": 213.7,
+      "rscEofMs": 390.9
+    },
+    {
+      "round": 4,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 853.1,
+      "rscTtfbMs": 227,
+      "rscEofMs": 847.3
+    },
+    {
+      "round": 4,
+      "route": "Systems",
+      "retained": true,
+      "visibleMs": 640,
+      "rscTtfbMs": 219.7,
+      "rscEofMs": 633
+    },
+    {
+      "round": 4,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 790.1,
+      "rscTtfbMs": 211.4,
+      "rscEofMs": 782.3
+    },
+    {
+      "round": 4,
+      "route": "Ads",
+      "retained": true,
+      "visibleMs": 407.1,
+      "rscTtfbMs": 225.9,
+      "rscEofMs": 401.2
+    },
+    {
+      "round": 5,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 655.7,
+      "rscTtfbMs": 212.5,
+      "rscEofMs": 650.5
+    },
+    {
+      "round": 5,
+      "route": "Systems",
+      "retained": true,
+      "visibleMs": 619.8,
+      "rscTtfbMs": 218.2,
+      "rscEofMs": 611.9
+    },
+    {
+      "round": 5,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 682.2,
+      "rscTtfbMs": 221.4,
+      "rscEofMs": 676.6
+    },
+    {
+      "round": 5,
+      "route": "Ads",
+      "retained": true,
+      "visibleMs": 412.3,
+      "rscTtfbMs": 228.6,
+      "rscEofMs": 407.1
+    }
+  ],
+  "settlingSamples": [
+    {
+      "round": 0,
+      "route": "Home",
+      "retained": false,
+      "visibleMs": 1188.4,
+      "rscTtfbMs": 396.4,
+      "rscEofMs": 1181.6
+    },
+    {
+      "round": 0,
+      "route": "Systems",
+      "retained": false,
+      "visibleMs": 814.9,
+      "rscTtfbMs": 482.5,
+      "rscEofMs": 807.4
+    },
+    {
+      "round": 0,
+      "route": "Ads",
+      "retained": false,
+      "visibleMs": 414.5,
+      "rscTtfbMs": 243.2,
+      "rscEofMs": 410.6
+    },
+    {
+      "round": 1,
+      "route": "Home",
+      "retained": false,
+      "visibleMs": 765.8,
+      "rscTtfbMs": 224.5,
+      "rscEofMs": 760.3
+    },
+    {
+      "round": 1,
+      "route": "Systems",
+      "retained": false,
+      "visibleMs": 628,
+      "rscTtfbMs": 229.5,
+      "rscEofMs": 621.1
+    },
+    {
+      "round": 1,
+      "route": "Ads",
+      "retained": false,
+      "visibleMs": 433.2,
+      "rscTtfbMs": 220.7,
+      "rscEofMs": 428.1
+    },
+    {
+      "round": 2,
+      "route": "Home",
+      "retained": false,
+      "visibleMs": 780.1,
+      "rscTtfbMs": 233.3,
+      "rscEofMs": 775.3
+    },
+    {
+      "round": 2,
+      "route": "Systems",
+      "retained": false,
+      "visibleMs": 614.2,
+      "rscTtfbMs": 227.9,
+      "rscEofMs": 607.8
+    },
+    {
+      "round": 2,
+      "route": "Ads",
+      "retained": false,
+      "visibleMs": 424.3,
+      "rscTtfbMs": 222.2,
+      "rscEofMs": 416.7
+    },
+    {
+      "round": 3,
+      "route": "Home",
+      "retained": false,
+      "visibleMs": 759.3,
+      "rscTtfbMs": 223,
+      "rscEofMs": 754.8
+    },
+    {
+      "round": 3,
+      "route": "Systems",
+      "retained": false,
+      "visibleMs": 619.2,
+      "rscTtfbMs": 228.1,
+      "rscEofMs": 612.2
+    },
+    {
+      "round": 3,
+      "route": "Ads",
+      "retained": false,
+      "visibleMs": 407,
+      "rscTtfbMs": 232.3,
+      "rscEofMs": 400.1
+    },
+    {
+      "round": 4,
+      "route": "Home",
+      "retained": false,
+      "visibleMs": 772.7,
+      "rscTtfbMs": 226.9,
+      "rscEofMs": 768
+    },
+    {
+      "round": 4,
+      "route": "Systems",
+      "retained": false,
+      "visibleMs": 618.4,
+      "rscTtfbMs": 221.2,
+      "rscEofMs": 611.6
+    },
+    {
+      "round": 4,
+      "route": "Ads",
+      "retained": false,
+      "visibleMs": 384.9,
+      "rscTtfbMs": 225.8,
+      "rscEofMs": 379.8
+    }
+  ],
+  "afterSamples": [
+    {
+      "round": 0,
+      "route": "Home",
+      "retained": false,
+      "visibleMs": 816.5,
+      "rscTtfbMs": 244.4,
+      "rscEofMs": 811.8
+    },
+    {
+      "round": 0,
+      "route": "Systems",
+      "retained": false,
+      "visibleMs": 623.7,
+      "rscTtfbMs": 213.5,
+      "rscEofMs": 617.8
+    },
+    {
+      "round": 0,
+      "route": "Ads",
+      "retained": false,
+      "visibleMs": 401.2,
+      "rscTtfbMs": 234.2,
+      "rscEofMs": 394
+    },
+    {
+      "round": 1,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 680.8,
+      "rscTtfbMs": 237.7,
+      "rscEofMs": 673.5
+    },
+    {
+      "round": 1,
+      "route": "Systems",
+      "retained": true,
+      "visibleMs": 623.4,
+      "rscTtfbMs": 231.1,
+      "rscEofMs": 612.5
+    },
+    {
+      "round": 1,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 671.8,
+      "rscTtfbMs": null,
+      "rscEofMs": null
+    },
+    {
+      "round": 1,
+      "route": "Ads",
+      "retained": true,
+      "visibleMs": 590.4,
+      "rscTtfbMs": 232.6,
+      "rscEofMs": 582.6
+    },
+    {
+      "round": 2,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 657.2,
+      "rscTtfbMs": 233,
+      "rscEofMs": 647
+    },
+    {
+      "round": 2,
+      "route": "Systems",
+      "retained": true,
+      "visibleMs": 605.4,
+      "rscTtfbMs": 222.5,
+      "rscEofMs": 597.1
+    },
+    {
+      "round": 2,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 654.8,
+      "rscTtfbMs": 221,
+      "rscEofMs": 644.3
+    },
+    {
+      "round": 2,
+      "route": "Ads",
+      "retained": true,
+      "visibleMs": 409,
+      "rscTtfbMs": 223.4,
+      "rscEofMs": 399.3
+    },
+    {
+      "round": 3,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 773.1,
+      "rscTtfbMs": 219.5,
+      "rscEofMs": 764
+    },
+    {
+      "round": 3,
+      "route": "Systems",
+      "retained": true,
+      "visibleMs": 626.1,
+      "rscTtfbMs": 229.9,
+      "rscEofMs": 615.3
+    },
+    {
+      "round": 3,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 681.6,
+      "rscTtfbMs": 223.3,
+      "rscEofMs": 673.3
+    },
+    {
+      "round": 3,
+      "route": "Ads",
+      "retained": true,
+      "visibleMs": 403.7,
+      "rscTtfbMs": 227.1,
+      "rscEofMs": 391.5
+    },
+    {
+      "round": 4,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 774.8,
+      "rscTtfbMs": 238.9,
+      "rscEofMs": 768.9
+    },
+    {
+      "round": 4,
+      "route": "Systems",
+      "retained": true,
+      "visibleMs": 612.3,
+      "rscTtfbMs": 221.7,
+      "rscEofMs": 606.4
+    },
+    {
+      "round": 4,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 775.6,
+      "rscTtfbMs": 227.8,
+      "rscEofMs": 770
+    },
+    {
+      "round": 4,
+      "route": "Ads",
+      "retained": true,
+      "visibleMs": 402.7,
+      "rscTtfbMs": 229,
+      "rscEofMs": 396.6
+    },
+    {
+      "round": 5,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 665.9,
+      "rscTtfbMs": 240.6,
+      "rscEofMs": 660.7
+    },
+    {
+      "round": 5,
+      "route": "Systems",
+      "retained": true,
+      "visibleMs": 635.2,
+      "rscTtfbMs": 427.3,
+      "rscEofMs": 629.3
+    },
+    {
+      "round": 5,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 761.3,
+      "rscTtfbMs": 217.2,
+      "rscEofMs": 753.8
+    },
+    {
+      "round": 5,
+      "route": "Ads",
+      "retained": true,
+      "visibleMs": 393.5,
+      "rscTtfbMs": 219.4,
+      "rscEofMs": 388.3
+    }
+  ],
+  "decision": "REVERT",
+  "interpretation": "Home 681.2 ms is 1.2% slower than accepted 672.9 ms. Fresh off run was noisier at 791.15 ms, so smart improved 13.9% against that run; conflicting historical and same-session comparisons do not demonstrate repeatable additional improvement. Controls have near-unchanged latest medians with one retained Ads 590.4 ms outlier. Does not reach requested worthwhile Home threshold. Stop this performance phase; retain 68580d7 application. SUCCESS confirms analysis, not remote placement of every click.",
+  "restoration": {
+    "applicationSha": "68580d7fdff779ec9cdfec7f67381af9cf5e7724",
+    "workerVersion": "bfba06d7-f751-48ef-8593-f4ee56584f19",
+    "placementVerification": {
+      "checkedAt": "2026-09-11T13:43:42.120Z",
+      "status": 200,
+      "success": true,
+      "placement": null,
+      "placementStatus": null,
+      "modifiedOn": "2026-09-11T13:42:54.879358Z",
+      "scriptId": "bloomops-staging"
+    },
+    "browserVerification": {
+      "version": {
+        "version": "1.17",
+        "sha": "68580d7",
+        "builtAt": "2026-09-11T13:41:44.323Z",
+        "branch": "perf/home-query-optimization",
+        "environment": "Preview",
+        "release": "LTB 2026.09.11"
+      },
+      "path": "/ads",
+      "heading": "Ads",
+      "visibility": "visible"
+    }
+  }
+}
