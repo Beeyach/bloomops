@@ -1,0 +1,160 @@
+You are the independent auditor for BloomOps PERF2. Audit only. Do not merge anything, do not deploy, do not modify production or staging data, and do not begin D2.
+
+Repository: Beeyach/bloomops
+PR: #33
+Exact base SHA: d0533cb9a7b3646134cbc194767af669c75f5adf
+Exact implementation head to audit: 209ebde0bd96bcca452192ab2393cea3ce60e572
+Audit branch: perf/perf2-independent-audit
+Implementation branch: perf/perf2-staging-navigation
+
+First verify that PR #33 is still open and that its head is exactly 209ebde0bd96bcca452192ab2393cea3ce60e572. If the head moved, STOP and report that the audit target is stale.
+
+Read completely before judging:
+- AGENTS.md
+- docs/BUILD_STATE.md
+- docs/INDEX.md
+- docs/PERF1_RESULTS.md
+- docs/PERF2_RESULTS.md
+- docs/phases/PERF1.md
+- docs/phases/PERF2.md
+- docs/phases/D1.md
+- docs/RELEASE_D.md
+- docs/PRODUCT_SPEC.md
+- docs/DOMAIN_MODEL.md
+- every file changed by d0533cb9a7b3646134cbc194767af669c75f5adf..209ebde0bd96bcca452192ab2393cea3ce60e572
+
+PRIMARY AUDIT GOAL
+Determine whether PERF2 safely and correctly reduces real protected-navigation remote round-trip depth without weakening current-truth authorization, tenant isolation, error semantics, query bounds, no-JavaScript behavior, or correctness of Drizzle result mapping.
+
+Treat the implementation report as untrusted claims to verify independently.
+
+AUDIT THE NEW D1 BATCHING LAYER ESPECIALLY HARD
+Inspect the exact native D1 batching/request-local adapter implementation and every caller. Prove or falsify all of the following:
+
+1. Batching is request-local only. No result, actor, membership, capability, assignment, contact link, visibility decision, session, or page authorization survives into a later protected request.
+2. Only safe reads are batched. No write/mutation route is silently intercepted, reordered, retried, duplicated, or converted into a batch in a way that changes semantics.
+3. Authorization still occurs before protected data can be disclosed. Batching must not load cross-tenant or otherwise unauthorized private rows and then rely on client-side filtering.
+4. Native D1 batch failures are handled correctly. Verify behavior when one statement fails, when a batch rejects, when mapping counts mismatch, and when one result is empty/null. Do not accept swallowed failures or partially trusted results.
+5. Result-to-statement ordering is exact and deterministic.
+6. Drizzle mapping/decoding remains correct for duplicate column names, aliases, nullable joins, booleans, timestamps, text/numeric values, and any custom decoder paths actually used by BloomOps.
+7. The batching queue cannot accidentally combine reads from different D1 bindings, requests, workspaces, actors, or asynchronous request contexts.
+8. Batch size, SQL length, binding count, and queue behavior remain bounded under large assignment scopes and the PERF2 stress fixture.
+9. There is no N+1 hidden behind batching and no unbounded accumulation before flush.
+10. The batching adapter seam is compatible with the actual D1/Drizzle APIs used by the built Worker, not merely with local mocks.
+
+AUTHORIZATION / SECURITY
+Freshly verify next-protected-request revocation for all relevant issued-session cases, including at minimum:
+- session deletion/invalid session
+- workspace membership suspension/removal
+- Client assignment removal
+- Service assignment removal
+- Project assignment removal
+- capability removal for Admin/Team where applicable
+- Project/child visibility restriction
+- Client contact unlinking for portal access
+
+Also verify:
+- foreign-workspace isolation
+- guessed-ID existence hiding
+- Department membership grants nothing by itself
+- Project ownership grants nothing by itself
+- Team assignment scope remains narrow
+- portal DTO allowlists remain unchanged
+- no protected stale output is introduced
+- Better Auth cookie/session cache semantics are unchanged from PERF1 unless exact equivalent next-request revocation is proven
+
+PERFORMANCE METHODOLOGY
+Reproduce PERF2 measurements independently. Do not merely rerun one command and trust its summary.
+
+Verify for Home, Clients, Work, Social, Systems, Team, and one Project detail route:
+- total SQL statements
+- D1 binding invocations
+- observed sequential D1 depth
+- completed destination content timing, not first byte or early shell
+- representative dataset and stress dataset sizes
+- warmup treatment, retained sample count, median, p95/range
+- zero-delay local timing remains bounded
+- synthetic 100 ms-per-invocation results are clearly identified as a controlled sensitivity experiment, NOT staging evidence
+
+Check whether the claimed depth reductions are real:
+- Home 4 -> 4
+- Clients 3 -> 3
+- Work 3 -> 3
+- Social 4 -> 3
+- Systems 5 -> 4
+- Team 3 -> 3
+- Project 5 -> 4
+
+Confirm that lower invocation count without lower depth is not misrepresented as user-visible improvement.
+
+DATA-SCALE REVIEW
+Use the PERF2 representative fixture (approximately 50 Clients, 100 Projects, 300 Milestones, 1,000 Actions, 300 Deliverables, 250 Content Items, 200 File metadata rows) and the exact 3x stress fixture. Verify relational assignments are meaningful rather than decorative. Confirm UI/query bounds and SQL/binding limits do not degrade unexpectedly with scale.
+
+Review query plans/timing for any materially changed hot SQL. A schema/index migration is not present according to the implementation; verify that no hidden DDL/schema/config drift exists and whether the no-index decision is justified by measured behavior.
+
+SPECIFIC CODE-PATH REVIEW
+Independently inspect the changes that claim to:
+- batch live actor support reads
+- batch authorized page reads
+- reuse the live authorized Project DTO
+- share exact scoped timezone reads
+- move Social readable-parent directory gating into SQL
+- remove the unfiltered Systems facet dependency
+
+For each, prove equivalent authorization semantics and no information leak through rows, counts, facets, option lists, overflow/pagination state, or timing-visible error differences that expose foreign identifiers.
+
+NO-JAVASCRIPT / UX
+Verify PERF2 does not reintroduce the D1 hidden streamed-content defect. Browser acceptance must prove completed visible content and native interactions where relevant, with JavaScript disabled at all required widths. Do not accept a spinner/skeleton/early shell as a performance win.
+
+BUILDS / REGRESSIONS
+Run the strongest current equivalents of:
+- full npm test
+- PERF1/PERF2 focused performance regressions
+- auth/membership/shell/authorization tests
+- Clients/Actions/Content/Projects affected regressions
+- shared B1-B7 regressions
+- Release C regressions
+- D1 Systems/schema regressions
+- npm run build
+- npm run cf:build
+- built Worker auth/runtime verification
+- local external verifier
+- local zero-to-current verification
+- Systems/projections/Release B/Release C runtime smokes
+- navigation browser acceptance
+- Systems browser acceptance
+- changed JS/JSX syntax
+- git diff --check
+- exact package/lock/schema/migration/Drizzle/Next/OpenNext/Cloudflare/workflow diff against base
+
+STAGING / REMOTE EVIDENCE
+Do not claim the user's staging problem is solved unless you obtain actual authenticated staging measurements of the candidate. Public probes, US colos, local Miniflare/workerd, and injected latency are not authenticated Philippines-user evidence.
+
+If authenticated staging cannot be measured safely, say so explicitly. Do not send a real magic-link email automatically, do not ask for cookies/tokens in chat, and do not weaken auth to obtain a session.
+
+Cloudflare/D1 placement conclusions must be evidence-based. Do not infer Worker execution region from client edge colo alone. Distinguish client edge, Worker execution, and D1 serving region if evidence exists.
+
+AUDIT OUTPUT
+Return exactly one overall result:
+- AUDIT RESULT: PASS
+or
+- AUDIT RESULT: FAIL - CHANGES REQUIRED
+
+Then include:
+1. Merge recommendation tied to the exact audited head SHA.
+2. Findings ordered by severity, with file/line or function references and minimal safe fix guidance. If none, say none.
+3. Fresh verification performed with exact pass/fail counts.
+4. Batching-layer correctness conclusion.
+5. Security and tenant-isolation conclusion.
+6. Performance methodology and before/after/depth conclusion.
+7. Representative/stress-scale conclusion.
+8. Staging evidence and what remains unverified.
+9. Schema/dependency/infrastructure conclusion.
+10. Remaining uncertainty.
+11. Final next action.
+
+If PASS, explicitly state that PR #33 may be merged only if its head is still exactly 209ebde0bd96bcca452192ab2393cea3ce60e572, and that PERF2 remains operationally open until post-merge Deploy staging + Verify zero-to-current pass on the exact merge SHA and the user retests signed-in staging successfully.
+
+If FAIL, do not fix the implementation yourself. Report the smallest focused correction needed, and leave PR #33 unmerged.
+
+You may write an audit report such as docs/audits/PERF2_INDEPENDENT_AUDIT.md on the audit branch for local evidence, but do not modify the implementation branch and do not merge or deploy.
