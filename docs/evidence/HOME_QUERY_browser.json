@@ -1,0 +1,243 @@
+{
+  "applicationSha": "68580d7fdff779ec9cdfec7f67381af9cf5e7724",
+  "baselineSha": "137773bc2b70b322694c33a0c756714c00003833",
+  "workerVersionId": "1ec82c7c-68a5-4ed3-acbb-68516ae8f601",
+  "buildTime": "2026-09-11T13:19:43.299Z",
+  "viewport": [
+    1920,
+    855
+  ],
+  "method": "Existing signed-in Windows Chrome, foreground, no throttling. Discard one warmup per route. First three Home/Systems/Ads cycles retained, then seven Home/Ads cycles with only Home retained; the seven Ads returns are positioning navigations declared before capture. Click performance.now to final visible main h1 (and .bo-home for Home); await two frames before reading Resource Timing. No outliers excluded. Null means unavailable RSC Resource Timing, not zero. No cookies, IDs, headers or page contents captured.",
+  "warmups": [
+    {
+      "route": "Home",
+      "visibleMs": 1164.9,
+      "rscTtfbMs": 389.3,
+      "rscEofMs": 1154.6
+    },
+    {
+      "route": "Systems",
+      "visibleMs": 937.9,
+      "rscTtfbMs": 459.5,
+      "rscEofMs": 657.5
+    },
+    {
+      "route": "Ads",
+      "visibleMs": 421.1,
+      "rscTtfbMs": 234.8,
+      "rscEofMs": 415.8
+    }
+  ],
+  "samples": [
+    {
+      "cycle": 1,
+      "route": "Home",
+      "visibleMs": 938.3,
+      "rscTtfbMs": 482.3,
+      "rscEofMs": 932.3,
+      "retained": true
+    },
+    {
+      "cycle": 1,
+      "route": "Systems",
+      "visibleMs": 626.8,
+      "rscTtfbMs": 222.4,
+      "rscEofMs": 617.9,
+      "retained": true
+    },
+    {
+      "cycle": 1,
+      "route": "Ads",
+      "visibleMs": 410.5,
+      "rscTtfbMs": 224.6,
+      "rscEofMs": 401.6,
+      "retained": true
+    },
+    {
+      "cycle": 2,
+      "route": "Home",
+      "visibleMs": 938.4,
+      "rscTtfbMs": 212.6,
+      "rscEofMs": 928.7,
+      "retained": true
+    },
+    {
+      "cycle": 2,
+      "route": "Systems",
+      "visibleMs": 616.5,
+      "rscTtfbMs": 218.7,
+      "rscEofMs": 610.1,
+      "retained": true
+    },
+    {
+      "cycle": 2,
+      "route": "Ads",
+      "visibleMs": 412.7,
+      "rscTtfbMs": null,
+      "rscEofMs": null,
+      "retained": true
+    },
+    {
+      "cycle": 3,
+      "route": "Home",
+      "visibleMs": 676.9,
+      "rscTtfbMs": 228.2,
+      "rscEofMs": 668.2,
+      "retained": true
+    },
+    {
+      "cycle": 3,
+      "route": "Systems",
+      "visibleMs": 618.8,
+      "rscTtfbMs": 421,
+      "rscEofMs": 614.5,
+      "retained": true
+    },
+    {
+      "cycle": 3,
+      "route": "Ads",
+      "visibleMs": 401.2,
+      "rscTtfbMs": 225.9,
+      "rscEofMs": 396.5,
+      "retained": true
+    },
+    {
+      "cycle": 4,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 668.9,
+      "rscTtfbMs": 480.4,
+      "rscEofMs": 664.8
+    },
+    {
+      "cycle": 4,
+      "route": "Ads",
+      "retained": false,
+      "visibleMs": 416,
+      "rscTtfbMs": 207.7,
+      "rscEofMs": 407.1
+    },
+    {
+      "cycle": 5,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 764.8,
+      "rscTtfbMs": 213.5,
+      "rscEofMs": 753
+    },
+    {
+      "cycle": 5,
+      "route": "Ads",
+      "retained": false,
+      "visibleMs": 409.4,
+      "rscTtfbMs": 204.9,
+      "rscEofMs": 398.2
+    },
+    {
+      "cycle": 6,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 634.4,
+      "rscTtfbMs": 225,
+      "rscEofMs": 623.4
+    },
+    {
+      "cycle": 6,
+      "route": "Ads",
+      "retained": false,
+      "visibleMs": 399.9,
+      "rscTtfbMs": 224.7,
+      "rscEofMs": 391.3
+    },
+    {
+      "cycle": 7,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 659.3,
+      "rscTtfbMs": 216.5,
+      "rscEofMs": 648.1
+    },
+    {
+      "cycle": 7,
+      "route": "Ads",
+      "retained": false,
+      "visibleMs": 382.8,
+      "rscTtfbMs": 211,
+      "rscEofMs": 378
+    },
+    {
+      "cycle": 8,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 665.8,
+      "rscTtfbMs": 232.8,
+      "rscEofMs": 654.3
+    },
+    {
+      "cycle": 8,
+      "route": "Ads",
+      "retained": false,
+      "visibleMs": 391.7,
+      "rscTtfbMs": 204,
+      "rscEofMs": 387.2
+    },
+    {
+      "cycle": 9,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 678.7,
+      "rscTtfbMs": 231.6,
+      "rscEofMs": 672.5
+    },
+    {
+      "cycle": 9,
+      "route": "Ads",
+      "retained": false,
+      "visibleMs": 382.3,
+      "rscTtfbMs": 224,
+      "rscEofMs": 377.5
+    },
+    {
+      "cycle": 10,
+      "route": "Home",
+      "retained": true,
+      "visibleMs": 660.5,
+      "rscTtfbMs": 211.7,
+      "rscEofMs": 654.8
+    },
+    {
+      "cycle": 10,
+      "route": "Ads",
+      "retained": false,
+      "visibleMs": 397.5,
+      "rscTtfbMs": 204.1,
+      "rscEofMs": 392.1
+    }
+  ],
+  "summary": [
+    {
+      "route": "Home",
+      "n": 10,
+      "median": 672.9,
+      "min": 634.4,
+      "max": 938.4,
+      "over1000": 0
+    },
+    {
+      "route": "Systems",
+      "n": 3,
+      "median": 618.8,
+      "min": 616.5,
+      "max": 626.8,
+      "over1000": 0
+    },
+    {
+      "route": "Ads",
+      "n": 3,
+      "median": 410.5,
+      "min": 401.2,
+      "max": 412.7,
+      "over1000": 0
+    }
+  ]
+}

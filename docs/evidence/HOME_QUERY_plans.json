@@ -1,0 +1,1170 @@
+{
+  "kind": "Home-local-SQL-query-plans",
+  "baselineApplicationSha": "137773bc2b70b322694c33a0c756714c00003833",
+  "baselineExpression": "(SELECT value FROM json_each(?) WHERE key=\"bloomops_clients\".\"timezone\")",
+  "candidateExpression": "json_extract(?, '$.' || json_quote(\"bloomops_clients\".\"timezone\"))",
+  "method": "Actual Home SQL with identical synthetic binds; baseline restores only the prior Client-day expression. All rows compared; no binding values or business payloads retained. Two discarded and ten retained alternating pairs per statement.",
+  "limitations": "In-memory SQLite/D1 adapter, synthetic Owner workload. Execution timings exclude preparation, network, identity and rendering; query plans are not live D1 plans.",
+  "scales": [
+    {
+      "sqliteVersion": "3.51.3",
+      "counts": {
+        "projects": 101,
+        "actions": 1000,
+        "milestones": 100,
+        "deliverables": 200,
+        "files": 100,
+        "events": 200
+      },
+      "statements": [
+        {
+          "label": "overdue-actions",
+          "changed": true,
+          "sql": "WITH bo_read(bo_c0,bo_c1,bo_c2,bo_c3,bo_c4,bo_c5,bo_c6,bo_c7,bo_c8,bo_c9,bo_c10,bo_c11,bo_c12,bo_c13,bo_c14,bo_c15,bo_c16,bo_c17,bo_c18,bo_c19,bo_c20,bo_c21,bo_c22,bo_c23,bo_c24,bo_c25,bo_c26,bo_c27,bo_c28) AS (select \"actions\".\"id\", \"actions\".\"title\", \"actions\".\"description\", \"actions\".\"status\", \"actions\".\"priority\", \"actions\".\"assignee_membership_id\", \"user\".\"name\", \"workspace_memberships\".\"status\"='active' AND \"workspace_memberships\".\"role\" IN ('owner','admin','project_manager','team_member'), \"actions\".\"due_date\", \"actions\".\"waiting_type\", \"actions\".\"waiting_reason\", \"actions\".\"visibility\", \"actions\".\"revision\", \"actions\".\"completed_at\", \"actions\".\"created_at\", \"actions\".\"updated_at\", \"projects\".\"id\", \"projects\".\"name\", \"bloomops_clients\".\"id\", \"bloomops_clients\".\"name\", \"bloomops_clients\".\"timezone\", \"projects\".\"service_engagement_id\", \"service_types\".\"name\", \"departments\".\"id\", \"departments\".\"name\", (\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1), EXISTS (\n  SELECT 1 FROM action_dependencies edge JOIN actions prerequisite\n    ON prerequisite.workspace_id=edge.workspace_id AND prerequisite.project_id=edge.project_id AND prerequisite.id=edge.depends_on_action_id\n  WHERE edge.workspace_id=\"actions\".\"workspace_id\" AND edge.project_id=\"actions\".\"project_id\" AND edge.action_id=\"actions\".\"id\" AND prerequisite.status<>'done'), \"milestones\".\"id\", \"milestones\".\"name\" from \"actions\" inner join \"projects\" on (\"projects\".\"workspace_id\" = \"actions\".\"workspace_id\" and \"projects\".\"id\" = \"actions\".\"project_id\") inner join \"bloomops_clients\" on (\"bloomops_clients\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"bloomops_clients\".\"id\" = \"projects\".\"client_id\") left join \"service_engagements\" on (\"service_engagements\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"service_engagements\".\"id\" = \"projects\".\"service_engagement_id\") left join \"service_types\" on (\"service_types\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"service_types\".\"id\" = \"service_engagements\".\"service_type_id\") left join \"departments\" on (\"departments\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"departments\".\"id\" = coalesce(\"service_types\".\"department_id\", \"projects\".\"department_id\")) left join \"workspace_memberships\" on (\"workspace_memberships\".\"workspace_id\" = \"actions\".\"workspace_id\" and \"workspace_memberships\".\"id\" = \"actions\".\"assignee_membership_id\") left join \"user\" on \"user\".\"id\" = \"workspace_memberships\".\"user_id\" left join \"milestones\" on (\"milestones\".\"id\" = \"actions\".\"milestone_id\" and (\"milestones\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"milestones\".\"project_id\" = \"projects\".\"id\" and (\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1) and 1)) where ((\"actions\".\"workspace_id\" = ? and \"actions\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"actions\".\"project_id\" = \"projects\".\"id\" and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and ((\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1) OR 0) and 1) and (\"actions\".\"status\" NOT IN ('done','cancelled') and \"actions\".\"due_date\"<coalesce(json_extract(?, '$.' || json_quote(\"bloomops_clients\".\"timezone\")), ?) and NOT EXISTS (\n  SELECT 1 FROM action_dependencies edge JOIN actions prerequisite\n    ON prerequisite.workspace_id=edge.workspace_id AND prerequisite.project_id=edge.project_id AND prerequisite.id=edge.depends_on_action_id\n  WHERE edge.workspace_id=\"actions\".\"workspace_id\" AND edge.project_id=\"actions\".\"project_id\" AND edge.action_id=\"actions\".\"id\" AND prerequisite.status<>'done'))) order by \"actions\".\"due_date\" IS NULL, \"actions\".\"due_date\" asc, CASE \"actions\".\"priority\" WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'normal' THEN 2 ELSE 3 END, \"actions\".\"id\" asc limit ?) SELECT * FROM bo_read",
+          "bindings": 23,
+          "returnedRows": 5,
+          "beforePlan": [
+            "SEARCH actions USING INDEX actions_project_request_uq (workspace_id=?)",
+            "SCALAR SUBQUERY 4",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 5",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SCAN json_each VIRTUAL TABLE INDEX 1:",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SCALAR SUBQUERY 3",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "afterPlan": [
+            "SEARCH actions USING INDEX actions_project_request_uq (workspace_id=?)",
+            "SCALAR SUBQUERY 4",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 5",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SCALAR SUBQUERY 3",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "timezoneScans": {
+            "before": 1,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 18.811,
+            "min": 18.62,
+            "max": 19.077
+          },
+          "afterMs": {
+            "median": 2.816,
+            "min": 2.779,
+            "max": 3.012
+          }
+        },
+        {
+          "label": "today-actions",
+          "changed": true,
+          "sql": "WITH bo_read(bo_c0,bo_c1,bo_c2,bo_c3,bo_c4,bo_c5,bo_c6,bo_c7,bo_c8,bo_c9,bo_c10,bo_c11,bo_c12,bo_c13,bo_c14,bo_c15,bo_c16,bo_c17,bo_c18,bo_c19,bo_c20,bo_c21,bo_c22,bo_c23,bo_c24,bo_c25,bo_c26,bo_c27,bo_c28) AS (select \"actions\".\"id\", \"actions\".\"title\", \"actions\".\"description\", \"actions\".\"status\", \"actions\".\"priority\", \"actions\".\"assignee_membership_id\", \"user\".\"name\", \"workspace_memberships\".\"status\"='active' AND \"workspace_memberships\".\"role\" IN ('owner','admin','project_manager','team_member'), \"actions\".\"due_date\", \"actions\".\"waiting_type\", \"actions\".\"waiting_reason\", \"actions\".\"visibility\", \"actions\".\"revision\", \"actions\".\"completed_at\", \"actions\".\"created_at\", \"actions\".\"updated_at\", \"projects\".\"id\", \"projects\".\"name\", \"bloomops_clients\".\"id\", \"bloomops_clients\".\"name\", \"bloomops_clients\".\"timezone\", \"projects\".\"service_engagement_id\", \"service_types\".\"name\", \"departments\".\"id\", \"departments\".\"name\", (\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1), EXISTS (\n  SELECT 1 FROM action_dependencies edge JOIN actions prerequisite\n    ON prerequisite.workspace_id=edge.workspace_id AND prerequisite.project_id=edge.project_id AND prerequisite.id=edge.depends_on_action_id\n  WHERE edge.workspace_id=\"actions\".\"workspace_id\" AND edge.project_id=\"actions\".\"project_id\" AND edge.action_id=\"actions\".\"id\" AND prerequisite.status<>'done'), \"milestones\".\"id\", \"milestones\".\"name\" from \"actions\" inner join \"projects\" on (\"projects\".\"workspace_id\" = \"actions\".\"workspace_id\" and \"projects\".\"id\" = \"actions\".\"project_id\") inner join \"bloomops_clients\" on (\"bloomops_clients\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"bloomops_clients\".\"id\" = \"projects\".\"client_id\") left join \"service_engagements\" on (\"service_engagements\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"service_engagements\".\"id\" = \"projects\".\"service_engagement_id\") left join \"service_types\" on (\"service_types\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"service_types\".\"id\" = \"service_engagements\".\"service_type_id\") left join \"departments\" on (\"departments\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"departments\".\"id\" = coalesce(\"service_types\".\"department_id\", \"projects\".\"department_id\")) left join \"workspace_memberships\" on (\"workspace_memberships\".\"workspace_id\" = \"actions\".\"workspace_id\" and \"workspace_memberships\".\"id\" = \"actions\".\"assignee_membership_id\") left join \"user\" on \"user\".\"id\" = \"workspace_memberships\".\"user_id\" left join \"milestones\" on (\"milestones\".\"id\" = \"actions\".\"milestone_id\" and (\"milestones\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"milestones\".\"project_id\" = \"projects\".\"id\" and (\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1) and 1)) where ((\"actions\".\"workspace_id\" = ? and \"actions\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"actions\".\"project_id\" = \"projects\".\"id\" and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and ((\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1) OR 0) and 1) and (\"actions\".\"status\" NOT IN ('done','cancelled') and \"actions\".\"due_date\"=coalesce(json_extract(?, '$.' || json_quote(\"bloomops_clients\".\"timezone\")), ?))) order by \"actions\".\"due_date\" IS NULL, \"actions\".\"due_date\" asc, CASE \"actions\".\"priority\" WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'normal' THEN 2 ELSE 3 END, \"actions\".\"id\" asc limit ?) SELECT * FROM bo_read",
+          "bindings": 23,
+          "returnedRows": 5,
+          "beforePlan": [
+            "SEARCH actions USING INDEX actions_project_request_uq (workspace_id=?)",
+            "SCALAR SUBQUERY 4",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 5",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SCAN json_each VIRTUAL TABLE INDEX 1:",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SCALAR SUBQUERY 3",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "afterPlan": [
+            "SEARCH actions USING INDEX actions_project_request_uq (workspace_id=?)",
+            "SCALAR SUBQUERY 4",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 5",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SCALAR SUBQUERY 3",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "timezoneScans": {
+            "before": 1,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 18.06,
+            "min": 17.787,
+            "max": 18.74
+          },
+          "afterMs": {
+            "median": 1.997,
+            "min": 1.962,
+            "max": 2.16
+          }
+        },
+        {
+          "label": "waiting-actions",
+          "changed": false,
+          "sql": "WITH bo_read(bo_c0,bo_c1,bo_c2,bo_c3,bo_c4,bo_c5,bo_c6,bo_c7,bo_c8,bo_c9,bo_c10,bo_c11,bo_c12,bo_c13,bo_c14,bo_c15,bo_c16,bo_c17,bo_c18,bo_c19,bo_c20,bo_c21,bo_c22,bo_c23,bo_c24,bo_c25,bo_c26,bo_c27,bo_c28) AS (select \"actions\".\"id\", \"actions\".\"title\", \"actions\".\"description\", \"actions\".\"status\", \"actions\".\"priority\", \"actions\".\"assignee_membership_id\", \"user\".\"name\", \"workspace_memberships\".\"status\"='active' AND \"workspace_memberships\".\"role\" IN ('owner','admin','project_manager','team_member'), \"actions\".\"due_date\", \"actions\".\"waiting_type\", \"actions\".\"waiting_reason\", \"actions\".\"visibility\", \"actions\".\"revision\", \"actions\".\"completed_at\", \"actions\".\"created_at\", \"actions\".\"updated_at\", \"projects\".\"id\", \"projects\".\"name\", \"bloomops_clients\".\"id\", \"bloomops_clients\".\"name\", \"bloomops_clients\".\"timezone\", \"projects\".\"service_engagement_id\", \"service_types\".\"name\", \"departments\".\"id\", \"departments\".\"name\", (\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1), EXISTS (\n  SELECT 1 FROM action_dependencies edge JOIN actions prerequisite\n    ON prerequisite.workspace_id=edge.workspace_id AND prerequisite.project_id=edge.project_id AND prerequisite.id=edge.depends_on_action_id\n  WHERE edge.workspace_id=\"actions\".\"workspace_id\" AND edge.project_id=\"actions\".\"project_id\" AND edge.action_id=\"actions\".\"id\" AND prerequisite.status<>'done'), \"milestones\".\"id\", \"milestones\".\"name\" from \"actions\" inner join \"projects\" on (\"projects\".\"workspace_id\" = \"actions\".\"workspace_id\" and \"projects\".\"id\" = \"actions\".\"project_id\") inner join \"bloomops_clients\" on (\"bloomops_clients\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"bloomops_clients\".\"id\" = \"projects\".\"client_id\") left join \"service_engagements\" on (\"service_engagements\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"service_engagements\".\"id\" = \"projects\".\"service_engagement_id\") left join \"service_types\" on (\"service_types\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"service_types\".\"id\" = \"service_engagements\".\"service_type_id\") left join \"departments\" on (\"departments\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"departments\".\"id\" = coalesce(\"service_types\".\"department_id\", \"projects\".\"department_id\")) left join \"workspace_memberships\" on (\"workspace_memberships\".\"workspace_id\" = \"actions\".\"workspace_id\" and \"workspace_memberships\".\"id\" = \"actions\".\"assignee_membership_id\") left join \"user\" on \"user\".\"id\" = \"workspace_memberships\".\"user_id\" left join \"milestones\" on (\"milestones\".\"id\" = \"actions\".\"milestone_id\" and (\"milestones\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"milestones\".\"project_id\" = \"projects\".\"id\" and (\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1) and 1)) where ((\"actions\".\"workspace_id\" = ? and \"actions\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"actions\".\"project_id\" = \"projects\".\"id\" and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and ((\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1) OR 0) and 1) and \"actions\".\"status\" = ?) order by \"actions\".\"due_date\" IS NULL, \"actions\".\"due_date\" asc, CASE \"actions\".\"priority\" WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'normal' THEN 2 ELSE 3 END, \"actions\".\"id\" asc limit ?) SELECT * FROM bo_read",
+          "bindings": 22,
+          "returnedRows": 5,
+          "beforePlan": [
+            "SEARCH actions USING INDEX actions_project_request_uq (workspace_id=?)",
+            "SCALAR SUBQUERY 4",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 5",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SCALAR SUBQUERY 3",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "afterPlan": [
+            "SEARCH actions USING INDEX actions_project_request_uq (workspace_id=?)",
+            "SCALAR SUBQUERY 4",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 5",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SCALAR SUBQUERY 3",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "timezoneScans": {
+            "before": 0,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 0.632,
+            "min": 0.616,
+            "max": 0.66
+          },
+          "afterMs": {
+            "median": 0.64,
+            "min": 0.621,
+            "max": 0.92
+          }
+        },
+        {
+          "label": "review-actions",
+          "changed": false,
+          "sql": "WITH bo_read(bo_c0,bo_c1,bo_c2,bo_c3,bo_c4,bo_c5,bo_c6,bo_c7,bo_c8,bo_c9,bo_c10,bo_c11,bo_c12,bo_c13,bo_c14,bo_c15,bo_c16,bo_c17,bo_c18,bo_c19,bo_c20,bo_c21,bo_c22,bo_c23,bo_c24,bo_c25,bo_c26,bo_c27,bo_c28) AS (select \"actions\".\"id\", \"actions\".\"title\", \"actions\".\"description\", \"actions\".\"status\", \"actions\".\"priority\", \"actions\".\"assignee_membership_id\", \"user\".\"name\", \"workspace_memberships\".\"status\"='active' AND \"workspace_memberships\".\"role\" IN ('owner','admin','project_manager','team_member'), \"actions\".\"due_date\", \"actions\".\"waiting_type\", \"actions\".\"waiting_reason\", \"actions\".\"visibility\", \"actions\".\"revision\", \"actions\".\"completed_at\", \"actions\".\"created_at\", \"actions\".\"updated_at\", \"projects\".\"id\", \"projects\".\"name\", \"bloomops_clients\".\"id\", \"bloomops_clients\".\"name\", \"bloomops_clients\".\"timezone\", \"projects\".\"service_engagement_id\", \"service_types\".\"name\", \"departments\".\"id\", \"departments\".\"name\", (\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1), EXISTS (\n  SELECT 1 FROM action_dependencies edge JOIN actions prerequisite\n    ON prerequisite.workspace_id=edge.workspace_id AND prerequisite.project_id=edge.project_id AND prerequisite.id=edge.depends_on_action_id\n  WHERE edge.workspace_id=\"actions\".\"workspace_id\" AND edge.project_id=\"actions\".\"project_id\" AND edge.action_id=\"actions\".\"id\" AND prerequisite.status<>'done'), \"milestones\".\"id\", \"milestones\".\"name\" from \"actions\" inner join \"projects\" on (\"projects\".\"workspace_id\" = \"actions\".\"workspace_id\" and \"projects\".\"id\" = \"actions\".\"project_id\") inner join \"bloomops_clients\" on (\"bloomops_clients\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"bloomops_clients\".\"id\" = \"projects\".\"client_id\") left join \"service_engagements\" on (\"service_engagements\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"service_engagements\".\"id\" = \"projects\".\"service_engagement_id\") left join \"service_types\" on (\"service_types\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"service_types\".\"id\" = \"service_engagements\".\"service_type_id\") left join \"departments\" on (\"departments\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"departments\".\"id\" = coalesce(\"service_types\".\"department_id\", \"projects\".\"department_id\")) left join \"workspace_memberships\" on (\"workspace_memberships\".\"workspace_id\" = \"actions\".\"workspace_id\" and \"workspace_memberships\".\"id\" = \"actions\".\"assignee_membership_id\") left join \"user\" on \"user\".\"id\" = \"workspace_memberships\".\"user_id\" left join \"milestones\" on (\"milestones\".\"id\" = \"actions\".\"milestone_id\" and (\"milestones\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"milestones\".\"project_id\" = \"projects\".\"id\" and (\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1) and 1)) where ((\"actions\".\"workspace_id\" = ? and \"actions\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"actions\".\"project_id\" = \"projects\".\"id\" and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and ((\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1) OR 0) and 1) and \"actions\".\"status\" = ?) order by \"actions\".\"due_date\" IS NULL, \"actions\".\"due_date\" asc, CASE \"actions\".\"priority\" WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'normal' THEN 2 ELSE 3 END, \"actions\".\"id\" asc limit ?) SELECT * FROM bo_read",
+          "bindings": 22,
+          "returnedRows": 5,
+          "beforePlan": [
+            "SEARCH actions USING INDEX actions_project_request_uq (workspace_id=?)",
+            "SCALAR SUBQUERY 4",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 5",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SCALAR SUBQUERY 3",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "afterPlan": [
+            "SEARCH actions USING INDEX actions_project_request_uq (workspace_id=?)",
+            "SCALAR SUBQUERY 4",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 5",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SCALAR SUBQUERY 3",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "timezoneScans": {
+            "before": 0,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 0.624,
+            "min": 0.615,
+            "max": 0.774
+          },
+          "afterMs": {
+            "median": 0.634,
+            "min": 0.615,
+            "max": 0.683
+          }
+        },
+        {
+          "label": "attention-projects",
+          "changed": true,
+          "sql": "WITH bo_read(bo_c0,bo_c1,bo_c2,bo_c3,bo_c4,bo_c5,bo_c6,bo_c7,bo_c8,bo_c9,bo_c10,bo_c11,bo_c12,bo_c13) AS (with \"readable_project_summaries\" as (select \"projects\".\"id\", \"projects\".\"name\", \"projects\".\"status\", \"projects\".\"health\", \"projects\".\"target_date\", \"bloomops_clients\".\"name\" as \"client_name\", \"service_types\".\"name\" as \"service_name\", \"departments\".\"name\" as \"department_name\", coalesce(\"user\".\"name\", \"user\".\"email\") as \"owner_name\", (SELECT json_object('total', count(*), 'finished', coalesce(sum(milestones.status IN ('completed','skipped')),0))\n      FROM milestones WHERE (\"milestones\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"milestones\".\"project_id\" = \"projects\".\"id\" and (\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1) and 1)) as \"milestone_summary\", (SELECT json_object('open', coalesce(sum(\"actions\".\"status\" NOT IN ('done','cancelled')),0),\n      'waiting', coalesce(sum(\"actions\".\"status\" = ?),0),\n      'review', coalesce(sum(\"actions\".\"status\" = ?),0),\n      'overdue', coalesce(sum((\"actions\".\"status\" NOT IN ('done','cancelled') and \"actions\".\"due_date\"<coalesce(json_extract(?, '$.' || json_quote(\"bloomops_clients\".\"timezone\")), ?) and NOT EXISTS (\n  SELECT 1 FROM action_dependencies edge JOIN actions prerequisite\n    ON prerequisite.workspace_id=edge.workspace_id AND prerequisite.project_id=edge.project_id AND prerequisite.id=edge.depends_on_action_id\n  WHERE edge.workspace_id=\"actions\".\"workspace_id\" AND edge.project_id=\"actions\".\"project_id\" AND edge.action_id=\"actions\".\"id\" AND prerequisite.status<>'done'))),0))\n      FROM actions WHERE (\"actions\".\"workspace_id\" = ? and \"actions\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"actions\".\"project_id\" = \"projects\".\"id\" and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and ((\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1) OR 0) and 1)) as \"action_summary\", (SELECT json_object('total', count(*),\n      'planned', coalesce(sum(deliverables.status='planned'),0), 'inProgress', coalesce(sum(deliverables.status='in_progress'),0),\n      'internalReview', coalesce(sum(deliverables.status='internal_review'),0), 'clientReview', coalesce(sum(deliverables.status='client_review'),0),\n      'approved', coalesce(sum(deliverables.status='approved'),0), 'delivered', coalesce(sum(deliverables.status='delivered'),0),\n      'cancelled', coalesce(sum(deliverables.status='cancelled'),0))\n      FROM deliverables WHERE (\"deliverables\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"deliverables\".\"project_id\" = \"projects\".\"id\" and (\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1) and 1)) as \"deliverable_summary\", (SELECT count(*) FROM assets JOIN asset_links ON asset_links.asset_id=assets.id AND asset_links.workspace_id=assets.workspace_id\n      WHERE asset_links.project_id=\"projects\".\"id\" AND asset_links.workspace_id=\"projects\".\"workspace_id\" AND (\"assets\".\"workspace_id\" = ? and \"assets\".\"status\" = ? and EXISTS (SELECT 1 FROM asset_links JOIN projects ON projects.id=asset_links.project_id AND projects.workspace_id=asset_links.workspace_id\n      LEFT JOIN deliverables ON deliverables.id=asset_links.deliverable_id AND deliverables.project_id=projects.id AND deliverables.workspace_id=projects.workspace_id\n      WHERE asset_links.asset_id=\"assets\".\"id\" AND asset_links.workspace_id=\"assets\".\"workspace_id\"\n      AND (\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1) AND 1\n      AND (asset_links.deliverable_id IS NULL OR (deliverables.id IS NOT NULL AND 1))))) as \"ready_files\" from \"projects\" inner join \"bloomops_clients\" on (\"bloomops_clients\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"bloomops_clients\".\"id\" = \"projects\".\"client_id\") left join \"service_engagements\" on (\"service_engagements\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"service_engagements\".\"id\" = \"projects\".\"service_engagement_id\") left join \"service_types\" on (\"service_types\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"service_types\".\"id\" = \"service_engagements\".\"service_type_id\") left join \"departments\" on (\"departments\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"departments\".\"id\" = coalesce(\"service_types\".\"department_id\", \"projects\".\"department_id\")) left join \"workspace_memberships\" on (\"workspace_memberships\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"workspace_memberships\".\"id\" = \"projects\".\"owner_membership_id\") left join \"user\" on \"user\".\"id\" = \"workspace_memberships\".\"user_id\" where (\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1)) select \"id\", \"name\", \"status\", \"health\", \"target_date\", \"client_name\", \"service_name\", \"department_name\", \"owner_name\", \"milestone_summary\", \"action_summary\", \"deliverable_summary\", \"ready_files\", CASE\n  WHEN \"status\" IN ('completed','cancelled','archived') THEN 0\n  WHEN \"health\"='at_risk' THEN 1 WHEN \"status\"='blocked' THEN 2\n  WHEN \"health\"='needs_attention' THEN 3 WHEN \"status\"='waiting' THEN 4\n  WHEN json_extract(\"action_summary\",'$.overdue')>0 THEN 5\n  WHEN json_extract(\"deliverable_summary\",'$.clientReview')>0 THEN 6\n  WHEN json_extract(\"deliverable_summary\",'$.internalReview')>0 THEN 7\n  WHEN json_extract(\"action_summary\",'$.review')>0 THEN 8\n  WHEN json_extract(\"action_summary\",'$.waiting')>0 THEN 9 ELSE 0 END from \"readable_project_summaries\" where CASE\n  WHEN \"readable_project_summaries\".\"status\" IN ('completed','cancelled','archived') THEN 0\n  WHEN \"readable_project_summaries\".\"health\"='at_risk' THEN 1 WHEN \"readable_project_summaries\".\"status\"='blocked' THEN 2\n  WHEN \"readable_project_summaries\".\"health\"='needs_attention' THEN 3 WHEN \"readable_project_summaries\".\"status\"='waiting' THEN 4\n  WHEN json_extract(\"action_summary\",'$.overdue')>0 THEN 5\n  WHEN json_extract(\"deliverable_summary\",'$.clientReview')>0 THEN 6\n  WHEN json_extract(\"deliverable_summary\",'$.internalReview')>0 THEN 7\n  WHEN json_extract(\"action_summary\",'$.review')>0 THEN 8\n  WHEN json_extract(\"action_summary\",'$.waiting')>0 THEN 9 ELSE 0 END>0 order by CASE\n  WHEN \"readable_project_summaries\".\"status\" IN ('completed','cancelled','archived') THEN 0\n  WHEN \"readable_project_summaries\".\"health\"='at_risk' THEN 1 WHEN \"readable_project_summaries\".\"status\"='blocked' THEN 2\n  WHEN \"readable_project_summaries\".\"health\"='needs_attention' THEN 3 WHEN \"readable_project_summaries\".\"status\"='waiting' THEN 4\n  WHEN json_extract(\"action_summary\",'$.overdue')>0 THEN 5\n  WHEN json_extract(\"deliverable_summary\",'$.clientReview')>0 THEN 6\n  WHEN json_extract(\"deliverable_summary\",'$.internalReview')>0 THEN 7\n  WHEN json_extract(\"action_summary\",'$.review')>0 THEN 8\n  WHEN json_extract(\"action_summary\",'$.waiting')>0 THEN 9 ELSE 0 END asc, \"readable_project_summaries\".\"target_date\" IS NULL, \"readable_project_summaries\".\"target_date\" asc, \"readable_project_summaries\".\"name\" asc, \"readable_project_summaries\".\"id\" asc limit ?) SELECT * FROM bo_read",
+          "bindings": 37,
+          "returnedRows": 6,
+          "beforePlan": [
+            "SEARCH projects USING INDEX projects_ws_owner_idx (workspace_id=?)",
+            "SCALAR SUBQUERY 13",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH actions USING INDEX actions_ws_project_status_due_idx (workspace_id=? AND project_id=?)",
+            "SCALAR SUBQUERY 5",
+            "SCALAR SUBQUERY 6",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SCAN json_each VIRTUAL TABLE INDEX 1:",
+            "CORRELATED SCALAR SUBQUERY 4",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 9",
+            "SEARCH deliverables USING INDEX deliverables_ws_project_id_uq (workspace_id=? AND project_id=?)",
+            "SCALAR SUBQUERY 8",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=?)",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 12",
+            "SEARCH asset_links USING INDEX asset_links_ws_project_idx (workspace_id=? AND project_id=?)",
+            "SEARCH assets USING INDEX assets_ws_id_uq (workspace_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH asset_links USING INDEX sqlite_autoindex_asset_links_1 (asset_id=?)",
+            "SCALAR SUBQUERY 10",
+            "SEARCH projects USING COVERING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH deliverables USING COVERING INDEX deliverables_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "afterPlan": [
+            "SEARCH projects USING INDEX projects_ws_owner_idx (workspace_id=?)",
+            "SCALAR SUBQUERY 12",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH actions USING INDEX actions_ws_project_status_due_idx (workspace_id=? AND project_id=?)",
+            "SCALAR SUBQUERY 4",
+            "SCALAR SUBQUERY 5",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 8",
+            "SEARCH deliverables USING INDEX deliverables_ws_project_id_uq (workspace_id=? AND project_id=?)",
+            "SCALAR SUBQUERY 7",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=?)",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH asset_links USING INDEX asset_links_ws_project_idx (workspace_id=? AND project_id=?)",
+            "SEARCH assets USING INDEX assets_ws_id_uq (workspace_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 10",
+            "SEARCH asset_links USING INDEX sqlite_autoindex_asset_links_1 (asset_id=?)",
+            "SCALAR SUBQUERY 9",
+            "SEARCH projects USING COVERING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH deliverables USING COVERING INDEX deliverables_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "timezoneScans": {
+            "before": 10,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 43.2,
+            "min": 42.51,
+            "max": 49.195
+          },
+          "afterMs": {
+            "median": 7.225,
+            "min": 7.026,
+            "max": 9.785
+          }
+        },
+        {
+          "label": "forward-deliverables",
+          "changed": true,
+          "sql": "WITH bo_read(bo_c0,bo_c1,bo_c2,bo_c3,bo_c4,bo_c5,bo_c6) AS (select \"deliverables\".\"id\", \"deliverables\".\"title\", \"deliverables\".\"status\", \"deliverables\".\"target_date\", \"projects\".\"id\", \"projects\".\"name\", \"bloomops_clients\".\"name\" from \"deliverables\" inner join \"projects\" on (\"projects\".\"workspace_id\" = \"deliverables\".\"workspace_id\" and \"projects\".\"id\" = \"deliverables\".\"project_id\") inner join \"bloomops_clients\" on (\"bloomops_clients\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"bloomops_clients\".\"id\" = \"projects\".\"client_id\") where ((\"deliverables\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"deliverables\".\"project_id\" = \"projects\".\"id\" and (\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1) and 1) and \"deliverables\".\"status\" NOT IN ('delivered','cancelled') and (\"deliverables\".\"status\" IN ('client_review','approved','internal_review') OR \"deliverables\".\"target_date\"<=date(coalesce(json_extract(?, '$.' || json_quote(\"bloomops_clients\".\"timezone\")), ?), '+14 days'))) order by CASE \"deliverables\".\"status\" WHEN 'client_review' THEN 0 WHEN 'approved' THEN 1 WHEN 'internal_review' THEN 2 ELSE 3 END, \"deliverables\".\"target_date\" IS NULL, \"deliverables\".\"target_date\" asc, \"deliverables\".\"id\" asc limit ?) SELECT * FROM bo_read",
+          "bindings": 8,
+          "returnedRows": 7,
+          "beforePlan": [
+            "SEARCH deliverables USING INDEX deliverables_ws_project_visibility_idx (workspace_id=?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SCAN json_each VIRTUAL TABLE INDEX 1:",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "afterPlan": [
+            "SEARCH deliverables USING INDEX deliverables_ws_project_visibility_idx (workspace_id=?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "timezoneScans": {
+            "before": 1,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 0.191,
+            "min": 0.176,
+            "max": 0.316
+          },
+          "afterMs": {
+            "median": 0.191,
+            "min": 0.172,
+            "max": 0.257
+          }
+        },
+        {
+          "label": "recent-deliveries",
+          "changed": false,
+          "sql": "WITH bo_read(bo_c0,bo_c1,bo_c2,bo_c3,bo_c4,bo_c5,bo_c6) AS (select \"activity_events\".\"id\", \"activity_events\".\"occurred_at\", \"projects\".\"id\", \"projects\".\"name\", \"bloomops_clients\".\"name\", \"deliverables\".\"id\", \"deliverables\".\"title\" from \"activity_events\" inner join \"deliverables\" on (\"deliverables\".\"workspace_id\" = \"activity_events\".\"workspace_id\" and \"deliverables\".\"id\" = \"activity_events\".\"subject_id\") inner join \"projects\" on (\"projects\".\"workspace_id\" = \"deliverables\".\"workspace_id\" and \"projects\".\"id\" = \"deliverables\".\"project_id\") inner join \"bloomops_clients\" on (\"bloomops_clients\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"bloomops_clients\".\"id\" = \"projects\".\"client_id\") where ((\"activity_events\".\"workspace_id\" = ? and \"activity_events\".\"occurred_at\">=? and \"activity_events\".\"occurred_at\"<=?) and \"activity_events\".\"subject_type\" = ? and \"activity_events\".\"event_type\" = ? and json_extract(\"activity_events\".\"metadata_json\",'$.to')='delivered' and \"deliverables\".\"status\" = ? and (\"deliverables\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"deliverables\".\"project_id\" = \"projects\".\"id\" and (\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1) and 1)) order by \"activity_events\".\"occurred_at\" desc, \"activity_events\".\"id\" desc limit ?) SELECT * FROM bo_read",
+          "bindings": 12,
+          "returnedRows": 7,
+          "beforePlan": [
+            "SEARCH activity_events USING INDEX activity_events_ws_occurred_idx (workspace_id=? AND occurred_at>? AND occurred_at<?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH deliverables USING INDEX sqlite_autoindex_deliverables_1 (id=?)",
+            "SEARCH projects USING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+          ],
+          "afterPlan": [
+            "SEARCH activity_events USING INDEX activity_events_ws_occurred_idx (workspace_id=? AND occurred_at>? AND occurred_at<?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH deliverables USING INDEX sqlite_autoindex_deliverables_1 (id=?)",
+            "SEARCH projects USING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+          ],
+          "timezoneScans": {
+            "before": 0,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 0.251,
+            "min": 0.245,
+            "max": 0.263
+          },
+          "afterMs": {
+            "median": 0.253,
+            "min": 0.242,
+            "max": 0.278
+          }
+        },
+        {
+          "label": "recent-files",
+          "changed": false,
+          "sql": "WITH bo_read(bo_c0,bo_c1,bo_c2,bo_c3,bo_c4,bo_c5,bo_c6) AS (select \"activity_events\".\"id\", \"activity_events\".\"occurred_at\", \"projects\".\"id\", \"projects\".\"name\", \"bloomops_clients\".\"name\", \"assets\".\"id\", \"assets\".\"filename\" from \"activity_events\" inner join \"assets\" on (\"assets\".\"workspace_id\" = \"activity_events\".\"workspace_id\" and \"assets\".\"id\" = \"activity_events\".\"subject_id\") inner join \"asset_links\" on (\"asset_links\".\"workspace_id\" = \"assets\".\"workspace_id\" and \"asset_links\".\"asset_id\" = \"assets\".\"id\") inner join \"projects\" on (\"projects\".\"workspace_id\" = \"asset_links\".\"workspace_id\" and \"projects\".\"id\" = \"asset_links\".\"project_id\") inner join \"bloomops_clients\" on (\"bloomops_clients\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"bloomops_clients\".\"id\" = \"projects\".\"client_id\") where ((\"activity_events\".\"workspace_id\" = ? and \"activity_events\".\"occurred_at\">=? and \"activity_events\".\"occurred_at\"<=?) and \"activity_events\".\"subject_type\" = ? and \"activity_events\".\"event_type\" = ? and (\"assets\".\"workspace_id\" = ? and \"assets\".\"status\" = ? and EXISTS (SELECT 1 FROM asset_links JOIN projects ON projects.id=asset_links.project_id AND projects.workspace_id=asset_links.workspace_id\n      LEFT JOIN deliverables ON deliverables.id=asset_links.deliverable_id AND deliverables.project_id=projects.id AND deliverables.workspace_id=projects.workspace_id\n      WHERE asset_links.asset_id=\"assets\".\"id\" AND asset_links.workspace_id=\"assets\".\"workspace_id\"\n      AND (\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1) AND 1\n      AND (asset_links.deliverable_id IS NULL OR (deliverables.id IS NOT NULL AND 1))))) order by \"activity_events\".\"occurred_at\" desc, \"activity_events\".\"id\" desc limit ?) SELECT * FROM bo_read",
+          "bindings": 13,
+          "returnedRows": 7,
+          "beforePlan": [
+            "SEARCH activity_events USING INDEX activity_events_ws_occurred_idx (workspace_id=? AND occurred_at>? AND occurred_at<?)",
+            "SEARCH assets USING INDEX assets_ws_id_uq (workspace_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH asset_links USING INDEX sqlite_autoindex_asset_links_1 (asset_id=?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING COVERING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH deliverables USING COVERING INDEX deliverables_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SEARCH projects USING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+          ],
+          "afterPlan": [
+            "SEARCH activity_events USING INDEX activity_events_ws_occurred_idx (workspace_id=? AND occurred_at>? AND occurred_at<?)",
+            "SEARCH assets USING INDEX assets_ws_id_uq (workspace_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH asset_links USING INDEX sqlite_autoindex_asset_links_1 (asset_id=?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING COVERING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH deliverables USING COVERING INDEX deliverables_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SEARCH projects USING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+          ],
+          "timezoneScans": {
+            "before": 0,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 0.386,
+            "min": 0.374,
+            "max": 0.435
+          },
+          "afterMs": {
+            "median": 0.387,
+            "min": 0.372,
+            "max": 0.494
+          }
+        },
+        {
+          "label": "action-timezones",
+          "changed": false,
+          "sql": "WITH bo_read(bo_c0) AS (select \"bloomops_clients\".\"timezone\" from \"actions\" inner join \"projects\" on (\"projects\".\"workspace_id\" = \"actions\".\"workspace_id\" and \"projects\".\"id\" = \"actions\".\"project_id\") inner join \"bloomops_clients\" on (\"bloomops_clients\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"bloomops_clients\".\"id\" = \"projects\".\"client_id\") left join \"service_engagements\" on (\"service_engagements\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"service_engagements\".\"id\" = \"projects\".\"service_engagement_id\") left join \"service_types\" on (\"service_types\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"service_types\".\"id\" = \"service_engagements\".\"service_type_id\") left join \"departments\" on (\"departments\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"departments\".\"id\" = coalesce(\"service_types\".\"department_id\", \"projects\".\"department_id\")) where (\"actions\".\"workspace_id\" = ? and \"actions\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"actions\".\"project_id\" = \"projects\".\"id\" and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and ((\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1) OR 0) and 1) group by \"bloomops_clients\".\"timezone\") SELECT * FROM bo_read",
+          "bindings": 10,
+          "returnedRows": 1,
+          "beforePlan": [
+            "CO-ROUTINE bo_read",
+            "SEARCH actions USING COVERING INDEX actions_ws_project_status_due_idx (workspace_id=?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 2",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING COVERING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "USE TEMP B-TREE FOR GROUP BY",
+            "SCAN bo_read"
+          ],
+          "afterPlan": [
+            "CO-ROUTINE bo_read",
+            "SEARCH actions USING COVERING INDEX actions_ws_project_status_due_idx (workspace_id=?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 2",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING COVERING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "USE TEMP B-TREE FOR GROUP BY",
+            "SCAN bo_read"
+          ],
+          "timezoneScans": {
+            "before": 0,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 0.682,
+            "min": 0.668,
+            "max": 0.715
+          },
+          "afterMs": {
+            "median": 0.678,
+            "min": 0.657,
+            "max": 0.708
+          }
+        },
+        {
+          "label": "project-timezones",
+          "changed": false,
+          "sql": "WITH bo_read(bo_c0) AS (select \"bloomops_clients\".\"timezone\" from \"projects\" inner join \"bloomops_clients\" on (\"bloomops_clients\".\"workspace_id\" = \"projects\".\"workspace_id\" and \"bloomops_clients\".\"id\" = \"projects\".\"client_id\") where (\"projects\".\"workspace_id\" = ? and EXISTS (SELECT 1 FROM workspace_memberships m JOIN workspaces w ON w.id=m.workspace_id\n    WHERE m.workspace_id=? AND m.id=? AND m.user_id=?\n    AND m.role=? AND m.status='active' AND w.status='active') and 1 and 1) group by \"bloomops_clients\".\"timezone\") SELECT * FROM bo_read",
+          "bindings": 5,
+          "returnedRows": 1,
+          "beforePlan": [
+            "CO-ROUTINE bo_read",
+            "SEARCH projects USING COVERING INDEX projects_ws_client_idx (workspace_id=?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "USE TEMP B-TREE FOR GROUP BY",
+            "SCAN bo_read"
+          ],
+          "afterPlan": [
+            "CO-ROUTINE bo_read",
+            "SEARCH projects USING COVERING INDEX projects_ws_client_idx (workspace_id=?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "USE TEMP B-TREE FOR GROUP BY",
+            "SCAN bo_read"
+          ],
+          "timezoneScans": {
+            "before": 0,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 0.021,
+            "min": 0.021,
+            "max": 0.031
+          },
+          "afterMs": {
+            "median": 0.021,
+            "min": 0.021,
+            "max": 0.021
+          }
+        }
+      ]
+    },
+    {
+      "sqliteVersion": "3.51.3",
+      "counts": {
+        "projects": 301,
+        "actions": 3000,
+        "milestones": 300,
+        "deliverables": 600,
+        "files": 300,
+        "events": 600
+      },
+      "statements": [
+        {
+          "label": "overdue-actions",
+          "changed": true,
+          "bindings": 23,
+          "returnedRows": 5,
+          "beforePlan": [
+            "SEARCH actions USING INDEX actions_project_request_uq (workspace_id=?)",
+            "SCALAR SUBQUERY 4",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 5",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SCAN json_each VIRTUAL TABLE INDEX 1:",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SCALAR SUBQUERY 3",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "afterPlan": [
+            "SEARCH actions USING INDEX actions_project_request_uq (workspace_id=?)",
+            "SCALAR SUBQUERY 4",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 5",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SCALAR SUBQUERY 3",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "timezoneScans": {
+            "before": 1,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 56.036,
+            "min": 55.279,
+            "max": 60.003
+          },
+          "afterMs": {
+            "median": 7.771,
+            "min": 7.538,
+            "max": 8.101
+          }
+        },
+        {
+          "label": "today-actions",
+          "changed": true,
+          "bindings": 23,
+          "returnedRows": 5,
+          "beforePlan": [
+            "SEARCH actions USING INDEX actions_project_request_uq (workspace_id=?)",
+            "SCALAR SUBQUERY 4",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 5",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SCAN json_each VIRTUAL TABLE INDEX 1:",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SCALAR SUBQUERY 3",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "afterPlan": [
+            "SEARCH actions USING INDEX actions_project_request_uq (workspace_id=?)",
+            "SCALAR SUBQUERY 4",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 5",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SCALAR SUBQUERY 3",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "timezoneScans": {
+            "before": 1,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 54.38,
+            "min": 53.56,
+            "max": 56.094
+          },
+          "afterMs": {
+            "median": 5.648,
+            "min": 5.208,
+            "max": 6.204
+          }
+        },
+        {
+          "label": "waiting-actions",
+          "changed": false,
+          "bindings": 22,
+          "returnedRows": 5,
+          "beforePlan": [
+            "SEARCH actions USING INDEX actions_project_request_uq (workspace_id=?)",
+            "SCALAR SUBQUERY 4",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 5",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SCALAR SUBQUERY 3",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "afterPlan": [
+            "SEARCH actions USING INDEX actions_project_request_uq (workspace_id=?)",
+            "SCALAR SUBQUERY 4",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 5",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SCALAR SUBQUERY 3",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "timezoneScans": {
+            "before": 0,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 1.314,
+            "min": 1.276,
+            "max": 1.404
+          },
+          "afterMs": {
+            "median": 1.323,
+            "min": 1.287,
+            "max": 1.435
+          }
+        },
+        {
+          "label": "review-actions",
+          "changed": false,
+          "bindings": 22,
+          "returnedRows": 5,
+          "beforePlan": [
+            "SEARCH actions USING INDEX actions_project_request_uq (workspace_id=?)",
+            "SCALAR SUBQUERY 4",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 5",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SCALAR SUBQUERY 3",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "afterPlan": [
+            "SEARCH actions USING INDEX actions_project_request_uq (workspace_id=?)",
+            "SCALAR SUBQUERY 4",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 5",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SCALAR SUBQUERY 3",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "timezoneScans": {
+            "before": 0,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 1.326,
+            "min": 1.27,
+            "max": 1.487
+          },
+          "afterMs": {
+            "median": 1.322,
+            "min": 1.298,
+            "max": 1.368
+          }
+        },
+        {
+          "label": "attention-projects",
+          "changed": true,
+          "bindings": 37,
+          "returnedRows": 6,
+          "beforePlan": [
+            "SEARCH projects USING INDEX projects_ws_owner_idx (workspace_id=?)",
+            "SCALAR SUBQUERY 13",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH actions USING INDEX actions_ws_project_status_due_idx (workspace_id=? AND project_id=?)",
+            "SCALAR SUBQUERY 5",
+            "SCALAR SUBQUERY 6",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SCAN json_each VIRTUAL TABLE INDEX 1:",
+            "CORRELATED SCALAR SUBQUERY 4",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 9",
+            "SEARCH deliverables USING INDEX deliverables_ws_project_id_uq (workspace_id=? AND project_id=?)",
+            "SCALAR SUBQUERY 8",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=?)",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 12",
+            "SEARCH asset_links USING INDEX asset_links_ws_project_idx (workspace_id=? AND project_id=?)",
+            "SEARCH assets USING INDEX assets_ws_id_uq (workspace_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH asset_links USING INDEX sqlite_autoindex_asset_links_1 (asset_id=?)",
+            "SCALAR SUBQUERY 10",
+            "SEARCH projects USING COVERING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH deliverables USING COVERING INDEX deliverables_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "afterPlan": [
+            "SEARCH projects USING INDEX projects_ws_owner_idx (workspace_id=?)",
+            "SCALAR SUBQUERY 12",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH actions USING INDEX actions_ws_project_status_due_idx (workspace_id=? AND project_id=?)",
+            "SCALAR SUBQUERY 4",
+            "SCALAR SUBQUERY 5",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SEARCH edge USING COVERING INDEX action_dependencies_pair_uq (workspace_id=? AND project_id=? AND action_id=?)",
+            "SEARCH prerequisite USING INDEX actions_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 8",
+            "SEARCH deliverables USING INDEX deliverables_ws_project_id_uq (workspace_id=? AND project_id=?)",
+            "SCALAR SUBQUERY 7",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH workspace_memberships USING INDEX workspace_memberships_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH user USING INDEX sqlite_autoindex_user_1 (id=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH milestones USING INDEX milestones_ws_project_id_uq (workspace_id=? AND project_id=?)",
+            "SCALAR SUBQUERY 1",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH asset_links USING INDEX asset_links_ws_project_idx (workspace_id=? AND project_id=?)",
+            "SEARCH assets USING INDEX assets_ws_id_uq (workspace_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 10",
+            "SEARCH asset_links USING INDEX sqlite_autoindex_asset_links_1 (asset_id=?)",
+            "SCALAR SUBQUERY 9",
+            "SEARCH projects USING COVERING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH deliverables USING COVERING INDEX deliverables_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "timezoneScans": {
+            "before": 10,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 120.097,
+            "min": 118.629,
+            "max": 123.001
+          },
+          "afterMs": {
+            "median": 17.297,
+            "min": 16.756,
+            "max": 17.618
+          }
+        },
+        {
+          "label": "forward-deliverables",
+          "changed": true,
+          "bindings": 8,
+          "returnedRows": 7,
+          "beforePlan": [
+            "SEARCH deliverables USING INDEX deliverables_ws_project_visibility_idx (workspace_id=?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SCAN json_each VIRTUAL TABLE INDEX 1:",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "afterPlan": [
+            "SEARCH deliverables USING INDEX deliverables_ws_project_visibility_idx (workspace_id=?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "USE TEMP B-TREE FOR ORDER BY"
+          ],
+          "timezoneScans": {
+            "before": 1,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 0.341,
+            "min": 0.335,
+            "max": 0.368
+          },
+          "afterMs": {
+            "median": 0.342,
+            "min": 0.332,
+            "max": 0.38
+          }
+        },
+        {
+          "label": "recent-deliveries",
+          "changed": false,
+          "bindings": 12,
+          "returnedRows": 7,
+          "beforePlan": [
+            "SEARCH activity_events USING INDEX activity_events_ws_occurred_idx (workspace_id=? AND occurred_at>? AND occurred_at<?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH deliverables USING INDEX sqlite_autoindex_deliverables_1 (id=?)",
+            "SEARCH projects USING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+          ],
+          "afterPlan": [
+            "SEARCH activity_events USING INDEX activity_events_ws_occurred_idx (workspace_id=? AND occurred_at>? AND occurred_at<?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH deliverables USING INDEX sqlite_autoindex_deliverables_1 (id=?)",
+            "SEARCH projects USING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+          ],
+          "timezoneScans": {
+            "before": 0,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 0.57,
+            "min": 0.56,
+            "max": 0.642
+          },
+          "afterMs": {
+            "median": 0.57,
+            "min": 0.561,
+            "max": 0.587
+          }
+        },
+        {
+          "label": "recent-files",
+          "changed": false,
+          "bindings": 13,
+          "returnedRows": 7,
+          "beforePlan": [
+            "SEARCH activity_events USING INDEX activity_events_ws_occurred_idx (workspace_id=? AND occurred_at>? AND occurred_at<?)",
+            "SEARCH assets USING INDEX assets_ws_id_uq (workspace_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH asset_links USING INDEX sqlite_autoindex_asset_links_1 (asset_id=?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING COVERING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH deliverables USING COVERING INDEX deliverables_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SEARCH projects USING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+          ],
+          "afterPlan": [
+            "SEARCH activity_events USING INDEX activity_events_ws_occurred_idx (workspace_id=? AND occurred_at>? AND occurred_at<?)",
+            "SEARCH assets USING INDEX assets_ws_id_uq (workspace_id=? AND id=?)",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH asset_links USING INDEX sqlite_autoindex_asset_links_1 (asset_id=?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING COVERING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH deliverables USING COVERING INDEX deliverables_ws_project_id_uq (workspace_id=? AND project_id=? AND id=?) LEFT-JOIN",
+            "SEARCH projects USING INDEX projects_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+          ],
+          "timezoneScans": {
+            "before": 0,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 0.956,
+            "min": 0.916,
+            "max": 1.167
+          },
+          "afterMs": {
+            "median": 0.933,
+            "min": 0.913,
+            "max": 1.167
+          }
+        },
+        {
+          "label": "action-timezones",
+          "changed": false,
+          "bindings": 10,
+          "returnedRows": 1,
+          "beforePlan": [
+            "CO-ROUTINE bo_read",
+            "SEARCH actions USING COVERING INDEX actions_ws_project_status_due_idx (workspace_id=?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 2",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING COVERING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "USE TEMP B-TREE FOR GROUP BY",
+            "SCAN bo_read"
+          ],
+          "afterPlan": [
+            "CO-ROUTINE bo_read",
+            "SEARCH actions USING COVERING INDEX actions_ws_project_status_due_idx (workspace_id=?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH projects USING INDEX sqlite_autoindex_projects_1 (id=?)",
+            "SCALAR SUBQUERY 2",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "SEARCH service_engagements USING INDEX service_engagements_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH service_types USING INDEX service_types_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "SEARCH departments USING COVERING INDEX departments_ws_id_uq (workspace_id=? AND id=?) LEFT-JOIN",
+            "USE TEMP B-TREE FOR GROUP BY",
+            "SCAN bo_read"
+          ],
+          "timezoneScans": {
+            "before": 0,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 2.115,
+            "min": 2.07,
+            "max": 2.198
+          },
+          "afterMs": {
+            "median": 2.1,
+            "min": 2.065,
+            "max": 2.331
+          }
+        },
+        {
+          "label": "project-timezones",
+          "changed": false,
+          "bindings": 5,
+          "returnedRows": 1,
+          "beforePlan": [
+            "CO-ROUTINE bo_read",
+            "SEARCH projects USING COVERING INDEX projects_ws_client_idx (workspace_id=?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "USE TEMP B-TREE FOR GROUP BY",
+            "SCAN bo_read"
+          ],
+          "afterPlan": [
+            "CO-ROUTINE bo_read",
+            "SEARCH projects USING COVERING INDEX projects_ws_client_idx (workspace_id=?)",
+            "SCALAR SUBQUERY 1",
+            "SEARCH m USING INDEX sqlite_autoindex_workspace_memberships_1 (id=?)",
+            "SEARCH w USING INDEX sqlite_autoindex_workspaces_1 (id=?)",
+            "SEARCH bloomops_clients USING INDEX bloomops_clients_ws_id_uq (workspace_id=? AND id=?)",
+            "USE TEMP B-TREE FOR GROUP BY",
+            "SCAN bo_read"
+          ],
+          "timezoneScans": {
+            "before": 0,
+            "after": 0
+          },
+          "beforeMs": {
+            "median": 0.108,
+            "min": 0.058,
+            "max": 0.235
+          },
+          "afterMs": {
+            "median": 0.107,
+            "min": 0.057,
+            "max": 0.185
+          }
+        }
+      ]
+    }
+  ]
+}
