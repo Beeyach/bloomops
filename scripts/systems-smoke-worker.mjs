@@ -65,7 +65,12 @@ export default { async fetch(request, env) {
     check('240 assignments yield 50 current Systems Projects and a readable overflow',first.projects.items.length===50&&first.projects.hasMore);
     check('all Projects follow current Systems engagement truth',first.projects.items.every(p=>Number(p.id.slice(2))%2===0));
     check('correlated child summaries reuse all Work Core permissions',first.projects.items.every(p=>p.milestones.total===1&&p.milestones.finished===1&&p.actions.open===1&&p.deliverables.clientReview===1&&p.readyFiles===1));
-    check('Systems issues five metadata statements in two native D1 batches without R2',queryCount===5&&batchCount===2&&!env.FILES);
+    check('Systems issues five metadata statements in one native D1 batch without R2',queryCount===5&&batchCount===1&&!env.FILES);
+    await run("UPDATE bloomops_clients SET timezone='US/Pacific' WHERE id='james'");
+    queries.length=0;batches=0;
+    const alias=await read(team);
+    check('a valid legacy timezone alias falls back to one additional exact authorized batch',alias.projects.items.length===50&&batches===2);
+    await run("UPDATE bloomops_clients SET timezone=NULL WHERE id='james'");
     const second=await read(team,{page:'2'}),third=await read(team,{page:'3'});
     check('all 120 Systems Projects are reachable in deterministic pages',second.projects.items.length===50&&third.projects.items.length===20&&!third.projects.hasMore&&new Set([...first.projects.items,...second.projects.items,...third.projects.items].map(p=>p.id)).size===120);
     check('bounded delivery and facet options exclude non-Systems Services',first.deliverables.items.length===6&&first.deliverables.hasMore&&first.options.services.items.length===1&&first.options.services.items[0].id==='systems');

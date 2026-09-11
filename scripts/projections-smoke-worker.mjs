@@ -65,7 +65,12 @@ export default { async fetch(request, env) {
     const before = await snapshot(); queries.length = 0; batches = 0;
     const dashboard = await home(team), homeQueries = queries.length, homeBatches = batches;
     check('240 live Project assignments fit actual D1 with bounded Home lists', dashboard.projects.items.length===5 && dashboard.projects.hasMore && dashboard.actions.overdue.items.length===4 && dashboard.actions.overdue.hasMore && dashboard.deliverables.items.length===6 && dashboard.deliverables.hasMore && dashboard.recent.items.length===6 && dashboard.recent.hasMore);
-    check('Home issues ten metadata statements in two native D1 batches without any R2 binding', homeQueries===10 && homeBatches===2 && !env.FILES);
+    check('Home issues ten metadata statements in one native D1 batch without any R2 binding', homeQueries===10 && homeBatches===1 && !env.FILES);
+    await run("UPDATE bloomops_clients SET timezone='US/Pacific' WHERE id='james'");
+    queries.length = 0; batches = 0;
+    const aliasHome = await home(team);
+    check('a valid legacy timezone alias falls back to one additional exact authorized batch', aliasHome.actions.today.items.length===4 && !aliasHome.actions.overdue.items.length && batches===2);
+    await run("UPDATE bloomops_clients SET timezone=NULL WHERE id='james'");
     const work = await listProjectSummaries(db, team, { now });
     check('Work returns 200 visible rows plus an overflow signal', work.items.length===200 && work.hasMore);
     check('all Work counts are correlated to their canonical Project', work.items.every(row => row.milestones.finished===1 && row.milestones.total===1 && row.milestones.percentage===100 && row.actions.open===1 && row.actions.overdue===1 && row.deliverables.clientReview===1 && row.readyFiles===1));
