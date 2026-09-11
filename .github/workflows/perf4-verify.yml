@@ -1,0 +1,52 @@
+name: PERF4 branch verification
+
+on:
+  push:
+    branches:
+      - perf/perf4-staging-timing-integration
+
+permissions:
+  contents: read
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  WRANGLER_SEND_METRICS: "false"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install from lockfile
+        run: npm ci
+
+      - name: Syntax and focused PERF4 tests
+        run: |
+          node --check lib/bloomops/server-timing.mjs
+          node --check lib/bloomops/perf4-worker.mjs
+          node --check worker.mjs
+          node --test tests/server-timing.test.mjs tests/perf4-worker.test.mjs
+
+      - name: Full test suite
+        run: npm test
+
+      - name: Next build
+        run: npm run build
+
+      - name: OpenNext Cloudflare build
+        run: npm run cf:build
+
+      - name: Bundle custom staging Worker without deploying
+        run: npx wrangler deploy --dry-run --env staging
+
+      - name: Diff hygiene
+        run: git diff --check a20dbfc93ad9126b59a91ba7e0442634e2b582a2...HEAD
