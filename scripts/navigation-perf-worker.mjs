@@ -2,10 +2,15 @@
 // the deployed entrypoint. No SQL, bound values, identity or response payloads
 // enter the metrics. Synthetic latency is explicitly marked in every sample.
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { channel } from 'node:diagnostics_channel';
 import app from '../.open-next/worker.js';
 import { beginInvocation, completeSample } from './navigation-perf-metrics.mjs';
 
 const requests = new AsyncLocalStorage();
+channel('bloomops.navigation').subscribe(message => {
+  const sample = requests.getStore();
+  if (sample && sample.marks.length < 32) sample.marks.push({ stage: message.stage, event: message.event, atMs: performance.now() - sample.started });
+});
 const environments = new WeakMap();
 const samples = new Map();
 const originals = new WeakMap();
@@ -80,7 +85,7 @@ export default { async fetch(request, env, ctx) {
   const delayMs = Number(env.PERF1_D1_DELAY_MS || 0);
   let environment = environments.get(env);
   if (!environment) { environment = { ...env, DB: measured(env.DB, delayMs) }; environments.set(env, environment); }
-  const sample = { id: crypto.randomUUID(), delayMs, started: performance.now(), queries: [] };
+  const sample = { id: crypto.randomUUID(), delayMs, started: performance.now(), queries: [], marks: [] };
   return requests.run(sample, async () => {
     const response = await app.fetch(request, environment, ctx);
     sample.responseMs = performance.now() - sample.started;
@@ -89,7 +94,14 @@ export default { async fetch(request, env, ctx) {
     samples.set(sample.id, sample);
     if (samples.size > 300) samples.delete(samples.keys().next().value);
     const body = response.body?.pipeThrough(new TransformStream({
-      transform(chunk, controller) { controller.enqueue(chunk); },
+      transform(chunk, controller) {
+        const now = performance.now() - sample.started;
+        sample.firstChunkMs ??= now;
+        sample.lastChunkMs = now;
+        sample.bodyBytes = (sample.bodyBytes || 0) + chunk.byteLength;
+        sample.chunks = (sample.chunks || 0) + 1;
+        controller.enqueue(chunk);
+      },
       flush() {
         completeSample(sample, performance.now() - sample.started);
       },

@@ -30,7 +30,7 @@ Do not automatically load every planning document into context.
 
 Release D — Systems Delivery is the active release. Release C is closed for forward development on verified `main` baseline `1638e3ed9fd33c3725aa3449935b08335b73f1a9`.
 
-Current phase: **PERF2 — Staging Navigation Round-Trip Hardening implemented; independent audit and authenticated staging confirmation pending. D2 remains blocked.**
+Current phase: **PERF3 — Authenticated RSC Completion implementation; independent audit and post-merge authenticated staging acceptance required. D2 remains blocked.**
 
 Release A closed after A11 PR #14 merged as `3deed08d8db2a92fcf4dc29a6a879a9945260049`. Read-only preflight verified [Deploy staging 34175768644](https://github.com/Beeyach/bloomops/actions/runs/34175768644) and [remote zero-to-current 34175768643](https://github.com/Beeyach/bloomops/actions/runs/34175768643) completed successfully on that exact SHA.
 
@@ -56,7 +56,7 @@ Release C and the automatic post-merge workflow follow-ups are verified on `1638
 
 D1 is closed through [PR #31](https://github.com/Beeyach/bloomops/pull/31) on `e5bc81630c47fb6eb51e9bdc6be1687947683643`. Read-only checks verified [Deploy staging 34496059835](https://github.com/Beeyach/bloomops/actions/runs/34496059835) and [Verify zero-to-current 34496059875](https://github.com/Beeyach/bloomops/actions/runs/34496059875) succeeded on that exact SHA.
 
-Current phase file: `docs/phases/PERF2.md`; release sequence: `docs/RELEASE_D.md`. `BUILD_STATE.md` records the current implementation and verification; [PERF2_RESULTS.md](PERF2_RESULTS.md) contains statement/invocation/depth comparisons, representative/stress measurements, body/browser and SQL costs, safe staging evidence and reproduction instructions. [PERF1_RESULTS.md](PERF1_RESULTS.md) and its [numeric samples](evidence/PERF1_navigation.json) remain historical evidence. PERF1 merged on `d0533cb` with both exact-SHA gates passing, but the user's staging retest remained slow. PERF2 independent audit, user-controlled merge, both workflows on its exact merge SHA and a successful user staging retest are required before D2. Ads is Release E.
+Current phase file: `docs/phases/PERF3.md`; release sequence: `docs/RELEASE_D.md`. `BUILD_STATE.md` records current status; [PERF3_RESULTS.md](PERF3_RESULTS.md) contains first-byte/final-body/DOM/frame attribution, representative/stress before/after evidence, current-session workspace composition, verification and live limitations. [PERF2_RESULTS.md](PERF2_RESULTS.md) and [PERF1_RESULTS.md](PERF1_RESULTS.md) remain historical evidence. PERF2 merged on exact base `62bcf019226db1e7e939fbcffc8909f41fbd577a` with both gates passing, but signed-in staging navigation remained slow. PERF3 independent audit, user-controlled merge, both workflows on its exact merge SHA and successful live completion retesting are required before D2. Ads remains Release E; PERF3 measures its existing navigation destination only.
 
 ## Phase Reading Matrix
 
@@ -87,6 +87,7 @@ Current phase file: `docs/phases/PERF2.md`; release sequence: `docs/RELEASE_D.md
 | D1 | `ROADMAP.md`, `RELEASE_D.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `RELEASE_B.md`, `phases/B1.md` through `phases/B7.md`, `phases/D1.md`, current Work Core/Service/authorization/shell code and verification harnesses |
 | PERF1 | `RELEASE_D.md`, `PRODUCT_SPEC.md`, `DOMAIN_MODEL.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md`, `phases/D1.md`, `phases/PERF1.md`, current internal/portal shell/navigation/auth/membership/authorization, Home/Clients/Work/Social/Systems/Team read models, OpenNext/Cloudflare configuration and verification harnesses; `PERF1_RESULTS.md` for implementation review |
 | PERF2 | `phases/PERF2.md`, `PERF2_RESULTS.md`, `PERF1_RESULTS.md`, `DOMAIN_MODEL.md` request-local read composition, `lib/bloomops/read-batch.mjs`, current authorization and seven route read paths, navigation measurement/browser harnesses and native D1 regression smokes; exact base `d0533cb9a7b3646134cbc194767af669c75f5adf` |
+| PERF3 | `phases/PERF3.md` complete Read First list; `PERF3_RESULTS.md`, `DOMAIN_MODEL.md` current-session workspace composition, `workspace-session.mjs`, current Better Auth/Drizzle integration, completion/performance/browser harnesses and issued-session regressions; exact base `62bcf019226db1e7e939fbcffc8909f41fbd577a` |
 
 ## Minimal Coding-Agent Prompt Pattern
 
