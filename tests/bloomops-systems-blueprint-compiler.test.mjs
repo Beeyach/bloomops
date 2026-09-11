@@ -166,6 +166,88 @@ test('getters are refused without execution', () => {
   const selection = ['funnel']; Object.defineProperty(selection, '0', { enumerable: true, get() { called = true; return 'funnel'; } });
   rejects(() => compile(selection), 'invalid_selection'); assert.equal(called, false);
 });
+const sanitizedFailure = (reason, sentinel) => error => {
+  assert.ok(error instanceof SystemsBlueprintError);
+  assert.equal(error.reason, reason);
+  assert.equal(error.message, 'The Systems blueprint could not be compiled.');
+  assert.doesNotMatch(error.stack, new RegExp(sentinel));
+  assert.equal(error.cause, undefined);
+  return true;
+};
+for (const trap of ['getPrototypeOf', 'ownKeys', 'getOwnPropertyDescriptor']) test(`sanitize exotic ${trap} reflection failures`, () => {
+  const sentinel = 'private_reflection_sentinel';
+  const wrap = value => new Proxy(value, { [trap]() { throw new Error(sentinel); } });
+  assert.throws(() => validateSystemsBlueprintDefinition(wrap(source)), sanitizedFailure('invalid_definition', sentinel));
+  assert.throws(() => compileSystemsBlueprint(wrap({ definition: source, selectedComponentKeys: ['funnel'] })), sanitizedFailure('invalid_input', sentinel));
+  const d = definition(); d.actions[0] = wrap(d.actions[0]);
+  assert.throws(() => compile(['funnel'], d), sanitizedFailure('invalid_definition', sentinel));
+  assert.throws(() => compile(wrap(['funnel'])), sanitizedFailure('invalid_selection', sentinel));
+});
+test('revoked proxies and exotic array length failures are sanitized', () => {
+  for (const target of [{}, []]) {
+    const { proxy, revoke } = Proxy.revocable(target, {}); revoke();
+    assert.throws(() => validateSystemsBlueprintDefinition(proxy), sanitizedFailure('invalid_definition', 'private_sentinel'));
+    assert.throws(() => compile(proxy), sanitizedFailure('invalid_selection', 'private_sentinel'));
+  }
+  const selection = new Proxy(['funnel'], { get(target, key) {
+    if (key === 'length') throw new Error('private_length_sentinel');
+    return Reflect.get(target, key);
+  } });
+  assert.throws(() => compile(selection), sanitizedFailure('invalid_selection', 'private_length_sentinel'));
+});
+test('reflection cleanup does not swallow unrelated encoding failures', async () => {
+  const originalDigest = crypto.subtle.digest;
+  const sentinel = new Error('unexpected encoding failure');
+  try {
+    crypto.subtle.digest = () => { throw sentinel; };
+    await assert.rejects(encodeSystemsBlueprintDefinition(source), error => error === sentinel);
+  } finally { crypto.subtle.digest = originalDigest; }
+});
+for (const separator of ['\u0085', '\u2028', '\u2029']) test(`single-line labels reject U+${separator.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')}`, () => {
+  for (const kind of ['milestones', 'actions', 'deliverables']) {
+    const d = definition(); d[kind][0][kind === 'milestones' ? 'name' : 'title'] = `First${separator}Second`;
+    rejects(() => compile(['funnel'], d), 'invalid_definition');
+  }
+});
+
+// Deterministic synthetic size fixtures. JSON escapes lone surrogate code units
+// as six ASCII bytes each; they are valid under the existing UTF-16 title policy.
+// Nothing here changes the default manifest or any production bound.
+function byteLimitFixture(labelLength) {
+  const d = definition();
+  const keys = new Map([...d.components, ...d.milestones, ...d.actions, ...d.deliverables]
+    .map(row => [row.logicalKey, row.logicalKey.padEnd(64, 'x')]));
+  d.blueprintKey = d.blueprintKey.padEnd(64, 'x');
+  for (const row of d.components) {
+    for (const field of ['logicalKey', 'milestoneKey', 'actionKey', 'deliverableKey']) {
+      if (row[field] !== null) row[field] = keys.get(row[field]);
+    }
+  }
+  for (const kind of ['milestones', 'actions', 'deliverables']) for (const row of d[kind]) {
+    row.logicalKey = keys.get(row.logicalKey);
+    row[kind === 'milestones' ? 'name' : 'title'] = '\ud800'.repeat(labelLength);
+  }
+  const actionKeys = d.actions.map(row => row.logicalKey);
+  d.dependencyGroups = [actionKeys.slice(0, 7), actionKeys.slice(7)];
+  return d;
+}
+test('oversized normalized definition returns sanitized definition_too_large', async () => {
+  const d = byteLimitFixture(120);
+  // This fixture is already label-normalized; sorting cannot change its byte size.
+  assert.equal(blueprintByteLength(d), 34178);
+  assert.ok(blueprintByteLength(d) > limits.definitionBytes);
+  assert.throws(() => validateSystemsBlueprintDefinition(d), sanitizedFailure('definition_too_large', 'private_sentinel'));
+  assert.throws(() => compile([d.components[0].logicalKey], d), sanitizedFailure('definition_too_large', 'private_sentinel'));
+  await assert.rejects(encodeSystemsBlueprintDefinition(d), sanitizedFailure('definition_too_large', 'private_sentinel'));
+});
+test('valid bounded definition can reject an oversized compiled plan', () => {
+  const d = byteLimitFixture(105);
+  const normalized = validateSystemsBlueprintDefinition(d);
+  assert.equal(blueprintByteLength(normalized), 31028);
+  assert.ok(blueprintByteLength(normalized) <= limits.definitionBytes);
+  assert.ok(blueprintByteLength(compile([d.components[0].logicalKey], d)) <= limits.planBytes);
+  assert.throws(() => compile(d.components.map(row => row.logicalKey), d), sanitizedFailure('plan_too_large', 'private_sentinel'));
+});
 test('size limits are explicit; exact maximum catalogue is valid, oversized arrays fail', () => {
   const plan = compile(allKeys);
   assert.deepEqual([plan.milestones.length, plan.actions.length, plan.deliverables.length, plan.dependencies.length], [13, 14, 8, 20]);

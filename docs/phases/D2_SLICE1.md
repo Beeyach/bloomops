@@ -60,6 +60,9 @@ permission to execute an external operation.
 All listed fields are required. Unknown fields are rejected at every object level.
 Inputs must be plain JSON-shaped objects/arrays with own data properties: no
 accessors, sparse arrays, extra array properties, symbols or custom prototypes.
+Executable/non-JSON objects are not a supported input interface. Reflection
+failures while checking shapes become sanitized domain rejections; this is not
+a JavaScript sandbox and unrelated compiler/encoding errors are not swallowed.
 
 ```text
 {
@@ -163,7 +166,8 @@ first; malformed cyclic/repeated groups cannot be hidden by selection.
   attain 49; this is a compiler bound, not an increase to Work Core limits.
 - Logical keys: 1–64 lowercase ASCII letters/digits separated by single
   underscores. Text: at most 120 UTF-16 code units before trimming, no ASCII
-  controls. Positions: integers 0–2,147,483,647.
+  controls or Unicode line separators U+0085, U+2028 or U+2029.
+  Positions: integers 0–2,147,483,647.
 - Normalized canonical definition and plan: each at most 32,768 UTF-8 bytes.
 
 Future transaction feasibility is a later-slice proof. These pure bounds are not
@@ -178,3 +182,9 @@ Additional tests exercise all 16,383 nonempty GHL selections, stable identity,
 canonical states, strict input rejection, non-mutation, ordering, DAG/edge bounds,
 version failures and sanitized errors. Existing onboarding compiler/template
 tests cover the reused canonical encoding helpers. See BUILD_STATE for results.
+
+The independent audit of `c255ed62718d6a4e3a6efea6f4c8197d6d059c00` returned
+**PASS WITH NONBLOCKING NOTES**. The follow-up addresses all three low-severity
+notes: narrow reflection-failure sanitization, Unicode single-line validation,
+and deterministic fixtures exercising both byte-limit rejection paths. The
+manifest, logical keys, versions, dependency algorithm and bounds are unchanged.

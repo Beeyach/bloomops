@@ -6,9 +6,17 @@ Release D: Systems Delivery. Release C is closed for forward development on veri
 
 ## Current Phase
 
-**D2 Slice 1 — pure GHL blueprint definition/compiler — is implemented locally on `feat/d2-ghl-blueprint-compiler`, based on canonical main `36b3431483ce54dfde556b636a63ee49ed7ffd79` (performance-closure PR #37).** D2 design passed independent review with three required corrections retained below. Only Slice 1 was authorized; no PR, deployment or Slice 2 work has begun. See [D2_SLICE1.md](phases/D2_SLICE1.md) for the exact contract and manifest.
+**D2 Slice 1 — pure GHL blueprint definition/compiler — is implemented on `feat/d2-ghl-blueprint-compiler`, based on canonical main `36b3431483ce54dfde556b636a63ee49ed7ffd79` (performance-closure PR #37).** Candidate `c255ed62718d6a4e3a6efea6f4c8197d6d059c00` passed independent audit with nonblocking notes; all three low-severity follow-ups are corrected and verified for an unmerged PR. Only Slice 1 is authorized. No deployment or Slice 2 work has begun. See [D2_SLICE1.md](phases/D2_SLICE1.md) for the exact contract and manifest.
 
 **Performance remains CLOSED.** PR #36's accepted application is `cb2ef0bea2900a46583e86c75840e8ba6639d663`; its exact-SHA gates and staging smoke are recorded below. Smart Placement was rejected/reverted, the approximately 500 ms target was not fully met, and additional performance work remains deliberately deferred.
+
+## D2 Slice 1 audit follow-up (2026-09-11)
+
+- Independent audit verdict on `c255ed62718d6a4e3a6efea6f4c8197d6d059c00`: **PASS WITH NONBLOCKING NOTES**. A separate cleanup commit addresses only the three notes: sanitize exotic reflection/shape failures; reject U+0085/U+2028/U+2029 in labels; commit deterministic oversized-definition/plan regression fixtures.
+- Reflection catches are confined to shape inspection. Callers retain existing sanitized domain reasons, and unrelated encoding/compiler failures propagate. The supported interface remains plain JSON data, not executable objects or a JavaScript sandbox.
+- Verification: **180 focused/reused-helper tests and 4,896 full-suite tests passed**, zero failures/skips; focused coverage includes all **16,383** nonempty selections. `npm run build`, changed-module syntax checks and `git diff --check` passed. Full tests reused the external PATH-only Python 3 wrapper required by inherited packaged-skill tests; no dependency or configuration changes.
+- The compiler, default manifest and hand-authored golden plans are unchanged from the audited candidate. All-selected output remains **13 Milestones / 14 Actions / 8 Deliverables / 20 edges**; **49** remains the generic edge ceiling. No bounds, versions, keys or selection/dependency semantics changed.
+- The follow-up prompt is read from its remote ref, not changed or included in the implementation branch. Prepare/push this branch and open its PR against `main`; **leave it unmerged**. Provenance/deletion remains a Slice 2 design gate, exact committed-receipt proof remains a Slice 4 gate, and no later slice is authorized.
 
 ## D2 Slice 1 implementation (2026-09-11)
 
