@@ -57,14 +57,14 @@ test('a fresh database reaches the A2 schema from the committed migrations alone
   const expected = schema.BLOOMOPS_TABLES.map(getTableName).sort();
   const present = tableNames(db);
   for (const name of expected) assert.ok(present.includes(name), `missing table ${name}`);
-  assert.equal(expected.length, 41, 'C5 adds immutable review revisions and relational approval rounds');
+  assert.equal(expected.length, 42, 'D2 2A adds explicit Service Type to Systems Template configuration');
   const extra = present.filter((n) => !expected.includes(n) && n !== 'sqlite_sequence');
   assert.deepEqual(extra, [], 'no unplanned tables');
 });
 
 test('migrations are additive and ordered, so applying them is deterministic', () => {
   const files = migrationFiles();
-  assert.equal(files.length, 18);
+  assert.equal(files.length, 19);
   assert.equal(files[8].tag, '0008_b1_projects_core');
   assert.equal(files[9].tag, '0009_b2_milestones');
   assert.equal(files[10].tag, '0010_b3_actions_dependencies');
@@ -75,6 +75,7 @@ test('migrations are additive and ordered, so applying them is deterministic', (
   assert.equal(files[15].tag, '0015_c3_calendar_platforms');
   assert.equal(files[16].tag, '0016_c4_content_assets');
   assert.equal(files[17].tag, '0017_c5_content_approvals');
+  assert.equal(files[18].tag, '0018_d2_slice2a_binding_storage');
   assert.match(files[0].tag, /^0000_/);
   assert.match(files[1].tag, /^0001_immutability_triggers$/);
   assert.match(files[2].tag, /^0002_a3_auth_membership$/);
