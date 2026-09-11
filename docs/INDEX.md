@@ -30,7 +30,7 @@ Do not automatically load every planning document into context.
 
 Release D — Systems Delivery is the active release. Release C is closed for forward development on verified `main` baseline `1638e3ed9fd33c3725aa3449935b08335b73f1a9`.
 
-Current phase: **Performance phase closed after PR #36 merged as `cb2ef0bea2900a46583e86c75840e8ba6639d663`, both exact-SHA automatic gates passed, and basic signed-in staging smoke passed. Additional performance work is deferred. D2 GHL Build Blueprint is the next phase to scope, not yet started or authorized for implementation.**
+Current phase: **D2 Slice 1 — pure GHL blueprint definition/compiler — implemented locally from canonical main `36b3431483ce54dfde556b636a63ee49ed7ffd79`, following approved design with three required corrections. No PR/deployment; Slice 2 is not authorized.** Exact manifest, compiler contract and deferred design gates: [D2_SLICE1.md](phases/D2_SLICE1.md). Performance remains closed; additional performance work is deferred.
 
 Release A closed after A11 PR #14 merged as `3deed08d8db2a92fcf4dc29a6a879a9945260049`. Read-only preflight verified [Deploy staging 34175768644](https://github.com/Beeyach/bloomops/actions/runs/34175768644) and [remote zero-to-current 34175768643](https://github.com/Beeyach/bloomops/actions/runs/34175768643) completed successfully on that exact SHA.
 
@@ -56,7 +56,7 @@ Release C and the automatic post-merge workflow follow-ups are verified on `1638
 
 D1 is closed through [PR #31](https://github.com/Beeyach/bloomops/pull/31) on `e5bc81630c47fb6eb51e9bdc6be1687947683643`. Read-only checks verified [Deploy staging 34496059835](https://github.com/Beeyach/bloomops/actions/runs/34496059835) and [Verify zero-to-current 34496059875](https://github.com/Beeyach/bloomops/actions/runs/34496059875) succeeded on that exact SHA.
 
-Current state and successful gate run IDs: [BUILD_STATE.md](BUILD_STATE.md). Next product scoping reference: [RELEASE_D.md](RELEASE_D.md), D2; no D2 implementation contract has been started. [PERFORMANCE_INTEGRATION.md](PERFORMANCE_INTEGRATION.md) records the accepted optimization scope and closure. PERF1–PERF4/query/placement reports remain historical evidence: the approximately 500 ms target was not fully met, Smart Placement was rejected/reverted, and further performance work is deliberately deferred. Ads remains Release E.
+Current state and successful gate run IDs: [BUILD_STATE.md](BUILD_STATE.md). Release boundaries: [RELEASE_D.md](RELEASE_D.md). The approved pure D2 Slice 1 contract is [D2_SLICE1.md](phases/D2_SLICE1.md); later slices remain separately gated. [PERFORMANCE_INTEGRATION.md](PERFORMANCE_INTEGRATION.md) records the accepted optimization scope and closure. PERF1–PERF4/query/placement reports remain historical evidence: the approximately 500 ms target was not fully met, Smart Placement was rejected/reverted, and further performance work is deliberately deferred. Ads remains Release E.
 
 ## Phase Reading Matrix
 
