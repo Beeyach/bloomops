@@ -35,7 +35,7 @@ jobs:
           node --check lib/bloomops/server-timing.mjs
           node --check lib/bloomops/perf4-worker.mjs
           node --check worker.mjs
-          node --test tests/server-timing.test.mjs tests/perf4-worker.test.mjs
+          node --test tests/server-timing.test.mjs tests/perf4-worker.test.mjs tests/perf4-worker-response.test.mjs
 
       - name: Full test suite
         run: npm test
@@ -70,7 +70,7 @@ jobs:
           trap cleanup EXIT
           ready=0
           for attempt in $(seq 1 60); do
-            if curl --fail --silent http://127.0.0.1:8787/api/health >/dev/null; then
+            if curl --fail --silent http://localhost:8787/api/health >/dev/null; then
               ready=1
               break
             fi
@@ -84,7 +84,7 @@ jobs:
             cat /tmp/perf4-wrangler.log
             exit 1
           fi
-          node scripts/auth-smoke-local.mjs --url http://127.0.0.1:8787
+          node scripts/auth-smoke-local.mjs --url http://localhost:8787
 
       - name: Diff hygiene
         run: git diff --check a20dbfc93ad9126b59a91ba7e0442634e2b582a2...HEAD

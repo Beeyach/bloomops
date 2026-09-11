@@ -67,7 +67,10 @@ test('pre-response application errors propagate unchanged and emit no fabricated
   const { env, points } = staging();
   const failure = Error('private application failure');
   await assert.rejects(
-    handlePerf4Request(new Request(`${ORIGIN}/home`), env, {}, () => { throw failure; }),
+    handlePerf4Request(new Request(`${ORIGIN}/`), env, {}, (_request, measuredEnv) => {
+      assert.notEqual(measuredEnv, env);
+      throw failure;
+    }),
     error => error === failure,
   );
   assert.deepEqual(points, []);
