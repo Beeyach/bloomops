@@ -1,4 +1,46 @@
-# PERF4 — active built-runtime verification
+# PERF4 — staging correlation blocked before upload
+
+**The authorized staging deployment attempt failed before upload because this execution environment has no Cloudflare API token. No candidate deployment or signed-in capture occurred.** The public version endpoint still serves `2b89227` (`main`), so the prompt's provenance gate requires stopping measurements. PERF3/PERF4 remain OPEN; D2 remains BLOCKED. This supersedes the current-status wording in the historical local handoff below.
+
+## Authorized attempt (2026-09-11 UTC)
+
+Fetched and executed `docs/prompts/PERF4_STAGING_CORRELATION.md` from orchestration commit `f9a05d3498b6badef873ddc758dbbbe8687f8918` on `origin/ops/perf4-staging-correlation-prompt`. The prompt branch was never checked out or deployed. Local HEAD and the remote candidate branch both matched exact authorized application SHA **`6da1c2467ae0a4ae31bcefcd1ca16482c7f5bae5`**, with a clean tree. Required source/configuration and evidence were reviewed; previous active-runtime source fingerprints still match. Ordinary observability, Worker Logs, invocation logs and traces remain disabled.
+
+The exact requested `npm run deploy:staging` completed Next compilation, lint/type validation and OpenNext bundling, then exited **1** when Wrangler required `CLOUDFLARE_API_TOKEN` in the non-interactive environment. It did not reach upload or produce a Worker version/deployment identifier. No temporary account, migration, workflow dispatch, production command, real email or business-data mutation was used. The existing GitHub staging workflow is not a permitted substitute because it applies schema/migrations and performs additional provisioning/bootstrap actions.
+
+The subsequent read-only `/api/version` check returned **HTTP 200**, `sha: 2b89227`, `branch: main`, `builtAt: 2026-09-11T06:08:38.379Z`. This is not the authorized candidate. No timing measurements were made after that failed provenance check.
+
+Two prerequisites also remain unresolved. This session exposes no Chrome DevTools MCP tools, and no existing browser debug endpoint was available on loopback ports 9222/9223; no new browser/session was substituted. The unmodified `next.config.js` obtains its SHA/branch from CI variables, which were absent locally, and stamps a **seven-character** SHA (local fallback `dev`); the execution prompt names the eight-character prefix `6da1c246`. No source, version metadata or CI variables were manually changed to manufacture provenance. A resumed run must establish truthful deployed provenance under the authorized instructions before capture.
+
+## Five evidence layers
+
+1. **Historical PERF3 browser evidence:** accepted 21-sample staging input preserved below; not recaptured here.
+2. **Historical primitive evidence:** Node-local primitive costs in [PERF4_server_timing.json](evidence/PERF4_server_timing.json).
+3. **Inactive/default integration CI:** corrected run 34585369973 in [PERF4_integration_verification.json](evidence/PERF4_integration_verification.json).
+4. **Active local workerd:** the completed 79-scenario / 528-request run in [PERF4_active_runtime.json](evidence/PERF4_active_runtime.json), unchanged.
+5. **New deployed signed-in staging correlation:** **not obtained**. [PERF4_staging_correlation.json](evidence/PERF4_staging_correlation.json) records this failed deployment attempt, observed version and explicitly unmeasured fields; it is not live timing evidence.
+
+## Capture and correlation status
+
+| Route | Retained / planned | Browser medians | Server medians |
+|---|---:|---|---|
+| Home | 0 / 3 | Unmeasured | Unmeasured |
+| Clients | 0 / 3 | Unmeasured | Unmeasured |
+| Work | 0 / 3 | Unmeasured | Unmeasured |
+| Social | 0 / 3 | Unmeasured | Unmeasured |
+| Systems | 0 / 3 | Unmeasured | Unmeasured |
+| Team | 0 / 3 | Unmeasured | Unmeasured |
+| Ads | 0 / 3 | Unmeasured | Unmeasured |
+
+Warmups **0/7**, retained samples **0/21**, unique retained correlation IDs **0**. The planned ideal is **63 points**; expected points for actually captured requests **0**, retrieved **0**, with **no Analytics Engine query performed**. Missing/duplicate/sampled records and incomplete triplets are **unmeasured**, not evidence of loss-free delivery. Browser routeWarm median/p95, Home/Systems phase breakdowns and dominant intervals, Ads control, and comparison against historical medians cannot be calculated. No optimization hypothesis is newly justified.
+
+**Live privacy remains unproven:** no live records were inspected or hostile-marker requests sent. No sensitive request/response data was retained, and no logs/tailing were enabled. Signed-in deployed auth behavior was not checked. **Deployed remote revocation remains unproven; local active-workerd revocation passed.** No real membership/session was altered.
+
+The handoff changes only this report, BUILD_STATE and the new sanitized blocked-attempt artifact. Validation: JSON/consistency/privacy checks, runtime/config/schema diff and `git diff --check`; the exact candidate Next/OpenNext builds passed within the attempted deployment. No additional test-suite run is claimed for documentation-only edits. The evidence commit is committed/pushed on the same candidate branch as instructed; it is **not** a deployed application SHA. Resumption must account for that documentation-only branch advance instead of silently substituting its HEAD for the exact authorized application candidate.
+
+---
+
+## Prior active built-runtime handoff at `6da1c24`
 
 **The local active-runtime gate passes. The candidate is ready for separately authorized signed-in staging correlation, with the measured overhead below available for review. Nothing was deployed. PERF3/PERF4 remain OPEN; D2 remains BLOCKED.** This is verification of instrumentation, not a performance fix or live acceptance.
 

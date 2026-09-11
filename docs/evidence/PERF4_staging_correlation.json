@@ -1,0 +1,185 @@
+{
+  "kind": "PERF4-staging-correlation-blocked",
+  "recordedAtUtc": "2026-09-11T10:39:42Z",
+  "authorization": {
+    "promptBranch": "origin/ops/perf4-staging-correlation-prompt",
+    "promptCommit": "f9a05d3498b6badef873ddc758dbbbe8687f8918",
+    "promptPath": "docs/prompts/PERF4_STAGING_CORRELATION.md",
+    "candidateSha": "6da1c2467ae0a4ae31bcefcd1ca16482c7f5bae5",
+    "candidateBranch": "perf/perf4-staging-timing-integration"
+  },
+  "preflight": {
+    "fetchOriginPassed": true,
+    "localSha": "6da1c2467ae0a4ae31bcefcd1ca16482c7f5bae5",
+    "remoteCandidateSha": "6da1c2467ae0a4ae31bcefcd1ca16482c7f5bae5",
+    "workingTreeClean": true,
+    "ordinaryObservabilityEnabled": false,
+    "workerLogsEnabled": false,
+    "invocationLogsEnabled": false,
+    "tracesEnabled": false,
+    "priorActiveArtifactSourceHashesMatch": true
+  },
+  "deployment": {
+    "command": "npm run deploy:staging",
+    "exitCode": 1,
+    "nextBuild": "passed",
+    "lintAndTypeValidation": "passed",
+    "openNextBuild": "passed",
+    "upload": "not reached",
+    "result": "blocked: required Cloudflare API token unavailable in non-interactive environment",
+    "versionId": null,
+    "deploymentId": null,
+    "deployedCandidateSha": null,
+    "runtimeSourceChanged": false,
+    "versionMetadataManuallyChanged": false,
+    "migrationRun": false
+  },
+  "versionProbe": {
+    "httpStatus": 200,
+    "sha": "2b89227",
+    "branch": "main",
+    "builtAt": "2026-09-11T06:08:38.379Z",
+    "matchesAuthorizedCandidate": false,
+    "measurementGate": "STOP"
+  },
+  "buildIdentity": {
+    "establishedShortShaLength": 7,
+    "expectedExistingFormatPrefix": "6da1c24",
+    "promptPrefix": "6da1c246",
+    "ciCommitAndBranchEnvironmentPresent": false,
+    "localFallbackSha": "dev",
+    "note": "Unmodified next.config.js relies on CI-provided provenance; no metadata was injected or edited. The fetched prompt names an eight-character prefix, while this repository stamps seven."
+  },
+  "browser": {
+    "chromeDevtoolsMcpAvailable": false,
+    "loopbackDebugPorts9222And9223Available": false,
+    "existingSignedInSessionVerified": false,
+    "plannedWarmups": 7,
+    "executedWarmups": 0,
+    "plannedRetained": 21,
+    "retained": 0,
+    "samples": [],
+    "perRoute": [
+      {
+        "route": "home",
+        "retained": 0,
+        "ttfbMedianMs": null,
+        "rscEofMedianMs": null,
+        "firstVisibleMedianMs": null,
+        "settledMedianMs": null,
+        "serverTimingMedians": null
+      },
+      {
+        "route": "clients",
+        "retained": 0,
+        "ttfbMedianMs": null,
+        "rscEofMedianMs": null,
+        "firstVisibleMedianMs": null,
+        "settledMedianMs": null,
+        "serverTimingMedians": null
+      },
+      {
+        "route": "work",
+        "retained": 0,
+        "ttfbMedianMs": null,
+        "rscEofMedianMs": null,
+        "firstVisibleMedianMs": null,
+        "settledMedianMs": null,
+        "serverTimingMedians": null
+      },
+      {
+        "route": "social",
+        "retained": 0,
+        "ttfbMedianMs": null,
+        "rscEofMedianMs": null,
+        "firstVisibleMedianMs": null,
+        "settledMedianMs": null,
+        "serverTimingMedians": null
+      },
+      {
+        "route": "systems",
+        "retained": 0,
+        "ttfbMedianMs": null,
+        "rscEofMedianMs": null,
+        "firstVisibleMedianMs": null,
+        "settledMedianMs": null,
+        "serverTimingMedians": null
+      },
+      {
+        "route": "team",
+        "retained": 0,
+        "ttfbMedianMs": null,
+        "rscEofMedianMs": null,
+        "firstVisibleMedianMs": null,
+        "settledMedianMs": null,
+        "serverTimingMedians": null
+      },
+      {
+        "route": "ads",
+        "retained": 0,
+        "ttfbMedianMs": null,
+        "rscEofMedianMs": null,
+        "firstVisibleMedianMs": null,
+        "settledMedianMs": null,
+        "serverTimingMedians": null
+      }
+    ],
+    "routeWarmMedianMs": null,
+    "routeWarmP95Ms": null
+  },
+  "analyticsEngine": {
+    "dataset": "bloomops_perf4_staging_timing",
+    "queried": false,
+    "plannedIdealPoints": 63,
+    "uniqueRetainedIds": 0,
+    "expectedPointsForCapturedRequests": 0,
+    "retrievedPoints": 0,
+    "missingPoints": null,
+    "duplicatePoints": null,
+    "sampledPoints": null,
+    "incompleteTripletIds": null,
+    "note": "No retained requests and no query; null fields are unmeasured, not zero-loss delivery claims."
+  },
+  "privacy": {
+    "liveSchemaVerdict": "unproven",
+    "hostileMarkerRequests": 0,
+    "sensitiveCapture": false,
+    "workerLoggingOrTailingEnabled": false,
+    "note": "Evidence contains only deployment/provenance status and empty capture counts. No live PERF4 records were inspected."
+  },
+  "auth": {
+    "remoteSignedInNavigation": "unproven",
+    "remoteRevocation": "deployed remote revocation remains unproven; local active-workerd revocation passed",
+    "remoteIdentityOrSessionMutation": false,
+    "realSignInEmailSent": false
+  },
+  "analysis": {
+    "homeDominantPhase": null,
+    "systemsDominantPhase": null,
+    "adsControl": null,
+    "historicalPerf3Comparison": "not possible: no new samples",
+    "optimizationHypothesisJustified": false
+  },
+  "boundaries": {
+    "productionDeploy": false,
+    "promptBranchDeployed": false,
+    "prOpened": false,
+    "merged": false,
+    "d2Started": false,
+    "performanceOptimization": false,
+    "remoteBusinessDataMutation": false
+  },
+  "remaining": [
+    "Authorized candidate staging deployment with existing Cloudflare account credentials",
+    "Resolve truthful existing build-provenance path and seven/eight-character prompt discrepancy without changing candidate source",
+    "Access existing signed-in Chrome session without email",
+    "21 retained navigations and fixed-schema Analytics Engine correlation",
+    "Live privacy and deployed phase attribution",
+    "Remote revocation only if a clearly disposable pre-existing identity is available"
+  ],
+  "phaseStatus": {
+    "PERF3": "OPEN",
+    "PERF4": "OPEN",
+    "D2": "BLOCKED"
+  }
+}

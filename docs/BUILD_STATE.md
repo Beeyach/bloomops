@@ -6,7 +6,15 @@ Release D: Systems Delivery. Release C is closed for forward development on veri
 
 ## Current Phase
 
-**PERF4 staging timing integration is implemented on `perf/perf4-staging-timing-integration`; active built-runtime verification is complete; separately authorized signed-in staging correlation is next. PERF3/PERF4 remain OPEN; D2 remains BLOCKED.** Runtime commit `06a4951d8ebbf4cec2d81f6919219bf33b69c4de` follows primitive `a20dbfc93ad9126b59a91ba7e0442634e2b582a2`; the main/application baseline remains `2b892275abf0856dff10f31d49b2ff2da57acd5f`. No PR, merge or deployment has occurred. Signed-in staging correlation remains required before a PERF4 PR or performance fix is justified.
+**PERF4 staging timing integration is implemented on `perf/perf4-staging-timing-integration`; active built-runtime verification is complete; the authorized staging correlation attempt is blocked before upload. PERF3/PERF4 remain OPEN; D2 remains BLOCKED.** Runtime commit `06a4951d8ebbf4cec2d81f6919219bf33b69c4de` follows primitive `a20dbfc93ad9126b59a91ba7e0442634e2b582a2`; the main/application baseline remains `2b892275abf0856dff10f31d49b2ff2da57acd5f`. No PR, merge or deployment has occurred. Signed-in staging correlation remains required before a PERF4 PR or performance fix is justified.
+
+## PERF4 staging correlation attempt (2026-09-11)
+
+The orchestration prompt at `f9a05d3498b6badef873ddc758dbbbe8687f8918` authorized staging-only deployment of exact application `6da1c2467ae0a4ae31bcefcd1ca16482c7f5bae5`. Fetch/preflight confirmed local and remote candidate equality and a clean tree. `npm run deploy:staging` passed Next/lint/type/OpenNext builds but failed before upload because the non-interactive environment lacks `CLOUDFLARE_API_TOKEN`. No deployment identifier exists. Public `/api/version` still returned HTTP 200 / `2b89227` / `main`, so measurements stopped at the explicit provenance gate.
+
+No signed-in browser MCP connection was available. Retained captures are **0/21**, Analytics Engine retrieval **0** with no query attempted; planned ideal 63 points, delivery/missing/duplicate/sampling and all live timing/privacy conclusions remain unmeasured. Deployed remote revocation remains unproven; local active-workerd revocation passed. The existing local build stamps `dev` without CI metadata and uses seven SHA characters while the prompt names eight; no provenance metadata was altered. See [PERF4_RESULTS.md](PERF4_RESULTS.md) and [blocked-attempt evidence](evidence/PERF4_staging_correlation.json) for prerequisites and historical evidence separation.
+
+This handoff adds documentation/evidence only on the same branch and is pushed as instructed; the exact authorized application SHA remains `6da1c2467ae0a4ae31bcefcd1ca16482c7f5bae5` and was **not deployed**. No source/config/schema/migration, real email, auth/session/membership, logs/traces/tailing, production, PR, merge, optimization or D2 change. PERF3/PERF4 remain OPEN; D2 remains BLOCKED.
 
 ## PERF4 staging timing integration (2026-09-11)
 
