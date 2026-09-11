@@ -1,5 +1,11 @@
 # Release D - Systems Delivery
 
+## Current status (2026-09-11)
+
+D1 Systems Foundation is merged. The intervening performance phase is **closed** after PR #36 merged as `cb2ef0bea2900a46583e86c75840e8ba6639d663`, automatic staging run `34607488524` and zero-to-current run `34607488607` succeeded on that exact SHA, and basic signed-in Home/Systems/navigation smoke passed. Staging reports `cb2ef0b`. [BUILD_STATE.md](BUILD_STATE.md) records the verification.
+
+The accepted Home/Systems optimizations are retained; Smart Placement was rejected/reverted. The approximately 500 ms target was not fully met and additional performance work is deliberately deferred. Release D itself remains open: **D2–D7 remain**. Recommend scoping **D2 — GHL Build Blueprint** next under the existing boundaries below. D2 implementation is not authorized or started by this state update; no further performance pass is a prerequisite for scoping it.
+
 ## Baseline
 
 Release D starts from current verified `main` at `1638e3ed9fd33c3725aa3449935b08335b73f1a9`.

@@ -30,7 +30,7 @@ Do not automatically load every planning document into context.
 
 Release D — Systems Delivery is the active release. Release C is closed for forward development on verified `main` baseline `1638e3ed9fd33c3725aa3449935b08335b73f1a9`.
 
-Current phase: **PERF3 — Authenticated RSC Completion implementation; independent audit and post-merge authenticated staging acceptance required. D2 remains blocked.**
+Current phase: **Performance phase closed after PR #36 merged as `cb2ef0bea2900a46583e86c75840e8ba6639d663`, both exact-SHA automatic gates passed, and basic signed-in staging smoke passed. Additional performance work is deferred. D2 GHL Build Blueprint is the next phase to scope, not yet started or authorized for implementation.**
 
 Release A closed after A11 PR #14 merged as `3deed08d8db2a92fcf4dc29a6a879a9945260049`. Read-only preflight verified [Deploy staging 34175768644](https://github.com/Beeyach/bloomops/actions/runs/34175768644) and [remote zero-to-current 34175768643](https://github.com/Beeyach/bloomops/actions/runs/34175768643) completed successfully on that exact SHA.
 
@@ -56,7 +56,7 @@ Release C and the automatic post-merge workflow follow-ups are verified on `1638
 
 D1 is closed through [PR #31](https://github.com/Beeyach/bloomops/pull/31) on `e5bc81630c47fb6eb51e9bdc6be1687947683643`. Read-only checks verified [Deploy staging 34496059835](https://github.com/Beeyach/bloomops/actions/runs/34496059835) and [Verify zero-to-current 34496059875](https://github.com/Beeyach/bloomops/actions/runs/34496059875) succeeded on that exact SHA.
 
-Current phase file: `docs/phases/PERF3.md`; release sequence: `docs/RELEASE_D.md`. `BUILD_STATE.md` records current status; [PERF3_RESULTS.md](PERF3_RESULTS.md) contains first-byte/final-body/DOM/frame attribution, representative/stress before/after evidence, current-session workspace composition, verification and live limitations. [PERF2_RESULTS.md](PERF2_RESULTS.md) and [PERF1_RESULTS.md](PERF1_RESULTS.md) remain historical evidence. PERF2 merged on exact base `62bcf019226db1e7e939fbcffc8909f41fbd577a` with both gates passing, but signed-in staging navigation remained slow. PERF3 independent audit, user-controlled merge, both workflows on its exact merge SHA and successful live completion retesting are required before D2. Ads remains Release E; PERF3 measures its existing navigation destination only.
+Current state and successful gate run IDs: [BUILD_STATE.md](BUILD_STATE.md). Next product scoping reference: [RELEASE_D.md](RELEASE_D.md), D2; no D2 implementation contract has been started. [PERFORMANCE_INTEGRATION.md](PERFORMANCE_INTEGRATION.md) records the accepted optimization scope and closure. PERF1–PERF4/query/placement reports remain historical evidence: the approximately 500 ms target was not fully met, Smart Placement was rejected/reverted, and further performance work is deliberately deferred. Ads remains Release E.
 
 ## Phase Reading Matrix
 

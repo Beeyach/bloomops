@@ -6,9 +6,23 @@ Release D: Systems Delivery. Release C is closed for forward development on veri
 
 ## Current Phase
 
-**Performance work for this phase is complete and deliberately deferred beyond the accepted changes. Clean integration branch: `perf/accepted-navigation-integration`, based on `main` at `2b892275abf0856dff10f31d49b2ff2da57acd5f`. Accepted deployed application remains `68580d7fdff779ec9cdfec7f67381af9cf5e7724`. No merge is authorized; D2 remains blocked.** The approximately 500 ms target was not fully reached. Smart Placement was rejected and reverted; no further performance diagnostics or optimization are planned.
+**Performance phase CLOSED. [PR #36](https://github.com/Beeyach/bloomops/pull/36) merged into `main` as `cb2ef0bea2900a46583e86c75840e8ba6639d663`; both automatic post-merge gates passed on that exact SHA, and staging serves `cb2ef0b`.** The approximately 500 ms target was not fully met; additional performance work is deliberately deferred. Smart Placement was rejected/reverted. No further optimization, profiling, benchmarking or architecture changes are planned. D2 has not begun and requires separate scoping/authorization, not another performance pass.
+
+## Post-merge performance closure (2026-09-11)
+
+- [Deploy staging — 34607488524](https://github.com/Beeyach/bloomops/actions/runs/34607488524): automatic `push` run on `main`, exact SHA `cb2ef0bea2900a46583e86c75840e8ba6639d663`, completed **success**.
+- [Verify zero-to-current migration — 34607488607](https://github.com/Beeyach/bloomops/actions/runs/34607488607): automatic `push` run on the same exact SHA, completed **success**, including the disposable create/migrate twice/verify/delete job. All job steps succeeded.
+- Staging `/api/version`: HTTP 200, `sha: cb2ef0b`, `branch: main`, `builtAt: 2026-09-11T14:00:29.395Z`, confirmed publicly and in the existing signed-in Windows Chrome session. The response's inherited `environment: Production` display label accompanies the main build; the verified origin is the staging Worker, not a production deployment.
+- Basic signed-in functional smoke only: Home renders its completed empty state; Systems renders its filters and completed empty state; actual sidebar Home → Systems → Home navigation succeeds. No visible error boundary or browser console errors/warnings. No timings, profiles, benchmarks, session changes or business-data mutations were performed.
+- Accepted optimizations remain Home/Systems **3 → 2 ordinary serial D1 waits** and Home scalar JSON timezone lookup with the repeated scans removed, preserving fresh authorization and exact legacy-zone fallback. Historical medians remain Home **821.9 → 672.9 ms**, Systems **775.1 → 587.8 ms**; these were not remeasured for closure. Smart Placement and experimental PERF4 runtime were excluded from integration.
+
+`68580d7fdff779ec9cdfec7f67381af9cf5e7724` is the historical accepted staging candidate; **`cb2ef0bea2900a46583e86c75840e8ba6639d663` is now the verified merged/deployed application**. This follow-up is documentation/state only; it does not change or deploy application code. Older audit-pending, unmerged, performance-gate and staging-SHA statements below are historical and superseded by this closure.
+
+Release D remains open. D1 Systems Foundation is merged; remaining product phases are D2 GHL Build Blueprint, D3 Kajabi Build Blueprint, D4 Systems Execution + QA, D5 Launch + Handoff, D6 Systems Client Experience + Operations, and D7 release hardening. Recommend scoping **D2** next: selected-component generation into canonical Milestones/Actions/Deliverables, immutable version provenance, authorization and idempotent/concurrent retry guarantees. Do not implement D2 or expand into later phases yet. See [RELEASE_D.md](RELEASE_D.md).
 
 ## Accepted performance integration (2026-09-11)
+
+Historical pre-merge integration verification follows; current merge/deployment/phase status is recorded above.
 
 Read [PERFORMANCE_INTEGRATION.md](PERFORMANCE_INTEGRATION.md) for exact commit mappings, artifact review, historical evidence and final checks. Only the two accepted optimization commits were cherry-picked onto main: `008fa500ed84dea15fecd4726271ac3aab10ba9a` from `137773b`, and `4f8af586aff6eceec9dab7902d2ea37c64fd082d` from `68580d7`. Their four runtime modules/tests/supporting scripts remain byte-identical to the accepted application. Later integration documentation is not a deployed application revision.
 
