@@ -1,0 +1,67 @@
+{
+  "status": "repository-handoff-verified; live acceptance outstanding; PERF3/PERF4 OPEN; D2 BLOCKED",
+  "branch": "perf/perf4-staging-timing-integration",
+  "primitiveSha": "a20dbfc93ad9126b59a91ba7e0442634e2b582a2",
+  "runtimeSha": "06a4951d8ebbf4cec2d81f6919219bf33b69c4de",
+  "verifiedSourceSha": "f82a1f86770d41d4ee2eee705cd20ef71cd850cb",
+  "sourceSha256": {
+    "worker.mjs": "c4b91b238204e0103e12d91d2c1f07a2e8271893e59ecc2751de172f4c0c0c7e",
+    "lib/bloomops/perf4-worker.mjs": "11b3f220bbce1e05b55a7461f6bfbc600e9a19881507fab053df23b6e0e35cee",
+    "lib/bloomops/server-timing.mjs": "79f51a54baa67b1dc7a5fc429fb099d3b3b5b094a9b94c557fb0e054c781116a",
+    "wrangler.jsonc": "252a93f76a6059fa287b163152295e186b38aad0f8b66fb807f2c4670d71f4ed",
+    "tests/perf4-worker.test.mjs": "84ce943cfd7d123bee9b875a20e3f81596f83983273d9b82ee7b036861ba95dd",
+    "tests/perf4-worker-response.test.mjs": "a91f8a8ac07a7d28e6e5aa80264c03dc30949ceeebb1bfbab9b499a94162a9d0",
+    "tests/server-timing.test.mjs": "0d285923d6737489be4f9f62c6fa69a8d719bfde7d6e8aa34a799214b022deff"
+  },
+  "earlierRun": {
+    "id": 34584611556,
+    "sha": "317766f7cc45cdd6216467b924c6a91913498ba8",
+    "conclusion": "failure",
+    "fullTestsPassed": 4832,
+    "systemsChecksPassed": 23,
+    "homeChecksPassed": 34,
+    "nextBuild": "success",
+    "openNextBuild": "success",
+    "stagingBundleDryRun": "success",
+    "authSmokeFailure": "strict origin assertion: requested 127.0.0.1; generated magic-link origin localhost",
+    "diffHygiene": "skipped"
+  },
+  "correctedRun": {
+    "id": 34585369973,
+    "url": "https://github.com/Beeyach/bloomops/actions/runs/34585369973",
+    "sha": "f82a1f86770d41d4ee2eee705cd20ef71cd850cb",
+    "conclusion": "success",
+    "jobId": 103218225124,
+    "focusedTestsPassed": 46,
+    "fullTestsPassed": 4832,
+    "testsFailed": 0,
+    "testsSkipped": 0,
+    "systemsChecksPassed": 23,
+    "homeChecksPassed": 34,
+    "nextBuild": "success",
+    "openNextBuild": "success",
+    "stagingBundleDryRun": "success",
+    "builtDevelopmentAuthSmoke": "all checks passed",
+    "diffHygiene": "success",
+    "builtDevelopmentAuthChecksPassed": 144
+  },
+  "localChecks": {
+    "node": "22.23.2",
+    "focusedTestsPassed": 46,
+    "focusedTestsFailed": 0,
+    "focusedTestsSkipped": 0,
+    "diffHygiene": "success",
+    "runtimeFilesIdenticalToImplementation": true
+  },
+  "boundaries": {
+    "nativeProjectionSmokes": "real local D1, timing adapter inactive",
+    "builtAuthSmoke": "development custom entrypoint, timing inactive",
+    "activeWrapperTests": "Node with D1 and Analytics Engine doubles",
+    "activeBuiltRuntimeVerification": "outstanding",
+    "integrationOffOnOverhead": "outstanding",
+    "signedInStagingCorrelation": "outstanding",
+    "remoteDeploymentPerformed": false,
+    "pullRequestOpened": false,
+    "newMigrations": 0
+  }
+}

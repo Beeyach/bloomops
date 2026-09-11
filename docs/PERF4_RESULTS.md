@@ -1,4 +1,73 @@
-# PERF4 — correlated server timing: inactive primitive handoff
+# PERF4 — staging timing integration handoff
+
+**The staging-only integration is implemented on `perf/perf4-staging-timing-integration`. PERF3/PERF4 remain OPEN; D2 remains BLOCKED.** No PR, merge or deployment has occurred. Signed-in staging correlation remains the required live gate before a PERF4 PR or performance fix is justified. This section supersedes the inactive-primitive status preserved below.
+
+## Integration provenance and behavior
+
+The integration starts from primitive commit `a20dbfc93ad9126b59a91ba7e0442634e2b582a2`. Runtime implementation is `06a4951d8ebbf4cec2d81f6919219bf33b69c4de`; response-preservation coverage was added at `317766f7cc45cdd6216467b924c6a91913498ba8`. Verification correction `f82a1f86770d41d4ee2eee705cd20ef71cd850cb` changes only tests and the temporary verifier. The final handoff changes documentation and removes that verifier; application source remains identical to `06a4951`. The original execution prompt and historical numeric evidence remain intact.
+
+`worker.mjs` delegates the generated OpenNext fetch handler through `lib/bloomops/perf4-worker.mjs`. Activation requires all of: staging environment, literal server-owned `BLOOMOPS_PERF4_TIMING=enabled`, a callable `PERF4_TIMING` binding, the configured HTTPS origin, and a GET to one of `/`, `/clients`, `/work`, `/social`, `/systems`, `/team`, `/ads` (optional trailing slash). Both HTML and RSC requests can qualify; there is no RSC-header-only filter. Query/header values cannot enable it, and query contents never enter output. Nested resources, auth/API routes and other methods bypass timing. Default/development/production requests delegate the original Request, environment, context and Response without a D1 proxy, stream observer or timing headers. They still enter the small wrapper dispatch; zero deployed overhead is not claimed.
+
+Active requests use AsyncLocalStorage for the existing navigation-stage events and a request-local environment/D1 proxy. Up to eight native invocations get ordinal wall-time spans, including one span for a native batch; SQL, bindings, results and native metadata are not collected. The shared binding is not patched. Joined identity/session/workspace timing cannot separately identify membership cost. Home/Systems projection spans are inclusive. Ordinals preserve observed ordering and overlap without inventing SQL categories or causality.
+
+Response headers expose a fresh opaque 128-bit ID in `X-Bloomops-Timing` and a `Server-Timing` snapshot at Response availability. A readable stream forwards chunks without decoding or whole-body buffering, observes its first read and normal EOF, and distinguishes cancel/error termination. These are Worker observations, not browser arrival or exclusive CPU. Pre-response exceptions propagate unchanged without a fabricated completion. Headers cannot acquire later EOF timing. Existing status, redirects, cookies, cache policy and body semantics are preserved by the covered cases; production auth/authorization policy and projection queries are unchanged.
+
+## Sanitized destination, retention and disable procedure
+
+Only staging declares Analytics Engine dataset `bloomops_perf4_staging_timing`, binding `PERF4_TIMING`, and the activation variable. Ordinary observability, logs, invocation logs and traces remain disabled. No live binding or dataset has been exercised in this task.
+
+At termination the sink attempts three data points sharing the random ID in `index1`. `blob1` is `metrics-v1`, `spans-a-v1` or `spans-b-v1`; `blob2` is the fixed route and `blob3` the lifecycle event (`complete`, `cancel`, `error`). Missing or invalid numbers are `-1`. No URL, query, cookie, user/client/workspace identifier, SQL, error text, response content or arbitrary label is supplied to Analytics Engine.
+
+| Record | Positional doubles, in order |
+|---|---|
+| `metrics-v1` | response, identity, membership, actor, home, systems, wait1–wait8, first, total, elapsed, unattributed (18 values) |
+| `spans-a-v1` | start/duration pairs for identity, membership, actor, home, systems, wait1–wait5 (20 values) |
+| `spans-b-v1` | start/duration pairs for wait6–wait8 (6 values) |
+
+Numbers are bounded to 0–120,000 ms. `unattributed` subtracts the union of valid measured intervals from normal completion, not their sum; incomplete/malformed spans can suppress it. Sink exceptions/rejections are swallowed without logging. Delivery is best effort: three attempted records are not an atomic or guaranteed live triplet. Capture must explicitly report missing, duplicate or sampled records.
+
+Cloudflare documents a three-month Analytics Engine retention period and limits of 20 doubles, 20 blobs and one index per point; this schema fits those limits. Disabling emission does not erase retained records. [Analytics Engine limits and retention](https://developers.cloudflare.com/analytics/analytics-engine/limits/). The service supplies storage metadata such as timestamp/sample information in addition to application fields; runtime privacy and successful live retrieval are still acceptance checks, not established by a fake sink. [Analytics Engine data points and querying](https://developers.cloudflare.com/analytics/analytics-engine/get-started/).
+
+To disable future emission, remove/change the staging activation variable and deploy that reviewed staging configuration; absence of the sink also disables it. To remove the integration, restore `.open-next/worker.js` as the entrypoint, remove staging opt-in/binding and then remove the unreferenced wrapper modules through a reviewed change. Keep ordinary telemetry disabled throughout. Neither procedure has been executed remotely. No automatic export, shorter retention setting or immediate deletion guarantee is implemented.
+
+## Extended verification and correction
+
+[Sanitized integration verification record](evidence/PERF4_integration_verification.json) retains exact source hashes and CI provenance separately from historical primitive measurements.
+
+[Run 34584611556](https://github.com/Beeyach/bloomops/actions/runs/34584611556), exact SHA `317766f7cc45cdd6216467b924c6a91913498ba8`, passed install, 39 focused tests, **4,832/4,832 full tests**, Systems **23/23** and Home **34/34** native D1 checks, Next build, OpenNext build and staging bundle dry-run. It failed the loopback auth smoke at its strict link-origin assertion: the harness requested `127.0.0.1` but the configured/generated link used `localhost`. Diff hygiene was subsequently skipped in that run. This was not a successful extended-verification result.
+
+Correction `f82a1f8` uses `http://localhost:8787` consistently in the temporary verifier. No application origin policy or smoke assertion was weakened. It also includes the response test file in focused CI and corrects the pre-response-error fixture from non-allowlisted `/home` to `/`, asserting the measured environment is installed. Local focused verification passes **46/46** on Node 22.23.2, with no failures/skips/cancellations/todos, and diff hygiene passes.
+
+[Corrected run 34585369973](https://github.com/Beeyach/bloomops/actions/runs/34585369973) on exact SHA `f82a1f86770d41d4ee2eee705cd20ef71cd850cb` passed all required verification steps:
+
+| Check | Result |
+|---|---|
+| Lockfile install; executable syntax | Passed |
+| Focused primitive/wrapper/response tests | 46/46 passed |
+| Full repository suite | 4,832/4,832 passed; zero failures/skips/cancellations/todos |
+| Disposable native Systems / Home D1 smokes | 23/23 and 34/34 passed |
+| Next and OpenNext/Cloudflare builds | Both passed, including available lint/type checks |
+| Staging custom Worker bundle dry-run | Passed; no deployment |
+| Built development Worker auth/authorization smoke | 144/144 passed with localhost origin |
+| Diff hygiene | Passed |
+
+Systems retained 240 assignments, five statements/two batches, maximum 65 bindings; Home retained 240 assignments, ten statements/two batches, maximum 64 bindings. These match the earlier projection baseline. The complete reproducible check commands remain available in [the verifier at its tested commit](https://github.com/Beeyach/bloomops/blob/f82a1f86770d41d4ee2eee705cd20ef71cd850cb/.github/workflows/perf4-verify.yml), including local schema/migrations, Worker startup/cleanup and the localhost auth smoke. Its removal does not delete that provenance.
+
+The native smokes exercise real D1 projection behavior, but do not install the timing adapter. The loopback auth smoke runs the built custom entrypoint in development, where timing is intentionally inactive. Active wrapper/D1/sink/stream assertions run under Node with a D1 double. These checks do not prove active staging integration, workerd stage propagation after headers, real Analytics Engine delivery, cancellation/backpressure under the built runtime, or active issued-session revocation behavior. Those limitations must remain visible even after the extended verifier passes.
+
+## Remaining gate and scope
+
+The historical paired SQLite measurements below apply only to the primitive, not the new wrapper, D1 adapter, RSC stream or real sink. Active off/on representative/exact-3× browser/Worker overhead and payload checks remain outstanding. No performance improvement or dominant deployed phase is claimed.
+
+Next is active built-runtime verification and then separately authorized staging activation/correlation: verify the exact deployed SHA via `/api/version`, use an existing signed-in session, retain warm navigation samples and match each browser header ID to the three sanitized completion records. Distinguish normal EOF from cancellation/error, preserve the initial header snapshot, report unavailable spans/events, and compare relative durations without subtracting unsynchronized server/browser clocks. Authentication/authorization revocation and privacy must also be checked through the active runtime. No real sign-in email is authorized by this handoff. No PR is opened before the required live correlation. Independent review and exact-SHA staging/zero-to-current gates remain required for eventual closure; D2 remains blocked.
+
+There are no schema/migration, dependency/lockfile, product UI, query, auth-policy or placement changes. The implementation does change the Worker entrypoint and staging diagnostic configuration. The temporary branch-only workflow is removed in the final handoff. Production, staging, Leadsthatbloom, DNS and remote business data remain untouched.
+
+---
+
+## Historical inactive-primitive handoff (superseded by the integration above)
+
+Everything below records the earlier fallback at `a20dbfc`. Its present-tense inactivity/configuration statements describe that historical commit, not the current integration. Its accepted live data and local primitive overhead remain historical evidence, not a new staging capture.
 
 **PERF3 remains operationally OPEN. PERF4 remains OPEN. D2 remains BLOCKED.** This is the prompt's explicit fallback, not an audit-ready staging observability integration or a performance fix. No PR is opened. The reusable primitive is tested, but the required deployment/diagnostic-output decision precedes further integration.
 
