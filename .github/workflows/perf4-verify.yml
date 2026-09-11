@@ -1,3 +1,4 @@
+# Temporary PERF4 verification workflow. Removed before handoff.
 name: PERF4 branch verification
 
 on:
