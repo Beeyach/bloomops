@@ -504,3 +504,30 @@ At the end of an implementation task, report concisely:
 - the next planned phase
 
 Do not claim future roadmap work was implemented unless it actually was.
+
+## Model and Reasoning Routing
+
+When a user or orchestration prompt specifies a model and reasoning effort, follow it exactly. Otherwise, do not assume that maximum reasoning effort is automatically better.
+
+Optimize for the lowest reasoning effort that reliably preserves the quality required by the task. Escalate only when the task itself or observed results justify it.
+
+Default routing for BloomOps work:
+
+- GPT-6 Astra, Low: tiny or narrowly scoped code changes, obvious fixes, renames, and small test updates.
+- GPT-6 Astra, Medium: normal feature implementation with a clear contract and ordinary multi-file work.
+- GPT-6 Astra, High: difficult debugging, architecture, performance, security-sensitive, unfamiliar, or cross-system implementation work.
+- GPT-6 Astra, Extra High: escalation only when High is insufficient, leaves material ambiguity, or fails to resolve a genuinely hard reasoning problem.
+- GPT-6 Astra, Max: rare last resort for frontier-level unresolved work after lower efforts have proven insufficient.
+- GPT-5.6 Sol, High: default for independent audits and re-audits, preserving model diversity from Astra implementation work.
+- GPT-5.6 Sol, Extra High: escalation only for unusually difficult or high-risk audits where High leaves unresolved ambiguity.
+- Terra or Luna at Low/Medium: mechanical, repetitive, extraction-heavy, or otherwise low-reasoning work when those models are appropriate and available.
+
+Do not recommend or use Extra High merely because a task is important. Importance and reasoning difficulty are not the same thing.
+
+For handoffs, include a concise model block only when there is an actual task or prompt for the user to run:
+
+- model
+- reasoning effort
+- surface
+
+Do not include a model block for discussion-only messages with no user action.
