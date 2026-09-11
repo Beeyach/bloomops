@@ -1,5 +1,11 @@
 # Accepted performance integration
 
+## Post-merge closure (2026-09-11)
+
+[PR #36](https://github.com/Beeyach/bloomops/pull/36) merged as **`cb2ef0bea2900a46583e86c75840e8ba6639d663`**. Automatic [Deploy staging 34607488524](https://github.com/Beeyach/bloomops/actions/runs/34607488524) and [Verify zero-to-current migration 34607488607](https://github.com/Beeyach/bloomops/actions/runs/34607488607) both succeeded on that exact SHA. Staging `/api/version` reports `cb2ef0b`, branch `main`; basic existing-session Home/Systems/sidebar navigation smoke passed with no browser errors/warnings. No new performance measurements were taken.
+
+The performance phase is **closed**, despite the approximately 500 ms target not being fully met. Additional performance work is deliberately deferred; Smart Placement remains rejected/reverted. The verified deployed application is now the main merge SHA above, not historical candidate `68580d7`. Remaining sections preserve the pre-merge integration record; their unmerged/deployment restrictions describe that earlier handoff and are superseded by this closure. This follow-up changes documentation only. D2 is only the recommended next scoping topic and has not begun.
+
 ## Scope and outcome
 
 This is integration preparation only. No further performance measurements, diagnostics, optimization or deployment were performed. Additional performance work is deliberately deferred; the approximately 500 ms median target was not fully reached. D2 is not included. The PR must remain unmerged.
