@@ -23,7 +23,7 @@ try {
  for(const javaScriptEnabled of [true,false]) {
   const context=await browser.newContext({storageState:join(fixtureDir,'owner-state.json'),javaScriptEnabled}),page=await context.newPage();
   page.on('pageerror',()=>errors.push('runtime error'));
-  for(const route of navigationRoutes(fixture.projects[0])) {
+  for(const route of [...navigationRoutes(fixture.projects[0]), { label: 'Ads', path: '/ads', heading: 'Ads', content: '.bo-preview-list' }]) {
    const { path } = route;
    const response=await page.goto(base+path,{waitUntil:'networkidle'});check('protected page responds without caching',response.status()===200&&/no-store/.test(response.headers()['cache-control']||''));
    for(const width of [1440,1024,768,390,320]) {

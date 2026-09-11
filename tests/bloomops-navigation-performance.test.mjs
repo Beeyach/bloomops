@@ -30,11 +30,11 @@ async function scenario(context) {
   return t;
 }
 
-test('session identity is one live joined D1 read; Owner capability loading adds no redundant round trip', async context => {
+test('session identity and membership share one live read; Owner capability loading adds no redundant round trip', async context => {
   const t = await scenario(context), request = await t.request('owner'), queries=[];
   const prepare=t.d1.prepare; t.d1.prepare=sql=>{queries.push(sql);return prepare(sql);};
   const access=await getAccess(request,{env:t.env}), actor=await getActor(access);
-  assert.equal(queries.length,2,'one joined identity read and one live membership read');
+  assert.equal(queries.length,1,'one current session/user/membership read');
   assert.deepEqual([...actor.capabilities],CAPABILITIES);
   assert.equal(access.user.id,'owner');
   queries.length=0;
