@@ -50,7 +50,7 @@ export default { async fetch(request, env) {
       const value = Reflect.get(target, key); return typeof value === 'function' ? value.bind(target) : value;
     } });
     const db = drizzle(binding, { schema, logger: { logQuery(query, params) {
-      queries.push({ bindings:params.length, sqlBytes:Buffer.byteLength(query) });
+      queries.push({ bindings:params.length, sqlBytes:Buffer.byteLength(query), query, params });
       assert.ok(params.length <= 100 && Buffer.byteLength(query) <= 100000, 'D1 statement limits');
       assert.doesNotMatch(query, /^\s*(INSERT|UPDATE|DELETE|CREATE|ALTER)\b/i);
     } } });
@@ -66,6 +66,12 @@ export default { async fetch(request, env) {
     const dashboard = await home(team), homeQueries = queries.length, homeBatches = batches;
     check('240 live Project assignments fit actual D1 with bounded Home lists', dashboard.projects.items.length===5 && dashboard.projects.hasMore && dashboard.actions.overdue.items.length===4 && dashboard.actions.overdue.hasMore && dashboard.deliverables.items.length===6 && dashboard.deliverables.hasMore && dashboard.recent.items.length===6 && dashboard.recent.hasMore);
     check('Home issues ten metadata statements in one native D1 batch without any R2 binding', homeQueries===10 && homeBatches===1 && !env.FILES);
+    const dateQueries = queries.slice().filter(({query}) => query.includes("json_quote("));
+    check('Home uses scalar date lookup in exactly four native D1 statements', dateQueries.length===4);
+    for (const {query, params} of dateQueries) {
+      const plan = await all(`EXPLAIN QUERY PLAN ${query}`, ...params);
+      check('native Home query plan has no timezone virtual-table scan', !plan.some(row=>/SCAN json_each/.test(row.detail)));
+    }
     await run("UPDATE bloomops_clients SET timezone='US/Pacific' WHERE id='james'");
     queries.length = 0; batches = 0;
     const aliasHome = await home(team);
