@@ -127,6 +127,13 @@
       "when": 1788948518212,
       "tag": "0017_c5_content_approvals",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1789162288059,
+      "tag": "0018_d2_slice2a_binding_storage",
+      "breakpoints": true
     }
   ]
 }
