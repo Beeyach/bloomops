@@ -1,0 +1,78 @@
+Audit PERF3 independently. Do not modify application code, do not merge, do not deploy, and do not start D2.
+
+Exact audit base: 62bcf019226db1e7e939fbcffc8909f41fbd577a
+Exact candidate head under audit: 3f9dc0d9c80c461d9d6748c582987d0d4942db1f
+PR: #35
+
+Read completely before auditing:
+- AGENTS.md
+- docs/BUILD_STATE.md
+- docs/INDEX.md
+- docs/PERF1_RESULTS.md
+- docs/PERF2_RESULTS.md
+- docs/PERF3_RESULTS.md
+- docs/phases/PERF1.md
+- docs/phases/PERF2.md
+- docs/phases/PERF3.md
+- docs/DOMAIN_MODEL.md
+- docs/PRODUCT_SPEC.md
+- app/(internal)/layout.jsx
+- app/(internal)/page.jsx
+- app/(internal)/systems/page.jsx
+- lib/bloomops/shell-server.mjs
+- lib/bloomops/shell.mjs
+- lib/bloomops/access.mjs
+- lib/bloomops/auth.mjs
+- lib/bloomops/membership.mjs
+- lib/bloomops/authorization.mjs
+- lib/bloomops/read-batch.mjs
+- all files changed by PR #35
+
+Treat the implementation report and PERF3_RESULTS as claims to verify, not evidence to accept automatically.
+
+Primary audit focus:
+1. Verify the exact diff from base to candidate and confirm no hidden scope creep.
+2. Independently inspect the new private request-local Better Auth/Drizzle facade that folds canonical current workspace selection into the existing session/user read.
+3. Prove it does not create any cross-request cache, stale session authority, shared mutable request state, protected prefetch bypass, stale static output, authorization-after-data-load path, or tenant leakage.
+4. Confirm Better Auth signature, expiry, refresh, revocation and session/user binding semantics remain intact. The extra workspace/membership data must only be accepted when it corresponds to the same current session/user and current database truth.
+5. Verify immediate next-request revocation for session deletion, user changes, membership suspension/removal, role/capability changes, Client/Service/Project assignment revocation, visibility changes, Client contact unlinking, and tenant/existence-hiding behavior.
+6. Verify malformed, missing, foreign, stale, duplicated, or inconsistent joined/facade results fail safely and do not silently grant access.
+7. Inspect whether any Better Auth or Drizzle internal API seam is version-sensitive or brittle; report concrete risk if present.
+8. Reproduce the performance methodology independently. Confirm the claimed reduction is a real sequential protected-read stage reduction rather than only lower query count.
+9. Measure click -> headers/first response -> final body/RSC completion -> DOM complete -> two animation frames. Do not count early streaming or headings as completion.
+10. Verify the browser measurement intervention (bounded response-clone drain) is measurement-only and cannot affect production behavior. Cross-check with a no-clone or equivalent control.
+11. Reproduce before/after representative and exact 3x stress measurements, including 100ms-per-binding sensitivity. Preserve sample counts and warmup treatment. Report medians and p95/range.
+12. Verify no claim that local/synthetic timing proves authenticated staging performance. PERF3 must remain operationally open until deployed candidate is retested signed in.
+13. Verify Home and Systems specifically, plus Clients, Work, Social, Team and Ads, because the live baseline showed persistent warm latency on all of them.
+14. Confirm current no-JavaScript behavior, navigation semantics, bounded rendering, and the previous Systems loading-boundary fix remain intact.
+15. Confirm there are no schema, migration, package, lockfile, workflow, Wrangler, OpenNext, Cloudflare placement, infrastructure, dependency, or production-resource changes unless explicitly present and justified.
+16. Run the strongest available regression suite: full npm test; focused PERF3/current-session/auth tests; shared auth/membership/shell/authorization; affected route/domain regressions; Release B/C; D1 Systems; built Worker auth/runtime; local zero-to-current; Systems/projection smokes; navigation browser acceptance at 1440/1024/768/390/320 with JS and no-JS where applicable; syntax checks; git diff --check; both builds.
+17. Confirm the audit branch differs from candidate only by this audit prompt and any audit report you intentionally add. Do not alter candidate product code.
+
+Security and correctness outrank performance. Any stale-authority path, tenant leakage, weakened revocation, auth bypass, or existence-hiding regression is a fail regardless of speedup.
+
+Performance acceptance for code audit:
+- independently demonstrate the claimed serial stage reduction on the candidate;
+- no material zero-delay regression under representative or 3x stress data;
+- no spinner/skeleton/early-stream trick counted as improvement;
+- do not require authenticated staging success for code-audit PASS, but explicitly state that PERF3 remains operationally open until post-merge staging gates and signed-in live retest pass.
+
+Required final report format:
+AUDIT RESULT: PASS
+or
+AUDIT RESULT: FAIL - CHANGES REQUIRED
+
+Then include:
+1. Merge recommendation locked to exact audited SHA.
+2. Findings by severity.
+3. Fresh verification results.
+4. Authentication/facade correctness findings.
+5. Immediate revocation and tenant isolation findings.
+6. Independent performance measurements and methodology.
+7. Representative and 3x stress results.
+8. RSC/body/DOM completion findings.
+9. Schema/dependency/infrastructure drift findings.
+10. Remaining uncertainty, especially authenticated staging.
+11. Exact next action.
+
+If PASS, recommend merge only while PR #35 head remains exactly 3f9dc0d9c80c461d9d6748c582987d0d4942db1f. If the head moves, require a fresh audit of the new head.
