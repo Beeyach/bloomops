@@ -1,0 +1,246 @@
+PERF4 — LIVE DEPLOYED BOTTLENECK INVESTIGATION AND EVIDENCE-DRIVEN FIX
+
+You are implementing the next BloomOps performance pass after PERF3 failed live signed-in staging acceptance.
+
+Do not start D2.
+Do not merge anything.
+Do not deploy to production.
+Do not weaken authorization, revocation, tenant isolation, existence hiding, or Better Auth semantics.
+Do not introduce cross-request session/authorization caches, protected prefetch, stale static output, fake loading improvements, or spinner/skeleton tricks counted as performance wins.
+
+Repository: Beeyach/bloomops
+Exact base / current main SHA: 2b892275abf0856dff10f31d49b2ff2da57acd5f
+Working branch: perf/perf4-live-bottleneck
+PERF3 candidate merged through PR #35.
+PERF3 remains operationally OPEN because live staging failed acceptance.
+D2 remains BLOCKED.
+
+Read completely before changing code:
+- AGENTS.md
+- docs/BUILD_STATE.md
+- docs/INDEX.md
+- docs/PERF1_RESULTS.md
+- docs/PERF2_RESULTS.md
+- docs/PERF3_RESULTS.md
+- docs/phases/PERF1.md
+- docs/phases/PERF2.md
+- docs/phases/PERF3.md
+- docs/DOMAIN_MODEL.md
+- docs/PRODUCT_SPEC.md
+- app/(internal)/layout.jsx
+- app/(internal)/page.jsx
+- app/(internal)/clients/page.jsx if present
+- app/(internal)/work/page.jsx if present
+- app/(internal)/social/page.jsx if present
+- app/(internal)/systems/page.jsx
+- app/(internal)/team/page.jsx if present
+- app/(internal)/ads/page.jsx if present
+- lib/bloomops/shell-server.mjs
+- lib/bloomops/shell.mjs
+- lib/bloomops/access.mjs
+- lib/bloomops/auth.mjs
+- lib/bloomops/membership.mjs
+- lib/bloomops/authorization.mjs
+- lib/bloomops/read-batch.mjs
+- all PERF1/PERF2/PERF3 timing harnesses and browser navigation measurement code
+- staging/deploy verification scripts relevant to timing and /api/version
+
+LIVE FAILURE EVIDENCE
+
+Freshly deployed staging served exact merge SHA 2b892275abf0856dff10f31d49b2ff2da57acd5f. Deploy staging and Verify zero-to-current migration both passed.
+
+Signed-in Chrome DevTools MCP warm navigation, 3 retained samples per route:
+
+Home:    967, 984, 942 ms  median 967 ms
+Clients: 747, 714, 714 ms  median 714 ms
+Work:    746, 782, 731 ms  median 746 ms
+Social:  727, 733, 764 ms  median 733 ms
+Systems: 929, 913, 914 ms  median 914 ms
+Team:    712, 912, 714 ms  median 714 ms
+Ads:     847, 543, 531 ms  median 543 ms
+
+Overall median: 747 ms
+Observed p95: 967 ms
+
+Live exit targets remain approximately:
+- top-level warm signed-in median <500 ms
+- p95 <800 ms where practical
+- routine clicks should not commonly exceed 1 second
+- most importantly, navigation must feel materially fast
+
+Pre-PERF3 live baseline for context:
+Home ~1.05–1.10 s
+Systems ~1.02–1.04 s
+Work ~0.87–0.89 s
+Team ~0.84–0.92 s
+Social ~0.86–0.88 s
+Clients ~0.85–0.88 s
+Ads ~0.69–0.83 s
+
+PERF3 therefore helped but did not solve the deployed issue. Do not repeat PERF1/PERF2/PERF3 blindly.
+
+PRIMARY OBJECTIVE
+
+Find the ACTUAL remaining deployed critical path, prove it with measurements, and make the smallest safe architectural change that materially reduces it.
+
+This is a difficult performance investigation. Evidence must drive the change.
+
+STAGE A — REPRODUCE AND DECOMPOSE THE LIVE FAILURE BEFORE EDITING
+
+Use the working Chrome DevTools MCP and the authenticated staging session at:
+https://bloomops-staging.cool-sunset-2169.workers.dev
+
+First verify /api/version still serves exact SHA 2b892275abf0856dff10f31d49b2ff2da57acd5f. If main/staging moved, STOP and report the mismatch rather than measuring the wrong build.
+
+Run repeated warm signed-in navigation on Home, Clients, Work, Social, Systems, Team, Ads. Prefer at least 5 retained warm samples per route for diagnosis if practical.
+
+For each route decompose as far as Chrome DevTools permits:
+click
+-> protected navigation/request begins
+-> request connection/queueing if relevant
+-> first response / headers
+-> RSC/final response body EOF
+-> DOM-visible completion
+-> two animation frames after visible completion
+
+Record network request count, the protected RSC/document request duration, TTFB, response download/body completion timing, transfer size, and obvious main-thread/paint cost where available.
+
+Do not infer browser rendering as the cause merely from time after headers. PERF3 already proved local RSC body streaming can occupy that interval.
+
+Specifically answer:
+1. Is the remaining ~0.5–1.0 s dominated before first byte, during RSC body streaming/server completion, after body completion in the browser, or by multiple sequential protected requests?
+2. Why are Home and Systems consistently slower than Clients/Work/Social/Team?
+3. Is Ads genuinely faster after warmup or merely noisy?
+4. Are there extra redirects, duplicate navigations, duplicate auth/session requests, client fetches, or route waterfalls?
+5. Does the browser receive one protected RSC request per click or multiple meaningful sequential network requests?
+6. Does main-thread work materially contribute after the final body completes?
+
+Preserve raw evidence in a durable safe file under docs/evidence/ or equivalent. Do not commit secrets, cookies, auth tokens, personal data, full request headers, or sensitive URLs.
+
+STAGE B — MAP LIVE TIMING TO SERVER-SIDE SEQUENTIAL DEPTH
+
+Independently map the measured routes to the current protected server path.
+
+PERF3 removed one serial current-session -> active-membership round trip. Its final-head local verification reported protected Home and Systems at three native D1 invocations / sequential depth three, with 11 and 6 statements respectively.
+
+Do not assume that remaining depth is automatically the answer. Prove which stage maps to the deployed body-completion delay.
+
+Instrument or extend the existing LOCAL timing harnesses only as needed to isolate:
+- Better Auth/current session
+- current membership/workspace binding
+- shared shell/authorization
+- route-specific projection/data reads
+- serialization/render-to-RSC completion
+
+Use controlled latency injection per native D1 invocation/layer to establish sensitivity. Keep representative and exact 3x fixtures. Compare zero-delay medians and tails so the fix does not create a local regression masked by injected latency.
+
+Inspect whether sequential operations that are logically independent can safely execute concurrently, or whether one request can return canonical data needed by the next stage without duplicating authority or facts.
+
+Potential areas to investigate, NOT assumptions or required fixes:
+- shell and route projection serialization
+- layout/page nested server-component waterfalls
+- duplicated current-session or current-workspace reads across layout/page
+- request-local read batching boundaries
+- route-specific loaders that wait for shell results unnecessarily
+- repeated authorization queries that can be safely included in the same canonical native D1 operation while still evaluating current truth on every request
+- RSC component nesting that creates sequential server awaits even when data dependencies are independent
+
+Do NOT solve this with:
+- cross-request auth/session caching
+- longer-lived memoization of authority
+- stale workspace/membership data
+- trusting client-supplied workspace or role state
+- weakening next-request revocation
+- merging canonical facts into duplicate tables
+- prefetching protected output before authority is known
+- loading UI that merely makes the route look faster
+
+STAGE C — IMPLEMENT ONLY IF THE ROOT CAUSE IS PROVEN
+
+Once Stage A + B identifies a specific dominant critical path, make the smallest coherent fix.
+
+If the evidence is ambiguous, STOP after producing a strong diagnosis report and do not make speculative product-code changes.
+
+If implementing, preserve these invariants:
+- tenant isolation
+- 401/403/404 existence hiding
+- Department non-grant
+- Project ownership non-grant
+- Team Member assignment scope
+- Client allowlists
+- active membership only
+- active workspace only
+- immediate next-request revocation after session deletion, membership suspension/removal, role/capability change, assignment revocation, visibility change, Client contact unlink, etc.
+- Better Auth signature/expiry/refresh semantics
+- no cross-request mutable authority state
+- canonical shared Work Core
+
+For any request-local aggregation/facade/batching change, malformed/missing/foreign/inconsistent results must fail safely or fall back to canonical current truth. Never silently grant.
+
+STAGE D — VERIFY THE CANDIDATE
+
+Run the strongest applicable regression suite, including at minimum:
+- full npm test
+- focused performance/current-session/auth tests
+- shared auth/membership/shell/authorization tests
+- affected route/domain regressions
+- D1 Systems tests
+- Release B and C regressions
+- built Worker auth/runtime verification
+- local zero-to-current
+- Systems/projection smokes
+- browser navigation acceptance at 1440/1024/768/390/320 and no-JS where applicable
+- syntax checks
+- git diff --check
+- Next build
+- OpenNext/Cloudflare build
+
+Reproduce controlled performance measurements before/after on representative and exact 3x fixtures.
+
+Report:
+- native D1 invocation count
+- sequential D1 depth
+- SQL statement count
+- click/headers/final-body/DOM/two-rAF timing in the local/browser harness
+- median and p95/range
+- zero-delay results
+- controlled 100 ms-per-binding/layer sensitivity where useful
+
+A candidate is not acceptable if it achieves speed by weakening correctness/security or if zero-delay performance materially regresses.
+
+Do not claim synthetic/local results prove live staging.
+
+STAGE E — DOCUMENT AND PREPARE FOR INDEPENDENT AUDIT
+
+Update durable performance documentation with:
+- the PERF3 live failure evidence above
+- the measured root cause
+- the implemented change, if any
+- before/after local evidence
+- limitations
+- explicit statement that live staging remains unproven until merge/deploy/retest
+
+Create/update a PERF4 phase/results document rather than rewriting history in PERF1–3.
+
+Do not mark PERF3/PERF4 operationally closed.
+Do not unblock D2.
+
+Remove this temporary execution prompt before finalizing the implementation branch.
+
+FINAL REPORT
+
+Return a concise implementation report containing:
+1. Exact base SHA and final implementation SHA.
+2. Live diagnostic findings, including click -> headers -> final body -> DOM/two-rAF decomposition.
+3. Proven root cause.
+4. What changed and why.
+5. Security/authorization invariants and how they were preserved.
+6. Full verification results.
+7. Controlled performance results before/after, representative and 3x.
+8. Any zero-delay tail tradeoffs.
+9. Schema/migration/dependency/config/workflow/infrastructure changes, explicitly state none if none.
+10. Remaining uncertainty.
+11. Whether the branch is ready for a separate independent audit.
+12. Confirm no production deployment, no D2 work, and no merge occurred.
+
+If implementation is complete and ready for review, open a PR from perf/perf4-live-bottleneck to main. Leave it open and unmerged. Include the exact final implementation head and the live PERF3 failure numbers in the PR body.
