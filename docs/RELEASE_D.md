@@ -1,10 +1,16 @@
 # Release D - Systems Delivery
 
-## Current status (2026-09-11)
+## Current status (2026-09-12)
 
-D1 Systems Foundation is merged. The intervening performance phase is **closed** after PR #36 merged as `cb2ef0bea2900a46583e86c75840e8ba6639d663`, automatic staging run `34607488524` and zero-to-current run `34607488607` succeeded on that exact SHA, and basic signed-in Home/Systems/navigation smoke passed. Staging reports `cb2ef0b`. [BUILD_STATE.md](BUILD_STATE.md) records the verification.
+D1 and D2 are closed. D2's reusable blueprint engine, canonical GHL default,
+explicit setup and recoverable conditional generation are merged through PR #46
+as `642009c713daa2ecfb985203aa3f4d5240f4ddcc`. Both exact-SHA workflows,
+staging identity and disposable cleanup passed; [BUILD_STATE.md](BUILD_STATE.md)
+records full evidence. D3 Kajabi is in progress under [phases/D3.md](phases/D3.md).
+D4–D7 remain. The owner authorized continuation until actual input is needed.
 
-The accepted Home/Systems optimizations are retained; Smart Placement was rejected/reverted. The approximately 500 ms target was not fully met and additional performance work is deliberately deferred. Release D itself remains open: **D2–D7 remain**. Recommend scoping **D2 — GHL Build Blueprint** next under the existing boundaries below. D2 implementation is not authorized or started by this state update; no further performance pass is a prerequisite for scoping it.
+Performance remains closed: accepted optimizations are retained, Smart Placement
+was rejected/reverted, and further performance work remains deferred.
 
 ## Baseline
 

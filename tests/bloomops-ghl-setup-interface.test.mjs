@@ -5,15 +5,15 @@ import { drizzle } from 'drizzle-orm/d1';
 import * as schema from '../lib/bloomops/schema.mjs';
 import { setup } from './_projects.mjs';
 import { APP_URL, all, one, run } from './_bloomops-db.mjs';
-import { configureGhlBlueprint, systemsBlueprintSetupOptions, provisionGhlBlueprint, saveSystemsBlueprintBinding } from '../lib/bloomops/systems-blueprint-setup.mjs';
+import { configureGhlBlueprint, configureKajabiBlueprint, systemsBlueprintSetupOptions, provisionGhlBlueprint, provisionKajabiBlueprint, saveSystemsBlueprintBinding } from '../lib/bloomops/systems-blueprint-setup.mjs';
 import { systemsBlueprintOptions } from '../lib/bloomops/systems-blueprint-preparation.mjs';
 import { generateSystemsBlueprint } from '../lib/bloomops/systems-blueprint-generation.mjs';
 const now = new Date('2026-09-12T10:00:00.000Z');
 const state = t => ['templates', 'template_versions', 'service_type_blueprint_bindings'].map(table => all(t.raw, `SELECT * FROM ${table} ORDER BY id`));
-async function fixture(ctx, auth = false) {
+async function fixture(ctx, auth = false, blueprint = 'ghl') {
   const t = await setup({ auth }); ctx.after(() => t.raw.close());
   t.input = { serviceTypeId: 'type-systems', enabled: true, expectedBinding: null };
-  t.configure = (patch = {}, actor = t.owner) => configureGhlBlueprint(t.db, { actor, input: { ...t.input, ...patch }, now });
+  t.configure = (patch = {}, actor = t.owner) => (blueprint === 'kajabi' ? configureKajabiBlueprint : configureGhlBlueprint)(t.db, { actor, input: { ...t.input, ...patch }, now });
   t.options = (actor = t.owner) => systemsBlueprintSetupOptions(t.db, { actor });
   t.grant = user => run(t.raw, "INSERT INTO member_capabilities(workspace_id,membership_id,capability) VALUES('a',?,'templates.manage')", `m-${user}`);
   const cookies = {};
@@ -92,9 +92,9 @@ test('concurrent setup converges on one default and binding without replacing hi
   assert.ok(results.some(r => r.ok)); assert.ok(results.every(r => r.ok || r.reason === 'conflict'));
   assert.deepEqual(state(t).map(rows => rows.length), [1,1,1]);
 });
-for (const mode of ['insert', 'update', 'no-op']) for (const change of ['retire', 'deactivate', 'extra-version']) {
-  test(`enable ${mode} rejects ${change} after canonical preflight`, async ctx => {
-    const t = await fixture(ctx), installed = await provisionGhlBlueprint(t.db, { actor: t.owner, now });
+for (const blueprint of ['ghl', 'kajabi']) for (const mode of ['insert', 'update', 'no-op']) for (const change of ['retire', 'deactivate', 'extra-version']) {
+  test(`${blueprint} enable ${mode} rejects ${change} after canonical preflight`, async ctx => {
+    const t = await fixture(ctx, false, blueprint), installed = await (blueprint === 'kajabi' ? provisionKajabiBlueprint : provisionGhlBlueprint)(t.db, { actor: t.owner, now });
     let binding = null;
     if (mode !== 'insert') {
       const saved = await saveSystemsBlueprintBinding(t.db, { actor: t.owner, serviceTypeId: t.input.serviceTypeId,

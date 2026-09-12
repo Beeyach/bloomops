@@ -129,7 +129,7 @@ const layout = async (name, page, width) => {
     await Promise.all(document.getAnimations().filter(a => a.effect?.getComputedTiming().iterations !== Infinity).map(a => a.finished.catch(() => {})));
   });
   const geometry = await page.evaluate(() => ({ overflow: document.documentElement.scrollWidth > innerWidth,
-    controls: [...document.querySelectorAll('.bo-dialog button, .bo-build-check, #project-ghl-build button')].filter(n => n.checkVisibility()).map(n => n.getBoundingClientRect()).every(r => r.width > 0 && r.height >= 44 && r.x >= 0 && r.right <= innerWidth),
+    controls: [...document.querySelectorAll('.bo-dialog button, .bo-build-check, #project-systems-build button')].filter(n => n.checkVisibility()).map(n => n.getBoundingClientRect()).every(r => r.width > 0 && r.height >= 44 && r.x >= 0 && r.right <= innerWidth),
     text: [...document.querySelectorAll('.bo-build-check')].every(n => parseFloat(getComputedStyle(n).fontSize) >= 16),
   }));
   if (geometry.overflow || !geometry.controls || !geometry.text) console.error("Layout diagnostic", geometry);
@@ -197,7 +197,7 @@ try {
   const storage = await page.evaluate(() => Object.keys(sessionStorage).filter(key => key.startsWith('bloomops:ghl:')).map(key => sessionStorage.getItem(key)));
   check('saved retry contains only input, not plan or labels', storage.length === 1 && JSON.parse(storage[0]).requestId === lostBody.requestId && !/definitionJson|Garden|Build funnel/.test(storage[0]));
   await page.reload({ waitUntil: 'networkidle' });
-  await page.getByRole('button', { name: 'Resume GHL build request' }).click();
+  await page.getByRole('button', { name: 'Resume build request' }).click();
   const retryResponse = page.waitForResponse(r => r.url().endsWith('/blueprint/generate') && r.request().method() === 'POST');
   await page.getByRole('button', { name: 'Retry this request', exact: true }).click();
   const retried = await retryResponse; check('reload retries the original packet and proves the prior commit', retried.status() === 200 && retried.request().postDataJSON().requestId === lostBody.requestId && (await retried.json()).replayed);

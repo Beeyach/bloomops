@@ -8,7 +8,7 @@ import SignOutButton from '@/app/sign-in/SignOutButton';
 
 // Settings in A5 is narrow and true: who you are signed in as, which
 // workspace you are in, what your role means, what you have been given
-// access to, and the way out. The narrow GHL setup link requires template
+// access to, and the way out. The narrow Systems setup links requires template
 // management authority; broad workspace/appearance preferences remain later work.
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Settings' };
@@ -37,9 +37,9 @@ export default async function SettingsPage() {
             <Facts items={[['Workspace', access.workspace.name], ['Your role', ROLE_LABELS[role] || role], ['What that means', ROLE_DESCRIPTIONS[role] || '']]} />
           </Surface>
         </Section>
-        {evaluate(actor, { action: 'templates.manage' }).allowed && <Section id="ghl-setup" title="GHL builds">
-          <p className="bo-body">Choose which Systems service types can start a GHL build.</p>
-          <Button href="/settings/ghl-builds">Manage GHL build setup</Button>
+        {evaluate(actor, { action: 'templates.manage' }).allowed && <Section id="ghl-setup" title="Systems builds">
+          <p className="bo-body">Choose which Systems service types can start GHL or Kajabi builds.</p>
+          <div className="bo-dialog-actions"><Button href="/settings/ghl-builds">Manage GHL build setup</Button><Button href="/settings/kajabi-builds">Manage Kajabi build setup</Button></div>
         </Section>}
         <Section id="access" title="Your access">
           <Surface padding="lg">

@@ -48,3 +48,12 @@ disable remains relaxed. Nine post-preflight interleavings cover all boundaries.
 Post-fix: 149 affected / 5,886 full tests, 26 native D1 checks, Cloudflare build,
 38 browser/HTTP checks with 11 captures at five widths, syntax and diff pass.
 Evidence: `/tmp/bloomops-d2-setup/`. Both exact-merge-SHA gates remain pending.
+
+## Closure (2026-09-12)
+
+PR #46 merged reviewed `469d98748494a1ed7529d9ac3d39e78dcaeecf5a` as
+`642009c713daa2ecfb985203aa3f4d5240f4ddcc`, with identical trees. Staging
+34681135771 and zero-to-current 34681135753 passed every required step on that
+SHA; staging identity and restoration of the eight-database inventory passed.
+This completes the integrated D2 acceptance. D2 is closed; D3 Kajabi is next.
+No live catalogue binding was performed. Full evidence is in BUILD_STATE.md.

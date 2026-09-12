@@ -29,6 +29,8 @@ export default function SystemsBuildControls({ projectId, retryScope, options: i
   const [open, setOpen] = useState(false), [busy, setBusy] = useState(false), [ready, setReady] = useState(false);
   const [options, setOptions] = useState(initialOptions), [selected, setSelected] = useState([]), [preview, setPreview] = useState(null);
   const [packet, setPacket] = useState(null), [storageError, setStorageError] = useState(''), [error, setError] = useState(''), [restartAllowed, setRestartAllowed] = useState(false);
+  const platform = options?.blueprintKey === 'kajabi_build' ? 'Kajabi' : 'GHL';
+  // Preserve D2 storage keys and packet shape for outstanding requests.
   const storageKey = `bloomops:ghl:${retryScope}:${projectId}`, path = `/api/bloomops/projects/${encodeURIComponent(projectId)}/blueprint`;
   const close = useCallback(() => { if (!pending.current) setOpen(false); }, []);
   useEffect(() => { setOptions(initialOptions); }, [initialOptions]);
@@ -65,7 +67,7 @@ export default function SystemsBuildControls({ projectId, retryScope, options: i
     if (result.projectId !== projectId || typeof result.generationId !== 'string' || !result.counts) throw new Error('The build result could not be verified. Retry this request.');
     try { sessionStorage.removeItem(storageKey); } catch { /* A retained exact retry remains safe. */ }
     setPacket(null); setOptions(null); setOpen(false); setPreview(null);
-    toast(result.replayed ? 'Your GHL build was already saved.' : 'GHL work generated.'); router.refresh();
+    toast(result.replayed ? 'Your build was already saved.' : 'Systems work generated.'); router.refresh();
   });
   const restart = () => perform(async () => {
     // A completed domain rejection plus a fresh eligible empty Project permits a new preview.
@@ -75,13 +77,13 @@ export default function SystemsBuildControls({ projectId, retryScope, options: i
   if (!ready || (!options?.ok && !packet && !storageError)) return null;
   if (storageError && !options?.ok && !packet) return null;
   return <>
-    <Section id="project-ghl-build" title="GHL build" aside={<Button onClick={() => { setOpen(true); setError(''); }} disabled={!!storageError}>
-      {packet ? 'Resume GHL build request' : 'Start GHL build'}
+    <Section id="project-systems-build" title={packet ? 'Saved build request' : `${platform} build`} aside={<Button onClick={() => { setOpen(true); setError(''); }} disabled={!!storageError}>
+      {packet ? 'Resume build request' : `Start ${platform} build`}
     </Button>}>
       <p className="bo-body">{packet ? 'A previous request needs a result. Resume it to check or safely retry the same build.' : 'Choose the components this project needs, then review the work before creating it.'}</p>
       {storageError && <Notice tone="error">{storageError}</Notice>}
     </Section>
-    <Dialog open={open} onClose={close} title={packet ? 'Resume GHL build' : preview ? 'Review GHL work' : 'Choose GHL components'}>
+    <Dialog open={open} onClose={close} title={packet ? 'Resume build' : preview ? `Review ${platform} work` : `Choose ${platform} components`}>
       <div className="bo-dialog-body" aria-busy={busy}>
         {packet ? <p className="bo-body">Retry the saved request to confirm its result. Work that was already saved will be kept without duplication.</p> : preview ? <>
           <p className="bo-body">{preview.plan.milestones.length} milestones · {preview.plan.actions.length} actions · {preview.plan.deliverables.length} deliverables</p>
