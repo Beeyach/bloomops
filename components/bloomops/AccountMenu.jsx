@@ -72,11 +72,9 @@ export default function AccountMenu({ name, email, roleLabel, workspaceName, pla
           <div className="bo-menu-identity">
             <div className="bo-account-name">{displayName}</div>
             <div className="bo-menu-email">{email}</div>
-            <div className="bo-account-role">
-              {roleLabel}
-              {workspaceName ? ` · ${workspaceName}` : ''}
-            </div>
+            <dl className="bo-menu-properties"><div><dt>Role</dt><dd>{roleLabel}</dd></div>{workspaceName&&<div><dt>Workspace</dt><dd>{workspaceName}</dd></div>}</dl>
           </div>
+          <Link href="/workspaces" role="menuitem" className="bo-menu-item" onClick={()=>setOpen(false)}><Icon name="team" size={18} className="bo-soft"/>Switch workspace</Link>
           {settingsHref && (
             <Link href={settingsHref} role="menuitem" className="bo-menu-item" onClick={() => setOpen(false)}>
               <Icon name="settings" size={18} className="bo-soft" />

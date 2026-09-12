@@ -2,7 +2,7 @@
 
 ## Status and baseline
 
-**CLOSED** through [PR #57](https://github.com/Bloomwired/bloomops/pull/57) on verified `09de9d61d419add9a9e85d8e5e933936b5561154`. Implementation, local acceptance, one Sol High review and one focused re-review, exact-SHA staging/zero-to-current gates and live identity/health all pass. [BUILD_STATE](../BUILD_STATE.md) owns evidence and current execution status. Follow [E2](E2.md), [RELEASE_E](../RELEASE_E.md) and the canonical working agreements. The [E3](E3.md)/[E3A](E3A.md) contracts are prepared; E3A evidence foundation acceptance and release gates are in progress.
+**CLOSED** through [PR #57](https://github.com/Bloomwired/bloomops/pull/57) on verified `09de9d61d419add9a9e85d8e5e933936b5561154`. Implementation, local acceptance, one Sol High review and one focused re-review, exact-SHA staging/zero-to-current gates and live identity/health all pass. [BUILD_STATE](../BUILD_STATE.md) owns evidence and current execution status. Follow [E2](E2.md), [RELEASE_E](../RELEASE_E.md) and the canonical working agreements. The [E3](E3.md)/[E3A](E3A.md) contracts are prepared; E3A is closed on `618e18f`; E3B’s activation contract is next.
 
 Start from accepted E2A, `2a73193d23e8e83673153e0e4512ddcae2bb6505` (PR #56), with 23 migrations. E2A already supplies immutable `production_area` / `ads_project_id`, exact parent integrity, replacement guards and Social/portal containment. Preserve those guards and old Social creation receipts. No additional migration is planned; if implementation exposes a missing database invariant, document the evidence and revise this contract before adding one. Preserve the original dirty checkout and branch; use the isolated execution checkout.
 

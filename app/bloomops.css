@@ -2282,3 +2282,6 @@ select.bo-control {
 
 .bo-creative-detail > .bo-btn:first-child { margin-bottom: 16px; }
 .bo-creative-detail > .bo-creative-badges { margin-top: 16px; }
+.bo-menu-properties {display:grid;gap:12px;margin:16px 0 0;}
+.bo-menu-properties dt {font-size:12px;color:var(--bo-text-soft);margin-bottom:4px;}
+.bo-menu-properties dd {font-size:14px;margin:0;overflow-wrap:anywhere;}

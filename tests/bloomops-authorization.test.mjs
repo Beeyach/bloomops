@@ -283,6 +283,9 @@ test('the role matrix: every role against every representative action, allow and
   const jamesProject = projectResource({ id: 'project-james', workspaceId: s.A, clientId: 'c_james', visibility: 'client' }, [], { internal: false });
   const jamesAction = { ...jamesProject, type: 'action', projectId: jamesProject.id, id: 'action-james', visibility: 'internal', assigneeMembershipId: actors.team_member.membershipId };
   const cases = {
+    'workspace.create': [true, true, false, false, false],
+    'prospecting.view': [true, true, false, false, false],
+    'prospecting.manage': [true, true, false, false, false],
     'portal.content.list': [false, false, false, false, true],
     'portal.content.view': [false, false, false, false, true],
     'members.manage': [true, true, false, false, false],

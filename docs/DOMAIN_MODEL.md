@@ -2,6 +2,12 @@
 
 This document contains durable domain and permission truth.
 
+## Prospecting foundation (P0/P1 review branch)
+
+An existing signed identity may explicitly select only its own active membership. Existing workspaces retain purpose `operations`; explicit fresh creation produces purpose `prospecting` and one Owner membership for the existing actor, without copying records or settings. Purpose is immutable. Creation receipts are scoped to user/request and survive retries; they never regrant revoked access.
+
+`bloomops_prospects` owns workspace-scoped structured identity, fit assessment, observations/unknowns/proposed work, manually recorded audit evidence and draft text. It is separate from inherited slug-keyed `prospects` and their automation. `prospect_field_sources` binds each field to its source URL, verification/checked time and same-workspace editor. Field/source changes invalidate old checks unless explicitly rechecked. A checked public email is not delivery-verified. Optimistic revision guards and atomic activity protect edits. Owner/Admin only; no portal access, imports, sending, conversions or result counters in this slice.
+
 ## Top-Level Hierarchy
 
 Workspace
@@ -875,4 +881,4 @@ Lists return 50 plus a scoped overflow probe; dynamic facets and Project/owner c
 
 Prospective Ads capture requires Internal Review, internal Content, fixed E2 flags and the current ordinary Ads Project/Client/Service tuple. A canonical round at Client Review seals the complete contiguous manifest after rechecking each selected generation. Database guards reject mutation, deletion and conflicting replacement of evidence, retained File generations, attachment identity and round provenance. File archive and visibility revocation remain legal; historical bytes remain retained. Cleanup excludes manifest-pinned keys and fails closed if the retention lookup fails.
 
-E3A leaves every active approval/portal route and DTO Social-only. It is storage and compatibility groundwork, not Ads sharing activation. E3B needs its own request/response/media access contract and acceptance. Once E3B creates evidence, E3A is the minimum compatible fallback; no down-migration or fallback lacking retention-aware cleanup is safe. Exact verification and release status live in BUILD_STATE.
+E3A leaves every active approval/portal route and DTO Social-only. It is storage and compatibility groundwork, not Ads sharing activation. E3B needs its own request/response/media access contract and acceptance. Once E3B creates evidence, E3A is the minimum compatible fallback; no down-migration or fallback lacking retention-aware cleanup is safe. E3A is accepted/deployed on `618e18f` with 24 migrations. Exact verification and release status live in BUILD_STATE.

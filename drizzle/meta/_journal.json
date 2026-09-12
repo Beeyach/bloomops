@@ -169,6 +169,20 @@
       "when": 1789238789065,
       "tag": "0023_e3a_review_media",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
+      "when": 1789241650167,
+      "tag": "0024_p0_workspace_foundation",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "6",
+      "when": 1789243510350,
+      "tag": "0025_p1_prospect_profiles",
+      "breakpoints": true
     }
   ]
 }

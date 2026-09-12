@@ -4,6 +4,7 @@
 // on the server and in tests alike.
 
 const PATHS = {
+  prospecting: <><circle cx="10" cy="10" r="6.5"/><path d="m15 15 6 6M7.5 10h5M10 7.5v5"/></>,
   // Instagram geometry shared with the existing editor icon vocabulary.
   instagram: <><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></>,
   video: <><rect x="3" y="4" width="18" height="16" rx="3" /><path d="m10 8 6 4-6 4z" fill="currentColor" stroke="none" /></>,

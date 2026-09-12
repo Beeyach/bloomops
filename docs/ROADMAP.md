@@ -2,6 +2,14 @@
 
 This is sequencing guidance, not permission to pre-build future work.
 
+## Current owner priority — Prospecting and Pages
+
+Use [PROSPECTING_ROADMAP.md](PROSPECTING_ROADMAP.md) for the new workspace, internal prospecting area, structured profiles, Skills Library, outreach/results, main Pages and client-onboarding handoff. It supersedes earlier exclusions of prospecting and brings Pages forward from the general Operations Layer backlog. The first useful slice is the Prospecting shell and one full-page structured profile.
+
+Keep the original Leads That Bloom workspace and records separate. Reuse selected untouched raw prospects only through explicit export/import. Apply the shared readability requirements; dot-separated metadata is banned. Video work is deferred and existing voice assets are preserved.
+
+The release history below remains the operational roadmap. This priority change does not declare pending Ads/release gates complete or authorise overwriting in-flight work; consult BUILD_STATE.md before implementation.
+
 ## Release A — Activation + Onboarding
 
 - Foundation
