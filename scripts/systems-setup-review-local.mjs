@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// D2 explicit GHL setup UI against the actual local Worker. Synthetic isolated workspace,
+// D2/D3 explicit Systems setup UI against the actual local Worker. Synthetic isolated workspace,
 // captured local mail only; no live configuration or provider execution.
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -14,6 +14,9 @@ const arg = (name, fallback) => {
 const base = arg("--url", "http://localhost:8787"),
   out = resolve(arg("--out", "/tmp/bloomops-d2-setup/browser"));
 assert.ok(["localhost", "127.0.0.1"].includes(new URL(base).hostname));
+const kind = arg('--platform', 'ghl'); assert.ok(['ghl','kajabi'].includes(kind));
+const platform = kind === 'kajabi' ? 'Kajabi' : 'GHL', otherKind = kind === 'kajabi' ? 'ghl' : 'kajabi';
+const buildLabels = kind === 'kajabi' ? ['Build course','Configure offer and checkout','Build nurture sequence','Perform internal QA'] : ['Confirm build scope','Build funnel','Perform internal QA'];
 const require = createRequire(
   join(
     resolve(arg("--playwright", "/tmp/bloomops-c6-tools")),
@@ -127,7 +130,7 @@ const layout = async (name, page, width) => {
     await Promise.all(document.getAnimations().filter(a => a.effect?.getComputedTiming().iterations !== Infinity).map(a => a.finished.catch(() => {})));
   });
   const geometry = await page.evaluate(() => ({ overflow: document.documentElement.scrollWidth > innerWidth,
-    controls: [...document.querySelectorAll('main button, main select, .bo-dialog button, .bo-build-check')].filter(n => n.checkVisibility()).map(n => n.getBoundingClientRect()).every(r => r.width > 0 && r.height >= 44 && r.x >= 0 && r.right <= innerWidth),
+    controls: [...(document.querySelector('.bo-dialog') || document.querySelector('main')).querySelectorAll('button, select, .bo-build-check')].filter(n => n.checkVisibility()).map(n => n.getBoundingClientRect()).every(r => r.width > 0 && r.height >= 44 && r.x >= 0 && r.right <= innerWidth),
     text: [...document.querySelectorAll('.bo-build-check')].every(n => parseFloat(getComputedStyle(n).fontSize) >= 16),
   }));
   if (geometry.overflow || !geometry.controls || !geometry.text) console.error("Layout diagnostic", geometry);
@@ -136,7 +139,7 @@ const layout = async (name, page, width) => {
 };try {
   const health = await (await fetch(base + '/api/health')).json();
   check('local development Worker uses captured mail', health.environment === 'development' && health.auth.mail === 'r2-dev' && health.auth.configured);
-  const suffix = randomUUID().slice(0,8), ws = `d2-setup-${suffix}`, members = {};
+  const suffix = randomUUID().slice(0,8), ws = `systems-${kind}-${suffix}`, members = {};
   sql(`INSERT INTO workspaces(id,name,slug) VALUES(${lit(ws)},'Bloom Studio',${lit(ws)})`);
   for (const [name, role] of [['owner','owner'],['pm','project_manager'],['team','team_member'],['client','client']]) {
     const id = `${ws}-${name}`, membership = `m-${id}`, email = `${id}@example.com`; members[name] = { id, membership, email };
@@ -150,73 +153,108 @@ const layout = async (name, page, width) => {
   }
   sql(`INSERT INTO templates(id,workspace_id,kind,name,slug) VALUES(${lit(other)},${lit(ws)},'systems','Other blueprint','other-blueprint')`);
   sql(`INSERT INTO service_type_blueprint_bindings(id,workspace_id,service_type_id,template_id,enabled) VALUES(${lit(ws+'-other-binding')},${lit(ws)},${lit(types.other)},${lit(other)},1)`);
-  const endpoint = '/api/bloomops/systems/ghl-setup', owner = await login(members.owner.email, '/settings'), page = owner.page, errors = [];
+  const endpoint = `/api/bloomops/systems/${kind}-setup`, owner = await login(members.owner.email, '/settings'), page = owner.page, errors = [];
   page.on('pageerror', error => errors.push(error.message));
-  await page.getByRole('link', { name: 'Manage GHL build setup' }).click(); await page.getByRole('heading', { name: 'GHL build setup', exact: true }).waitFor(); await page.waitForLoadState('networkidle');
-  const select = page.getByLabel('Service type', { exact: true }), checkbox = () => page.getByLabel('Enable GHL builds', { exact: true });
+  await page.getByRole('link', { name: `Manage ${platform} build setup` }).click(); await page.getByRole('heading', { name: `${platform} build setup`, exact: true }).waitFor(); await page.waitForLoadState('networkidle');
+  const select = page.getByLabel('Service type', { exact: true }), checkbox = () => page.getByLabel(`Enable ${platform} builds`, { exact: true });
   const options = async context => { const r = await context.request.get(base + endpoint); assert.equal(r.status(),200); check('setup response is uncached', noStore(r)); return r.json(); };
   const configure = async (context, type, enabled) => {
     const row = (await options(context)).serviceTypes.find(r => r.id === type);
     return api(context, endpoint, { serviceTypeId: type, enabled, expectedBinding: row.binding ? { id: row.binding.id, revision: row.binding.revision } : null }, 200);
   };
-  check('setup has no default Service Type selection or automatic provisioning', await select.inputValue() === '' && sql(`SELECT count(*) AS n FROM templates WHERE workspace_id=${lit(ws)} AND slug='ghl-build'`)[0].n === 0);
+  check('setup has no default Service Type selection or automatic provisioning', await select.inputValue() === '' && sql(`SELECT count(*) AS n FROM templates WHERE workspace_id=${lit(ws)} AND slug='${kind}-build'`)[0].n === 0);
   for (const width of widths) await layout('setup-empty-choice', page, width);
-  await select.selectOption(types.ghl); check('existing unbound GHL starts disabled', !await checkbox().isChecked() && await page.getByRole('button', { name: 'Review setup' }).isDisabled());
+  await select.selectOption(types[kind]); check('selected unbound service starts disabled', !await checkbox().isChecked() && await page.getByRole('button', { name: 'Review setup' }).isDisabled());
   await checkbox().focus(); await page.keyboard.press('Space');
   await page.getByRole('button', { name: 'Review setup' }).click(); let dialog = page.getByRole('dialog');
-  check('review names the exact choice before writing', (await dialog.innerText()).includes('Enable GHL builds for GHL?') && sql(`SELECT count(*) AS n FROM templates WHERE workspace_id=${lit(ws)} AND slug='ghl-build'`)[0].n === 0);
+  check('review names the exact choice before writing', (await dialog.innerText()).includes(`Enable ${platform} builds for ${platform}?`) && sql(`SELECT count(*) AS n FROM templates WHERE workspace_id=${lit(ws)} AND slug='${kind}-build'`)[0].n === 0);
   for (const width of widths) await layout('setup-confirm', page, width);
   await page.emulateMedia({ reducedMotion: 'reduce' }); await layout('setup-reduced-motion', page, 390);
   await page.keyboard.press('Escape'); check('Escape returns focus without saving', await page.getByRole('button', { name: 'Review setup' }).evaluate(n => n === document.activeElement));
   await page.getByRole('button', { name: 'Review setup' }).click();
-  await page.route('**/systems/ghl-setup', async route => { await new Promise(resolve => setTimeout(resolve,700)); await route.continue(); }, { times: 1 });
+  await page.route(`**/systems/${kind}-setup`, async route => { await new Promise(resolve => setTimeout(resolve,700)); await route.continue(); }, { times: 1 });
   await dialog.getByRole('button', { name: 'Enable builds', exact: true }).click(); check('saving has a disabled loading confirmation', await dialog.getByRole('button', { name: 'Enable builds', exact: true }).isDisabled());
   await dialog.waitFor({ state: 'detached' });
-  check('explicit confirmation enables only GHL', await checkbox().isChecked() && (await options(owner.context)).serviceTypes.find(r => r.id === types.kajabi).binding === null);
-  const installed = sql(`SELECT t.id AS template_id,v.status,v.definition_hash FROM templates t JOIN template_versions v ON v.template_id=t.id AND v.workspace_id=t.workspace_id WHERE t.workspace_id=${lit(ws)} AND t.slug='ghl-build'`);
+  check('explicit confirmation enables only the selected service', await checkbox().isChecked() && (await options(owner.context)).serviceTypes.find(r => r.id === types[otherKind]).binding === null);
+  const installed = sql(`SELECT t.id AS template_id,v.status,v.definition_hash FROM templates t JOIN template_versions v ON v.template_id=t.id AND v.workspace_id=t.workspace_id WHERE t.workspace_id=${lit(ws)} AND t.slug='${kind}-build'`);
   check('default is provisioned once and published', installed.length === 1 && installed[0].status === 'published' && /^[a-f0-9]{64}$/.test(installed[0].definition_hash));
-  await select.selectOption(types.kajabi); check('unselected Kajabi remains disabled', !await checkbox().isChecked());
+  await select.selectOption(types[otherKind]); check('unselected other platform remains disabled', !await checkbox().isChecked());
   await select.selectOption(types.other); check('existing other blueprint cannot be changed in this flow', await page.getByText('Another blueprint is already configured for this service type.').isVisible() && await page.getByRole('button', { name: 'Review setup' }).isDisabled());
   const clientId = (await api(owner.context, '/api/bloomops/clients', { name: 'Garden Studio', contactName: 'Garden', contactEmail: members.client.email, timezone: 'Etc/UTC' }, 201)).client.id;
   sql(`UPDATE client_contacts SET user_id=${lit(members.client.id)} WHERE workspace_id=${lit(ws)} AND client_id=${lit(clientId)}`);
-  const service = (await api(owner.context, `/api/bloomops/clients/${clientId}/services`, { serviceTypeId: types.ghl }, 201)).service.id;
+  const service = (await api(owner.context, `/api/bloomops/clients/${clientId}/services`, { serviceTypeId: types[kind] }, 201)).service.id;
   const create = async name => (await api(owner.context, `/api/bloomops/clients/${clientId}/projects`, { name, serviceEngagementId: service, visibility: 'client', clientLabel: name }, 201)).projectId;
   const project = await create('Garden build'), nextProject = await create('Next build');
-  await page.goto(`${base}/work/projects/${project}`, { waitUntil: 'networkidle' }); await page.getByRole('button', { name: 'Start GHL build', exact: true }).click();
+  await page.goto(`${base}/work/projects/${project}`, { waitUntil: 'networkidle' }); await page.getByRole('button', { name: `Start ${platform} build`, exact: true }).click();
   dialog = page.getByRole('dialog');
-  for (const label of ['Confirm build scope','Build funnel','Perform internal QA']) await dialog.getByLabel(label).check();
-  await dialog.getByRole('button', { name: 'Preview work' }).click(); await page.getByRole('heading', { name: 'Review GHL work' }).waitFor();
-  check('setup feeds the selected canonical build preview', /3 milestones · 3 actions · 1 deliverables/.test(await dialog.innerText()));
-  const generationResponse = page.waitForResponse(r => r.url().endsWith('/blueprint/generate') && r.request().method() === 'POST');
-  await dialog.getByRole('button', { name: 'Generate work', exact: true }).click();
-  const generated = await generationResponse, generationInput = generated.request().postDataJSON(); assert.equal(generated.status(),201);
-  await dialog.waitFor({ state: 'detached' }); await page.getByText('Systems work generated', { exact: true }).waitFor();
+  for (const width of widths) await layout('build-components', page, width);
+  for (const label of buildLabels) await dialog.getByLabel(label).check();
+  await dialog.getByRole('button', { name: 'Preview work' }).click(); await page.getByRole('heading', { name: `Review ${platform} work` }).waitFor();
+  check('setup feeds the selected canonical build preview', (await dialog.innerText()).includes(kind === 'kajabi' ? '4 milestones · 4 actions · 3 deliverables' : '3 milestones · 3 actions · 1 deliverables'));
+  for (const width of widths) await layout('build-preview', page, width);
+  let generationInput;
+  if (kind === 'kajabi') {
+    let committed, attempts = 0;
+    await page.route('**/blueprint/generate', async route => {
+      attempts++; generationInput = route.request().postDataJSON();
+      const response = await route.fetch(); committed = { status: response.status(), data: await response.json() };
+      await route.abort('failed');
+    }, { times: 1 });
+    await dialog.getByRole('button', { name: 'Generate work', exact: true }).click();
+    await dialog.getByRole('alert').waitFor();
+    assert.equal(committed?.status, 201); assert.ok(committed.data.ok);
+    await page.reload({ waitUntil: 'networkidle' });
+    check('lost Kajabi response survives reload without automatic submission', attempts === 1 && await page.getByRole('button', { name: 'Resume build request', exact: true }).isVisible());
+    await page.getByRole('button', { name: 'Resume build request', exact: true }).click();
+    const replayResponse = page.waitForResponse(r => r.url().endsWith('/blueprint/generate') && r.request().method() === 'POST');
+    await page.getByRole('button', { name: 'Retry this request', exact: true }).click();
+    const replayed = await replayResponse;
+    check('browser retries the exact saved Kajabi packet', replayed.status() === 200 && (await replayed.json()).replayed && JSON.stringify(replayed.request().postDataJSON()) === JSON.stringify(generationInput));
+  } else {
+    const generationResponse = page.waitForResponse(r => r.url().endsWith('/blueprint/generate') && r.request().method() === 'POST');
+    await dialog.getByRole('button', { name: 'Generate work', exact: true }).click();
+    const generated = await generationResponse; generationInput = generated.request().postDataJSON(); assert.equal(generated.status(),201);
+  }
+  await dialog.waitFor({ state: 'detached' }); await page.getByText('Systems work generated', { exact: true }).first().waitFor();
   const existingWork = sql(`SELECT id,title FROM actions WHERE project_id=${lit(project)} ORDER BY id`);
-  check('setup through actual UI generates canonical selected work', existingWork.length === 3 && existingWork.some(a => a.title === 'Build funnel'));
-  await page.goto(base + '/settings/ghl-builds', { waitUntil: 'networkidle' }); await select.selectOption(types.ghl); await checkbox().uncheck();
+  check('setup through actual UI generates canonical selected work', existingWork.length === buildLabels.length && existingWork.some(a => a.title === (kind === 'kajabi' ? 'Build course' : 'Build funnel')));
+  await page.goto(base + `/settings/${kind}-builds`, { waitUntil: 'networkidle' }); await select.selectOption(types[kind]); await checkbox().uncheck();
   await page.getByRole('button', { name: 'Review setup' }).click(); await page.getByRole('button', { name: 'Disable builds', exact: true }).click(); await page.getByRole('dialog').waitFor({ state: 'detached' });
   check('disable preserves existing generated records', JSON.stringify(sql(`SELECT id,title FROM actions WHERE project_id=${lit(project)} ORDER BY id`)) === JSON.stringify(existingWork));
   const replay = await api(owner.context, `/api/bloomops/projects/${project}/blueprint/generate`, generationInput, 200); check('disabled binding still permits the exact prior generation replay', replay.replayed);
-  await page.goto(`${base}/work/projects/${nextProject}`, { waitUntil: 'networkidle' }); check('disabled configuration blocks new generation', await page.getByRole('button', { name: 'Start GHL build', exact: true }).count() === 0 && (await owner.context.request.get(`${base}/api/bloomops/projects/${nextProject}/blueprint`)).status() === 409);
-  const pm = await login(members.pm.email, '/settings'); check('PM without template capability has no setup access', await pm.page.getByRole('link', { name: 'Manage GHL build setup' }).count() === 0 && (await pm.context.request.get(base + endpoint)).status() === 403);
+  await page.goto(`${base}/work/projects/${nextProject}`, { waitUntil: 'networkidle' }); check('disabled configuration blocks new generation', await page.getByRole('button', { name: `Start ${platform} build`, exact: true }).count() === 0 && (await owner.context.request.get(`${base}/api/bloomops/projects/${nextProject}/blueprint`)).status() === 409);
+  const pm = await login(members.pm.email, '/settings'); check('PM without template capability has no setup access', await pm.page.getByRole('link', { name: `Manage ${platform} build setup` }).count() === 0 && (await pm.context.request.get(base + endpoint)).status() === 403);
   sql(`INSERT INTO member_capabilities(workspace_id,membership_id,capability) VALUES(${lit(ws)},${lit(members.team.membership)},'templates.manage')`);
   await api(owner.context, `/api/bloomops/projects/${nextProject}/assignments`, { membershipId: members.team.membership }, 200);
-  const team = await login(members.team.email, '/settings'); await team.page.getByRole('link', { name: 'Manage GHL build setup' }).click();
-  await team.page.getByRole('heading', { name: 'GHL build setup', exact: true }).waitFor(); await team.page.waitForLoadState('networkidle');
-  await team.page.getByLabel('Service type', { exact: true }).selectOption(types.ghl); await team.page.getByLabel('Enable GHL builds', { exact: true }).check(); await team.page.getByRole('button', { name: 'Review setup' }).click(); await team.page.getByRole('button', { name: 'Enable builds', exact: true }).click(); await team.page.getByRole('dialog').waitFor({ state: 'detached' });
-  check('explicitly granted Team member can manage setup', (await options(team.context)).serviceTypes.find(r => r.id === types.ghl).binding.enabled);
-  await team.page.goto(`${base}/work/projects/${nextProject}`, { waitUntil: 'networkidle' }); check('template grant does not grant Project generation authority', await team.page.getByRole('button', { name: 'Start GHL build', exact: true }).count() === 0 && (await team.context.request.get(`${base}/api/bloomops/projects/${nextProject}/blueprint`)).status() === 403);
+  const team = await login(members.team.email, '/settings'); await team.page.getByRole('link', { name: `Manage ${platform} build setup` }).click();
+  await team.page.getByRole('heading', { name: `${platform} build setup`, exact: true }).waitFor(); await team.page.waitForLoadState('networkidle');
+  await team.page.getByLabel('Service type', { exact: true }).selectOption(types[kind]); await team.page.getByLabel(`Enable ${platform} builds`, { exact: true }).check(); await team.page.getByRole('button', { name: 'Review setup' }).click(); await team.page.getByRole('button', { name: 'Enable builds', exact: true }).click(); await team.page.getByRole('dialog').waitFor({ state: 'detached' });
+  check('explicitly granted Team member can manage setup', (await options(team.context)).serviceTypes.find(r => r.id === types[kind]).binding.enabled);
+  await team.page.goto(`${base}/work/projects/${nextProject}`, { waitUntil: 'networkidle' }); check('template grant does not grant Project generation authority', await team.page.getByRole('button', { name: `Start ${platform} build`, exact: true }).count() === 0 && (await team.context.request.get(`${base}/api/bloomops/projects/${nextProject}/blueprint`)).status() === 403);
   sql(`DELETE FROM member_capabilities WHERE workspace_id=${lit(ws)} AND membership_id=${lit(members.team.membership)} AND capability='templates.manage'`);
   check('capability revocation applies to the existing session', (await team.context.request.get(base + endpoint)).status() === 403);
-  await page.goto(base + '/settings/ghl-builds', { waitUntil: 'networkidle' }); await select.selectOption(types.ghl); await checkbox().uncheck(); await page.getByRole('button', { name: 'Review setup' }).click();
-  await configure(owner.context, types.ghl, false);
+  await page.goto(base + `/settings/${kind}-builds`, { waitUntil: 'networkidle' }); await select.selectOption(types[kind]); await checkbox().uncheck(); await page.getByRole('button', { name: 'Review setup' }).click();
+  await configure(owner.context, types[kind], false);
   await page.getByRole('button', { name: 'Disable builds', exact: true }).click(); await page.getByRole('dialog').waitFor({ state: 'detached' });
   check('stale setup returns a visible error and blocks blind resubmission', await page.locator('main').getByRole('alert').isVisible() && await page.getByRole('button', { name: 'Review setup' }).isDisabled());
-  await page.getByRole('button', { name: 'Refresh configuration' }).click(); await page.waitForFunction(() => !document.querySelector('#ghl-service-type').disabled);
+  await page.getByRole('button', { name: 'Refresh configuration' }).click(); await page.waitForFunction(() => !document.querySelector('#systems-service-type').disabled);
   check('explicit refresh shows the current disabled state', !await checkbox().isChecked() && await page.locator('main').getByRole('alert').count() === 0);
   const client = await login(members.client.email, '/portal'); const portal = await client.page.locator('body').innerText();
-  check('Client portal stays usable and hides internal setup and generated work', portal.includes('Garden build') && !/Perform internal QA|Build funnel|Manage GHL build setup/.test(portal) && (await client.context.request.get(base + endpoint)).status() === 403);
-  check('other blueprint and unselected Kajabi remain untouched', sql(`SELECT template_id FROM service_type_blueprint_bindings WHERE service_type_id=${lit(types.other)}`)[0].template_id === other && sql(`SELECT count(*) AS n FROM service_type_blueprint_bindings WHERE service_type_id=${lit(types.kajabi)}`)[0].n === 0);
+  check('Client portal stays usable and hides internal setup and generated work', portal.includes('Garden build') && !/Perform internal QA|Build funnel|Build course|Manage (GHL|Kajabi) build setup/.test(portal) && (await client.context.request.get(base + endpoint)).status() === 403);
+  check('other blueprint and unselected service remain untouched', sql(`SELECT template_id FROM service_type_blueprint_bindings WHERE service_type_id=${lit(types.other)}`)[0].template_id === other && sql(`SELECT count(*) AS n FROM service_type_blueprint_bindings WHERE service_type_id=${lit(types[otherKind])}`)[0].n === 0);
+  if (kind === 'kajabi') {
+    const secondEndpoint = '/api/bloomops/systems/ghl-setup';
+    const ghlSetup = await api(owner.context, secondEndpoint, { serviceTypeId: types.ghl, enabled: true, expectedBinding: null }, 200);
+    const secondService = (await api(owner.context, `/api/bloomops/clients/${clientId}/services`, { serviceTypeId: types.ghl }, 201)).service.id;
+    const secondProject = (await api(owner.context, `/api/bloomops/clients/${clientId}/projects`, { name: 'Second platform build', serviceEngagementId: secondService }, 201)).projectId;
+    await page.goto(`${base}/work/projects/${secondProject}`, { waitUntil: 'networkidle' });
+    check('GHL and Kajabi defaults coexist with the correct Project label', await page.getByRole('button', { name: 'Start GHL build', exact: true }).isVisible() && sql(`SELECT count(*) AS n FROM templates WHERE workspace_id=${lit(ws)} AND slug IN ('ghl-build','kajabi-build')`)[0].n === 2);
+    const wrong = await owner.context.request.post(base + endpoint, { headers: { origin: base }, data: { serviceTypeId: types.ghl, enabled: true, expectedBinding: { id: ghlSetup.binding.id, revision: ghlSetup.binding.revision } } });
+    check('Kajabi setup cannot replace the GHL binding', wrong.status() === 409);
+    const preview = await api(owner.context, `/api/bloomops/projects/${secondProject}/blueprint/preview`, { selectedComponentKeys: ['funnel'] }, 200);
+    const ghlWork = await api(owner.context, `/api/bloomops/projects/${secondProject}/blueprint/generate`, { requestId: randomUUID(), selectedComponentKeys: ['funnel'], expected: preview.expected }, 201);
+    check('both platforms share the same writer without mixed work', ghlWork.counts.actions === 1 && sql(`SELECT title FROM actions WHERE project_id=${lit(secondProject)}`)[0].title === 'Build funnel' && sql(`SELECT blueprint_key FROM systems_blueprint_generations WHERE project_id=${lit(project)}`)[0].blueprint_key === 'kajabi_build');
+  }
   check('no browser page errors', errors.length === 0);
-  console.log(`D2 setup browser: ${checks} checks passed; ${screenshots} screenshots. Synthetic workspace ${ws}.`);
+  console.log(`Systems ${platform} setup browser: ${checks} checks passed; ${screenshots} screenshots. Synthetic workspace ${ws}.`);
 } finally { await browser.close(); }

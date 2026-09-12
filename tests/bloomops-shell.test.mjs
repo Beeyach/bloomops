@@ -390,7 +390,7 @@ test('the inherited application is no longer the root, and every shell page re-c
   };
   walk(new URL('app/(internal)', root).pathname, 'internal');
   walk(new URL('app/portal', root).pathname, 'portal');
-  assert.equal(pages.filter(([, a]) => a === 'internal').length, 22, 'eleven destinations, Client and Project create/detail, Action detail, Content create/detail/edit/calendar, GHL setup and one layout');
+  assert.equal(pages.filter(([, a]) => a === 'internal').length, 23, 'eleven destinations, Client and Project create/detail, Action detail, Content create/detail/edit/calendar, GHL/Kajabi setup and one layout');
   assert.equal(pages.filter(([, a]) => a === 'portal').length, 6, 'C6 adds the Content list and detail pages');
   for (const [file, area] of pages) {
     const text = readFileSync(file, 'utf8');
@@ -404,7 +404,7 @@ test('the inherited application is no longer the root, and every shell page re-c
 test('the front door still bounces anonymous callers from every new address', async () => {
   const { NextRequest } = await import('next/server');
   const { middleware } = await import('../middleware.js');
-  for (const path of ['/', '/clients', '/team', '/settings', '/settings/ghl-builds', '/finance', '/portal', '/legacy', '/design', '/social/calendar']) {
+  for (const path of ['/', '/clients', '/team', '/settings', '/settings/ghl-builds', '/settings/kajabi-builds', '/finance', '/portal', '/legacy', '/design', '/social/calendar']) {
     const r = await middleware(new NextRequest(`https://bloomops.example${path}`));
     assert.equal(r.status, 307, path);
     assert.equal(new URL(r.headers.get('location')).pathname, '/sign-in', path);

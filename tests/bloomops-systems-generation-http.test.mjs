@@ -51,7 +51,7 @@ for (const endpoint of ['/preview', '/generate']) test(`${endpoint} rejects malf
 test('options and selected preview are bounded, uncached and read-only', async ctx => {
   const t = await http(ctx), before = t.state();
   const options = await t.call(''); assert.equal(options.status, 200); const dto = await options.json();
-  assert.deepEqual(Object.keys(dto).sort(), ['components', 'expected', 'ok']); assert.equal(dto.components.length, 14);
+  assert.deepEqual(Object.keys(dto).sort(), ['blueprintKey', 'components', 'expected', 'ok']); assert.equal(dto.components.length, 14);
   assert.ok(dto.components.every(c => Object.keys(c).sort().join() === 'key,label'));
   const preview = await t.call('/preview', { body: { selectedComponentKeys: ['email', 'sms'] } });
   assert.equal(preview.status, 200); assert.equal(preview.headers.get('cache-control'), 'no-store');
