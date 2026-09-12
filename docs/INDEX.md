@@ -30,7 +30,7 @@ Do not automatically load every planning document into context.
 
 ## Current Build
 
-**Active owner-directed task: Prospecting P0/P1**, isolated branch `feat/prospecting-p0-p1` from `618e18f`. See [P0/P1 contract](phases/P0_P1.md) and [BUILD_STATE](BUILD_STATE.md) for verification and draft-PR state. Ads E3B is deferred, not completed. The following entries retain the accepted release history.
+**Active owner-directed task: Prospecting P0/P1**, isolated branch `feat/prospecting-p0-p1` from `618e18f`. P0/P1 is complete in [draft PR #60](https://github.com/Bloomwired/bloomops/pull/60), with [visual preview](previews/prospecting-p1/README.md). See [P0/P1 contract](phases/P0_P1.md) and [BUILD_STATE](BUILD_STATE.md) for verification; nothing is merged or deployed. Ads E3B is deferred, not completed. The following entries retain the accepted release history.
 
 Release E — Ads is underway; E1, E2 and [E3A](phases/E3A.md) are closed on verified `618e18f`, with 24 migrations. The first unfinished task is E3B’s activation contract under [E3](phases/E3.md). See [RELEASE_E](RELEASE_E.md) and [BUILD_STATE](BUILD_STATE.md).
 
