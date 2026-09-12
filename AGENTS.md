@@ -2,7 +2,7 @@
 
 `AGENTS.md` is the canonical repository instruction file for coding agents. Read and follow it before implementation work.
 
-BloomOps is a post-sale agency operations and client portal system.
+BloomOps is an agency operations and client portal system. The owner-approved target also includes internal prospecting in a fresh workspace; see [the Prospecting and Pages roadmap](docs/PROSPECTING_ROADMAP.md). That roadmap is planned work, not a statement that the features have shipped.
 
 It is being built first for Ellen's agency, with Ary as an administrator and systems/GHL fulfillment provider. It may later become a product used by other agencies, so tenant boundaries should be designed correctly now without prematurely building SaaS billing or commercialization features.
 
@@ -28,21 +28,20 @@ BloomOps owns post-sale agency operations:
 - client portal
 - operational activity/history
 
-BloomOps does NOT own prospecting or cold outreach.
+The 13 September 2026 owner direction adds internal prospecting to BloomOps:
 
-Leadsthatbloom remains a separate product and repository for:
+- selected raw prospect import into a new workspace
+- website audits and qualification
+- structured full-page prospect profiles
+- outreach, Gmail replies and optional approved follow-ups
+- a prospecting Skills Library and accurate Results
+- a same-workspace prospect-to-client-to-onboarding handoff
 
-- lead sourcing
-- website audits
-- prospect qualification
-- cold outreach
-- Gmail reply tracking
-- follow-up automation
-- sales prospecting workflows
+Follow [docs/PROSPECTING_ROADMAP.md](docs/PROSPECTING_ROADMAP.md) for scope and phase order. Prospecting has its own contextual sidebar using the BloomOps design system. Notion-style Pages remains a main BloomOps area. Do not port every old Leads That Bloom feature or its monolithic application shell.
 
-Do not rebuild Leadsthatbloom inside BloomOps.
+The original Leads That Bloom app, or at minimum Ary's original workspace, must remain intact and accessible. Its prospect/audit/outreach history stays separate. The fresh workspace receives only explicitly selected untouched raw prospect fields through reviewed export/import; importing never starts outreach or AI work. Keep every existing voice recording. Video work, voice generation and video tests are paused until the owner resumes that phase.
 
-A future "Convert to Client" handoff may connect the two products, but that is not part of the current build.
+These requirements supersede the previous separate-product prohibition. Existing workspace, portal, credential and environment-isolation rules still apply.
 
 ## Source Repository Relationship
 
@@ -62,7 +61,7 @@ These are product invariants unless the user explicitly changes them.
 
 ### Workspaces
 
-BloomOps starts with one operational workspace for Ellen's agency.
+BloomOps has an existing operational workspace for Ellen's agency. The prospecting roadmap requires a distinct fresh workspace for Ary; do not merge the existing workspaces or their records. Workspace creation and import remain phase work, not effects of this instruction update.
 
 The data model must remain compatible with multiple workspaces later.
 
@@ -349,7 +348,7 @@ Do not casually rewrite the editor or Page system.
 
 `DatabaseViewNode` already demonstrates useful Board, Calendar, Gallery, and Table projections over live structured data. Adapt that concept rather than duplicating data into documents.
 
-Prospecting-specific UI, APIs, jobs, Gmail logic, scanning, qualification, auditing, outreach, AI spend logic, and follow-up code are legacy BloomOps code and should be removed only when the current phase safely makes them unreachable.
+Prospecting-specific UI, APIs, jobs, Gmail logic, scanning, qualification, auditing, outreach, AI spend logic and follow-up code are inherited source material for the new prospecting area. Reuse only what the current roadmap phase needs, with current workspace authorization and design. Remove unused legacy paths only after dependency and reachability checks; do not delete useful source merely because an older instruction classified prospecting as out of scope.
 
 Do not perform giant deletion sweeps while unrelated code still imports those modules.
 
@@ -362,6 +361,7 @@ BloomOps should move toward route-based application areas with a shared internal
 Conceptual internal destinations:
 
 - Home
+- Prospecting (planned, with its own contextual sidebar)
 - Clients
 - Onboarding
 - Work
@@ -397,6 +397,16 @@ For visual work, inspect the design reference when browser access is available.
 Do not claim to have inspected a visual reference if access failed.
 
 Reuse and evolve the existing Bloom design tokens and components before inventing an unrelated design language.
+
+Repo-wide readability requirements apply to future UI work and the planned cleanup:
+
+- Dot-separated UI metadata chains are banned. Do not substitute pipes/slashes for the same cramped chain or turn every property into a badge.
+- Use labelled fields, clear identity/role hierarchy, comfortable typography and separate spacing for headings, instructions, labels and controls.
+- Cut duplicated/excessive explanation. Put optional detail behind a clearly named disclosure, while keeping decision-critical information visible.
+- Prefer full-page working views and inline editing over cramped or stacked drawers.
+- Keep the prospecting/editor code and data fetching out of unrelated route bundles and loaders; measure regressions rather than promising none.
+
+Use [docs/DESIGN_CHECKLIST.md](docs/DESIGN_CHECKLIST.md) as the acceptance checklist. These rules do not request unrelated code changes during a documentation-only task.
 
 ## How to Work in This Repository
 

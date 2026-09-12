@@ -1,5 +1,13 @@
 # BloomOps Build State
 
+## Prospecting and Pages priority — roadmap prepared (2026-09-13)
+
+Added [PROSPECTING_ROADMAP.md](PROSPECTING_ROADMAP.md) from the owner's current direction: fresh workspace, original LTB preserved, selective untouched-raw import, Prospecting contextual sidebar, full-page profiles, Skills Library, outreach/results, main Notion-like Pages and the client/onboarding handoff. Updated product-boundary guidance and the repo-wide readability checklist. Video work/tests remain paused and all saved voices remain intact.
+
+This is documentation-only planning based on main `09de9d61d419add9a9e85d8e5e933936b5561154`. No application phase, workspace, import, connection, migration, paid job or deployment is completed by this change. Existing release/performance evidence below is preserved without claiming new release closure. First future implementation: P0 baseline/workspace contract, then P1 Prospecting shell and one structured full-page profile. Read the current accepted baseline and outstanding release work before starting.
+
+Validation: local relative-link checks, document consistency review and whitespace checks. Runtime tests/builds and video tests are not applicable to this documentation-only change and were not run.
+
 ## Current Release
 
 Release E — Ads is underway. E1 and E2A are closed, latest verified `2a73193`; E2B and E3–E5 remain unfinished.
