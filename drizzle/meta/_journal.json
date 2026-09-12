@@ -134,6 +134,13 @@
       "when": 1789162288059,
       "tag": "0018_d2_slice2a_binding_storage",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1789184813035,
+      "tag": "0019_d2_slice2b_generation_provenance",
+      "breakpoints": true
     }
   ]
 }

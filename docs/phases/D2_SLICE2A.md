@@ -1,5 +1,20 @@
 # D2 Slice 2A — explicit blueprint binding storage
 
+## Current status — 2026-09-11 reconciliation
+
+Slice 2A is closed: [PR #39](https://github.com/Beeyach/bloomops/pull/39)
+merged as `a4ceb813afa0aad028ac67457940b734dbeb9412`, confirmed as current
+canonical main through read-only GitHub metadata. Both exact-SHA gates passed:
+[Deploy staging 34653350194](https://github.com/Beeyach/bloomops/actions/runs/34653350194)
+and [Verify zero-to-current 34653350149](https://github.com/Beeyach/bloomops/actions/runs/34653350149).
+Job steps also confirm successful live staging verification and disposable D1
+cleanup. This session did not trigger either workflow or perform the merge.
+The implementation/audit handoff below is historical; its open/unmerged and
+pending-audit directions no longer describe GitHub state. The storage contract
+is unchanged. D2 remains open; the owner subsequently approved Slice 2B
+history retention and local storage implementation. See
+[BUILD_STATE.md](../BUILD_STATE.md) for the current checkout and next task.
+
 ## Base and boundary
 
 Implemented locally on `feat/d2-slice2a-binding-storage` from exact canonical
