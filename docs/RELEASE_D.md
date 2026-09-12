@@ -2,7 +2,7 @@
 
 ## Current status (2026-09-12)
 
-D1–D4 are closed. D4 merged through PR #48 as `cae247fa823e7a54ffb6632a0e517ce650483e9f`; both exact-SHA workflows, staging identity and disposable cleanup passed. [BUILD_STATE.md](BUILD_STATE.md) records evidence. D5 Launch + Handoff is in progress under [phases/D5.md](phases/D5.md). D6–D7 remain. The owner authorized continuation until actual input is needed.
+D1–D5 are closed. D5 merged through PR #49 as `a8b483aaf31ae26526dcda0f4068667c5c8bf465`; both exact-SHA workflows, live identity and cleanup passed. D6 Client Experience + Operations is in progress under [phases/D6.md](phases/D6.md). D7 remains; continuation is authorized until actual input is needed.
 
 Performance remains closed: accepted optimizations are retained, Smart Placement
 was rejected/reverted, and further performance work remains deferred.
