@@ -1,5 +1,7 @@
 # Prospecting and Pages build roadmap
 
+The platform is now named **Bloomsi**, at **bloomsi.app**. Use the [official brand guide and supplied logo](BRANDING.md) for implementation. BloomOps references below describe the existing platform/architecture; they are not the current user-facing brand.
+
 Owner direction recorded 13 September 2026. **Planning only: no phase below is implemented by this document.**
 
 BloomOps will combine internal prospecting, client operations and Pages in one application. It supplies the design, shell, identity and permission model. Reuse useful Leads That Bloom functionality selectively; do not embed its entire application or reproduce its crowded interface.

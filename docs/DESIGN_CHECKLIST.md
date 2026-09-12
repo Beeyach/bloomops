@@ -1,4 +1,6 @@
-# BloomOps Design Checklist
+# Bloomsi Design Checklist
+
+Use the official [Bloomsi name and supplied logo](BRANDING.md) for new platform branding. Older BloomOps references below identify the existing design system and technical context.
 
 Use this checklist for every major BloomOps screen, component set, and client-facing flow.
 

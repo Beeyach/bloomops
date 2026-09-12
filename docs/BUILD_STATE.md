@@ -1,4 +1,8 @@
-# BloomOps Build State
+# Bloomsi Build State
+
+## Bloomsi name and logo handoff (2026-09-13)
+
+Owner selected **Bloomsi** and reports purchasing **bloomsi.app**. Added the exact supplied charcoal PNG at `public/brand/bloomsi-lockup-charcoal.png` and [BRANDING.md](BRANDING.md). Agent instructions, design checklist, profile reference and prospecting roadmap now point to the official branding. Existing release evidence and technical identifiers are preserved. Asset/documentation only; no running UI, DNS or deployment changes. Validation: source-copy hash match, PNG metadata, relative-link and whitespace checks; runtime tests are not applicable.
 
 ## Prospect profile visual handoff (2026-09-13)
 

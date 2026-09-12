@@ -1,4 +1,6 @@
-# BloomOps
+# Bloomsi (formerly BloomOps)
+
+The owner selected **Bloomsi** as the platform name and **bloomsi.app** as its domain on 13 September 2026. Use Bloomsi in new product-facing copy and documentation. Read [docs/BRANDING.md](docs/BRANDING.md) for the official supplied logo and usage guidance; it supersedes branding in older mockups. Bloomwired remains the business name. Existing BloomOps technical identifiers and historical records are not renamed by this direction.
 
 `AGENTS.md` is the canonical repository instruction file for coding agents. Read and follow it before implementation work.
 

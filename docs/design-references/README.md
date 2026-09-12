@@ -1,5 +1,7 @@
 # Prospect profile visual reference
 
+Brand update: the platform is now **Bloomsi**. Use the [official owner-supplied logo and brand guide](../BRANDING.md). Any BloomOps/Bloom Studio labels or generated marks in this mockup are superseded.
+
 Owner feedback recorded 13 September 2026. Use this image and the corrections below when editing the Prospecting profile. The corrections take precedence wherever the mockup differs. This is a generated design reference with fictional data, not a screenshot of shipped functionality or audit evidence.
 
 ![Prospect profile layout direction](prospect-profile-direction.png)
@@ -23,7 +25,7 @@ Keep a compact icon **before the business name**. Use the actual website favicon
 - Use consistent useful icons and clear labelled contact fields. Do not turn every property into a pill or card.
 - Keep social links in the header action group; do not restore a separate labelled social row below the subtitle.
 - Keep detailed evidence, sources and full activity accessible through disclosures or focused views. Avoid long repeated activity entries in the main profile.
-- No dot-separated metadata chains or substitute separator chains. No acronym pictures. Retain the real BloomOps brand assets rather than copying generated branding.
+- No dot-separated metadata chains or substitute separator chains. No acronym pictures. Use the official Bloomsi brand asset rather than copying generated branding.
 - Adapt naturally at phone widths: stack content and wrap actions with adequate gaps and touch targets. Preserve readable labels and keyboard access.
 
 ## Scope and truthfulness
