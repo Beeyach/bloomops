@@ -4,8 +4,8 @@
 
 The owner approved preserving immutable generation history while allowing future
 otherwise-authorized deletion of live work. This resolves Slice 1's
-provenance/deletion decision. Slice 2B is implemented, locally verified and independently reviewed. It remains
-authorized for commit/push/PR, unmerged and undeployed. No generation
+provenance/deletion decision. Slice 2B is implemented, locally verified and independently reviewed. It is open
+in [PR #40](https://github.com/Beeyach/bloomops/pull/40), unmerged and undeployed. No generation
 writer, API or UI is included, and D2 is not complete.
 
 Slice 2A closed through PR #39 on verified main
@@ -19,6 +19,13 @@ The original checkout and its pre-existing guide/configuration work are preserve
 and excluded from this PR. Leave the Slice 2B PR unmerged; no deployment or 2C+
 implementation is authorized. Current handoff status is in
 [BUILD_STATE.md](../BUILD_STATE.md).
+
+PR implementation commit: `54d4372fca9f9c4f3739dd961647efa732b522bb`.
+The subsequent documentation-only commit records this handoff without changing
+any reviewed implementation file. The PR branch/worktree is
+`feat/d2-slice2b-generation-provenance` at `/home/ary/Developer/bloomops-d2-slice2b`.
+The original implementation checkout remains preserved. Merge/deployment and
+Slice 2C work are separate gates; current status is in [BUILD_STATE.md](../BUILD_STATE.md).
 
 ## Approved retention behavior
 
