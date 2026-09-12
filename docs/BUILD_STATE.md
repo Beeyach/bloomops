@@ -6,11 +6,28 @@ Release D: Systems Delivery. Release C is closed for forward development on veri
 
 ## Current Phase
 
-**D3 — Kajabi Build Blueprint — is in progress.** D2 is CLOSED on verified `642009c713daa2ecfb985203aa3f4d5240f4ddcc`, [PR #46](https://github.com/Bloomwired/bloomops/pull/46), with both exact-SHA gates, staging identity and disposable cleanup verified. Reuse the existing engine for the canonical Kajabi default, explicit setup and conditional Project generation. Work is isolated in `/home/ary/Developer/bloomops-d3-kajabi`, branch `feat/d3-kajabi-blueprint`. No live binding, provider execution or schema change. Contract: [D3.md](phases/D3.md).
+**D4 — Systems Execution + QA — is in progress.** D3 is CLOSED on verified `689727c17547bfcc10e7b0741a8bb1e4d20b8856`, [PR #47](https://github.com/Bloomwired/bloomops/pull/47), with both exact-SHA gates, staging identity and disposable cleanup. Derive phase/action progress and blockers from current readable canonical work and reuse existing QA/Internal Review controls. Work is isolated in `/home/ary/Developer/bloomops-d4-execution`, branch `feat/d4-systems-execution`. No schema, provider execution or new lifecycle. Contract: [D4.md](phases/D4.md).
 
 **Performance remains CLOSED.** PR #36's accepted application is `cb2ef0bea2900a46583e86c75840e8ba6639d663`; its exact-SHA gates and staging smoke are recorded below. Smart Placement was rejected/reverted, the approximately 500 ms target was not fully met, and additional performance work remains deliberately deferred.
 
-## D3 Kajabi local acceptance (2026-09-12)
+## D4 execution local acceptance (2026-09-12)
+
+- Systems opts into canonical current-phase and action-progress fields on the existing Work summary query. In-progress/waiting/upcoming readable milestones determine the phase; closed Projects suggest none. Action totals distinguish done/cancelled/open work, and dependency-blocked counts include only readable open actions. Hidden prerequisite identity/counts remain private. Existing Work links support QA and Deliverable Internal Review without an extra lifecycle or approval claim.
+- Default Home/Work DTOs and UI, Systems filters/attention/timezone behavior and native batching remain intact. No schema/migration, provider execution, dependency or workflow changes.
+- Verification: 18 new execution tests; 158 affected and 5,940 full tests pass. Native D1 passes 27 checks over 240 assignments, retaining five metadata statements in one batch; maximum 75 bindings / 15,991 SQL bytes. Cloudflare build, syntax and diff checks pass. Initial test-only corrections loaded JSX dynamically and supplied the completed Project timestamp; the inherited native harness’s 18-migration assertion now correctly pins the current 21-migration baseline.
+- The stable built Worker passes 73 browser/HTTP checks with 27 screenshots at 1440/1024/768/390/320px, including actual milestone/action/Deliverable Internal Review controls, current Systems rows, usable links/keyboard/reduced motion, restricted QA exclusion, Team Project assignment/revocation and Client exclusion. Desktop execution and mobile QA screenshots inspected. No page errors. All fixtures/mail are isolated synthetic local D1/R2 data.
+- One fresh Sol High read-only review found no material findings; no re-review or post-review runtime change. Evidence: `/tmp/bloomops-d4-execution/{affected-final,full,native-fixed,build,browser}.log` and browser captures. Original checkout and unrelated guide/configuration work remain preserved.
+- D4 remains open pending publication, both exact-merge-SHA workflows and staging identity/cleanup. Next after D4: D5 Launch + Handoff; reuse canonical approval/delivery and Files before considering any additional metadata.
+
+## D3 Kajabi closure (2026-09-12)
+
+- [PR #47](https://github.com/Bloomwired/bloomops/pull/47) merged reviewed `e52baac0a5bf25a68cdd03d06f99c42b27d63224` as `689727c17547bfcc10e7b0741a8bb1e4d20b8856`; trees match exactly. No migration or live binding was performed.
+- [Deploy staging 34682202017](https://github.com/Bloomwired/bloomops/actions/runs/34682202017), job `103522776535`, and [Verify zero-to-current 34682202046](https://github.com/Bloomwired/bloomops/actions/runs/34682202046), job `103522776768`, passed every required step on that exact SHA. Live staging reports `689727c`; all eight original D1 IDs/names are restored and the disposable database is absent.
+- Evidence: `/tmp/bloomops-d3-kajabi/` complete run/job metadata, archived logs, staging identity and before/after inventories. The verifier stdout archive truncates during verbose migration output; the full remote integrity/no-op tail is not claimed. Successful gate metadata plus direct inventory restoration establish verification.
+- Local acceptance remains 293 affected / 5,922 full tests, 78 native D1 checks, final Cloudflare build and 143 browser/HTTP checks with 58 captures. One fresh Sol High review found no material findings; no re-review or post-review code change. Original branches and unrelated instruction/configuration work remain preserved.
+- **D3 is CLOSED.** Both GHL and Kajabi support explicit setup and conditional canonical work with shared provenance/retry rules. No provider execution, real mail or production action. Next: [D4.md](phases/D4.md), Systems Execution + QA.
+
+## Historical D3 Kajabi local acceptance (2026-09-12)
 
 - Canonical Kajabi v1 has 10 selectable components, 9 Milestones, 10 Actions, 4 Deliverables and 12 dependency edges when all are chosen. It shares the existing compiler, relational writer, immutable receipts, setup guards and HTTP/retry path. The exact GHL definition bytes/hash and saved request key/shape remain unchanged.
 - Explicit GHL/Kajabi Settings pages reuse one form and protected handler. Each preserves the other's binding; no name-based platform inference or automatic live configuration. Project labels use the verified definition key. No schema/migration, provider execution, credentials, dependency or workflow changes.

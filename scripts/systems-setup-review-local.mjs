@@ -15,6 +15,7 @@ const base = arg("--url", "http://localhost:8787"),
   out = resolve(arg("--out", "/tmp/bloomops-d2-setup/browser"));
 assert.ok(["localhost", "127.0.0.1"].includes(new URL(base).hostname));
 const kind = arg('--platform', 'ghl'); assert.ok(['ghl','kajabi'].includes(kind));
+const executionReview = process.argv.includes('--execution');
 const platform = kind === 'kajabi' ? 'Kajabi' : 'GHL', otherKind = kind === 'kajabi' ? 'ghl' : 'kajabi';
 const buildLabels = kind === 'kajabi' ? ['Build course','Configure offer and checkout','Build nurture sequence','Perform internal QA'] : ['Confirm build scope','Build funnel','Perform internal QA'];
 const require = createRequire(
@@ -216,14 +217,76 @@ const layout = async (name, page, width) => {
     const generated = await generationResponse; generationInput = generated.request().postDataJSON(); assert.equal(generated.status(),201);
   }
   await dialog.waitFor({ state: 'detached' }); await page.getByText('Systems work generated', { exact: true }).first().waitFor();
-  const existingWork = sql(`SELECT id,title FROM actions WHERE project_id=${lit(project)} ORDER BY id`);
+  let existingWork = sql(`SELECT id,title FROM actions WHERE project_id=${lit(project)} ORDER BY id`);
   check('setup through actual UI generates canonical selected work', existingWork.length === buildLabels.length && existingWork.some(a => a.title === (kind === 'kajabi' ? 'Build course' : 'Build funnel')));
+  if (executionReview) {
+    const systemsRow = () => page.locator(`[data-project-id="${project}"]`);
+    const openSystems = async () => { await page.goto(base + '/systems', { waitUntil: 'networkidle' }); await systemsRow().waitFor(); };
+    const phaseName = kind === 'kajabi' ? 'Course Build' : 'Discovery';
+    await openSystems();
+    check('Systems shows the generated next phase and readable action progress', (await systemsRow().innerText()).includes(`Next phase: ${phaseName}`) && (await systemsRow().innerText()).includes(`0 of ${buildLabels.length} Actions done`) && (await systemsRow().innerText()).includes('blocked by dependencies'));
+    for (const width of widths) {
+      await layout('systems-execution', page, width);
+      const links = await systemsRow().locator('.bo-work-summary a').evaluateAll(nodes => nodes.every(n => { const r=n.getBoundingClientRect();return r.height>=44&&r.x>=0&&r.right<=innerWidth; }));
+      check(`execution links remain usable at ${width}px`, links);
+    }
+    await keyboardActivate(page, systemsRow().getByRole('link', { name: new RegExp(`Next phase: ${phaseName}`) }));
+    await page.getByRole('group', { name: `${phaseName} controls`, exact:true }).waitFor();
+    check('phase link opens the canonical Project milestone controls', new URL(page.url()).hash === '#project-milestones-title');
+    await page.getByRole('group', { name: `${phaseName} controls`, exact:true }).getByRole('button', { name:'Change milestone status',exact:true }).click();
+    await page.getByLabel('Next milestone status',{exact:true}).selectOption('in_progress');
+    await page.getByRole('button',{name:'Save milestone status',exact:true}).click(); await page.getByRole('dialog').waitFor({state:'detached'});
+    await openSystems(); check('Systems current phase follows the canonical milestone transition', (await systemsRow().innerText()).includes(`Current phase: ${phaseName} · In Progress`));
+    const qa = existingWork.find(a=>a.title==='Perform internal QA'); assert.ok(qa);
+    for(const action of existingWork.filter(a=>a.id!==qa.id)) for(const status of ['in_progress','done']) {
+      const revision=sql(`SELECT revision FROM actions WHERE id=${lit(action.id)}`)[0].revision;
+      await api(owner.context, `/api/bloomops/actions/${action.id}/transition`, {toStatus:status,expectedRevision:revision},200);
+    }
+    const milestones=sql(`SELECT id,name,status FROM milestones WHERE project_id=${lit(project)} ORDER BY position,id`);
+    for(const milestone of milestones.filter(m=>m.name!=='QA')) {
+      for(const status of milestone.status==='in_progress'?['completed']:['in_progress','completed']) {
+        const revision=sql(`SELECT revision FROM milestones WHERE id=${lit(milestone.id)}`)[0].revision;
+        await api(owner.context, `/api/bloomops/projects/${project}/milestones/${milestone.id}/transition`,{toStatus:status,expectedRevision:revision},200);
+      }
+    }
+    await page.goto(`${base}/work/actions/${qa.id}`,{waitUntil:'networkidle'});
+    for(const status of ['in_progress','review']) {
+      await page.getByRole('button',{name:'Change Action status',exact:true}).click();
+      await page.getByLabel('Next Action status',{exact:true}).selectOption(status);
+      await page.getByRole('button',{name:'Save Action status',exact:true}).click();await page.getByRole('dialog').waitFor({state:'detached'}); await page.reload({waitUntil:'networkidle'});
+    }
+    await page.goto(`${base}/work/projects/${project}`,{waitUntil:'networkidle'});
+    await page.getByRole('group',{name:'QA controls',exact:true}).getByRole('button',{name:'Change milestone status',exact:true}).click();
+    await page.getByLabel('Next milestone status',{exact:true}).selectOption('in_progress');await page.getByRole('button',{name:'Save milestone status',exact:true}).click();await page.getByRole('dialog').waitFor({state:'detached'});
+    const output=sql(`SELECT id FROM deliverables WHERE project_id=${lit(project)} ORDER BY id LIMIT 1`)[0];assert.ok(output);
+    for(const status of ['in_progress','internal_review']) {
+      await page.locator(`[data-deliverable-id="${output.id}"]`).getByRole('button',{name:'Change Deliverable status',exact:true}).click();
+      await page.getByLabel('Next Deliverable status',{exact:true}).selectOption(status);await page.getByRole('button',{name:'Save Deliverable status',exact:true}).click();await page.getByRole('dialog').waitFor({state:'detached'});await page.reload({waitUntil:'networkidle'});
+    }
+    await openSystems(); const executing=await systemsRow().innerText();
+    check('QA and Internal Review stay canonical without claiming approval',executing.includes('Current phase: QA · In Progress')&&executing.includes(`${buildLabels.length-1} of ${buildLabels.length} Actions done`)&&executing.includes('1 in Review')&&executing.includes('1 in Internal Review')&&!executing.includes('blocked by dependencies')&&!executing.includes('approved'));
+    await page.emulateMedia({reducedMotion:'reduce'}); await layout('systems-qa-review',page,390);
+    await systemsRow().getByRole('link',{name:'1 in Review',exact:true}).click();
+    check('Systems review link opens the canonical Work review filter',new URL(page.url()).searchParams.get('view')==='review'&&new URL(page.url()).searchParams.get('projectId')===project);
+    await openSystems(); await systemsRow().getByRole('link',{name:/Deliverable.*Internal Review/}).click();
+    check('Systems output link opens canonical Project Deliverables',new URL(page.url()).pathname===`/work/projects/${project}`&&new URL(page.url()).hash==='#project-deliverables-title');
+    existingWork=sql(`SELECT id,title FROM actions WHERE project_id=${lit(project)} ORDER BY id`);
+  }
   await page.goto(base + `/settings/${kind}-builds`, { waitUntil: 'networkidle' }); await select.selectOption(types[kind]); await checkbox().uncheck();
   await page.getByRole('button', { name: 'Review setup' }).click(); await page.getByRole('button', { name: 'Disable builds', exact: true }).click(); await page.getByRole('dialog').waitFor({ state: 'detached' });
   check('disable preserves existing generated records', JSON.stringify(sql(`SELECT id,title FROM actions WHERE project_id=${lit(project)} ORDER BY id`)) === JSON.stringify(existingWork));
   const replay = await api(owner.context, `/api/bloomops/projects/${project}/blueprint/generate`, generationInput, 200); check('disabled binding still permits the exact prior generation replay', replay.replayed);
   await page.goto(`${base}/work/projects/${nextProject}`, { waitUntil: 'networkidle' }); check('disabled configuration blocks new generation', await page.getByRole('button', { name: `Start ${platform} build`, exact: true }).count() === 0 && (await owner.context.request.get(`${base}/api/bloomops/projects/${nextProject}/blueprint`)).status() === 409);
   const pm = await login(members.pm.email, '/settings'); check('PM without template capability has no setup access', await pm.page.getByRole('link', { name: `Manage ${platform} build setup` }).count() === 0 && (await pm.context.request.get(base + endpoint)).status() === 403);
+  if(executionReview) {
+    const phase=sql(`SELECT id FROM milestones WHERE project_id=${lit(project)} AND name='QA'`)[0];
+    const qa=sql(`SELECT id FROM actions WHERE project_id=${lit(project)} AND title='Perform internal QA'`)[0];
+    sql(`UPDATE milestones SET visibility='restricted' WHERE id=${lit(phase.id)}`);
+    sql(`UPDATE actions SET visibility='restricted' WHERE id=${lit(qa.id)}`);
+    await pm.page.goto(base+'/systems',{waitUntil:'networkidle'}); const row=pm.page.locator(`[data-project-id="${project}"]`);
+    check('restricted QA phase and Action do not leak through Systems summaries',await row.count()===1&&!(await row.innerText()).includes('Current phase: QA')&&!(await row.innerText()).includes('1 in Review')&&(await row.innerText()).includes(`${buildLabels.length-1} of ${buildLabels.length-1} Actions done`));
+    sql(`UPDATE milestones SET visibility='internal' WHERE id=${lit(phase.id)}`); sql(`UPDATE actions SET visibility='internal' WHERE id=${lit(qa.id)}`);
+  }
   sql(`INSERT INTO member_capabilities(workspace_id,membership_id,capability) VALUES(${lit(ws)},${lit(members.team.membership)},'templates.manage')`);
   await api(owner.context, `/api/bloomops/projects/${nextProject}/assignments`, { membershipId: members.team.membership }, 200);
   const team = await login(members.team.email, '/settings'); await team.page.getByRole('link', { name: `Manage ${platform} build setup` }).click();
@@ -233,6 +296,13 @@ const layout = async (name, page, width) => {
   await team.page.goto(`${base}/work/projects/${nextProject}`, { waitUntil: 'networkidle' }); check('template grant does not grant Project generation authority', await team.page.getByRole('button', { name: `Start ${platform} build`, exact: true }).count() === 0 && (await team.context.request.get(`${base}/api/bloomops/projects/${nextProject}/blueprint`)).status() === 403);
   sql(`DELETE FROM member_capabilities WHERE workspace_id=${lit(ws)} AND membership_id=${lit(members.team.membership)} AND capability='templates.manage'`);
   check('capability revocation applies to the existing session', (await team.context.request.get(base + endpoint)).status() === 403);
+  if(executionReview) {
+    await team.page.goto(base+'/systems',{waitUntil:'networkidle'});
+    check('Systems execution stays within exact Team Project assignments',await team.page.locator(`[data-project-id="${project}"]`).count()===0&&await team.page.locator(`[data-project-id="${nextProject}"]`).count()===1);
+    sql(`DELETE FROM project_assignments WHERE workspace_id=${lit(ws)} AND project_id=${lit(nextProject)} AND membership_id=${lit(members.team.membership)}`);
+    await team.page.reload({waitUntil:'networkidle'});check('existing Team session loses Systems rows after assignment revocation',await team.page.locator('[data-project-id]').count()===0);
+  }
+
   await page.goto(base + `/settings/${kind}-builds`, { waitUntil: 'networkidle' }); await select.selectOption(types[kind]); await checkbox().uncheck(); await page.getByRole('button', { name: 'Review setup' }).click();
   await configure(owner.context, types[kind], false);
   await page.getByRole('button', { name: 'Disable builds', exact: true }).click(); await page.getByRole('dialog').waitFor({ state: 'detached' });
