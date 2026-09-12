@@ -2237,3 +2237,10 @@ select.bo-control {
 .bo-build-preview { padding-left: 24px; margin: 8px 0; overflow-wrap: anywhere; }
 .bo-build-preview li { padding: 4px 0; }
 .bo-build-sequence { min-height: 44px; padding: 12px 0; cursor: pointer; }
+
+/* Onboarding: one heading, purposeful line icons and compact completed work. */
+.bo-onboarding-step-title { display: flex; gap: 12px; align-items: flex-start; min-width: 0; }
+.bo-onboarding-step-title > svg { flex: 0 0 22px; margin-top: 2px; color: var(--bo-text-soft); }
+.bo-onboarding-step-title .bo-small:empty { display: none; }
+.bo-onboarding-instructions { max-width: 68ch; }
+.bo-onboarding .bo-hint { max-width: 68ch; }

@@ -2,7 +2,7 @@
 
 ## Current status (2026-09-12)
 
-D1–D6 are closed. D6 merged through PR #50 as `ccc6e68088cf095f5e0ad9b31603f4ddeca6dd9d`; both exact-SHA workflows, live identity and cleanup passed. D7 hardening is in progress under [phases/D7.md](phases/D7.md). No new product features; Release E requires new owner direction.
+**D1–D7 and Release D are CLOSED** on `844ac905541df9e6fccb7dc313ab0a8d517da319`, [PR #51](https://github.com/Bloomwired/bloomops/pull/51). The exact candidate passed Sol High review with no material findings. Final acceptance: 5,970 full tests, 187 native checks, Cloudflare build and 104 browser checks / 41 full-page captures. Staging `34685865364` and zero-to-current `34685865366` passed every required step on that merge SHA; live staging and the restored eight-database inventory match. [BUILD_STATE.md](BUILD_STATE.md) records complete evidence and limitations. These post-gate closure notes preserve the exact published candidate. **No new phase is active; do not begin Ads / Release E automatically.**
 
 Performance remains closed: accepted optimizations are retained, Smart Placement
 was rejected/reverted, and further performance work remains deferred.

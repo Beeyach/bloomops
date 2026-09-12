@@ -7,6 +7,7 @@ import { createClient } from '../lib/bloomops/clients.mjs';
 import { createServiceEngagement } from '../lib/bloomops/services.mjs';
 import { onboardingDefaultStatements } from '../lib/bloomops/onboarding-defaults.mjs';
 import { activateClient } from '../lib/bloomops/client-activation.mjs';
+import { configureOnboardingItem } from '../lib/bloomops/onboarding-guidance.mjs';
 import { mutateOnboardingItem } from '../lib/bloomops/onboarding-runtime.mjs';
 import { homeProjection, listProjectSummaries } from '../lib/bloomops/work-projections.mjs';
 import { releaseBRaces } from './release-b-races.mjs';
@@ -52,7 +53,8 @@ export default { async fetch(request, env) {
     check('canonical activation snapshots Common Social and GHL with local-only mail', activated.ok && mail.length === 1 && (await one("SELECT count(*) n FROM onboarding_instance_templates")).n === 3);
     const requirements = await all("SELECT * FROM onboarding_items WHERE workspace_id='a' AND required=1");
     for (const item of requirements) {
-      assert.ok((await mutateOnboardingItem(db, { actor: client, clientId: 'james', itemId: item.id, operation: 'submit' })).ok);
+      assert.ok((await configureOnboardingItem(db, { actor: owner, clientId: 'james', itemId: item.id, input: { revision: 0, actionType: 'confirmation', actionUrl: null, instructions: item.instructions || 'Complete the agreed external work.' } })).ok);
+      assert.ok((await mutateOnboardingItem(db, { actor: client, clientId: 'james', itemId: item.id, operation: 'submit', guidanceRevision: 1 })).ok);
       if (item.verification_required) assert.ok((await mutateOnboardingItem(db, { actor: owner, clientId: 'james', itemId: item.id, operation: 'verify' })).ok);
     }
     check('real Client submissions and agency verification finish onboarding and activate relationship', requirements.length === 6 && (await one("SELECT relationship_status FROM bloomops_clients WHERE id='james'")).relationship_status === 'active' && (await one("SELECT status FROM onboarding_instances WHERE client_id='james'")).status === 'complete');

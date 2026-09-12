@@ -140,7 +140,11 @@ test('portal HTTP compares missing, foreign, hidden and guessed instance resourc
     assert.deepEqual(Object.keys(client).sort(), ['id', 'name', 'onboarding']);
     for (const item of client.onboarding.items)
       assert.deepEqual(Object.keys(item).sort(), [
+        'actionType',
+        'actionUrl',
         'canAct',
+        'guidanceReady',
+        'guidanceRevision',
         'id',
         'instructions',
         'position',
