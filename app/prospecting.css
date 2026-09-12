@@ -88,6 +88,7 @@
 .bo-profile-layout .bo-prospect-section-head h2 {display:flex;align-items:center;gap:12px;font-size:21px;font-weight:650;line-height:1.4;}
 .bo-profile-layout .bo-prospect-section-head h2 svg {flex-shrink:0;}
 .bo-profile-layout .bo-prospect-section-head .bo-btn {font-size:14px;padding:8px 12px;}
+.bo-profile-layout .bo-prospect-section-head .bo-profile-edit {width:44px;height:44px;min-width:44px;padding:0;}
 .bo-profile-layout #assessment {background:color-mix(in srgb,var(--bo-lilac) 45%,var(--bo-snow));border-color:color-mix(in srgb,var(--bo-lavender) 30%,var(--bo-border));}
 .bo-profile-layout dl {margin:0;}
 .bo-profile-layout dt {font-size:14px;line-height:1.5;color:var(--bo-text-soft);margin:0 0 8px;font-weight:500;}
@@ -105,6 +106,7 @@
 .bo-profile-fit-help {font-size:14px;line-height:1.6;color:var(--bo-text-soft);margin:0;}
 .bo-profile-section-links {display:flex;flex-wrap:wrap;gap:12px;margin:20px -12px -8px;}
 .bo-profile-contact>dl {display:grid;gap:24px;}
+.bo-profile-contact>dl dt {margin:0;}
 .bo-profile-person dd {font-size:26px;font-weight:650;line-height:1.35;}
 .bo-profile-business-details {margin-top:20px;}
 .bo-profile-business-details dl {padding:12px 0;}

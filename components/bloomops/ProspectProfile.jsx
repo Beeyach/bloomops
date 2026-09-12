@@ -39,7 +39,7 @@ function EditableSection({section,title,displayTitle=title,icon,data,onSave,chil
   await onSave({expectedRevision:revision,fields:values,sources:chosen});setSaved(true);close();
  }catch(e){setErrors(e.fields||{});setMessage(e.message);}finally{setBusy(false);}}
  return <section id={section} className="bo-prospect-section" aria-labelledby={`${section}-title`}>
-  <div className="bo-prospect-section-head"><h2 id={`${section}-title`}>{icon&&<ProfileIcon name={icon} size={22}/>}<span>{displayTitle}</span></h2>{!editing&&<div className="bo-prospect-edit-action">{saved&&<span role="status">Saved</span>}<button ref={editButton} className="bo-btn bo-btn-ghost" type="button" disabled={!ready} onClick={begin}>Edit {title.toLowerCase()}</button></div>}</div>
+  <div className="bo-prospect-section-head"><h2 id={`${section}-title`}>{icon&&<ProfileIcon name={icon} size={22}/>}<span>{displayTitle}</span></h2>{!editing&&<div className="bo-prospect-edit-action">{saved&&<span role="status">Saved</span>}<button ref={editButton} className="bo-btn bo-btn-ghost bo-profile-edit" type="button" aria-label={`Edit ${title.toLowerCase()}`} title={`Edit ${title.toLowerCase()}`} disabled={!ready} onClick={begin}><ProfileIcon name="edit" size={20}/></button></div>}</div>
   {children}
   {editing?<form ref={form} onSubmit={save} aria-label={`Edit ${title.toLowerCase()}`}><fieldset disabled={busy}>
    {message&&<div className="bo-prospect-notice" role="alert"><p>{message}</p><Button href={'/prospecting/'+data.profile.id} variant="ghost">Reload profile</Button></div>}

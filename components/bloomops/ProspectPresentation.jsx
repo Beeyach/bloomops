@@ -2,6 +2,7 @@ import {Icon} from './Icons';
 import {safeProspectUrl} from '@/lib/bloomops/prospect-values.mjs';
 
 const paths={
+ edit:<><path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 14Z"/></>,
  globe:<><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c5 5 5 13 0 18-5-5-5-13 0-18Z"/></>,
  pin:<><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></>,
  clock:<><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></>,
@@ -14,19 +15,19 @@ export function ProfileIcon({name,size=20}){
  return paths[name]?<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">{paths[name]}</svg>:<Icon name={name} size={size}/>;
 }
 function Unknown(){return <span className="bo-prospect-unknown">Not recorded</span>;}
-function Property({icon,label,value,className=''}){
- return <div className={`bo-profile-property ${className}`}><dt><span className="bo-profile-property-icon"><ProfileIcon name={icon}/></span>{label}</dt><dd>{value||<Unknown/>}</dd></div>;
+function Property({icon,label,value,className='',iconOnly=false}){
+ return <div className={`bo-profile-property ${className}`}><dt><span className="bo-profile-property-icon"><ProfileIcon name={icon}/></span><span className={iconOnly?'sr-only':undefined}>{label}</span></dt><dd>{value||<Unknown/>}</dd></div>;
 }
 export function ProspectIdentity({profile}){
  const website=safeProspectUrl(profile.website);
  return <div className="bo-profile-contact">
   <dl>
-   <div className="bo-profile-person"><dt>Person</dt><dd>{profile.personName||<Unknown/>}</dd></div>
-   <Property icon="mail" label="Public contact email" value={profile.publicEmail}/>
-   <Property icon="globe" label="Website" value={website?<a href={website} target="_blank" rel="noreferrer">{website.replace(/^https?:\/\//,'')}</a>:null}/>
-   <Property icon="systems" label="Current platform" value={profile.platform}/>
-   <Property icon="pin" label="Location" value={profile.location}/>
-   <Property icon="clock" label="Timezone" value={profile.timeZone}/>
+   <div className="bo-profile-person"><dt className="sr-only">Person</dt><dd>{profile.personName||<Unknown/>}</dd></div>
+   <Property iconOnly icon="mail" label="Public contact email" value={profile.publicEmail}/>
+   <Property iconOnly icon="globe" label="Website" value={website?<a href={website} target="_blank" rel="noreferrer">{website.replace(/^https?:\/\//,'')}</a>:null}/>
+   <Property iconOnly icon="systems" label="Current platform" value={profile.platform}/>
+   <Property iconOnly icon="pin" label="Location" value={profile.location}/>
+   <Property iconOnly icon="clock" label="Timezone" value={profile.timeZone}/>
   </dl>
   <details className="bo-prospect-evidence bo-profile-business-details"><summary>Business details</summary><dl>
    <Property icon="clients" label="Services" value={profile.services}/>

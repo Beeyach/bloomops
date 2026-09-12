@@ -57,6 +57,7 @@ The separator ban concerns UI metadata chains, not punctuation in domains, email
 
 - [ ] Inspect [the profile mockup and owner corrections](design-references/README.md) before editing the profile.
 - [ ] Business favicon/garden icon precedes the name; reuse existing detection/library.
+- [ ] Prospect Contact read rows show icons and values without visible field labels; retain screen-reader labels and fully labelled edit forms. Profile edit controls show only a pencil icon, with accessible names and 44px targets (latest owner correction).
 - [ ] Confirmed social profiles use icon-only links beside Open website, with accessible names and focus/tooltips. No detected URL means no icon or empty placeholder.
 - [ ] Opportunity/draft and supporting contact sit alongside one another on desktop, stacking naturally on phones. Keep detailed sources/evidence/history in disclosures; do not compress the page into one viewport.
 

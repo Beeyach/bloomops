@@ -16,6 +16,10 @@ The website's standard `/favicon.ico` is used when accessible; missing/blocked i
 
 The supported flow is Switch workspace → Create workspace → New prospect → full-page profile. Identity/contact, fit, facts/unknowns/proposed work, dated manual evidence and drafts are editable. Source checks and actor/time history remain separate. Saving a draft does not send or schedule anything.
 
+## Contact and edit icon refinement
+
+Latest owner correction: Contact displays icons and values without visible field labels; profile edit buttons show only a pencil. Screen-reader names and labelled edit forms remain intact. [Contact detail](contact-detail.png) shows the refinement. Final Cloudflare build and [14 responsive/avatar checks](contact-icons-checks.json) pass, including hidden labels, icon-only edit controls, 44px targets, and editing/focus/cancel at all five widths. The nine social/disclosure checks also passed again. Screenshots above are refreshed; prior broad functional/domain and review evidence below remains historical. This presentation-only adjustment was self-reviewed under the usage-aware policy.
+
 ## Reference revision verification
 
 The final reference-based Cloudflare build passed, with all 64 functional browser checks repeated. [14 visual/avatar checks](visual-checks.json) cover five widths, desktop columns, absent socials, editing/focus/cancel and favicon success/failure. [Nine social/disclosure checks](social-browser-checks.json) cover confirmed links at 1440/390/320, keyboard/hover tooltips, 44px targets, source invalidation, rejected share URLs, missing website, audit disclosure and full history. Seven Node tests cover source filtering and existing favicon parsing. Final desktop/phone/fallback/favicon/social captures were visually inspected against PR #58's image and written corrections.
