@@ -2240,7 +2240,25 @@ select.bo-control {
 
 /* Onboarding: one heading, purposeful line icons and compact completed work. */
 .bo-onboarding-step-title { display: flex; gap: 12px; align-items: flex-start; min-width: 0; }
-.bo-onboarding-step-title > svg { flex: 0 0 22px; margin-top: 2px; color: var(--bo-text-soft); }
+.bo-onboarding-art { display: grid; place-items: center; flex: 0 0 40px; width: 40px; height: 40px; border-radius: 10px; color: var(--bo-text-soft); background: var(--bo-mist); border: 1px solid var(--bo-border); }
+.bo-onboarding-art-instagram { color: #a52a65; background: #fcecf3; border-color: #efd2e0; }
+.bo-onboarding-art-video { color: #6650a1; background: var(--bo-lilac); border-color: #ded5f1; }
+.bo-onboarding-art-assets { color: #276d68; background: #e8f5f1; border-color: #cce6dc; }
+.bo-onboarding-art-agreement { color: #805c2a; background: #faf1df; border-color: #ebddc3; }
+.bo-onboarding-art-booking, .bo-onboarding-art-access { color: var(--bo-info-text); background: #eaf1fc; border-color: #d4e1f5; }
+.bo-onboarding-progress-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.bo-onboarding-badges { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 0; }
+.bo-onboarding-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: 6px; border: 1px solid var(--bo-border); background: var(--bo-mist); color: var(--bo-text-soft); font-size: 12px; font-weight: 600; line-height: 18px; }
+.bo-onboarding-badge svg { flex-shrink: 0; }
+.bo-onboarding-badge-owner { background: var(--bo-lilac); border-color: #ded5f1; color: #584580; }
+.bo-onboarding-badge-shared { background: #eaf1fc; border-color: #d4e1f5; color: #345d9e; }
+.bo-onboarding-badge-review { background: #faf1df; border-color: #ebddc3; color: #79531b; }
+.bo-onboarding-badge-restricted { background: #faeaf0; border-color: #efcfd9; color: #9c304e; }
+.bo-onboarding .bo-status { min-height: 28px; border: 1px solid var(--bo-border); }
+.bo-onboarding .bo-status-success { --st-fg: #216c57; --st-glyph: #216c57; border-color: #b9dfd2; }
+.bo-onboarding .bo-status-warning { --st-fg: #79531b; --st-glyph: #79531b; border-color: #e7d5b1; }
+.bo-onboarding .bo-status-error { --st-fg: #9c304e; --st-glyph: #9c304e; border-color: #efc2cf; }
+.bo-onboarding .bo-status-info { --st-fg: #345d9e; --st-glyph: #345d9e; border-color: #cadbf2; }
 .bo-onboarding-step-title .bo-small:empty { display: none; }
 .bo-onboarding-instructions { max-width: 68ch; }
 .bo-onboarding .bo-hint { max-width: 68ch; }

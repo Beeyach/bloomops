@@ -177,3 +177,23 @@ A visual master-template editor remains a separate unimplemented task.
 
 For the synthetic pilot, use a controlled test document/folder; do not mark a
 real agreement signed or assets received merely because the button worked.
+
+## Pilot follow-up — badges and recognizable icons (2026-09-12)
+
+Owner rejects the flat `Client · Client-visible · Verification required` row
+and generic repeated icons. The bounded follow-up replaces that metadata with
+separate restrained badges, distinguishes lifecycle states with text/glyph/color,
+and uses recognizable Instagram and video artwork plus specific task icons on
+the existing agency and portal onboarding lists. It changes presentation only;
+no lifecycle, visibility, API, schema or permission changes are needed.
+
+Reusable instruction templates and quick picks can follow later. Manual demo
+link setup does not block this development work. A Client's actual external
+agreement/upload action still needs a genuine configured destination.
+
+Acceptance: inspect both agency and Client lists at 1440/1024/768/390/320px,
+including wrapped badges, specific step artwork, preserved completed identity,
+keyboard/focus, reduced motion, no portal agency-metadata exposure, and unchanged
+setup → Client action → confirmation/verification behavior. Use the existing
+local browser walkthrough and focused checks; self-review is sufficient for a
+passing presentation-only change under the usage-aware policy.

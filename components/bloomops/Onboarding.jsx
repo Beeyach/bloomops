@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Icon } from './Icons';
 import OnboardingGuidance from './OnboardingGuidance';
+import { OnboardingMetadata, OnboardingStepIcon, onboardingStatusStyle } from './OnboardingPresentation';
 import { ONBOARDING_ACTIONS } from '@/lib/bloomops/onboarding-guidance-values.mjs';
 import { Button, Field, Notice, Status } from "./Primitives";
 
@@ -21,12 +21,6 @@ const states = {
   blocked: "Blocked",
   waived: "Waived",
   not_applicable: "Not applicable",
-};
-const parties = {
-  client: "Client",
-  team: "Team",
-  user: "Specific user",
-  external: "External",
 };
 const instanceStates = {
   not_started: "Not started",
@@ -102,12 +96,13 @@ function OnboardingProgress({ clientId, onboarding, portal }) {
   return (
     <div className="bo-onboarding">
       <div className="bo-onboarding-progress">
-        {!portal && <p className="bo-body bo-strong">Onboarding · {instanceStates[onboarding.state] || "In progress"}</p>}
+        <div className="bo-onboarding-progress-heading">
         <p className="bo-small" id={`progress-${clientId}`}>
           {progress.done} of {progress.total}{" "}
           {portal ? "required steps done" : "visible required steps satisfied"}{" "}
-          {!portal && <> · {progress.percent}%</>}
         </p>
+        {!portal && <Status label={instanceStates[onboarding.state] || "In progress"} {...onboardingStatusStyle({ status: onboarding.state === 'complete' ? 'completed' : onboarding.state })} />}
+        </div>
         <progress
           max="100"
           value={progress.percent}
@@ -148,7 +143,7 @@ function OnboardingProgress({ clientId, onboarding, portal }) {
           >
             <div className="bo-onboarding-item-head">
               <div className="bo-onboarding-step-title">
-                <Icon name={closed(item) ? 'check' : ONBOARDING_ACTIONS[item.actionType]?.icon || 'onboarding'} size={22} />
+                <OnboardingStepIcon item={item} />
                 <div><h3 className="bo-h3" id={`step-${item.id}`}>
                   {item.title}
                 </h3>
@@ -164,30 +159,16 @@ function OnboardingProgress({ clientId, onboarding, portal }) {
                       ? "Awaiting verification"
                       : states[item.status]
                 }
-                tone={
-                  item.state === "complete" || item.status === "completed"
-                    ? "success"
-                    : "neutral"
-                }
+                {...onboardingStatusStyle(item)}
               />
             </div>
+            {!portal && <OnboardingMetadata item={item} />}
             {item.instructions && (!portal || item.guidanceReady || closed(item)) && (
               <p className="bo-body bo-onboarding-instructions">
                 {item.instructions}
               </p>
             )}
             {portal && item.state === 'todo' && !item.guidanceReady && <p className="bo-hint">Your team is preparing the instructions and destination for this step.</p>}
-            {!portal && (
-              <p className="bo-small">
-                {parties[item.responsibleParty]} ·{" "}
-                {item.visibility === "client"
-                  ? "Client-visible"
-                  : item.visibility === "restricted"
-                    ? "Restricted"
-                    : "Internal"}
-                {item.verificationRequired ? " · Verification required" : ""}
-              </p>
-            )}
             {!portal && item.resolutionReason && (
               <p className="bo-body">
                 Resolution reason: {item.resolutionReason}
