@@ -86,6 +86,8 @@ Finish a bounded slice before adding another. P4 and P5 are core work and must n
 
 ## P1 — Prospecting shell and one proper profile
 
+For profile UI edits, inspect the [visual reference and owner corrections](design-references/README.md). Keep a website favicon before the business name, with a garden-themed SVG fallback; social icons are icon-only links beside Open website, shown only for detected profiles. The written corrections override omissions in the image.
+
 ### Work
 
 - [x] Add route-based Prospecting navigation within the BloomOps internal shell. Build the contextual sidebar and return path. Load only destinations that work.

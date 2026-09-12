@@ -8,9 +8,23 @@ Synthetic local built-Worker screenshots; all people, businesses, emails and obs
 
 [Full profile with assessment, draft and activity](profile-full.png) and [Prospect list](prospects-list.png).
 
+The profile follows the owner's [reference and written corrections](../../design-references/README.md): Opportunity and draft lead, Contact sits alongside them on desktop, and detailed evidence/sources/history use disclosures. The favicon or stable garden SVG sits before the business name. Existing Bloom branding is retained.
+
+The website's standard `/favicon.ico` is used when accessible; missing/blocked icons leave the garden visible. No initials. Custom HTML icon paths are not discovered. [Favicon success at 320px](favicon-loaded-phone.png) uses a mocked synthetic icon, not a logo discovered from example.com.
+
+[Desktop with social links](socials-desktop.png) and [phone with social links](socials-phone.png) use fictional, explicitly checked identity-source URLs. Instagram/LinkedIn buttons appear beside Open website only for checked business/person profile sources, never inferred handles or share links. P1 has manual audit/source checks; automatic social discovery belongs to later audit work. Main screenshots show the absent-social case. Owner visual acceptance is pending.
+
 The supported flow is Switch workspace → Create workspace → New prospect → full-page profile. Identity/contact, fit, facts/unknowns/proposed work, dated manual evidence and drafts are editable. Source checks and actor/time history remain separate. Saving a draft does not send or schedule anything.
 
-## Verification
+## Reference revision verification
+
+The final reference-based Cloudflare build passed, with all 64 functional browser checks repeated. [14 visual/avatar checks](visual-checks.json) cover five widths, desktop columns, absent socials, editing/focus/cancel and favicon success/failure. [Nine social/disclosure checks](social-browser-checks.json) cover confirmed links at 1440/390/320, keyboard/hover tooltips, 44px targets, source invalidation, rejected share URLs, missing website, audit disclosure and full history. Seven Node tests cover source filtering and existing favicon parsing. Final desktop/phone/fallback/favicon/social captures were visually inspected against PR #58's image and written corrections.
+
+One fresh Sol High review of the reference-driven changes found no material issues. No review fixes or repeat audit were needed.
+
+The previous single-status browser selector was updated for the now-separate fit and contact badges; all 64 assertions pass. The favicon test uses direct Chromium interception because Playwright's route handler aborts `/favicon.ico` automatically. This is a test-tool behavior; no application workaround was added.
+
+## Foundation verification (before visual feedback)
 
 - 3,467 BloomOps tests passed, including authorization, schema, legacy compatibility and new workspace/profile invariants.
 - 68 existing Pages/editor/tree/sharing/embed tests passed; no video tests run.
@@ -20,7 +34,7 @@ The supported flow is Switch workspace → Create workspace → New prospect →
 - Bloomlab’s live `/design` reference returned 200 and was visually inspected. Existing Bloom fonts, palette, controls and navigation were retained; metadata uses separate labels/values.
 - One independent Sol High review and its single focused re-review are complete, with no remaining material code findings. The medium finding (source controls only exposed for Identity) was fixed for every section. After that UI-only fix, 13 focused tests, all 64 browser assertions and the Cloudflare build passed again; schema/domain/auth remained unchanged.
 
-## Navigation comparison
+## Navigation comparison (original P0/P1 acceptance)
 
 Same synthetic fixture before and after: 50 clients, 100 projects, 1,000 actions; existing accepted local built-Worker wrapper with 40ms synthetic latency per D1 call. Seven rounds, first two warmups excluded; five observations per route/width. Completion means full destination content plus two animation frames. Cold JavaScript measured separately. [Before data](navigation-before.json), [after data](navigation-after.json).
 

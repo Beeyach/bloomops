@@ -39,6 +39,8 @@ Source basis: the actual Bloomlab design system and `/design` gallery in `Beeyac
 These owner requirements apply across the repository, including existing screens during the planned cleanup:
 
 - [ ] No dot-separated metadata chains joining email, role, dates, business types or statuses. Do not substitute another separator for the same cramped row.
+- [ ] Identity/contact hierarchy uses deliberate grouping, whitespace, meaningful compact icons and restrained surface colour; slight font-size/colour changes alone are insufficient.
+- [ ] Prospect avatars use an accessible website favicon, otherwise a stable flower/garden SVG variation. Never use initials or acronyms as prospect artwork.
 - [ ] Identity, role and properties have clear hierarchy or labelled positions. Dates appear where they help a decision, rather than being repeated in app chrome.
 - [ ] Not every piece of metadata is a badge, pill or bordered box.
 - [ ] Each screen has a clear purpose and at most one short introductory instruction when useful. Repeated explanations are removed.
@@ -50,6 +52,13 @@ These owner requirements apply across the repository, including existing screens
 - [ ] Non-urgent inventory is not presented as a huge urgent task backlog. Automation states reflect what is really running, held or failed.
 
 The separator ban concerns UI metadata chains, not punctuation in domains, email addresses, numbers or ordinary sentences. Reference: [Prospecting and Pages roadmap](PROSPECTING_ROADMAP.md).
+
+### Prospect profile reference
+
+- [ ] Inspect [the profile mockup and owner corrections](design-references/README.md) before editing the profile.
+- [ ] Business favicon/garden icon precedes the name; reuse existing detection/library.
+- [ ] Confirmed social profiles use icon-only links beside Open website, with accessible names and focus/tooltips. No detected URL means no icon or empty placeholder.
+- [ ] Opportunity/draft and supporting contact sit alongside one another on desktop, stacking naturally on phones. Keep detailed sources/evidence/history in disclosures; do not compress the page into one viewport.
 
 ## 4. Colour
 

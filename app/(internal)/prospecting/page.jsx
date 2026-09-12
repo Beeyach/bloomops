@@ -4,6 +4,7 @@ import {evaluate} from '@/lib/bloomops/authorization.mjs';
 import {listProspects} from '@/lib/bloomops/prospects.mjs';
 import {PROSPECT_FIT,safeProspectUrl} from '@/lib/bloomops/prospect-values.mjs';
 import {PageHeader,Button,Field,Status,EmptyState} from '@/components/bloomops/Primitives';
+import ProspectAvatar from '@/components/bloomops/ProspectAvatar';
 export const dynamic='force-dynamic';
 export const metadata={title:'Prospects'};
 export default async function ProspectsPage({searchParams}){
@@ -16,7 +17,7 @@ export default async function ProspectsPage({searchParams}){
    <details className="bo-prospect-filters"><summary>Filters</summary><Field id="prospect-fit-filter" label="Fit"><select id="prospect-fit-filter" name="fit" className="bo-control" defaultValue={result.fit||''}><option value="">Any fit</option>{Object.entries(PROSPECT_FIT).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></Field><Button type="submit">Apply filters</Button></details>
   </form>
   {result.invalid?<div className="bo-prospect-notice" role="alert">These filters are unavailable. <a href="/prospecting">Reset filters</a></div>:result.rows.length?<ul className="bo-prospect-list" aria-label="Prospects">{result.rows.map(row=><li key={row.id}>
-   <div className="bo-prospect-list-identity"><h2><a href={`/prospecting/${row.id}`}>{row.businessName}</a></h2><span className="bo-prospect-label">Person</span><p>{row.personName||'Not recorded'}</p></div>
+   <div className="bo-prospect-list-identity"><div className="bo-prospect-list-name"><ProspectAvatar id={row.id} website={row.website} size="list"/><h2><a href={`/prospecting/${row.id}`}>{row.businessName}</a></h2></div><span className="bo-prospect-label">Person</span><p>{row.personName||'Not recorded'}</p></div>
    <dl><div><dt>Website</dt><dd>{safeProspectUrl(row.website)?<a href={safeProspectUrl(row.website)} target="_blank" rel="noreferrer">{new URL(row.website).hostname}</a>:'Unknown'}</dd></div><div><dt>Platform</dt><dd>{row.platform||'Unknown'}</dd></div></dl>
    <div className="bo-prospect-list-fit"><span className="bo-prospect-label">Fit</span><Status tone={row.fit==='strong'?'success':row.fit==='hold'?'warning':'neutral'} label={PROSPECT_FIT[row.fit]}/>{row.fitReason&&<p>{row.fitReason.length>160?row.fitReason.slice(0,157)+'…':row.fitReason}</p>}</div>
    <Button href={`/prospecting/${row.id}`} aria-label={`Open ${row.businessName}`} icon="chevron-right">Open</Button>

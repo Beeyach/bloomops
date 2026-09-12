@@ -50,7 +50,7 @@ try{
  await page.getByRole('link',{name:'View draft',exact:true}).click();await page.getByRole('button',{name:'Edit outreach draft',exact:true}).click();
  await page.getByLabel('Draft subject',{exact:false}).fill('A thought on Cedar House’s course page');await page.getByLabel('Draft message',{exact:false}).fill('Hi Maya,\n\nI liked how clearly you explain who the six-week programme is for. I had a thought on making the course options easier to compare before someone reaches checkout.\n\nWould a short outline be useful?\n\nThank you,\nAry');
  await page.getByRole('button',{name:'Save outreach draft',exact:true}).click();await page.getByRole('button',{name:'Edit outreach draft',exact:true}).waitFor();
- check('fit uses a visible text label',await page.locator('.bo-profile-fit .bo-status').innerText()==='Strong');
+ check('fit uses a visible text label',await page.locator('.bo-profile-fit .bo-status').filter({hasText:/^Strong fit$/}).count()===1);
  check('assessment, dated audit and manual draft survive a reload',(await read()).profile.evidenceDate==='2026-09-12'&&(await read()).profile.draftBody.includes('Hi Maya'));
  // A concurrent save must keep the user's open editor and explain recovery.
  await page.getByRole('button',{name:'Edit assessment',exact:true}).click();await page.getByLabel('Assessment reason',{exact:false}).fill('Unsaved local wording');

@@ -72,3 +72,67 @@
 
 .bo-context-title {font-size:16px;font-weight:600;margin:12px 12px 20px;}
 @media(min-width:768px) and (max-width:1023px){.bo-context-title{font-size:12px;text-align:center;margin:12px 0;overflow-wrap:anywhere}}
+
+/* Profile reference: opportunity and draft lead; contact supports the work. */
+.bo-profile-header {align-items:center;margin:28px 0 36px;gap:24px;}
+.bo-profile-heading {display:flex;align-items:flex-start;gap:16px;min-width:0;}
+.bo-profile-heading>div {min-width:0;}
+.bo-profile-header h1 {font-size:38px;font-weight:700;margin:0 0 12px;}
+.bo-profile-subtitle {font-size:19px;line-height:1.5;color:var(--bo-text-soft);margin:0 0 16px;overflow-wrap:anywhere;}
+.bo-profile-fit {gap:12px;}
+.bo-profile-actions {position:relative;}
+.bo-profile-layout {display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:24px;align-items:start;}
+.bo-profile-main,.bo-profile-support {display:grid;gap:24px;min-width:0;}
+.bo-profile-layout .bo-prospect-section {padding:28px;border:1px solid var(--bo-border);border-radius:12px;background:var(--bo-snow);min-width:0;}
+.bo-profile-layout .bo-prospect-section-head {gap:12px;flex-wrap:wrap;margin-bottom:24px;}
+.bo-profile-layout .bo-prospect-section-head h2 {display:flex;align-items:center;gap:12px;font-size:21px;font-weight:650;line-height:1.4;}
+.bo-profile-layout .bo-prospect-section-head h2 svg {flex-shrink:0;}
+.bo-profile-layout .bo-prospect-section-head .bo-btn {font-size:14px;padding:8px 12px;}
+.bo-profile-layout #assessment {background:color-mix(in srgb,var(--bo-lilac) 45%,var(--bo-snow));border-color:color-mix(in srgb,var(--bo-lavender) 30%,var(--bo-border));}
+.bo-profile-layout dl {margin:0;}
+.bo-profile-layout dt {font-size:14px;line-height:1.5;color:var(--bo-text-soft);margin:0 0 8px;font-weight:500;}
+.bo-profile-layout dd {margin:0;font-size:16px;line-height:1.65;overflow-wrap:anywhere;white-space:pre-wrap;}
+.bo-profile-assessment {display:grid;gap:28px;}
+.bo-profile-reason dt {margin-bottom:12px;}
+.bo-profile-reason dd {font-size:24px;font-weight:650;line-height:1.45;}
+.bo-profile-proposal dd {font-size:18px;font-weight:600;}
+.bo-profile-observations {display:grid;gap:24px;padding-top:24px;border-top:1px solid color-mix(in srgb,var(--bo-lavender) 30%,var(--bo-border));}
+.bo-profile-property {position:relative;padding-left:36px;min-width:0;}
+.bo-profile-property-icon {position:absolute;left:0;top:1px;display:grid;place-items:center;width:24px;height:24px;color:var(--bo-ink-soft);}
+.bo-profile-observed .bo-profile-property-icon {color:var(--bo-success-text);background:color-mix(in srgb,var(--bo-success) 18%,var(--bo-snow));border-radius:50%;}
+.bo-profile-uncertain .bo-profile-property-icon {color:var(--bo-warning-text);background:color-mix(in srgb,var(--bo-peach) 30%,var(--bo-snow));border-radius:50%;}
+.bo-profile-observations dt {font-weight:600;color:var(--bo-ink);}
+.bo-profile-fit-help {font-size:14px;line-height:1.6;color:var(--bo-text-soft);margin:0;}
+.bo-profile-section-links {display:flex;flex-wrap:wrap;gap:12px;margin:20px -12px -8px;}
+.bo-profile-contact>dl {display:grid;gap:24px;}
+.bo-profile-person dd {font-size:26px;font-weight:650;line-height:1.35;}
+.bo-profile-business-details {margin-top:20px;}
+.bo-profile-business-details dl {padding:12px 0;}
+.bo-profile-sources {border-top:1px solid var(--bo-border);margin-top:20px;padding-top:12px;}
+.bo-profile-support .bo-prospect-fields,.bo-profile-support .bo-prospect-facts,.bo-profile-support .bo-prospect-sources dl {grid-template-columns:minmax(0,1fr);gap:24px;}
+.bo-profile-layout #draft .bo-prospect-facts {grid-template-columns:minmax(0,1fr);gap:24px;}
+.bo-profile-layout #draft .bo-prospect-facts>div+div {padding-top:24px;border-top:1px solid var(--bo-border);}
+.bo-profile-draft-note {margin:28px 0 0;padding-top:20px;border-top:1px solid var(--bo-border);color:var(--bo-text-soft);font-size:14px;line-height:1.6;}
+.bo-profile-audit {padding:8px 0;}
+.bo-profile-audit>.bo-prospect-section {margin-top:12px;}
+.bo-profile-latest {display:grid;gap:12px;margin-bottom:16px;line-height:1.6;}
+.bo-profile-latest time {font-size:14px;color:var(--bo-text-soft);}
+.bo-profile-support .bo-prospect-activity>li {flex-direction:column;gap:12px;}
+.bo-prospect-avatar {position:relative;display:inline-grid;place-items:center;overflow:hidden;flex-shrink:0;border:1px solid var(--bo-border);border-radius:14px;isolation:isolate;}
+.bo-prospect-avatar-profile {width:52px;height:52px;flex-basis:52px;}
+.bo-prospect-avatar-list {width:40px;height:40px;flex-basis:40px;border-radius:10px;}
+.bo-prospect-garden {width:100%;height:100%;}
+.bo-prospect-favicon {position:absolute;inset:0;width:100%;height:100%;padding:10px;object-fit:contain;background:var(--bo-snow);opacity:0;}
+.bo-prospect-favicon.is-loaded {opacity:1;}
+.bo-prospect-avatar-list .bo-prospect-favicon {padding:7px;}
+.bo-prospect-list-name {display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.bo-prospect-list-name h2 {margin:0;}
+.bo-profile-social {position:static;display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--bo-border);border-radius:8px;background:var(--bo-snow);text-decoration:none;}
+.bo-profile-social-instagram {color:#a53376;}
+.bo-profile-social-linkedin {color:#086ba8;}
+.bo-profile-social:focus-visible {outline:2px solid var(--bo-focus);outline-offset:4px;}
+.bo-profile-social [role=tooltip] {position:absolute;right:0;top:calc(100% + 8px);width:max-content;max-width:220px;padding:8px 12px;border-radius:6px;background:var(--bo-ink);color:var(--bo-snow);font-size:13px;line-height:1.5;pointer-events:none;opacity:0;z-index:10;}
+.bo-profile-social:hover [role=tooltip],.bo-profile-social:focus-visible [role=tooltip] {opacity:1;}
+@media(max-width:1100px){.bo-profile-header{align-items:flex-start}.bo-profile-layout{gap:20px;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}.bo-profile-layout .bo-prospect-section{padding:24px}.bo-profile-reason dd{font-size:22px}.bo-profile-layout .bo-prospect-fields{grid-template-columns:minmax(0,1fr);gap:24px}}
+@media(max-width:900px){.bo-profile-layout{grid-template-columns:minmax(0,1fr)}.bo-profile-layout .bo-prospect-section-head{flex-direction:row;align-items:center}}
+@media(max-width:767px){.bo-profile-header{margin:24px 0 28px}.bo-profile-header h1{font-size:30px}.bo-profile-heading{gap:12px}.bo-profile-subtitle{font-size:17px}.bo-prospect-avatar-profile{width:44px;height:44px;flex-basis:44px;border-radius:10px}.bo-prospect-avatar-profile .bo-prospect-favicon{padding:8px}.bo-profile-layout .bo-prospect-section{padding:24px 20px}.bo-profile-layout .bo-prospect-section-head h2{font-size:20px}.bo-profile-reason dd{font-size:21px}.bo-profile-person dd{font-size:24px}.bo-profile-layout .bo-prospect-section-head{align-items:flex-start}.bo-profile-social [role=tooltip]{max-width:220px}}
