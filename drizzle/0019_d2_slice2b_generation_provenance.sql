@@ -96,7 +96,9 @@ BEGIN
   SELECT RAISE(ABORT, 'blueprint provenance actor must be active in workspace')
   WHERE NOT EXISTS (SELECT 1 FROM workspace_memberships WHERE workspace_id = NEW.workspace_id AND id = NEW.created_by_membership_id AND status = 'active');
   SELECT RAISE(ABORT, 'blueprint provenance requires bounded JSON objects')
-  WHERE CASE WHEN typeof(NEW.definition_json) = 'text' AND length(CAST(NEW.definition_json AS BLOB)) BETWEEN 2 AND 32768 AND json_valid(NEW.definition_json) THEN json_type(NEW.definition_json) IS NOT 'object' ELSE 1 END OR CASE WHEN typeof(NEW.plan_json) = 'text' AND length(CAST(NEW.plan_json AS BLOB)) BETWEEN 2 AND 32768 AND json_valid(NEW.plan_json) THEN json_type(NEW.plan_json) IS NOT 'object' ELSE 1 END;
+  -- D1 remote /query parsing needs parentheses around top-level CASE expressions
+  -- in trigger bodies; otherwise CASE END can be mistaken for the trigger END.
+  WHERE (CASE WHEN typeof(NEW.definition_json) = 'text' AND length(CAST(NEW.definition_json AS BLOB)) BETWEEN 2 AND 32768 AND json_valid(NEW.definition_json) THEN json_type(NEW.definition_json) IS NOT 'object' ELSE 1 END) OR (CASE WHEN typeof(NEW.plan_json) = 'text' AND length(CAST(NEW.plan_json AS BLOB)) BETWEEN 2 AND 32768 AND json_valid(NEW.plan_json) THEN json_type(NEW.plan_json) IS NOT 'object' ELSE 1 END);
   SELECT RAISE(ABORT, 'blueprint provenance version envelope mismatch')
   WHERE json_extract(NEW.definition_json, '$.schemaVersion') IS NOT NEW.definition_schema_version OR json_extract(NEW.definition_json, '$.compilerVersion') IS NOT NEW.compiler_version OR json_extract(NEW.definition_json, '$.blueprintKey') IS NOT NEW.blueprint_key;
   SELECT RAISE(ABORT, 'blueprint provenance version envelope mismatch')
