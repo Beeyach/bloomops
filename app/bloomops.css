@@ -2228,3 +2228,12 @@ select.bo-control {
 .bo-portal-content-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 .bo-portal-page .bo-display, .bo-portal-content-list, .bo-portal-page .bo-lede { overflow-wrap: anywhere; }
 @media (max-width: 767px) { .bo-portal-content-nav { padding-inline: 16px; } }
+
+/* Selected Systems work uses the existing quiet Project/dialog surfaces. */
+.bo-build-selection { border: 0; padding: 0; min-width: 0; }
+.bo-build-check { font-size: 16px; display: flex; align-items: center; gap: 12px; min-height: 44px; cursor: pointer; overflow-wrap: anywhere; }
+.bo-build-check input[type="checkbox"] { appearance: auto; -webkit-appearance: auto; flex: 0 0 20px; width: 20px; height: 20px; margin: 0; border: 0; border-radius: 0; background: initial; box-shadow: none; accent-color: var(--bo-ink); }
+.bo-build-check input[type="checkbox"]::after { content: none; }
+.bo-build-preview { padding-left: 24px; margin: 8px 0; overflow-wrap: anywhere; }
+.bo-build-preview li { padding: 4px 0; }
+.bo-build-sequence { min-height: 44px; padding: 12px 0; cursor: pointer; }

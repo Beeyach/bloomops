@@ -4,8 +4,8 @@ import { provisionGhlBlueprint, saveSystemsBlueprintBinding } from '../lib/bloom
 import { systemsBlueprintOptions, prepareSystemsBlueprint } from '../lib/bloomops/systems-blueprint-preparation.mjs';
 import { generateSystemsBlueprint } from '../lib/bloomops/systems-blueprint-generation.mjs';
 export const NOW=new Date('2026-09-12T08:00:00.000Z');
-export async function fixture(ctx) {
-  const t=await setup();ctx.after(()=>t.raw.close());
+export async function fixture(ctx, options = {}) {
+  const t=await setup(options);ctx.after(()=>t.raw.close());
   const installed=await provisionGhlBlueprint(t.db,{actor:t.owner,now:NOW});
   t.templateId=installed.templateId;t.versionId=installed.versionId;
   const binding=await saveSystemsBlueprintBinding(t.db,{actor:t.owner,serviceTypeId:'type-systems',templateId:t.templateId,enabled:true,expectedBinding:null,now:NOW});
