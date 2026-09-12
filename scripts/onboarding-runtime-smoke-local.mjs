@@ -78,8 +78,8 @@ try {
     ).split("--> statement-breakpoint"))
       if (statement.trim()) await run(statement.trim());
   check(
-    "all 22 domain migrations apply on real D1",
-    journal.entries.length === 22,
+    "all 23 domain migrations apply on real D1",
+    journal.entries.length === 23,
   );
   await runBootstrap(d1, {
     workspaceName: "A10 Agency",

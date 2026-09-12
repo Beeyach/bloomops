@@ -64,7 +64,7 @@ test('a fresh database reaches the A2 schema from the committed migrations alone
 
 test('migrations are additive and ordered, so applying them is deterministic', () => {
   const files = migrationFiles();
-  assert.equal(files.length, 22);
+  assert.equal(files.length, 23);
   assert.equal(files[8].tag, '0008_b1_projects_core');
   assert.equal(files[9].tag, '0009_b2_milestones');
   assert.equal(files[10].tag, '0010_b3_actions_dependencies');
@@ -84,9 +84,13 @@ test('migrations are additive and ordered, so applying them is deterministic', (
   assert.match(files[3].tag, /^0003_a6_primary_contact$/);
   assert.match(files[4].tag, /^0004_a7_open_service_uq$/);
   assert.match(files[5].tag, /^0005_a8_onboarding_templates$/);
-  for (const { url } of files) {
+  for (const { tag, url } of files) {
     const sql = readFileSync(url, 'utf8');
-    assert.doesNotMatch(sql, /\bDROP\s+(TABLE|INDEX|TRIGGER)\b/i, 'Release A migrations only create');
+    // E2A replaces exactly one insert guard in place; all historical trigger
+    // names and every other destructive operation remain protected.
+    const withoutReplacement = tag === '0022_e2a_content_context' ? sql.replace('DROP TRIGGER content_items_social_service;', '') : sql;
+    assert.doesNotMatch(withoutReplacement, /\bDROP\s+(TABLE|INDEX|TRIGGER)\b/i, 'No table/index/other trigger removal');
+    if (tag === '0022_e2a_content_context') assert.match(sql, /CREATE TRIGGER content_items_social_service BEFORE INSERT ON content_items/);
     assert.doesNotMatch(sql, /bloomtrack|412a33ad|leadsthatbloom/i, 'no Leadsthatbloom names');
   }
 });
