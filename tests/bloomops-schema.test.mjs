@@ -57,14 +57,14 @@ test('a fresh database reaches the A2 schema from the committed migrations alone
   const expected = schema.BLOOMOPS_TABLES.map(getTableName).sort();
   const present = tableNames(db);
   for (const name of expected) assert.ok(present.includes(name), `missing table ${name}`);
-  assert.equal(expected.length, 44, 'D2 2B adds immutable generation provenance and item mappings');
+  assert.equal(expected.length, 45, 'E3A adds ordered review media evidence');
   const extra = present.filter((n) => !expected.includes(n) && n !== 'sqlite_sequence');
   assert.deepEqual(extra, [], 'no unplanned tables');
 });
 
 test('migrations are additive and ordered, so applying them is deterministic', () => {
   const files = migrationFiles();
-  assert.equal(files.length, 23);
+  assert.equal(files.length, 24);
   assert.equal(files[8].tag, '0008_b1_projects_core');
   assert.equal(files[9].tag, '0009_b2_milestones');
   assert.equal(files[10].tag, '0010_b3_actions_dependencies');
@@ -88,7 +88,9 @@ test('migrations are additive and ordered, so applying them is deterministic', (
     const sql = readFileSync(url, 'utf8');
     // E2A replaces exactly one insert guard in place; all historical trigger
     // names and every other destructive operation remain protected.
-    const withoutReplacement = tag === '0022_e2a_content_context' ? sql.replace('DROP TRIGGER content_items_social_service;', '') : sql;
+    const replacements = {'0022_e2a_content_context':['content_items_social_service'], '0023_e3a_review_media':['content_review_revisions_insert_guard','content_approval_rounds_insert_guard']}[tag] || [];
+    let withoutReplacement=sql;
+    for(const name of replacements){withoutReplacement=withoutReplacement.replace(`DROP TRIGGER ${name};`,'');assert.ok(sql.includes(`CREATE TRIGGER ${name} BEFORE INSERT`));}
     assert.doesNotMatch(withoutReplacement, /\bDROP\s+(TABLE|INDEX|TRIGGER)\b/i, 'No table/index/other trigger removal');
     if (tag === '0022_e2a_content_context') assert.match(sql, /CREATE TRIGGER content_items_social_service BEFORE INSERT ON content_items/);
     assert.doesNotMatch(sql, /bloomtrack|412a33ad|leadsthatbloom/i, 'no Leadsthatbloom names');

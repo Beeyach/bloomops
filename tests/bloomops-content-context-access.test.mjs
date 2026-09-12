@@ -19,7 +19,11 @@ async function fixture(auth=false) {
   t.actors=Object.fromEntries(await Promise.all(roles.map(async id=>[id,await t.actor(id)])));
   await seedAdsParents(t.sql);
   t.ads=await insertAds(t.sql,{id:'private-ads-recording',stage:'waiting_for_recording'});
-  t.review=await insertAds(t.sql,{id:'private-ads-review',stage:'client_review',revision:2});await seedReview(t.sql,t.review);
+  // Capture through E3A's valid structural path, then revoke ordinary Content
+  // visibility. All existing guessed-ID/forged-client-visibility denials remain.
+  t.review=await insertAds(t.sql,{id:'private-ads-review',stage:'internal_review',recording_required:0,visibility:'internal',revision:2});
+  await seedReview(t.sql,t.review,()=>t.sql("UPDATE content_items SET stage='client_review' WHERE id=?",t.review));
+  t.sql("UPDATE content_items SET visibility='client' WHERE id=?",t.review);
   t.restricted=await insertAds(t.sql,{id:'private-ads-restricted',visibility:'restricted'});
   // The separate review has an empty, frozen platform snapshot.
   run(t.raw,"INSERT INTO content_platforms(workspace_id,content_id,platform_key,label) VALUES('a',?,'private-ads-platform','PRIVATE_ADS_PLATFORM')",t.ads);

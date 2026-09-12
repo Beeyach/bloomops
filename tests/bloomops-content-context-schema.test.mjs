@@ -16,6 +16,6 @@ test('E2A snapshot changes only Content context and preserves the journal chain'
 });
 test('E2A populated upgrade, old/new application compatibility and raw invariants',async()=>{
   const raw=new DatabaseSync(':memory:');raw.exec('PRAGMA foreign_keys=ON');
-  try { await contentContextAcceptance(d1Binding(raw),migrationFiles().map(({url})=>readFileSync(url,'utf8').split('--> statement-breakpoint').map(s=>s.trim()).filter(Boolean)),(name,ok)=>assert.ok(ok,name)); }
+  try { await contentContextAcceptance(d1Binding(raw),migrationFiles().slice(0,23).map(({url})=>readFileSync(url,'utf8').split('--> statement-breakpoint').map(s=>s.trim()).filter(Boolean)),(name,ok)=>assert.ok(ok,name)); }
   finally {raw.close();}
 });

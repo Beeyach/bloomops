@@ -2,7 +2,7 @@
 
 ## Status and baseline
 
-**E1 is CLOSED** through PR #55 on verified `f2a2bb0c7e665a5bd77cd010544a226c4da934a9`. Staging `34704707619` and zero-to-current `34704707656` passed on that SHA; live staging confirms 22 migrations. The [E2 creative contract](phases/E2.md) is prepared; [E2A](phases/E2A.md) is CLOSED through PR #56 on verified `2a73193`, with both release gates passed and 23 migrations. The [E2B internal creative interface](phases/E2B.md) is locally verified and independently reviewed; publication gates are pending. E2–E5 and Release E remain unfinished. [BUILD_STATE](BUILD_STATE.md) owns current execution status.
+**E1 and E2 are CLOSED.** E1 campaign work is accepted through PR #55 (`f2a2bb0`); [E2A](phases/E2A.md) supplies accepted context storage through PR #56 (`2a73193`); [E2B](phases/E2B.md) internal creative production is accepted through PR #57 on verified `09de9d61d419add9a9e85d8e5e933936b5561154`. Exact-SHA staging `34710782201` and zero-to-current `34710782170` pass; live staging confirms 23 migrations. [E2](phases/E2.md) is closed. The [E3 approval/media contract](phases/E3.md) and [E3A foundation contract](phases/E3A.md) are prepared; E3A implementation is undergoing acceptance and review. E3–E5 and Release E remain unfinished. [BUILD_STATE](BUILD_STATE.md) owns execution status.
 
 Start from verified `main` at `707d2bea55a7f5262a539d20313cbcb37abf3665` (PR #54), with 22 domain migrations. Staging `34702705746` and zero-to-current `34702705747` passed on that SHA. Release D remains closed. The owner's continuation after the Ads/model handoff authorizes this work; the older Release D closure instruction to wait before starting Ads has been satisfied. Human pilot destination setup and reusable onboarding quick picks do not block E1.
 
@@ -63,8 +63,8 @@ Revenue is optional in the product specification and remains deferred until its 
 | Slice | Bounded outcome | Contract/gate |
 | --- | --- | --- |
 | E1 | Internal Campaign work projection over existing Ads Projects, with scoped filters, delivery summaries and canonical Work links | [E1](phases/E1.md); no schema or writes |
-| E2 | Explicit Ads creative context within canonical Content, with safe parent binding and production workflow | [E2](phases/E2.md) splits compatibility foundation [E2A](phases/E2A.md) from [E2B interface activation](phases/E2B.md); foundation closed, interface locally verified and reviewed, publication pending |
-| E3 | Ads client approval of explicitly identified submitted copy/media | Define immutable media evidence and portal scope first; preserve canonical rounds and revocation |
+| E2 | Explicit Ads creative context within canonical Content, with safe parent binding and production workflow | [E2](phases/E2.md) splits compatibility foundation [E2A](phases/E2A.md) from [E2B interface activation](phases/E2B.md); both closed on verified `09de9d6` |
+| E3 | Ads client approval of explicitly identified submitted copy/media | [E3](phases/E3.md): implement [E3A evidence foundation](phases/E3A.md), then contract and activate E3B; canonical rounds, explicit sharing and revocation |
 | E4 | Lightweight manual reporting with source, interval, currency and correction provenance | Define metric storage, deduplication, calculations and permissions first; no revenue by default |
 | E5 | Integrated acceptance and operating guidance | Exercise agency/client paths, revocation, migration compatibility and exact release gates |
 

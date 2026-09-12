@@ -23,8 +23,9 @@ export async function seedLegacyContent(run) {
   await run("UPDATE content_items SET stage='approved',revision=3 WHERE id='terminal'");
   await seedContentAsset(run,'recording','legacy-file');
 }
-export async function seedReview(run,contentId) {
+export async function seedReview(run,contentId,beforeRound=null) {
   await run("INSERT INTO content_review_revisions(id,workspace_id,content_id,number,title,type,hook,script,caption,cta,target_publish_date,platforms_json) SELECT ?,'a',id,1,title,type,hook,script,caption,cta,target_publish_date,(SELECT json_group_array(label) FROM (SELECT label FROM content_platforms WHERE content_id=? ORDER BY platform_key)) FROM content_items WHERE id=?",`review-${contentId}`,contentId,contentId);
+  await beforeRound?.();
   await run("INSERT INTO content_approval_rounds(id,workspace_id,content_id,revision_id,number,request_id,request_revision,requested_by,requested_at) VALUES(?,'a',?,?,1,?,1,'m-ellen','2026-09-10T11:00:00Z')",`round-${contentId}`,contentId,`review-${contentId}`,crypto.randomUUID());
 }
 export async function seedContentAsset(run,contentId,id,visibility='client') {
