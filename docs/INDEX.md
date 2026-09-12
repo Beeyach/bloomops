@@ -30,7 +30,7 @@ Do not automatically load every planning document into context.
 
 Release D — Systems Delivery is the active release. Release C is closed for forward development on verified `main` baseline `1638e3ed9fd33c3725aa3449935b08335b73f1a9`.
 
-Current phase: **D2 — Slice 2C lifecycle/immutability guards are implemented, locally verified and independently reviewed; publication is owner-approved; deployment gates remain pending.** No 2C commit, push, merge or deployment has occurred. Current status: [BUILD_STATE.md](BUILD_STATE.md). Current contract: [D2_SLICE2C.md](phases/D2_SLICE2C.md). Slice 2B is closed on verified main `6697d40398645a40607175c74348353890e38535`: [D2_SLICE2B.md](phases/D2_SLICE2B.md). Slice 2A: [D2_SLICE2A.md](phases/D2_SLICE2A.md). Compiler: [D2_SLICE1.md](phases/D2_SLICE1.md). Repository: [`Bloomwired/bloomops`](https://github.com/Bloomwired/bloomops). Performance remains closed; later D2 writers are not implemented.
+Current phase: **D2 — Slice 2D authorized GHL setup is undergoing local verification and review.** Current status: [BUILD_STATE.md](BUILD_STATE.md). Current contract: [D2_SLICE2D.md](phases/D2_SLICE2D.md). Closed storage slices: [2C](phases/D2_SLICE2C.md), [2B](phases/D2_SLICE2B.md), [2A](phases/D2_SLICE2A.md). Compiler: [D2_SLICE1.md](phases/D2_SLICE1.md). Performance remains closed; Project preparation and generation writers remain unfinished.
 
 Release A closed after A11 PR #14 merged as `3deed08d8db2a92fcf4dc29a6a879a9945260049`. Read-only preflight verified [Deploy staging 34175768644](https://github.com/Beeyach/bloomops/actions/runs/34175768644) and [remote zero-to-current 34175768643](https://github.com/Beeyach/bloomops/actions/runs/34175768643) completed successfully on that exact SHA.
 

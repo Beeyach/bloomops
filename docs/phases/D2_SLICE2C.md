@@ -2,8 +2,20 @@
 
 ## Status and scope
 
-Implemented, locally verified and independently reviewed on `feat/d2-slice2c-version-guards`, based on verified main
-`6697d40398645a40607175c74348353890e38535`. Slice 2B is closed; D2 is not.
+**Slice 2C is CLOSED on main `ea18733e98ddff4e29ea1dff41800d3e294e59dd`.**
+[PR #42](https://github.com/Bloomwired/bloomops/pull/42) merged reviewed commit
+`1256fb7913fe350c15974220d8eab155bd190654`; the trees match exactly.
+[Deploy staging 34676088171](https://github.com/Bloomwired/bloomops/actions/runs/34676088171)
+and [Verify zero-to-current 34676088116](https://github.com/Bloomwired/bloomops/actions/runs/34676088116)
+both passed on that exact merge SHA. Staging serves `ea18733`; read-only metadata
+confirms migration `0020` and all five guards. The disposable database is absent
+and all eight original database IDs/names remain. The remote verifier's archived
+stdout is truncated during the migration listing; closure uses successful
+complete job/step metadata and the independent cleanup check. No full remote
+log tail is claimed. Detailed evidence is in [BUILD_STATE.md](../BUILD_STATE.md).
+
+Implementation remains on `feat/d2-slice2c-version-guards` in the isolated
+worktree. Slice 2B is closed; D2 is not. Next: scope the remaining D2 writer work.
 The owner accepted the recommended retention rule: unused drafts may be deleted;
 published, retired and generation-referenced versions are retained.
 
@@ -107,9 +119,8 @@ compiled blueprint, an authorized publication or a committed generation.
   browser verification or remote mutation is claimed for this local slice.
 
 Evidence: `/tmp/bloomops-d2-2c/{focused-before.log,focused.log,native-final.log,prior-native.log,full-final.log,zero-local-final.log}`.
-The original checkout retains its branch and unrelated work; this worktree owns
-implementation. The owner approved commit/push/merge and the resulting staging
-migration/deployment and remote disposable verifier on 2026-09-11, requesting no
-repeated approval prompts within that scope. Publication is proceeding; no
-passing remote result is claimed yet. Both required workflows must pass
-on the eventual exact merge SHA, with staging confirmation, before closure.
+The original checkout retains its branch and unrelated work; the isolated worktree
+owns implementation. The owner approved commit/push/merge and the resulting
+staging migration/deployment and disposable verifier on 2026-09-11, requesting
+no repeated approval prompts within that scope. Those gates passed as recorded
+above. Closure bookkeeping is local; no extra main push is made for these notes.
