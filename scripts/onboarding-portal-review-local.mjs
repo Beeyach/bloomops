@@ -242,6 +242,10 @@ try {
   );
   await client.page.getByRole("heading", { name: "Hello, Lawrence" }).waitFor();
   check("Lawrence accepts and sees portal", true);
+  for (const item of sql(`SELECT id,instructions FROM onboarding_items WHERE onboarding_instance_id IN (SELECT id FROM onboarding_instances WHERE client_id=${lit(id)})`)) {
+    await api(owner.context, `/api/bloomops/clients/${id}/onboarding/items/${item.id}/configure`, { revision:0,actionType:'confirmation',actionUrl:null,instructions:item.instructions || 'Complete the agreed external work.' });
+  }
+  await client.page.reload();
   const read = async () =>
     (
       await (
@@ -282,7 +286,7 @@ try {
             document.getElementById(n.getAttribute("aria-labelledby"))
               ?.textContent || "";
           const m = text.match(/(\d+) of (\d+)/);
-          const percent = text.match(/(\d+)%/);
+          const percent = [null, n.value];
           return (
             m &&
             percent &&
@@ -314,7 +318,7 @@ try {
   };
   for (const width of widths) await audit("todo", client.page, width);
   const firstButton = client.page
-    .getByRole("button", { name: "I’ve done this", exact: true })
+    .getByRole("button", { name: "Confirm completed", exact: true })
     .first();
   await firstButton.focus();
   check(
@@ -329,7 +333,7 @@ try {
   await client.page.getByText("1 of 4 required steps done").waitFor();
   check("keyboard action completes a Client step", true);
   await client.page
-    .getByRole("button", { name: "I’ve done this", exact: true })
+    .getByRole("button", { name: "Confirm completed", exact: true })
     .first()
     .dblclick();
   await client.page.getByText("2 of 4 required steps done").waitFor();
@@ -343,7 +347,7 @@ try {
     await api(
       client.context,
       `/api/bloomops/portal/onboarding/${id}/items/${item.id}/submit`,
-      { status: "completed", verifiedByMembershipId: ary },
+      { status: "completed", verifiedByMembershipId: ary, guidanceRevision: 1 },
     );
   }
   await client.page.reload();

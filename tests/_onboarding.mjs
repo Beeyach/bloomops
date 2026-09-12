@@ -1,3 +1,4 @@
+import { configureOnboardingItem } from "../lib/bloomops/onboarding-guidance.mjs";
 import assert from "node:assert/strict";
 import {
   testDb,
@@ -137,6 +138,7 @@ export async function setup({ auth = false, services = ["kajabi"] } = {}) {
       clientId: "lawrence",
       itemId: t.item(key).id,
       operation,
+      guidanceRevision: t.item(key).guidance_revision,
       ...extra,
     });
   t.view = () => onboardingView(t.db, t.client, "lawrence", { portal: true });
@@ -176,8 +178,13 @@ export async function setup({ auth = false, services = ["kajabi"] } = {}) {
       +required,
       +verify,
     );
+    run(t.raw, "UPDATE onboarding_items SET action_type='confirmation',guidance_instructions='Complete the agreed external work.',guidance_revision=1 WHERE id=?", id);
     return id;
   };
+  for (const row of t.items()) {
+    assert.equal((await configureOnboardingItem(t.db, { actor: t.admin, clientId: 'lawrence', itemId: row.id,
+      input: { actionType: 'confirmation', actionUrl: null, instructions: row.instructions || 'Complete the agreed external work.', revision: 0 } })).ok, true);
+  }
   return t;
 }
 export const snapshot = (t) =>

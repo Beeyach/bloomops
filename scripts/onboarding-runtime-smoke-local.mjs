@@ -17,6 +17,7 @@ import { addClientAssignment } from "../lib/bloomops/assignments.mjs";
 import { activateClient } from "../lib/bloomops/client-activation.mjs";
 import { acceptInvitation } from "../lib/bloomops/invitations.mjs";
 import { portalOnboarding } from "../lib/bloomops/onboarding-views.mjs";
+import { configureOnboardingItem } from "../lib/bloomops/onboarding-guidance.mjs";
 import { mutateOnboardingItem } from "../lib/bloomops/onboarding-runtime.mjs";
 const temp = mkdtempSync(join(tmpdir(), "bloomops-a10-smoke-"));
 let proxy,
@@ -77,8 +78,8 @@ try {
     ).split("--> statement-breakpoint"))
       if (statement.trim()) await run(statement.trim());
   check(
-    "all eight domain migrations apply on real D1",
-    journal.entries.length === 8,
+    "all 22 domain migrations apply on real D1",
+    journal.entries.length === 22,
   );
   await runBootstrap(d1, {
     workspaceName: "A10 Agency",
@@ -158,13 +159,17 @@ try {
     ).ok,
   );
   const client = await actorFor("lawrence@example.com");
+  for (const row of await all("SELECT i.* FROM onboarding_items i JOIN onboarding_instances n ON n.id=i.onboarding_instance_id WHERE n.client_id=?", clientId)) {
+    check('agency configures runtime instructions on D1', (await configureOnboardingItem(db, { actor: owner, clientId, itemId: row.id,
+      input: { revision: 0, actionType: 'confirmation', actionUrl: null, instructions: row.instructions || 'Complete the agreed external work.' } })).ok);
+  }
   let view = (await portalOnboarding(db, client))[0];
   check(
     "portal read projects four required Client steps",
     view.id === clientId && view.onboarding.progress.total === 4,
   );
   const mutation = (itemId, operation = "submit", actor = client) =>
-    mutateOnboardingItem(db, { actor, clientId, itemId, operation });
+    mutateOnboardingItem(db, { actor, clientId, itemId, operation, guidanceRevision: 1 });
   const required = view.onboarding.items.filter((i) => i.required),
     access = required.find((i) => i.verificationRequired);
   await Promise.all(

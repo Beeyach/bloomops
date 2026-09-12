@@ -148,6 +148,13 @@
       "when": 1789188559863,
       "tag": "0020_d2_slice2c_version_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1789219212664,
+      "tag": "0021_pilot_onboarding_guidance",
+      "breakpoints": true
     }
   ]
 }

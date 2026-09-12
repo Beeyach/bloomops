@@ -17,7 +17,7 @@ For every implementation session:
 - `RELEASE_A.md` — Release A scope and release-level acceptance
 - `RELEASE_B.md` — closed Work Core and the B1–B7 implementation sequence
 - `RELEASE_C.md` — closed Social scope and C1–C7 history
-- `RELEASE_D.md` — current Systems-only release and D1–D7 sequence
+- `RELEASE_D.md` — closed Systems-only release and D1–D7 sequence
 - `ROADMAP.md` — later releases and sequencing
 - `DESIGN_SYSTEM.md` — Bloomlab-derived visual language, tokens, component behavior, accessibility, and BloomOps adaptation rules
 - `DESIGN_CHECKLIST.md` — per-screen visual QA and responsive/accessibility acceptance checklist
@@ -28,9 +28,9 @@ Do not automatically load every planning document into context.
 
 ## Current Build
 
-Release D — Systems Delivery is the active release. Release C is closed for forward development on verified `main` baseline `1638e3ed9fd33c3725aa3449935b08335b73f1a9`.
+Release D — Systems Delivery is closed. Release C is closed for forward development on verified `main` baseline `1638e3ed9fd33c3725aa3449935b08335b73f1a9`.
 
-Current phase: **D7 — Release D Hardening**, [contract](phases/D7.md). D6 is closed on verified `ccc6e68088cf095f5e0ad9b31603f4ddeca6dd9d`.
+Current state: **Release D is CLOSED**, verified `844ac905541df9e6fccb7dc313ab0a8d517da319` through PR #51. [D7 closure](phases/D7.md) and [BUILD_STATE](BUILD_STATE.md) record final gates. Current phase: [internal pilot](phases/PILOT.md), actionable onboarding implemented and locally verified; independent review/publication pending. Release E has not started.
 
 Release A closed after A11 PR #14 merged as `3deed08d8db2a92fcf4dc29a6a879a9945260049`. Read-only preflight verified [Deploy staging 34175768644](https://github.com/Beeyach/bloomops/actions/runs/34175768644) and [remote zero-to-current 34175768643](https://github.com/Beeyach/bloomops/actions/runs/34175768643) completed successfully on that exact SHA.
 
@@ -64,6 +64,7 @@ Systems operating guide: [Running a Systems build](SYSTEMS_DELIVERY.md).
 
 | Phase | Required planning docs beyond AGENTS.md + BUILD_STATE |
 |---|---|
+| Internal pilot | `phases/PILOT.md`, `SYSTEMS_DELIVERY.md` |
 | A0 | `phases/A0.md` |
 | A1 | `phases/A1.md` |
 | A2 | `DOMAIN_MODEL.md`, `phases/A2.md` |

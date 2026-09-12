@@ -184,7 +184,8 @@ try {
   await api(client.context, '/api/bloomops/invitations/accept', { token });
   const steps = sql(`SELECT id,verification_required FROM onboarding_items WHERE workspace_id=${lit(ws)} AND onboarding_instance_id=${lit(activated.instanceId)} AND required=1`);
   for(const item of steps) {
-    await api(client.context, `/api/bloomops/portal/onboarding/${clientId}/items/${item.id}/submit`, {});
+    await api(admin.context, `/api/bloomops/clients/${clientId}/onboarding/items/${item.id}/configure`, { revision:0, actionType:'confirmation', actionUrl:null, instructions:'Complete the agreed external work for this synthetic review.' });
+    await api(client.context, `/api/bloomops/portal/onboarding/${clientId}/items/${item.id}/submit`, {guidanceRevision:1});
     if(item.verification_required) await api(admin.context, `/api/bloomops/clients/${clientId}/onboarding/items/${item.id}/verify`, {});
   }
   check('Client and Admin finish all six generated requirements through HTTP', steps.length===6 && sql(`SELECT relationship_status FROM bloomops_clients WHERE id=${lit(clientId)}`)[0].relationship_status==='active');

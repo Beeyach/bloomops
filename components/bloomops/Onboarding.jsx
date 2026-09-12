@@ -2,6 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Icon } from './Icons';
+import OnboardingGuidance from './OnboardingGuidance';
+import { ONBOARDING_ACTIONS } from '@/lib/bloomops/onboarding-guidance-values.mjs';
 import { Button, Field, Notice, Status } from "./Primitives";
 
 const clientStates = {
@@ -57,6 +60,10 @@ function OnboardingProgress({ clientId, onboarding, portal }) {
   const [feedback, setFeedback] = useState(null);
   const [reasons, setReasons] = useState({});
   const { progress, items } = onboarding;
+  const [showCompleted, setShowCompleted] = useState(false);
+  const closed = item => ['complete', 'no_action'].includes(item.state);
+  const completedCount = items.filter(closed).length;
+  const shownItems = portal && !showCompleted ? items.filter(item => !closed(item)) : items;
   const doneForNow = progress.done === progress.total;
   async function act(item, operation) {
     if (busy || refreshing) return;
@@ -71,7 +78,7 @@ function OnboardingProgress({ clientId, onboarding, portal }) {
         {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ reason: reasons[item.id] || "" }),
+          body: JSON.stringify(portal ? { guidanceRevision: item.guidanceRevision } : { reason: reasons[item.id] || "" }),
         },
       );
       const result = await response.json();
@@ -95,15 +102,11 @@ function OnboardingProgress({ clientId, onboarding, portal }) {
   return (
     <div className="bo-onboarding">
       <div className="bo-onboarding-progress">
-        <p className="bo-body bo-strong">
-          {portal
-            ? "Your steps"
-            : `Onboarding · ${instanceStates[onboarding.state] || "In progress"}`}
-        </p>
+        {!portal && <p className="bo-body bo-strong">Onboarding · {instanceStates[onboarding.state] || "In progress"}</p>}
         <p className="bo-small" id={`progress-${clientId}`}>
           {progress.done} of {progress.total}{" "}
           {portal ? "required steps done" : "visible required steps satisfied"}{" "}
-          · {progress.percent}%
+          {!portal && <> · {progress.percent}%</>}
         </p>
         <progress
           max="100"
@@ -120,6 +123,7 @@ function OnboardingProgress({ clientId, onboarding, portal }) {
           You’re all set for now. We’re checking the remaining steps.
         </Notice>
       ) : null}
+      {portal && items.some(item => item.canAct) && <p className="bo-hint">Use the instructions and links below. Confirm each step only after finishing the work.</p>}
       <div aria-live="polite" aria-atomic="true">
         {feedback && (
           <Notice tone={feedback.error ? "error" : "success"}>
@@ -127,36 +131,35 @@ function OnboardingProgress({ clientId, onboarding, portal }) {
           </Notice>
         )}
       </div>
-      {portal && (
-        <h3 className="bo-h2">
-          {doneForNow ? "Your onboarding steps" : "What we need from you"}
-        </h3>
-      )}
+      {portal && completedCount > 0 && <Button icon={showCompleted ? 'chevron-down' : 'chevron-right'} aria-expanded={showCompleted} onClick={() => setShowCompleted(!showCompleted)}>
+        {showCompleted ? 'Hide completed' : 'Show completed'} ({completedCount})
+      </Button>}
       <ol
         className="bo-onboarding-items"
         aria-label={
           portal ? "Your onboarding steps" : "Onboarding requirements"
         }
       >
-        {items.map((item) => (
+        {shownItems.map((item) => (
           <li
             key={item.id}
             className="bo-onboarding-item"
             aria-labelledby={`step-${item.id}`}
           >
             <div className="bo-onboarding-item-head">
-              <div>
-                <h3 className="bo-h3" id={`step-${item.id}`}>
+              <div className="bo-onboarding-step-title">
+                <Icon name={closed(item) ? 'check' : ONBOARDING_ACTIONS[item.actionType]?.icon || 'onboarding'} size={22} />
+                <div><h3 className="bo-h3" id={`step-${item.id}`}>
                   {item.title}
                 </h3>
                 <p className="bo-small">
-                  {item.required ? "Required" : "Optional"}
-                </p>
+                  {!item.required ? "Optional" : !portal ? "Required" : null}
+                </p></div>
               </div>
               <Status
                 label={
                   portal
-                    ? clientStates[item.state]
+                    ? item.state === "todo" && !item.guidanceReady ? "Waiting on your team" : clientStates[item.state]
                     : item.submittedAt && item.status === "in_progress"
                       ? "Awaiting verification"
                       : states[item.status]
@@ -168,11 +171,12 @@ function OnboardingProgress({ clientId, onboarding, portal }) {
                 }
               />
             </div>
-            {item.instructions && (
+            {item.instructions && (!portal || item.guidanceReady || closed(item)) && (
               <p className="bo-body bo-onboarding-instructions">
                 {item.instructions}
               </p>
             )}
+            {portal && item.state === 'todo' && !item.guidanceReady && <p className="bo-hint">Your team is preparing the instructions and destination for this step.</p>}
             {!portal && (
               <p className="bo-small">
                 {parties[item.responsibleParty]} ·{" "}
@@ -190,15 +194,19 @@ function OnboardingProgress({ clientId, onboarding, portal }) {
               </p>
             )}
             <div className="bo-onboarding-controls">
+              {item.guidanceReady && item.actionUrl && <Button href={item.actionUrl} icon="external-link" target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">{ONBOARDING_ACTIONS[item.actionType]?.label} <span className="sr-only">(opens in a new tab)</span></Button>}
+              {!portal && item.actions.configure && <OnboardingGuidance item={item} clientId={clientId} disabled={Boolean(busy) || refreshing} onSaved={() => startTransition(() => router.refresh())} />}
+
               {portal && item.canAct && (
                 <Button
+                  icon="check"
                   onClick={() => act(item, "submit")}
                   disabled={Boolean(busy) || refreshing}
                   loading={busy === item.id}
                 >
                   {item.verificationRequired
                     ? "Submit for verification"
-                    : "I’ve done this"}
+                    : "Confirm completed"}
                 </Button>
               )}
               {!portal && item.actions.verify && (

@@ -503,7 +503,7 @@ test("HTTP reads and actions enforce real sessions, minimize payloads, and sanit
       operation = "verify",
       method = "POST",
       origin = APP_URL,
-      body = { status: "completed", workspaceId: t.otherWs },
+      body = { status: "completed", workspaceId: t.otherWs, guidanceRevision: 1 },
     } = {},
   ) => {
     globalThis[Symbol.for("__cloudflare-context__")] = {
