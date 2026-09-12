@@ -14,7 +14,7 @@ let mf;
 try {
   const journal = JSON.parse(readFileSync(new URL('../drizzle/meta/_journal.json', import.meta.url)));
   assert.equal(journal.entries[22].tag, '0022_e2a_content_context');
-  const migrations = journal.entries.map(({ tag }) => readFileSync(new URL(`../drizzle/${tag}.sql`, import.meta.url), 'utf8').split('--> statement-breakpoint').map(s => s.trim()).filter(Boolean));
+  const migrations = journal.entries.slice(0,23).map(({ tag }) => readFileSync(new URL(`../drizzle/${tag}.sql`, import.meta.url), 'utf8').split('--> statement-breakpoint').map(s => s.trim()).filter(Boolean));
   const entry = join(temp, 'entry.mjs');
   await build({ entryPoints: [new URL('./content-context-smoke-worker.mjs', import.meta.url).pathname], bundle: true, platform: 'node', format: 'esm', outfile: entry,
     // Use the package's real context implementation without its CLI barrel

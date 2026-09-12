@@ -2,7 +2,7 @@
 
 ## Status and baseline
 
-Contract prepared on 2026-09-12; implementation and local verification are complete. One Sol High review and its single focused re-review are complete, with both findings resolved. Publication gates remain pending. This contract does not claim deployed capability. [BUILD_STATE](../BUILD_STATE.md) owns execution status. Follow [E2](E2.md), [RELEASE_E](../RELEASE_E.md) and the canonical working agreements.
+**CLOSED** through [PR #57](https://github.com/Bloomwired/bloomops/pull/57) on verified `09de9d61d419add9a9e85d8e5e933936b5561154`. Implementation, local acceptance, one Sol High review and one focused re-review, exact-SHA staging/zero-to-current gates and live identity/health all pass. [BUILD_STATE](../BUILD_STATE.md) owns evidence and current execution status. Follow [E2](E2.md), [RELEASE_E](../RELEASE_E.md) and the canonical working agreements. The [E3](E3.md)/[E3A](E3A.md) contracts are prepared; E3A evidence foundation acceptance and release gates are in progress.
 
 Start from accepted E2A, `2a73193d23e8e83673153e0e4512ddcae2bb6505` (PR #56), with 23 migrations. E2A already supplies immutable `production_area` / `ads_project_id`, exact parent integrity, replacement guards and Social/portal containment. Preserve those guards and old Social creation receipts. No additional migration is planned; if implementation exposes a missing database invariant, document the evidence and revise this contract before adding one. Preserve the original dirty checkout and branch; use the isolated execution checkout.
 
@@ -92,3 +92,7 @@ Expected ownership: Ads read/API/pages and presentation; targeted extensions to 
 8. Update existing status/index/domain facts with actual acceptance, omissions and evidence. Publication follows standing authorization and current workflow triggers. E2B closes only after reviewed implementation and required exact-merge-SHA staging/zero-to-current gates plus live identity/health pass. Baseline E2A results are not E2B results. Keep the E2A application as the minimum compatible fallback once Ads records exist; never roll back before E2A or remove its migration. E3–E5 remain separate unfinished phases.
 
 Contract preparation is verified by source, relative-link and diff checks plus self-review only. It changes no runtime, migration, credentials or deployed behavior.
+
+## Accepted implementation
+
+Merged/deployed `09de9d6`; no additional migration or dependency, 23 migrations remain. Full Node 6,109; affected review-fix 78; native D1/R2 198; build; final browser/HTTP 160 checks /95 captures at five widths; three exact-persistence reproductions all pass. One Sol High review and one focused re-review resolve hydration readiness and UUID history ordering. Staging `34710782201` and zero-to-current `34710782170` pass on the merge SHA; live staging identity/schema match. BUILD_STATE records evidence and cleanup-verification limits. Internal working media remains mutable; client approval/media evidence stays in E3.

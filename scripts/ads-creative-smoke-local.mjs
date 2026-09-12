@@ -13,7 +13,7 @@ const temp = mkdtempSync(join(tmpdir(), 'bloomops-e2b-smoke-'));
 let mf;
 try {
   const journal = JSON.parse(readFileSync(new URL('../drizzle/meta/_journal.json', import.meta.url)));
-  assert.equal(journal.entries.length, 23);
+  assert.equal(journal.entries.length, 24);
   const migrations = journal.entries.flatMap(({ tag }) => readFileSync(new URL(`../drizzle/${tag}.sql`, import.meta.url), 'utf8').split('--> statement-breakpoint').map(s => s.trim()).filter(Boolean));
   const entry = join(temp, 'entry.mjs');
   await build({ entryPoints: [new URL('./ads-creative-smoke-worker.mjs', import.meta.url).pathname], bundle: true, platform: 'node', format: 'esm', outfile: entry,
