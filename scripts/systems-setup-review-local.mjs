@@ -143,7 +143,7 @@ const layout = async (name, page, width, { compactDesktop = false } = {}) => {
   }), compactDesktop);
   if (geometry.overflow || !geometry.controls || !geometry.text) console.error("Layout diagnostic", geometry);
   check(`${name} ${width}px fits and has usable targets/text`, !geometry.overflow && geometry.controls && geometry.text);
-  await page.screenshot({ path: join(out, `${name}-${width}.png`), animations: 'disabled' }); screenshots++;
+  await page.screenshot({ path: join(out, `${name}-${width}.png`), animations: 'disabled', fullPage: process.argv.includes('--full-page') && await page.getByRole('dialog').count() === 0 }); screenshots++;
 };try {
   const health = await (await fetch(base + '/api/health')).json();
   check('local development Worker uses captured mail', health.environment === 'development' && health.auth.mail === 'r2-dev' && health.auth.configured);

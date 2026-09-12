@@ -6,11 +6,25 @@ Release D: Systems Delivery. Release C is closed for forward development on veri
 
 ## Current Phase
 
-**D6 — Systems Client Experience + Operations — is in progress.** D5 is CLOSED on verified `a8b483aaf31ae26526dcda0f4068667c5c8bf465`, PR #49. Verify mixed GHL/Kajabi visibility and current scope across the canonical portal/internal surfaces under [D6.md](phases/D6.md). Work reuses isolated `/home/ary/Developer/bloomops-d4-execution` on `feat/d6-systems-portal`.
+**D7 — Release D Hardening — is in progress.** D6 is CLOSED on verified `ccc6e68088cf095f5e0ad9b31603f4ddeca6dd9d`, PR #50. Final adversarial/native/browser acceptance and exact-head review follow [D7.md](phases/D7.md). Work reuses isolated `/home/ary/Developer/bloomops-d4-execution` on `test/d7-release-d-hardening`. No new product features; Release E must not begin automatically.
 
 **Performance remains CLOSED.** PR #36's accepted application is `cb2ef0bea2900a46583e86c75840e8ba6639d663`; its exact-SHA gates and staging smoke are recorded below. Smart Placement was rejected/reverted, the approximately 500 ms target was not fully met, and additional performance work remains deliberately deferred.
 
-## D6 local acceptance (2026-09-12)
+## D7 candidate acceptance (2026-09-12)
+
+- Eleven new mixed-platform hardening tests pass: current file/parent/contact/membership authority after R2 awaits, unchanged provenance/replay, concurrent cross-platform request collision with one workspace winner and safe fresh-key recovery, plus hidden prerequisite multiplicity without count leakage. Full suite: 5,970 pass, no failures/skips. An initial concurrency assertion incorrectly assumed per-Project request IDs; D2's existing workspace-wide uniqueness contract was confirmed and the test corrected. No runtime defect was found.
+- Disposable native checks: 26 GHL generation + 26 Kajabi generation + 26 setup + 27 Systems + 40 Home/Work + 42 workerd D1/R2 Files = 187 checks, all pass. Both recursive-trigger modes and all committed migrations are exercised. Generation retains 18 queries / eight batch statements / 49 bindings / 4,017 SQL bytes. Systems retains five statements in one batch over 240 assignments, max 75 bindings / 15,991 SQL bytes; Home/Work ten queries in one batch, max 64 bindings / 13,054 SQL bytes. Actual R2 checks include exact 5 MiB files and late recovery races.
+- No runtime/schema/configuration/dependency or migration change. The browser harness adds optional full-page captures. Final syntax/diff checks pass. Evidence: `/tmp/bloomops-d7-hardening/{focused-final,full-final,native-*}.log`.
+- This candidate is committed before its final Cloudflare build, stable mixed-platform browser run and one fresh Sol High exact-head audit. Those checks and both exact-merge-SHA workflows/live identity/cleanup remain pending here; closure evidence is recorded in the existing status after they finish. D7 and Release D are not yet closed. No Release E or live provider work is authorized by this phase.
+
+## D6 Client Experience + Operations closure (2026-09-12)
+
+- [PR #50](https://github.com/Bloomwired/bloomops/pull/50) merged reviewed `a64cb6e0630edaf4a3725f8990b09edbc5ba3ab3` as `ccc6e68088cf095f5e0ad9b31603f4ddeca6dd9d`; trees match exactly.
+- [Deploy staging 34685107888](https://github.com/Bloomwired/bloomops/actions/runs/34685107888), job `103530634770`, and [Verify zero-to-current 34685107891](https://github.com/Bloomwired/bloomops/actions/runs/34685107891), job `103530634614`, passed every required step on that SHA. Staging reports `ccc6e68`; all eight original D1 IDs/names are restored and the disposable database is absent.
+- 11 focused / 5,959 full tests and 104 browser checks / 41 captures passed. One fresh Sol High audit found no material findings. No runtime/schema/configuration change. Evidence: `/tmp/bloomops-d6-portal/` metadata, archived logs, identity and inventories. Verbose verifier stdout truncates; no full remote integrity/no-op log tail is claimed.
+- **D6 is CLOSED.** Next is D7 hardening, with no new product features. Original checkout/branches and unrelated work remain preserved.
+
+## Historical D6 local acceptance (2026-09-12)
 
 - Added 11 integration tests using actual generated GHL/Kajabi work for one multi-service Client. Exact portal DTOs and canonical sections, private QA/provenance, hidden-child invariance, current File/Deliverable/Project/contact/member visibility and Team Project/Service/Client revocation pass. Full suite: 5,959 tests, no failures/skips.
 - Stable local Worker acceptance passes 104 browser/HTTP checks with 41 captures at five widths. It includes selected work, review/rework/launch/handoff, exact bytes, mixed portal output, current File visibility, issued Team Service/Client positive scope and revocation across Home, Work Actions/Projects and Systems, plus Client contact unlinking. No page errors. Mixed portal desktop capture inspected; D5's mobile handoff acceptance remains intact.

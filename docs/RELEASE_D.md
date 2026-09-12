@@ -2,7 +2,7 @@
 
 ## Current status (2026-09-12)
 
-D1–D5 are closed. D5 merged through PR #49 as `a8b483aaf31ae26526dcda0f4068667c5c8bf465`; both exact-SHA workflows, live identity and cleanup passed. D6 Client Experience + Operations is in progress under [phases/D6.md](phases/D6.md). D7 remains; continuation is authorized until actual input is needed.
+D1–D6 are closed. D6 merged through PR #50 as `ccc6e68088cf095f5e0ad9b31603f4ddeca6dd9d`; both exact-SHA workflows, live identity and cleanup passed. D7 hardening is in progress under [phases/D7.md](phases/D7.md). No new product features; Release E requires new owner direction.
 
 Performance remains closed: accepted optimizations are retained, Smart Placement
 was rejected/reverted, and further performance work remains deferred.
