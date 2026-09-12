@@ -76,6 +76,13 @@ export default { async fetch(request, env) {
     check('bounded delivery and facet options exclude non-Systems Services',first.deliverables.items.length===6&&first.deliverables.hasMore&&first.options.services.items.length===1&&first.options.services.items[0].id==='systems');
     check('reads do not mutate canonical lifecycle or history',await snapshot()===before);
     check('storage authority and historical metadata never serialize',!/DO_NOT_EXPOSE|HISTORICAL_SECRET|sha256|objectKey|uploaderMembershipId/.test(JSON.stringify(first)));
+    check('empty/current phase and canonical action progress execute within the original batch',first.projects.items.every(p=>p.currentPhase===null&&p.actions.total===1&&p.actions.done===0&&p.actions.cancelled===0&&p.actions.blocked===0));
+    await run("UPDATE milestones SET status='in_progress',completed_at=NULL WHERE id='m-p-000'");
+    await run("INSERT INTO actions(id,workspace_id,project_id,creation_request_id,title,visibility) VALUES('hidden-prerequisite','a','p-000',?,'PRIVATE_PREREQUISITE','restricted')",crypto.randomUUID());
+    await run("INSERT INTO action_dependencies(workspace_id,project_id,action_id,depends_on_action_id) VALUES('a','p-000','a-p-000','hidden-prerequisite')");
+    const execution=(await read(pm)).projects.items.find(p=>p.id==='p-000');
+    check('native current phase follows the readable canonical milestone',execution.currentPhase?.name==='Milestone p-000'&&execution.currentPhase.status==='in_progress');
+    check('hidden prerequisite blocks only its visible dependent and removes false overdue',execution.actions.total===1&&execution.actions.blocked===1&&execution.actions.overdue===0&&!JSON.stringify(execution).includes('PRIVATE_PREREQUISITE'));
     for(const who of [owner,pm]) check(`${who.role} sees current Systems work`,(await read(who)).projects.items.length===50);
     const narrow=await read(actionOnly);
     check('Action-only scope gives no parent rows, facets or outputs',!narrow.projects.items.length&&!narrow.options.clients.items.length&&!narrow.options.services.items.length&&!narrow.deliverables.items.length);
@@ -86,7 +93,7 @@ export default { async fetch(request, env) {
       await run(`UPDATE ${table} SET visibility='restricted' WHERE id=?`,{milestones:'m-p-000',actions:'a-p-000',deliverables:'d-p-000',assets:'f-p-000'}[table]);
     }
     const restricted=(await read(pm)).projects.items.find(p=>p.id==='p-000');
-    check('PM restricted children cannot affect progress, Action/Deliverable/File totals',restricted.milestones===null&&restricted.actions.open===0&&restricted.deliverables.total===0&&restricted.readyFiles===0);
+    check('PM restricted children cannot affect progress, Action/Deliverable/File totals',restricted.currentPhase===null&&restricted.milestones===null&&restricted.actions.total===0&&restricted.actions.blocked===0&&restricted.actions.open===0&&restricted.deliverables.total===0&&restricted.readyFiles===0);
     check('Project assignment retains its canonical restricted-child access',(await read(team)).projects.items[0].readyFiles===1);
     await run("UPDATE service_types SET name='Renamed',department_id='social' WHERE id='systems'");
     const moved=await read(owner);

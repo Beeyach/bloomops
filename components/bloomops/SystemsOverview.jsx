@@ -37,7 +37,7 @@ export function SystemsOverview({ projection }) {
           <div className="bo-project-meta">{project.attentionReason && <span>{project.attentionReason}</span>}
             <span>{project.targetDate ? <>Target <time dateTime={project.targetDate}>{formatDate(project.targetDate)}</time></> : 'No target date'}</span>
           </div>
-          <WorkSummary project={project} />
+          <WorkSummary project={project} execution />
         </li>)}
       </ul>}
       {(filters.page > 1 || projects.hasMore) && <nav className="bo-action-pagination" aria-label="Systems project pages">

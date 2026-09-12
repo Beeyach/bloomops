@@ -30,7 +30,7 @@ Do not automatically load every planning document into context.
 
 Release D — Systems Delivery is the active release. Release C is closed for forward development on verified `main` baseline `1638e3ed9fd33c3725aa3449935b08335b73f1a9`.
 
-Current phase: **D3 — Kajabi Build Blueprint. D2 is closed.** Status: [BUILD_STATE.md](BUILD_STATE.md). Contract: [D3.md](phases/D3.md). D2 setup/generation/storage/compiler contracts remain under `phases/`. Performance remains closed.
+Current phase: **D4 — Systems Execution + QA. D2/D3 are closed.** Status: [BUILD_STATE.md](BUILD_STATE.md). Contract: [D4.md](phases/D4.md). Earlier blueprint/setup/generation contracts remain under `phases/`. Performance remains closed.
 
 Release A closed after A11 PR #14 merged as `3deed08d8db2a92fcf4dc29a6a879a9945260049`. Read-only preflight verified [Deploy staging 34175768644](https://github.com/Beeyach/bloomops/actions/runs/34175768644) and [remote zero-to-current 34175768643](https://github.com/Beeyach/bloomops/actions/runs/34175768643) completed successfully on that exact SHA.
 

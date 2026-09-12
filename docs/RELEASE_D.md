@@ -2,12 +2,12 @@
 
 ## Current status (2026-09-12)
 
-D1 and D2 are closed. D2's reusable blueprint engine, canonical GHL default,
-explicit setup and recoverable conditional generation are merged through PR #46
-as `642009c713daa2ecfb985203aa3f4d5240f4ddcc`. Both exact-SHA workflows,
-staging identity and disposable cleanup passed; [BUILD_STATE.md](BUILD_STATE.md)
-records full evidence. D3 Kajabi is in progress under [phases/D3.md](phases/D3.md).
-D4–D7 remain. The owner authorized continuation until actual input is needed.
+D1–D3 are closed. GHL and Kajabi share the verified blueprint, explicit setup and
+recoverable conditional generation engine. D3 merged through PR #47 as
+`689727c17547bfcc10e7b0741a8bb1e4d20b8856`; both exact-SHA workflows, staging
+identity and disposable cleanup passed. [BUILD_STATE.md](BUILD_STATE.md) records
+evidence. D4 Systems Execution + QA is in progress under [phases/D4.md](phases/D4.md).
+D5–D7 remain. The owner authorized continuation until actual input is needed.
 
 Performance remains closed: accepted optimizations are retained, Smart Placement
 was rejected/reverted, and further performance work remains deferred.

@@ -25,7 +25,7 @@ test('Systems follows relational service department truth, never display text or
 test('read-only Systems summaries and forward delivery are exact canonical Work projections', async context => {
   const t = await setup(); context.after(() => t.raw.close()); t.tree('ghl'); t.tree('kajabi'); t.tree();
   const before = t.snapshot(), result = await t.systems();
-  for (const project of result.projects.items) assert.deepEqual(project, (await t.summaries(t.owner, { projectId: project.id })).items[0]);
+  for (const project of result.projects.items) assert.deepEqual(project, (await t.summaries(t.owner, { projectId: project.id, execution: true })).items[0]);
   assert.deepEqual(result.deliverables.items.map(i => i.id), ['ghl-deliverable','kajabi-deliverable']);
   assert.doesNotMatch(JSON.stringify(result), /SECRET_KEY|sha256|objectKey|OLD_|website/);
   assert.deepEqual(t.snapshot(), before);
