@@ -2,17 +2,26 @@
 
 ## Status and authorization
 
-**Migration correction pending publication:** two top-level CASE expressions in
-migration `0019` now have parentheses for D1 remote `/query` compatibility.
-A disposable remote test reproduced the original incomplete-input failure,
-confirmed failed-migration rollback, then applied the correction and an identical
-no-op replay. Read-only staging metadata confirms `0019` and both provenance
-tables are absent there. The correction changes no storage contract; its 981
-affected tests and 80 native D1 checks pass. The scoped Sol High review found no material issues. Full remote zero
-verification passed 30/30 checks, including both migration ledgers, integrity/FKs,
-identical no-op replay and guarded cleanup. Current publication/deployment status is in
-[BUILD_STATE.md](../BUILD_STATE.md).
+**Slice 2B is CLOSED on main `6697d40398645a40607175c74348353890e38535`.**
+[PR #41](https://github.com/Bloomwired/bloomops/pull/41) merged correction
+`eedda3f3d303ba19292142370e4aaa84ca8fa071`, parenthesizing two top-level CASE
+expressions in migration `0019` for D1 remote `/query` compatibility without
+changing its storage contract. Original remote failure/rollback and corrected
+apply/no-op behavior were reproduced on a guarded disposable database. Affected
+981 tests, 80 native D1 checks, full remote zero verification (30 checks) and a
+fresh Sol High review all passed, with no material review findings.
 
+[Deploy staging 34673400835](https://github.com/Bloomwired/bloomops/actions/runs/34673400835)
+and [Verify zero-to-current 34673400821](https://github.com/Bloomwired/bloomops/actions/runs/34673400821)
+both succeeded on the exact merge SHA. Staging reports `6697d40`; metadata
+confirms migration `0019` and both provenance tables. A direct read-only account
+check confirms disposable cleanup. The zero workflow's log tail is truncated;
+its complete job/step result and independent cleanup check, alongside the full
+pre-merge remote verifier evidence, are recorded in [BUILD_STATE.md](../BUILD_STATE.md).
+D2 remains open. Next is Slice 2C lifecycle/immutability scoping, not a generation
+writer or new UI.
+
+Historical implementation and first deployment attempt:
 
 The owner approved preserving immutable generation history while allowing future
 otherwise-authorized deletion of live work. This resolves Slice 1's
