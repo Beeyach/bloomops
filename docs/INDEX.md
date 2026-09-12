@@ -1,5 +1,7 @@
 # BloomOps Documentation Index
 
+Current owner priority: [Bloomsi branding](BRANDING.md), with [visual preview](previews/bloomsi-branding/README.md). [BUILD_STATE](BUILD_STATE.md) records staging gates and the preserved Prospecting continuation. Older release directions below are historical.
+
 This repository uses selective context so coding agents do not need the entire product plan in every session.
 
 ## Always Read

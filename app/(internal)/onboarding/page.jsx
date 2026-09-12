@@ -19,7 +19,7 @@ export default async function OnboardingPage() {
       {overview.onboardingOpen > 0 ? (
         <Surface tone="mist" padding="lg" className="bo-page-narrow">
           <p className="bo-body">
-            <span className="bo-strong bo-num">{plural(overview.onboardingOpen, 'client')}</span> {overview.onboardingOpen === 1 ? 'has' : 'have'} onboarding still open. The checklist itself is not available in BloomOps yet.
+            <span className="bo-strong bo-num">{plural(overview.onboardingOpen, 'client')}</span> {overview.onboardingOpen === 1 ? 'has' : 'have'} onboarding still open. The checklist itself is not available in Bloomsi yet.
           </p>
         </Surface>
       ) : (

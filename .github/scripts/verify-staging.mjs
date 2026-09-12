@@ -92,7 +92,7 @@ if (expectSha) {
   const page = await call('/sign-in', { accept: 'text/html' });
   const signInForm = /sign-in-email/.test(page.text);
   const notConfigured = /Sign-in is not set up/.test(page.text);
-  record('/sign-in renders (the form, or the not-configured state)', page.status === 200 && /BloomOps/.test(page.text) && (signInForm || notConfigured), `status ${page.status}, ${signInForm ? 'form' : notConfigured ? 'not configured' : 'neither'}`);
+  record('/sign-in renders (the form, or the not-configured state)', page.status === 200 && /Bloomsi/.test(page.text) && /brand\/bloomsi-lockup-charcoal\.png/.test(page.text) && (signInForm || notConfigured), `status ${page.status}, ${signInForm ? 'form' : notConfigured ? 'not configured' : 'neither'}`);
   const stale = await call('/api/infra', { headers: { cookie: 'ltb_session=eyJ3IjoiYXJ5IiwiciI6ImFkbWluIn0.forged' } });
   record('an old Leadsthatbloom session cookie does not authorize', stale.status === 401, `status ${stale.status}`);
 }

@@ -359,9 +359,9 @@ test('the Team rows offer only the actions the server would accept, and never a 
   assert.match(form, /type="email"/);
 });
 
-test('the signed-out frame is BloomOps and keeps the anchors the deploy verifier reads', () => {
+test('the signed-out frame is Bloomsi and keeps the anchors the deploy verifier reads', () => {
   const html = render(AuthShell, { title: 'Sign in', lead: 'Lead', footer: 'Foot' }, 'BODY');
-  assert.ok(html.includes('BloomOps') && html.includes('<h1 class="bo-display">Sign in</h1>') && html.includes('BODY') && html.includes('Foot'));
+  assert.ok(html.includes('alt="Bloomsi"') && html.includes('<h1 class="bo-display">Sign in</h1>') && html.includes('BODY') && html.includes('Foot'));
   assert.doesNotMatch(html, /glass-panel|font-logo|Leads That Bloom/);
   assert.match(src('app/sign-in/SignInForm.jsx'), /id: 'sign-in-email'/, 'the verifier looks for the sign-in field by id');
   assert.match(src('app/sign-in/page.jsx'), /Sign-in is not set up/);

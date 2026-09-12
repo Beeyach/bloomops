@@ -1,4 +1,14 @@
-# BloomOps Build State
+# Bloomsi Build State
+
+## Active owner priority — Bloomsi branding for staging
+
+Branding-only branch `feat/bloomsi-branding` in `/home/ary/Developer/bloomops-bloomsi-branding`, based on deployed main `618e18f`. Owner explicitly authorized applying the approved PR #58 logo/guide and deploying through the existing staging workflow, without production or DNS changes. Only the logo and guide are imported from PR #58 `bee6af5`; original/P1/P2 worktrees and unfinished Prospecting runtime remain separate.
+
+Implemented: original Bloomsi PNG replaces platform initial tiles on sign-in, internal and portal shells. Workspace names and person avatars remain their existing identities. Platform copy, browser titles and auth-mail text use Bloomsi; technical identifiers, stored workspaces and configured sender settings are preserved. Tablet branding uses the existing top bar for a readable full logo while retaining the navigation rail. No layout redesign, feature, migration or dependency change.
+
+Local acceptance: 54 relevant shell/auth/mail/config tests, final Cloudflare build and 64 built-Worker browser checks pass at five widths. Original PNG byte identity, workspace names, sign-in/account flows and inspected desktop/mobile/tablet captures are recorded in the [visual preview](previews/bloomsi-branding/README.md). Shared dependency reuse caused an initial local packaging failure; isolated `npm ci` fixed it. One fresh Sol High deployment review and one focused re-review are complete. Long-name sidebar overflow was fixed and verified. The reviewer retracted the portal clipping finding after the dedicated capture and full-artwork geometry checks. No remaining material finding. Exact-source staging gates are pending. Existing staging provisioning/idempotent migrations/bootstrap remain the deployment path; no new credential, schema or production target.
+
+After this branding deployment, resume P2B3 durable import receipts and synthetic commits in `/home/ary/Developer/bloomops-prospecting-p2`, where P2A/P2B1/P2B2 are accepted locally. P1 remains draft PR #60, unmerged. All real prospect imports, outreach and video work/tests remain paused. This checkpoint supersedes older pending E3A gate directions below: E3A was deployed on `618e18f` with 24 migrations. No Prospecting phase is deployed by this branding branch.
 
 ## Current Release
 

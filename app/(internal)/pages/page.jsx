@@ -20,7 +20,7 @@ export default async function PagesPage() {
         ['Client documentation', 'Welcome kits, strategy, brand guidelines, shared on purpose.'],
         ['Briefs and meeting notes', 'Freeform writing that belongs beside the work, not inside it.'],
       ]}
-      note="Pages are not available in BloomOps yet. The editor behind them is ready; connecting it to this workspace, with the right visibility for clients, is a later step."
+      note="Pages are not available in Bloomsi yet. The editor behind them is ready; connecting it to this workspace, with the right visibility for clients, is a later step."
     />
   );
 }

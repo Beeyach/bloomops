@@ -9,7 +9,7 @@ export default function GlobalError({ error, reset }) {
     <html lang="en">
       <body style={{ margin: 0, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8FAFF', color: '#18152B', fontFamily: 'Inter, system-ui, sans-serif' }}>
         <div style={{ maxWidth: 420, padding: 32, textAlign: 'center' }}>
-          <h1 style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 8 }}>BloomOps hit a problem</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 8 }}>Bloomsi hit a problem</h1>
           <p style={{ fontSize: 15, color: '#5D5873', marginBottom: 20 }}>Your data is safe. Reloading clears this almost every time.</p>
           <button
             type="button"
