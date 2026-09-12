@@ -406,6 +406,8 @@ Repo-wide readability requirements apply to future UI work and the planned clean
 - Prefer full-page working views and inline editing over cramped or stacked drawers.
 - Keep the prospecting/editor code and data fetching out of unrelated route bundles and loaders; measure regressions rather than promising none.
 
+For Prospecting profile edits, inspect [the committed visual reference and owner corrections](docs/design-references/README.md). The favicon/garden-SVG business icon and conditional icon-only social links are explicit requirements; written corrections override the mockup.
+
 Use [docs/DESIGN_CHECKLIST.md](docs/DESIGN_CHECKLIST.md) as the acceptance checklist. These rules do not request unrelated code changes during a documentation-only task.
 
 ## How to Work in This Repository

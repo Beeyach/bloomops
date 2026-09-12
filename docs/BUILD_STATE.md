@@ -1,5 +1,9 @@
 # BloomOps Build State
 
+## Prospect profile visual handoff (2026-09-13)
+
+Added the owner-selected generated [profile mockup and corrections](design-references/README.md) for subsequent UI edits. The header must retain the website favicon with garden-themed SVG fallback before the business name; social links are icon-only beside Open website and appear only for detected profiles. Updated AGENTS, the design checklist and P1 roadmap to reference this handoff. Image/documentation only; no application edits or deployment. Validation: exact source-image copy, relative-link checks and whitespace checks. Runtime tests are not applicable.
+
 ## Prospecting and Pages priority — roadmap prepared (2026-09-13)
 
 Added [PROSPECTING_ROADMAP.md](PROSPECTING_ROADMAP.md) from the owner's current direction: fresh workspace, original LTB preserved, selective untouched-raw import, Prospecting contextual sidebar, full-page profiles, Skills Library, outreach/results, main Notion-like Pages and the client/onboarding handoff. Updated product-boundary guidance and the repo-wide readability checklist. Video work/tests remain paused and all saved voices remain intact.

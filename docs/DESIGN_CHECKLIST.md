@@ -51,6 +51,13 @@ These owner requirements apply across the repository, including existing screens
 
 The separator ban concerns UI metadata chains, not punctuation in domains, email addresses, numbers or ordinary sentences. Reference: [Prospecting and Pages roadmap](PROSPECTING_ROADMAP.md).
 
+### Prospect profile reference
+
+- [ ] Inspect [the profile mockup and owner corrections](design-references/README.md) before editing the profile.
+- [ ] Business icon precedes the name: actual website favicon, then stable garden-themed SVG fallback; no acronym/initial avatars. Reuse the existing detection/library where available.
+- [ ] Detected social profiles use icon-only links beside Open website, with accessible names and focus/tooltips. No detected URL means no icon or empty placeholder.
+- [ ] Maintain comfortable scrolling and spacing; do not compress the profile to fit one viewport.
+
 ## 4. Colour
 
 - [ ] Palette stays within the Bloomlab family unless a justified semantic extension is required.
