@@ -2,6 +2,7 @@
 // D2/D3 explicit Systems setup UI against the actual local Worker. Synthetic isolated workspace,
 // captured local mail only; no live configuration or provider execution.
 import assert from "node:assert/strict";
+import { portalStory } from "./systems-portal-story.mjs";
 import { handoffStory, verifyClientHandoff } from "./systems-handoff-story.mjs";
 import { execFileSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
@@ -18,6 +19,8 @@ assert.ok(["localhost", "127.0.0.1"].includes(new URL(base).hostname));
 const kind = arg('--platform', 'ghl'); assert.ok(['ghl','kajabi'].includes(kind));
 const executionReview = process.argv.includes('--execution');
 const handoffReview = process.argv.includes('--handoff');
+const portalReview = process.argv.includes('--portal-operations');
+assert.ok(!portalReview || (handoffReview && kind === 'kajabi'), 'Portal operations uses the mixed Kajabi/GHL handoff fixture');
 assert.ok(!(executionReview && handoffReview), 'Choose one acceptance story');
 const platform = kind === 'kajabi' ? 'Kajabi' : 'GHL', otherKind = kind === 'kajabi' ? 'ghl' : 'kajabi';
 const buildLabels = kind === 'kajabi' ? ['Build course','Configure offer and checkout','Build nurture sequence','Perform internal QA'] : ['Confirm build scope','Build funnel','Perform internal QA'];
@@ -330,6 +333,7 @@ const layout = async (name, page, width, { compactDesktop = false } = {}) => {
     const preview = await api(owner.context, `/api/bloomops/projects/${secondProject}/blueprint/preview`, { selectedComponentKeys: ['funnel'] }, 200);
     const ghlWork = await api(owner.context, `/api/bloomops/projects/${secondProject}/blueprint/generate`, { requestId: randomUUID(), selectedComponentKeys: ['funnel'], expected: preview.expected }, 201);
     check('both platforms share the same writer without mixed work', ghlWork.counts.actions === 1 && sql(`SELECT title FROM actions WHERE project_id=${lit(secondProject)}`)[0].title === 'Build funnel' && sql(`SELECT blueprint_key FROM systems_blueprint_generations WHERE project_id=${lit(project)}`)[0].blueprint_key === 'kajabi_build');
+    if(portalReview) await portalStory({base,owner,client,team,project,secondProject,clientId,service,ws,members,handoff,sql,lit,api,check,layout,widths});
   }
   check('no browser page errors', errors.length === 0);
   console.log(`Systems ${platform} setup browser: ${checks} checks passed; ${screenshots} screenshots. Synthetic workspace ${ws}.`);

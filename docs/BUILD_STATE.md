@@ -6,11 +6,26 @@ Release D: Systems Delivery. Release C is closed for forward development on veri
 
 ## Current Phase
 
-**D5 — Launch + Handoff — is in progress.** D4 is CLOSED on verified `cae247fa823e7a54ffb6632a0e517ce650483e9f` through PR #48. Complete the existing approval/delivery and private File handoff path under [D5.md](phases/D5.md). Work reuses isolated `/home/ary/Developer/bloomops-d4-execution` on `feat/d5-launch-handoff`; prior branches and unrelated changes are preserved.
+**D6 — Systems Client Experience + Operations — is in progress.** D5 is CLOSED on verified `a8b483aaf31ae26526dcda0f4068667c5c8bf465`, PR #49. Verify mixed GHL/Kajabi visibility and current scope across the canonical portal/internal surfaces under [D6.md](phases/D6.md). Work reuses isolated `/home/ary/Developer/bloomops-d4-execution` on `feat/d6-systems-portal`.
 
 **Performance remains CLOSED.** PR #36's accepted application is `cb2ef0bea2900a46583e86c75840e8ba6639d663`; its exact-SHA gates and staging smoke are recorded below. Smart Placement was rejected/reverted, the approximately 500 ms target was not fully met, and additional performance work remains deliberately deferred.
 
-## D5 local acceptance (2026-09-12)
+## D6 local acceptance (2026-09-12)
+
+- Added 11 integration tests using actual generated GHL/Kajabi work for one multi-service Client. Exact portal DTOs and canonical sections, private QA/provenance, hidden-child invariance, current File/Deliverable/Project/contact/member visibility and Team Project/Service/Client revocation pass. Full suite: 5,959 tests, no failures/skips.
+- Stable local Worker acceptance passes 104 browser/HTTP checks with 41 captures at five widths. It includes selected work, review/rework/launch/handoff, exact bytes, mixed portal output, current File visibility, issued Team Service/Client positive scope and revocation across Home, Work Actions/Projects and Systems, plus Client contact unlinking. No page errors. Mixed portal desktop capture inspected; D5's mobile handoff acceptance remains intact.
+- The only browser correction used the canonical `/work?tab=projects` for Project names; `/work` intentionally defaults to Actions. The final run also checks both tabs after revocation. No runtime/schema/build input/configuration or migration change. The verified D4 artifact was reused. Final syntax/diff checks pass.
+- One fresh Sol High read-only audit completed with no material findings after inspecting the corrected harness and final evidence. Evidence: `/tmp/bloomops-d6-portal/{focused,full,browser-final}.log` and captures. Synthetic local D1/R2/captured mail only; unrelated checkout work and prior branches preserved.
+- D6 remains open pending publication and both exact-merge-SHA workflows, live identity and disposable cleanup. Next: D7 Release D Hardening; no new product features.
+
+## D5 Launch + Handoff closure (2026-09-12)
+
+- [PR #49](https://github.com/Bloomwired/bloomops/pull/49) merged reviewed `fc666a826834d879910c0c42a9289265f2ee5d4f` as `a8b483aaf31ae26526dcda0f4068667c5c8bf465`; trees match exactly.
+- [Deploy staging 34684310958](https://github.com/Bloomwired/bloomops/actions/runs/34684310958), job `103528492391`, and [Verify zero-to-current 34684310988](https://github.com/Bloomwired/bloomops/actions/runs/34684310988), job `103528492539`, passed every required step on that SHA. Staging reports `a8b483a`; all eight original D1 IDs/names are restored and the disposable database is absent.
+- Eight focused / 5,948 full tests and 149 browser checks / 72 captures passed. One fresh Sol High review found no material findings. No runtime/schema/configuration changes. Complete metadata, archived logs, identity and inventories are in `/tmp/bloomops-d5-handoff/`; verbose verifier stdout truncates, so no full remote integrity/no-op log tail is claimed.
+- **D5 is CLOSED.** D6 verifies the mixed-platform Client portal and internal operations projections under current visibility and scope. Original checkout and unrelated work remain preserved.
+
+## Historical D5 local acceptance (2026-09-12)
 
 - The existing canonical work, Deliverable approval/delivery and private File attachment controls support the Launch + Handoff path. Added [the operating guide](SYSTEMS_DELIVERY.md) and eight integration tests across GHL/Kajabi for review/rework, explicit approval/delivery, dependency sequence, independent parent lifecycles, exact generation replay with a later added handoff output/file, byte identity and current authority/visibility/contact denial.
 - All eight focused and 5,948 full tests pass. Final stable Worker acceptance passes 77 Kajabi + 72 GHL browser checks (149 total), with 36 captures each (72 total), at 1440/1024/768/390/320px. Actual approval/rework/launch/handoff/status and file controls, exact internal/Client download bytes, explicit sharing, retry preservation and Client exclusion pass with no page errors. Mobile upload and portal handoff screenshots inspected.
