@@ -10,7 +10,7 @@ test('0017 is additive, preserves every C4 table definition, and adds only the t
   assert.deepEqual(Object.keys(after.tables).filter(k=>!before.tables[k]).sort(),['content_approval_rounds','content_review_revisions']);
   for(const [key,value] of Object.entries(before.tables))assert.deepEqual(after.tables[key],value,key);
   const migration=readFileSync(new URL('../drizzle/0017_c5_content_approvals.sql',import.meta.url),'utf8');assert.doesNotMatch(migration,/\bDROP\s+(TABLE|TRIGGER|INDEX)|\bALTER\s+TABLE/i);
-  const t=await setup();assert.deepEqual(all(t.raw,'PRAGMA foreign_key_check'),[]);assert.equal(all(t.raw,'PRAGMA table_info(content_items)').length,24);
+  const t=await setup();assert.deepEqual(all(t.raw,'PRAGMA foreign_key_check'),[]);assert.equal(all(t.raw,'PRAGMA table_info(content_items)').length,26);
   assert.equal(all(t.raw,"SELECT name FROM sqlite_master WHERE type='trigger' AND (name LIKE 'content_%approval%' OR name LIKE 'content_review_revisions_%')").length,10);
 });
 for(const table of ['content_review_revisions','content_approval_rounds'])test(`${table} history cannot be deleted or retargeted`,async()=>{

@@ -18,7 +18,7 @@ For every implementation session:
 - `RELEASE_B.md` — closed Work Core and the B1–B7 implementation sequence
 - `RELEASE_C.md` — closed Social scope and C1–C7 history
 - `RELEASE_D.md` — closed Systems-only release and D1–D7 sequence
-- `RELEASE_E.md` — Ads boundaries and E1–E5 sequence; `phases/E1.md` owns the next implementation slice
+- `RELEASE_E.md` — Ads boundaries and E1–E5 sequence; `phases/E2A.md` owns the current compatibility slice
 - `ROADMAP.md` — later releases and sequencing
 - `DESIGN_SYSTEM.md` — Bloomlab-derived visual language, tokens, component behavior, accessibility, and BloomOps adaptation rules
 - `DESIGN_CHECKLIST.md` — per-screen visual QA and responsive/accessibility acceptance checklist
@@ -29,9 +29,11 @@ Do not automatically load every planning document into context.
 
 ## Current Build
 
+Release E — Ads is underway; E1 is closed; E2A compatibility foundation is implemented with local acceptance and independent review complete; publication gates pending.
+
 Release D — Systems Delivery is closed. Release C is closed for forward development on verified `main` baseline `1638e3ed9fd33c3725aa3449935b08335b73f1a9`.
 
-Current state: **Release D is CLOSED**, verified `844ac905541df9e6fccb7dc313ab0a8d517da319` through PR #51. [D7 closure](phases/D7.md) and [BUILD_STATE](BUILD_STATE.md) record final gates. [Internal pilot](phases/PILOT.md) follow-ups: actionable onboarding deployed through PR #52 as `9bf27e0`; both release gates passed with 22 migrations. The badge/icon follow-up is deployed through PR #53 as `d36ff5f` with both gates passed. Compact title-centered icons are deployed through PR #54 as `707d2be`, with both release gates passed. Current development phase: [Release E](RELEASE_E.md) [E1 campaign work](phases/E1.md) locally accepted and reviewed; publication and exact-source gates pending. See BUILD_STATE for the current handoff. Human pilot setup and reusable quick picks remain follow-up work.
+Current state: **Release D is CLOSED**, verified `844ac905541df9e6fccb7dc313ab0a8d517da319` through PR #51. [D7 closure](phases/D7.md) and [BUILD_STATE](BUILD_STATE.md) record final gates. [Internal pilot](phases/PILOT.md) follow-ups: actionable onboarding deployed through PR #52 as `9bf27e0`; both release gates passed with 22 migrations. The badge/icon follow-up is deployed through PR #53 as `d36ff5f` with both gates passed. Compact title-centered icons are deployed through PR #54 as `707d2be`, with both release gates passed. Current development phase: [Release E](RELEASE_E.md) [E1 campaign work](phases/E1.md) closed through PR #55 as `f2a2bb0`, with both exact-source gates passed and 22 migrations. [E2](phases/E2.md) and [E2A](phases/E2A.md) contracts govern E2A implementation, now undergoing acceptance under RELEASE_E. See BUILD_STATE for the current handoff. Human pilot setup and reusable quick picks remain follow-up work.
 
 Release A closed after A11 PR #14 merged as `3deed08d8db2a92fcf4dc29a6a879a9945260049`. Read-only preflight verified [Deploy staging 34175768644](https://github.com/Beeyach/bloomops/actions/runs/34175768644) and [remote zero-to-current 34175768643](https://github.com/Beeyach/bloomops/actions/runs/34175768643) completed successfully on that exact SHA.
 
@@ -65,6 +67,7 @@ Systems operating guide: [Running a Systems build](SYSTEMS_DELIVERY.md).
 
 | Phase | Required planning docs beyond AGENTS.md + BUILD_STATE |
 |---|---|
+| E2A | `RELEASE_E.md`, `phases/E2.md`, `phases/E2A.md`, current Content schema/access/File/approval paths and relevant `DOMAIN_MODEL.md` rules |
 | E1 | `RELEASE_E.md`, `phases/E1.md`, relevant Work/Ads sections of `DOMAIN_MODEL.md` and `PRODUCT_SPEC.md`, `DESIGN_SYSTEM.md`, `DESIGN_CHECKLIST.md` |
 | Internal pilot | `phases/PILOT.md`, `SYSTEMS_DELIVERY.md` |
 | A0 | `phases/A0.md` |
