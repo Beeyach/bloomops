@@ -64,7 +64,7 @@ test('a fresh database reaches the A2 schema from the committed migrations alone
 
 test('migrations are additive and ordered, so applying them is deterministic', () => {
   const files = migrationFiles();
-  assert.equal(files.length, 20);
+  assert.equal(files.length, 21);
   assert.equal(files[8].tag, '0008_b1_projects_core');
   assert.equal(files[9].tag, '0009_b2_milestones');
   assert.equal(files[10].tag, '0010_b3_actions_dependencies');
@@ -77,6 +77,7 @@ test('migrations are additive and ordered, so applying them is deterministic', (
   assert.equal(files[17].tag, '0017_c5_content_approvals');
   assert.equal(files[18].tag, '0018_d2_slice2a_binding_storage');
   assert.equal(files[19].tag, '0019_d2_slice2b_generation_provenance');
+  assert.equal(files[20].tag, '0020_d2_slice2c_version_guards');
   assert.match(files[0].tag, /^0000_/);
   assert.match(files[1].tag, /^0001_immutability_triggers$/);
   assert.match(files[2].tag, /^0002_a3_auth_membership$/);
