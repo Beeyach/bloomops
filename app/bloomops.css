@@ -2269,3 +2269,16 @@ select.bo-control {
 .bo-onboarding-step-title .bo-small:empty { display: none; }
 .bo-onboarding-instructions { max-width: 68ch; }
 .bo-onboarding .bo-hint { max-width: 68ch; }
+
+/* Ads creative uses canonical production controls with a compact row view. */
+.bo-creative-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px 24px; padding: 24px 0; }
+.bo-creative-badges, .bo-creative-meta, .bo-creative-type, .bo-creative-platforms, .bo-creative-platforms li { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.bo-creative-badges { align-self: start; }
+.bo-creative-meta { gap: 12px 24px; font-size: 14px; }
+.bo-creative-type svg, .bo-creative-platforms svg { flex: 0 0 16px; }
+.bo-creative-platforms { list-style: none; padding: 0; margin: 0; gap: 12px; font-size: 14px; }
+.bo-creative-row .bo-row-text { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 767px) { .bo-creative-row { grid-template-columns: minmax(0, 1fr); gap: 12px; } }
+
+.bo-creative-detail > .bo-btn:first-child { margin-bottom: 16px; }
+.bo-creative-detail > .bo-creative-badges { margin-top: 16px; }

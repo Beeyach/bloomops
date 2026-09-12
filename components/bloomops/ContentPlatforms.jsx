@@ -8,7 +8,7 @@ export function PlatformInput({value,onChange,disabled=false,error='',id='conten
     <textarea id={id} aria-invalid={error?true:undefined} aria-describedby={`${id}-hint${error?` ${id}-error`:""}`} className="bo-control" rows={3} maxLength={900} value={value} onChange={onChange} disabled={disabled} />
   </Field>;
 }
-export default function ContentPlatforms({item}) {
+export default function ContentPlatforms({item,base='/social'}) {
   const router=useRouter(),pending=useRef(false),[text,setText]=useState((item.platforms||[]).map(p=>p.label).join('\n')),[ready,setReady]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('');
   useEffect(()=>setReady(true),[]);
   useEffect(()=>setText((item.platforms||[]).map(p=>p.label).join('\n')),[item.revision]);
@@ -22,7 +22,7 @@ export default function ContentPlatforms({item}) {
   return <Section id="content-platform-associations" title="Platforms"><form className="bo-form" onSubmit={save} aria-busy={busy}>
     {item.approvalRequested&&<Notice>Platforms are frozen while Client approval is requested.</Notice>}
     <PlatformInput value={text} onChange={e=>setText(e.target.value)} disabled={!ready||busy||item.approvalRequested} />
-    {error&&<Notice tone="error">{error} <a href={`/social/${item.id}`}>Reload Content</a></Notice>}{message&&<Notice tone="success">{message}</Notice>}
+    {error&&<Notice tone="error">{error} <a href={`${base}/${item.id}`}>Reload Content</a></Notice>}{message&&<Notice tone="success">{message}</Notice>}
     <div className="bo-form-actions"><Button type="submit" disabled={!ready||busy||item.approvalRequested} loading={busy}>Save platforms</Button></div>
   </form></Section>;
 }

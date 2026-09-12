@@ -1,3 +1,4 @@
+import { AdsNavigation } from '@/components/bloomops/AdsCreative';
 import { requireShell } from '@/lib/bloomops/shell-server.mjs';
 import { ACTIONS } from '@/lib/bloomops/authorization.mjs';
 import { adsProjection } from '@/lib/bloomops/ads.mjs';
@@ -13,6 +14,7 @@ export default async function AdsPage({ searchParams }) {
   return <>
     <PageHeader title="Ads" subtitle="Campaign delivery, next steps and outputs across your Ads services."
       actions={ACTIONS['project.create'].roles.includes(actor.role) && <Button href="/work/projects/new">Create project in Work</Button>} />
+    <AdsNavigation />
     {projection.ok ? <AdsOverview projection={projection} /> : <Notice tone="error">
       <p>Those filters are unavailable. <a className="bo-link" href="/ads">Reset filters</a></p>
     </Notice>}
