@@ -1,4 +1,20 @@
-# BloomOps Build State
+# Bloomsi Build State
+
+## Bloomsi name and logo handoff (2026-09-13)
+
+Owner selected **Bloomsi** and reports purchasing **bloomsi.app**. Added the exact supplied charcoal PNG at `public/brand/bloomsi-lockup-charcoal.png` and [BRANDING.md](BRANDING.md). Agent instructions, design checklist, profile reference and prospecting roadmap now point to the official branding. Existing release evidence and technical identifiers are preserved. Asset/documentation only; no running UI, DNS or deployment changes. Validation: source-copy hash match, PNG metadata, relative-link and whitespace checks; runtime tests are not applicable.
+
+## Prospect profile visual handoff (2026-09-13)
+
+Added the owner-selected generated [profile mockup and corrections](design-references/README.md) for subsequent UI edits. The header must retain the website favicon with garden-themed SVG fallback before the business name; social links are icon-only beside Open website and appear only for detected profiles. Updated AGENTS, the design checklist and P1 roadmap to reference this handoff. Image/documentation only; no application edits or deployment. Validation: exact source-image copy, relative-link checks and whitespace checks. Runtime tests are not applicable.
+
+## Prospecting and Pages priority — roadmap prepared (2026-09-13)
+
+Added [PROSPECTING_ROADMAP.md](PROSPECTING_ROADMAP.md) from the owner's current direction: fresh workspace, original LTB preserved, selective untouched-raw import, Prospecting contextual sidebar, full-page profiles, Skills Library, outreach/results, main Notion-like Pages and the client/onboarding handoff. Updated product-boundary guidance and the repo-wide readability checklist. Video work/tests remain paused and all saved voices remain intact.
+
+This is documentation-only planning based on main `09de9d61d419add9a9e85d8e5e933936b5561154`. No application phase, workspace, import, connection, migration, paid job or deployment is completed by this change. Existing release/performance evidence below is preserved without claiming new release closure. First future implementation: P0 baseline/workspace contract, then P1 Prospecting shell and one structured full-page profile. Read the current accepted baseline and outstanding release work before starting.
+
+Validation: local relative-link checks, document consistency review and whitespace checks. Runtime tests/builds and video tests are not applicable to this documentation-only change and were not run.
 
 ## Current Release
 

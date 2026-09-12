@@ -1,4 +1,6 @@
-# BloomOps Design Checklist
+# Bloomsi Design Checklist
+
+Use the official [Bloomsi name and supplied logo](BRANDING.md) for new platform branding. Older BloomOps references below identify the existing design system and technical context.
 
 Use this checklist for every major BloomOps screen, component set, and client-facing flow.
 
@@ -33,6 +35,30 @@ Source basis: the actual Bloomlab design system and `/design` gallery in `Beeyac
 - [ ] No decorative uppercase eyebrow/kicker/overline above headings.
 - [ ] Heading hierarchy is obvious without relying on colour alone.
 - [ ] Long-session text remains comfortable to read.
+
+## 3a. Information hierarchy and readable copy
+
+These owner requirements apply across the repository, including existing screens during the planned cleanup:
+
+- [ ] No dot-separated metadata chains joining email, role, dates, business types or statuses. Do not substitute another separator for the same cramped row.
+- [ ] Identity, role and properties have clear hierarchy or labelled positions. Dates appear where they help a decision, rather than being repeated in app chrome.
+- [ ] Not every piece of metadata is a badge, pill or bordered box.
+- [ ] Each screen has a clear purpose and at most one short introductory instruction when useful. Repeated explanations are removed.
+- [ ] Optional mechanics and supporting explanation are behind a named disclosure. Information that changes the action's meaning remains visible beside it.
+- [ ] Headings, instructions, field labels, inputs, helper text and sections have distinct spacing. Helper text does not run into the next field.
+- [ ] Body size, line height, contrast and line length are comfortable on desktop and phone. Density is not solved by shrinking the text.
+- [ ] Substantial records/workflows use full-page views and inline editing. Small dialogs are purposeful; drawers and tab layers are not stacked.
+- [ ] A profile uses structured fields and a separate audit/evidence section, not an unstructured report pasted into its overview.
+- [ ] Non-urgent inventory is not presented as a huge urgent task backlog. Automation states reflect what is really running, held or failed.
+
+The separator ban concerns UI metadata chains, not punctuation in domains, email addresses, numbers or ordinary sentences. Reference: [Prospecting and Pages roadmap](PROSPECTING_ROADMAP.md).
+
+### Prospect profile reference
+
+- [ ] Inspect [the profile mockup and owner corrections](design-references/README.md) before editing the profile.
+- [ ] Business icon precedes the name: actual website favicon, then stable garden-themed SVG fallback; no acronym/initial avatars. Reuse the existing detection/library where available.
+- [ ] Detected social profiles use icon-only links beside Open website, with accessible names and focus/tooltips. No detected URL means no icon or empty placeholder.
+- [ ] Maintain comfortable scrolling and spacing; do not compress the profile to fit one viewport.
 
 ## 4. Colour
 
