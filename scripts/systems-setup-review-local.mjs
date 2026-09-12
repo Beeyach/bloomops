@@ -2,6 +2,7 @@
 // D2/D3 explicit Systems setup UI against the actual local Worker. Synthetic isolated workspace,
 // captured local mail only; no live configuration or provider execution.
 import assert from "node:assert/strict";
+import { handoffStory, verifyClientHandoff } from "./systems-handoff-story.mjs";
 import { execFileSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync } from "node:fs";
@@ -16,8 +17,11 @@ const base = arg("--url", "http://localhost:8787"),
 assert.ok(["localhost", "127.0.0.1"].includes(new URL(base).hostname));
 const kind = arg('--platform', 'ghl'); assert.ok(['ghl','kajabi'].includes(kind));
 const executionReview = process.argv.includes('--execution');
+const handoffReview = process.argv.includes('--handoff');
+assert.ok(!(executionReview && handoffReview), 'Choose one acceptance story');
 const platform = kind === 'kajabi' ? 'Kajabi' : 'GHL', otherKind = kind === 'kajabi' ? 'ghl' : 'kajabi';
 const buildLabels = kind === 'kajabi' ? ['Build course','Configure offer and checkout','Build nurture sequence','Perform internal QA'] : ['Confirm build scope','Build funnel','Perform internal QA'];
+if (handoffReview) buildLabels.push('Coordinate client review','Coordinate approved launch','Prepare handoff');
 const require = createRequire(
   join(
     resolve(arg("--playwright", "/tmp/bloomops-c6-tools")),
@@ -123,17 +127,17 @@ const keyboardActivate = async (page, control) => {
   await control.focus();
   await page.keyboard.press('Enter');
 };
-const layout = async (name, page, width) => {
+const layout = async (name, page, width, { compactDesktop = false } = {}) => {
   await page.setViewportSize({ width, height: 900 });
   await page.evaluate(async () => {
     await document.fonts.ready;
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     await Promise.all(document.getAnimations().filter(a => a.effect?.getComputedTiming().iterations !== Infinity).map(a => a.finished.catch(() => {})));
   });
-  const geometry = await page.evaluate(() => ({ overflow: document.documentElement.scrollWidth > innerWidth,
-    controls: [...(document.querySelector('.bo-dialog') || document.querySelector('main')).querySelectorAll('button, select, .bo-build-check')].filter(n => n.checkVisibility()).map(n => n.getBoundingClientRect()).every(r => r.width > 0 && r.height >= 44 && r.x >= 0 && r.right <= innerWidth),
+  const geometry = await page.evaluate(compactDesktop => ({ overflow: document.documentElement.scrollWidth > innerWidth,
+    controls: [...(document.querySelector('.bo-dialog') || document.querySelector('main')).querySelectorAll('button, select, .bo-build-check')].filter(n => n.checkVisibility()).map(n => n.getBoundingClientRect()).every(r => r.width > 0 && (r.height >= 44 || (compactDesktop && innerWidth > 390)) && r.x >= 0 && r.right <= innerWidth),
     text: [...document.querySelectorAll('.bo-build-check')].every(n => parseFloat(getComputedStyle(n).fontSize) >= 16),
-  }));
+  }), compactDesktop);
   if (geometry.overflow || !geometry.controls || !geometry.text) console.error("Layout diagnostic", geometry);
   check(`${name} ${width}px fits and has usable targets/text`, !geometry.overflow && geometry.controls && geometry.text);
   await page.screenshot({ path: join(out, `${name}-${width}.png`), animations: 'disabled' }); screenshots++;
@@ -191,7 +195,7 @@ const layout = async (name, page, width) => {
   for (const width of widths) await layout('build-components', page, width);
   for (const label of buildLabels) await dialog.getByLabel(label).check();
   await dialog.getByRole('button', { name: 'Preview work' }).click(); await page.getByRole('heading', { name: `Review ${platform} work` }).waitFor();
-  check('setup feeds the selected canonical build preview', (await dialog.innerText()).includes(kind === 'kajabi' ? '4 milestones · 4 actions · 3 deliverables' : '3 milestones · 3 actions · 1 deliverables'));
+  check('setup feeds the selected canonical build preview', (await dialog.innerText()).includes(kind === 'kajabi' ? `${handoffReview ? 7 : 4} milestones · ${handoffReview ? 7 : 4} actions · 3 deliverables` : `${handoffReview ? 6 : 3} milestones · ${handoffReview ? 6 : 3} actions · 1 deliverables`));
   for (const width of widths) await layout('build-preview', page, width);
   let generationInput;
   if (kind === 'kajabi') {
@@ -219,6 +223,7 @@ const layout = async (name, page, width) => {
   await dialog.waitFor({ state: 'detached' }); await page.getByText('Systems work generated', { exact: true }).first().waitFor();
   let existingWork = sql(`SELECT id,title FROM actions WHERE project_id=${lit(project)} ORDER BY id`);
   check('setup through actual UI generates canonical selected work', existingWork.length === buildLabels.length && existingWork.some(a => a.title === (kind === 'kajabi' ? 'Build course' : 'Build funnel')));
+  const handoff = handoffReview ? await handoffStory({base,page,context:owner.context,project,platform,sql,lit,api,check,layout,widths,generationInput}) : null;
   if (executionReview) {
     const systemsRow = () => page.locator(`[data-project-id="${project}"]`);
     const openSystems = async () => { await page.goto(base + '/systems', { waitUntil: 'networkidle' }); await systemsRow().waitFor(); };
@@ -311,6 +316,7 @@ const layout = async (name, page, width) => {
   check('explicit refresh shows the current disabled state', !await checkbox().isChecked() && await page.locator('main').getByRole('alert').count() === 0);
   const client = await login(members.client.email, '/portal'); const portal = await client.page.locator('body').innerText();
   check('Client portal stays usable and hides internal setup and generated work', portal.includes('Garden build') && !/Perform internal QA|Build funnel|Build course|Manage (GHL|Kajabi) build setup/.test(portal) && (await client.context.request.get(base + endpoint)).status() === 403);
+  if(handoff) await verifyClientHandoff({base,client,handoff,check,layout,widths});
   check('other blueprint and unselected service remain untouched', sql(`SELECT template_id FROM service_type_blueprint_bindings WHERE service_type_id=${lit(types.other)}`)[0].template_id === other && sql(`SELECT count(*) AS n FROM service_type_blueprint_bindings WHERE service_type_id=${lit(types[otherKind])}`)[0].n === 0);
   if (kind === 'kajabi') {
     const secondEndpoint = '/api/bloomops/systems/ghl-setup';

@@ -30,7 +30,7 @@ Do not automatically load every planning document into context.
 
 Release D — Systems Delivery is the active release. Release C is closed for forward development on verified `main` baseline `1638e3ed9fd33c3725aa3449935b08335b73f1a9`.
 
-Current phase: **D4 — Systems Execution + QA. D2/D3 are closed.** Status: [BUILD_STATE.md](BUILD_STATE.md). Contract: [D4.md](phases/D4.md). Earlier blueprint/setup/generation contracts remain under `phases/`. Performance remains closed.
+Current phase: **D5 — Launch + Handoff**, [contract](phases/D5.md). D4 is closed on verified `cae247fa823e7a54ffb6632a0e517ce650483e9f`; see [BUILD_STATE.md](BUILD_STATE.md).
 
 Release A closed after A11 PR #14 merged as `3deed08d8db2a92fcf4dc29a6a879a9945260049`. Read-only preflight verified [Deploy staging 34175768644](https://github.com/Beeyach/bloomops/actions/runs/34175768644) and [remote zero-to-current 34175768643](https://github.com/Beeyach/bloomops/actions/runs/34175768643) completed successfully on that exact SHA.
 
@@ -57,6 +57,8 @@ Release C and the automatic post-merge workflow follow-ups are verified on `1638
 D1 is closed through [PR #31](https://github.com/Beeyach/bloomops/pull/31) on `e5bc81630c47fb6eb51e9bdc6be1687947683643`. Read-only checks verified [Deploy staging 34496059835](https://github.com/Beeyach/bloomops/actions/runs/34496059835) and [Verify zero-to-current 34496059875](https://github.com/Beeyach/bloomops/actions/runs/34496059875) succeeded on that exact SHA.
 
 Current state and successful gate run IDs: [BUILD_STATE.md](BUILD_STATE.md). Release boundaries: [RELEASE_D.md](RELEASE_D.md). The approved pure D2 Slice 1 contract is [D2_SLICE1.md](phases/D2_SLICE1.md); later slices remain separately gated. [PERFORMANCE_INTEGRATION.md](PERFORMANCE_INTEGRATION.md) records the accepted optimization scope and closure. PERF1–PERF4/query/placement reports remain historical evidence: the approximately 500 ms target was not fully met, Smart Placement was rejected/reverted, and further performance work is deliberately deferred. Ads remains Release E.
+
+Systems operating guide: [Running a Systems build](SYSTEMS_DELIVERY.md).
 
 ## Phase Reading Matrix
 

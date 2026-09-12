@@ -6,11 +6,26 @@ Release D: Systems Delivery. Release C is closed for forward development on veri
 
 ## Current Phase
 
-**D4 — Systems Execution + QA — is in progress.** D3 is CLOSED on verified `689727c17547bfcc10e7b0741a8bb1e4d20b8856`, [PR #47](https://github.com/Bloomwired/bloomops/pull/47), with both exact-SHA gates, staging identity and disposable cleanup. Derive phase/action progress and blockers from current readable canonical work and reuse existing QA/Internal Review controls. Work is isolated in `/home/ary/Developer/bloomops-d4-execution`, branch `feat/d4-systems-execution`. No schema, provider execution or new lifecycle. Contract: [D4.md](phases/D4.md).
+**D5 — Launch + Handoff — is in progress.** D4 is CLOSED on verified `cae247fa823e7a54ffb6632a0e517ce650483e9f` through PR #48. Complete the existing approval/delivery and private File handoff path under [D5.md](phases/D5.md). Work reuses isolated `/home/ary/Developer/bloomops-d4-execution` on `feat/d5-launch-handoff`; prior branches and unrelated changes are preserved.
 
 **Performance remains CLOSED.** PR #36's accepted application is `cb2ef0bea2900a46583e86c75840e8ba6639d663`; its exact-SHA gates and staging smoke are recorded below. Smart Placement was rejected/reverted, the approximately 500 ms target was not fully met, and additional performance work remains deliberately deferred.
 
-## D4 execution local acceptance (2026-09-12)
+## D5 local acceptance (2026-09-12)
+
+- The existing canonical work, Deliverable approval/delivery and private File attachment controls support the Launch + Handoff path. Added [the operating guide](SYSTEMS_DELIVERY.md) and eight integration tests across GHL/Kajabi for review/rework, explicit approval/delivery, dependency sequence, independent parent lifecycles, exact generation replay with a later added handoff output/file, byte identity and current authority/visibility/contact denial.
+- All eight focused and 5,948 full tests pass. Final stable Worker acceptance passes 77 Kajabi + 72 GHL browser checks (149 total), with 36 captures each (72 total), at 1440/1024/768/390/320px. Actual approval/rework/launch/handoff/status and file controls, exact internal/Client download bytes, explicit sharing, retry preservation and Client exclusion pass with no page errors. Mobile upload and portal handoff screenshots inspected.
+- No runtime/schema/configuration or migration change. Browser acceptance reuses the verified D4 built artifact because all build/runtime inputs remain unchanged. Final syntax/diff and current guide/phase links pass. Harness-only corrections handled the optional field label, actual portal Home sections and B5's compact desktop/44px mobile button contract. One superseded run was intentionally stopped; only final `browser-{kajabi,ghl}-pass.log` counts are accepted.
+- One fresh Sol High read-only review found no material findings; no re-review required. Evidence: `/tmp/bloomops-d5-handoff/{focused-final,full-final,browser-kajabi-pass,browser-ghl-pass}.log` and captures. All fixtures/mail are synthetic local D1/R2. Original checkout/branches and unrelated work are preserved.
+- D5 remains open pending publication and both exact-merge-SHA gates, staging identity and cleanup. Next: D6 Systems Client Experience + Operations.
+
+## D4 execution closure (2026-09-12)
+
+- [PR #48](https://github.com/Bloomwired/bloomops/pull/48) merged reviewed `209aab392e81884833b6e92baee053f6bbddd9dc` as `cae247fa823e7a54ffb6632a0e517ce650483e9f`; trees match exactly.
+- [Deploy staging 34683257899](https://github.com/Bloomwired/bloomops/actions/runs/34683257899), job `103525645146`, and [Verify zero-to-current 34683257919](https://github.com/Bloomwired/bloomops/actions/runs/34683257919), job `103525645256`, passed every required step on that SHA. Staging reports `cae247f`; all eight original D1 IDs/names are restored and the disposable database is absent.
+- Acceptance: 158 affected / 5,940 full tests, 27 native D1 checks, Cloudflare build, 73 browser checks / 27 captures; one fresh Sol High review found no material findings. No post-review runtime change or migration. Complete run/job metadata, logs, identity and inventories are in `/tmp/bloomops-d4-execution/`. Verbose verifier stdout truncates during migrations; no full integrity/no-op log tail is claimed.
+- **D4 is CLOSED.** Next: D5 Launch + Handoff using canonical approval/delivery and Files. Original branches and unrelated guide/configuration work remain preserved.
+
+## Historical D4 execution local acceptance (2026-09-12)
 
 - Systems opts into canonical current-phase and action-progress fields on the existing Work summary query. In-progress/waiting/upcoming readable milestones determine the phase; closed Projects suggest none. Action totals distinguish done/cancelled/open work, and dependency-blocked counts include only readable open actions. Hidden prerequisite identity/counts remain private. Existing Work links support QA and Deliverable Internal Review without an extra lifecycle or approval claim.
 - Default Home/Work DTOs and UI, Systems filters/attention/timezone behavior and native batching remain intact. No schema/migration, provider execution, dependency or workflow changes.
