@@ -2,10 +2,22 @@
 
 ## Status and authorization
 
+**Migration correction pending publication:** two top-level CASE expressions in
+migration `0019` now have parentheses for D1 remote `/query` compatibility.
+A disposable remote test reproduced the original incomplete-input failure,
+confirmed failed-migration rollback, then applied the correction and an identical
+no-op replay. Read-only staging metadata confirms `0019` and both provenance
+tables are absent there. The correction changes no storage contract; its 981
+affected tests and 80 native D1 checks pass. The scoped Sol High review found no material issues. Full remote zero
+verification passed 30/30 checks, including both migration ledgers, integrity/FKs,
+identical no-op replay and guarded cleanup. Current publication/deployment status is in
+[BUILD_STATE.md](../BUILD_STATE.md).
+
+
 The owner approved preserving immutable generation history while allowing future
 otherwise-authorized deletion of live work. This resolves Slice 1's
 provenance/deletion decision. Slice 2B is implemented, locally verified and independently reviewed. It is open
-in [PR #40](https://github.com/Beeyach/bloomops/pull/40), unmerged and undeployed. No generation
+in [PR #40](https://github.com/Bloomwired/bloomops/pull/40), unmerged and undeployed. No generation
 writer, API or UI is included, and D2 is not complete.
 
 Slice 2A closed through PR #39 on verified main
@@ -24,8 +36,16 @@ PR implementation commit: `54d4372fca9f9c4f3739dd961647efa732b522bb`.
 The subsequent documentation-only commit records this handoff without changing
 any reviewed implementation file. The PR branch/worktree is
 `feat/d2-slice2b-generation-provenance` at `/home/ary/Developer/bloomops-d2-slice2b`.
-The original implementation checkout remains preserved. Merge/deployment and
-Slice 2C work are separate gates; current status is in [BUILD_STATE.md](../BUILD_STATE.md).
+The original implementation checkout remains preserved. The owner subsequently
+approved the merge, staging migration/deployment and disposable D1 verification.
+[Deploy staging 34672104559](https://github.com/Bloomwired/bloomops/actions/runs/34672104559)
+and [Verify zero-to-current 34672104558](https://github.com/Bloomwired/bloomops/actions/runs/34672104558)
+initially failed before execution due to personal-account billing. Both attempt-2
+reruns started under Bloomwired on the exact same merge SHA. Staging failed at
+domain migration `0019` before deployment; fresh-database domain migration also failed with the same error. Its disposable
+database cleanup, exact account inventory restoration and staging identity check
+succeeded. Staging still reports prior SHA `a4ceb81`. Repair the migration failure before closure or
+Slice 2C. Current evidence is in [BUILD_STATE.md](../BUILD_STATE.md).
 
 ## Approved retention behavior
 
@@ -175,4 +195,6 @@ identity and mapping facts, not a competing Project or history lifecycle.
 Local logs live outside Git under `/tmp/bloomops-d2-2b/`. Local migration commands
 follow the existing verifier and current
 [Cloudflare D1 Wrangler documentation](https://developers.cloudflare.com/d1/wrangler-commands/).
-No deployment, remote migration, real email or production action is authorized.
+The later approval covers staging migration/deployment and disposable D1 verification
+through the existing workflows, including reruns after the billing issue is resolved.
+No real email or production action is authorized.
