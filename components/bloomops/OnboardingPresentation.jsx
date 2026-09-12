@@ -26,7 +26,7 @@ export function OnboardingStepIcon({ item }) {
     : Object.hasOwn(actionArtwork, item.actionType) ? actionArtwork[item.actionType]
       : [ONBOARDING_ACTIONS[item.actionType]?.icon || 'onboarding', 'neutral'];
   return <span className={`bo-onboarding-art bo-onboarding-art-${tone}`} aria-hidden="true">
-    <Icon name={icon} size={22} />
+    <Icon name={icon} size={16} />
   </span>;
 }
 
