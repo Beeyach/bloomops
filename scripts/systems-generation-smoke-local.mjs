@@ -1,0 +1,87 @@
+// The actual backend against disposable native D1; no account/remote bindings.
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { mkdtempSync,readFileSync,rmSync } from 'node:fs';
+import { dirname,join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { drizzle } from 'drizzle-orm/d1';
+import * as schema from '../lib/bloomops/schema.mjs';
+import { seedStatements } from '../tests/_blueprint-generation-fixture.mjs';
+import { provisionGhlBlueprint,saveSystemsBlueprintBinding } from '../lib/bloomops/systems-blueprint-setup.mjs';
+import { systemsBlueprintOptions } from '../lib/bloomops/systems-blueprint-preparation.mjs';
+import { generateSystemsBlueprint } from '../lib/bloomops/systems-blueprint-generation.mjs';
+import { encodeSystemsBlueprintDefinition } from '../lib/bloomops/systems-blueprint-definition.mjs';
+import { GHL_BUILD_BLUEPRINT_V1 } from '../lib/bloomops/systems-blueprint-defaults.mjs';
+
+const require=createRequire(import.meta.url);
+const {Miniflare,convertV4MiniflareOptions}=require(require.resolve('miniflare',{paths:[dirname(require.resolve('wrangler/package.json'))]}));
+const journal=JSON.parse(readFileSync(new URL('../drizzle/meta/_journal.json',import.meta.url)));
+const migrations=journal.entries.flatMap(({tag})=>readFileSync(new URL(`../drizzle/${tag}.sql`,import.meta.url),'utf8').split('--> statement-breakpoint').map(s=>s.trim()).filter(Boolean));
+const temp=mkdtempSync(join(tmpdir(),'bloomops-generation-smoke-'));let mf,checks=0;
+const now=new Date('2026-09-12T08:00:00.000Z');
+try {
+  mf=new Miniflare(convertV4MiniflareOptions({name:'bloomops-generation-disposable',modules:true,script:'export default {fetch(){return new Response("Local generation");}}',compatibilityDate:'2025-05-01',cf:false,d1Databases:{OFF:'off',ON:'on'},resourcePersistencePath:temp}));
+  for(const [name,recursive] of [['OFF',0],['ON',1]]) {
+    const native=await mf.getD1Database(name);
+    for(const statement of migrations)await native.prepare(statement).run();
+    await native.prepare(`PRAGMA recursive_triggers=${recursive}`).run();
+    for(const s of seedStatements)await native.prepare(s.sql).bind(...s.params).run();
+    await native.prepare("INSERT INTO departments(id,workspace_id,name,slug) VALUES('systems','w','Systems','systems')").run();
+    await native.prepare("UPDATE service_types SET department_id='systems' WHERE id='type'").run();
+    await native.prepare("UPDATE workspace_memberships SET role='owner' WHERE id='member'").run();
+    let queries=0,maxBindings=0,maxBatch=0,maxSql=0;
+    const counted={prepare(sql) {
+      queries++;maxSql=Math.max(maxSql,Buffer.byteLength(sql));assert.ok(Buffer.byteLength(sql)<100000);
+      const wrap=s=>new Proxy(s,{get(target,key) {
+        if(key==='bind')return (...params)=>{maxBindings=Math.max(maxBindings,params.length);assert.ok(params.length<=100);return wrap(s.bind(...params));};
+        return typeof target[key]==='function'?target[key].bind(target):target[key];
+      }});
+      return wrap(native.prepare(sql));
+    },batch:statements=>{maxBatch=Math.max(maxBatch,statements.length);assert.ok(statements.length<50);return native.batch(statements);}};
+    const db=drizzle(counted,{schema});
+    const actor={workspaceId:'w',membershipId:'member',userId:'user',role:'owner',status:'active',scope:{kind:'workspace'}};
+    const installed=await provisionGhlBlueprint(db,{actor,now});assert.equal(installed.ok,true);
+    const bound=await saveSystemsBlueprintBinding(db,{actor,serviceTypeId:'type',templateId:installed.templateId,enabled:true,expectedBinding:{id:'binding',revision:1},now});assert.equal(bound.ok,true);
+    const inputFor=async(projectId,selection)=>({requestId:crypto.randomUUID(),selectedComponentKeys:selection,expected:(await systemsBlueprintOptions(db,{actor,projectId})).expected});
+    const generate=(projectId,input,who=actor)=>generateSystemsBlueprint(db,{actor:who,projectId,input,now});
+    const input=await inputFor('project',GHL_BUILD_BLUEPRINT_V1.components.map(c=>c.logicalKey));
+    const race=await Promise.all([generate('project',input),generate('project',input),generate('project',input)]);
+    assert.ok(race.every(r=>r.ok));assert.equal(race.filter(r=>!r.replayed).length,1);assert.equal(new Set(race.map(r=>r.generationId)).size,1);checks++;
+    assert.deepEqual(race[0].counts,{milestones:13,actions:14,deliverables:8,dependencies:20});checks++;
+    const count=async(table,projectId='project')=>(await native.prepare(`SELECT count(*) n FROM ${table} WHERE project_id=?`).bind(projectId).first()).n;
+    assert.equal(await count('actions'),14);assert.equal(await count('milestones'),13);assert.equal(await count('deliverables'),8);assert.equal(await count('action_dependencies'),20);checks++;
+    assert.equal((await native.prepare("SELECT revision FROM projects WHERE id='project'").first()).revision,2);checks++;
+    assert.deepEqual(await generate('project',{...input,requestId:crypto.randomUUID()}),{ok:false,reason:'conflict'});checks++;
+    assert.deepEqual(await generate('project',{...input,selectedComponentKeys:['funnel']}),{ok:false,reason:'conflict'});checks++;
+    assert.equal((await generate('project',input,{...actor,role:'client'})).ok,false);checks++;
+    const second=await inputFor('second',['access','funnel']);
+    await native.prepare("CREATE TRIGGER generation_smoke_abort BEFORE INSERT ON action_dependencies WHEN NEW.project_id='second' BEGIN SELECT RAISE(ABORT,'late generation failure'); END").run();
+    await assert.rejects(()=>generate('second',second),/late generation failure/);
+    assert.equal(await count('systems_blueprint_generations','second'),0);assert.equal(await count('milestones','second'),0);assert.equal(await count('actions','second'),0);checks++;
+    await native.prepare('DROP TRIGGER generation_smoke_abort').run();
+    const originalBatch=db.batch.bind(db);
+    db.batch=async statements=>{await originalBatch(statements);throw new Error('response lost after commit');};
+    await assert.rejects(()=>generate('second',second),/response lost after commit/);db.batch=originalBatch;
+    assert.equal((await generate('second',second)).replayed,true);assert.equal(await count('actions','second'),2);checks++;
+    const definition=structuredClone(GHL_BUILD_BLUEPRINT_V1),keys=definition.actions.map(a=>a.logicalKey);
+    definition.dependencyGroups=[keys.slice(0,7),keys.slice(7)];const encoded=await encodeSystemsBlueprintDefinition(definition);
+    await native.prepare('UPDATE template_versions SET status=\'retired\' WHERE id=?').bind(installed.versionId).run();
+    await native.prepare("INSERT INTO template_versions(id,workspace_id,template_id,version_number,definition_json,definition_hash) VALUES('max-edges','w',?,2,?,?)").bind(installed.templateId,encoded.definitionJson,encoded.definitionHash).run();
+    await native.prepare("UPDATE template_versions SET status='published',published_at=? WHERE id='max-edges'").bind(now.toISOString()).run();
+    await native.prepare("INSERT INTO projects(id,workspace_id,client_id,service_engagement_id,name) VALUES('max-edges','w','client','service','Max graph')").run();
+    const maximal=await inputFor('max-edges',definition.components.map(c=>c.logicalKey)),start=queries;
+    const result=await generate('max-edges',maximal);const operationQueries=queries-start;
+    assert.equal(result.ok,true);assert.equal(result.counts.dependencies,49);assert.equal(await count('action_dependencies','max-edges'),49);assert.ok(operationQueries<50);checks++;
+    await native.prepare("DELETE FROM action_dependencies WHERE project_id='project'").run();
+    for(const table of ['actions','milestones','deliverables'])await native.prepare(`DELETE FROM ${table} WHERE project_id='project'`).run();
+    await native.prepare("DELETE FROM service_type_blueprint_bindings WHERE service_type_id='type'").run();
+    const replay=await generate('project',input);assert.equal(replay.ok,true);assert.equal(replay.replayed,true);assert.equal(await count('actions'),0);checks++;
+    const guard=(await native.prepare("SELECT sql FROM sqlite_master WHERE name='systems_blueprint_generation_items_delete_guard'").first()).sql;
+    await native.prepare('DROP TRIGGER systems_blueprint_generation_items_delete_guard').run();
+    await native.prepare("DELETE FROM systems_blueprint_generation_items WHERE generation_id=? AND kind='action'").bind(replay.generationId).run();await native.prepare(guard).run();
+    assert.deepEqual(await generate('project',input),{ok:false,reason:'integrity_failure'});assert.equal(await count('actions'),0);checks++;
+    assert.deepEqual((await native.prepare('PRAGMA foreign_key_check').all()).results,[]);checks++;
+    console.log(`ok recursive=${recursive}: domain generation/replay/rollback; ${operationQueries} queries for maximum plan, ${maxBatch} batch statements, ${maxBindings} binds, ${maxSql} SQL bytes`);
+  }
+  console.log(`D2 native committed generation: ${checks} checks passed.`);
+} finally {await mf?.dispose();rmSync(temp,{recursive:true,force:true});}

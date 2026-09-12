@@ -1,6 +1,12 @@
 # D2 Slice 2D — authorized GHL blueprint setup
 
-Base: verified main `ea18733e98ddff4e29ea1dff41800d3e294e59dd`.
+**CLOSED** on verified main `854863af8b8997781c3358aa0de245df2a8f007d` through
+[PR #43](https://github.com/Bloomwired/bloomops/pull/43). Staging and disposable
+remote workflows passed on that exact SHA; staging serves `854863a` and cleanup
+restored the original database inventory. Full evidence and the remote stdout
+truncation limitation are recorded in [BUILD_STATE.md](../BUILD_STATE.md).
+
+Implementation base: `ea18733e98ddff4e29ea1dff41800d3e294e59dd`.
 Slice 2C is closed. The owner requested autonomous continuation through the
 existing BloomOps workflow until a real decision or missing access is needed.
 
@@ -71,5 +77,4 @@ focused re-review. Record publication and exact-SHA staging/remote gates in
   OpenNext Worker bundle. Changed JavaScript syntax and diff checks pass.
 - Schema/migrations remain byte-identical to the verified baseline. Native
   checks apply all current migrations; no redundant local zero replay was run.
-- One fresh Sol High read-only review found no material findings. No publish/merge/deployment
-  result is claimed yet. Evidence: `/tmp/bloomops-d2-2d/{affected.log,full.log,native.log,build.log}`.
+- One fresh Sol High read-only review found no material findings. Publication and deployment gates passed as recorded above. Evidence: `/tmp/bloomops-d2-2d/{affected.log,full.log,native.log,build.log}`.
