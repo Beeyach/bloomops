@@ -1,3 +1,4 @@
+import BrandLogo from './BrandLogo';
 import AccountMenu from './AccountMenu';
 import ShellHosts from './ShellHosts';
 import PortalContentNav from './PortalContentNav';
@@ -17,9 +18,7 @@ export default function PortalShell({ workspace, user, hasContent = false, child
       </a>
       <header className="bo-topbar">
         <div className="bo-topbar-title">
-          <span className="bo-mark" aria-hidden="true">
-            {String(workspace.name || 'B').trim().charAt(0).toUpperCase()}
-          </span>
+          <BrandLogo />
           <div style={{ minWidth: 0 }}>
             <div className="bo-workspace-name">{workspace.name}</div>
             <div className="bo-workspace-sub">Client portal</div>

@@ -1,3 +1,4 @@
+import BrandLogo from './BrandLogo';
 import { INTERNAL_NAV } from '@/lib/bloomops/navigation.mjs';
 import InternalNav from './InternalNav';
 import MobileNav from './MobileNav';
@@ -15,14 +16,6 @@ import ShellHosts from './ShellHosts';
 // resolved that through lib/bloomops/shell-server.mjs, and every page
 // resolves it again for itself.
 
-function WorkspaceMark({ name }) {
-  return (
-    <span className="bo-mark" aria-hidden="true">
-      {String(name || 'B').trim().charAt(0).toUpperCase()}
-    </span>
-  );
-}
-
 export default function InternalShell({ workspace, user, roleLabel, children }) {
   const account = { name: user.name, email: user.email, roleLabel, workspaceName: workspace.name };
   return (
@@ -33,10 +26,9 @@ export default function InternalShell({ workspace, user, roleLabel, children }) 
       <div className="bo-shell">
         <aside className="bo-sidebar" aria-label="Workspace">
           <div className="bo-sidebar-head">
-            <WorkspaceMark name={workspace.name} />
+            <BrandLogo />
             <div className="bo-workspace-text" style={{ minWidth: 0 }}>
               <div className="bo-workspace-name">{workspace.name}</div>
-              <div className="bo-workspace-sub">BloomOps</div>
             </div>
           </div>
           <div className="bo-sidebar-scroll">
@@ -49,7 +41,7 @@ export default function InternalShell({ workspace, user, roleLabel, children }) 
         <div className="bo-main">
           <header className="bo-topbar bo-topbar-internal">
             <div className="bo-topbar-title">
-              <WorkspaceMark name={workspace.name} />
+              <BrandLogo />
               <div style={{ minWidth: 0 }}>
                 <div className="bo-workspace-name">{workspace.name}</div>
               </div>

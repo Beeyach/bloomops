@@ -9,7 +9,7 @@ export default function NotFound() {
   return (
     <AuthShell title="There is nothing here" lead="The address may be wrong, or the page may have moved.">
       <Button href="/" variant="primary" block>
-        Go to BloomOps
+        Go to Bloomsi
       </Button>
     </AuthShell>
   );

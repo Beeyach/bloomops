@@ -51,7 +51,7 @@ export default async function SignInPage({ searchParams }) {
     return (
       <AuthShell
         title="No workspace access"
-        lead={`You are signed in as ${access.user.email}, but this account is not an active member of a BloomOps workspace.`}
+        lead={`You are signed in as ${access.user.email}, but this account is not an active member of a Bloomsi workspace.`}
       >
         <p className="bo-body" style={{ marginBottom: 16 }}>
           If you were invited, open the link in your invitation email. If your access was paused, ask your workspace Owner or Admin.
@@ -65,7 +65,7 @@ export default async function SignInPage({ searchParams }) {
     <AuthShell
       title="Sign in"
       lead="Enter your email and we will send you a link. No password needed."
-      footer="BloomOps is invitation-only. If you do not have access yet, ask the agency that works with you."
+      footer="Bloomsi is invitation-only. If you do not have access yet, ask the agency that works with you."
     >
       {problem && (
         <Notice tone="error" className="bo-auth-problem">

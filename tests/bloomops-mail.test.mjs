@@ -78,7 +78,7 @@ test('without a key or transport the mailer is not ready and says so', async () 
 
 test('templates are plain, escape names, and carry the link exactly once in text', () => {
   const magic = magicLinkEmail({ url: 'https://app.example/api/auth/magic-link/verify?token=abc&callbackURL=%2F', expiresMinutes: 15 });
-  assert.equal(magic.subject, 'Your BloomOps sign-in link');
+  assert.equal(magic.subject, 'Your Bloomsi sign-in link');
   assert.equal(magic.text.match(/https:\/\/app\.example\S+/g).length, 1);
   assert.match(magic.text, /15 minutes/);
   assert.match(magic.html, /href="https:\/\/app\.example\/api\/auth\/magic-link\/verify\?token=abc&amp;callbackURL=%2F"/);
@@ -87,7 +87,7 @@ test('templates are plain, escape names, and carry the link exactly once in text
   assert.match(invite.html, /Ellen &lt;script&gt;/);
   assert.match(invite.html, /Ary &amp; Co has invited you/);
   assert.doesNotMatch(invite.html, /<script>/);
-  assert.match(invite.text, /Ary & Co has invited you to join Ellen <script> on BloomOps as Team Member/);
+  assert.match(invite.text, /Ary & Co has invited you to join Ellen <script> on Bloomsi as Team Member/);
 });
 
 test('app URL resolution: development uses the loopback request, deployed environments only configuration, https only', () => {
