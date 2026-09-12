@@ -30,7 +30,7 @@ Do not automatically load every planning document into context.
 
 Release D — Systems Delivery is closed. Release C is closed for forward development on verified `main` baseline `1638e3ed9fd33c3725aa3449935b08335b73f1a9`.
 
-Current state: **Release D is CLOSED**, verified `844ac905541df9e6fccb7dc313ab0a8d517da319` through PR #51. [D7 closure](phases/D7.md) and [BUILD_STATE](BUILD_STATE.md) record final gates. Current phase: [internal pilot](phases/PILOT.md), actionable onboarding implemented and locally verified; independent review/publication pending. Release E has not started.
+Current state: **Release D is CLOSED**, verified `844ac905541df9e6fccb7dc313ab0a8d517da319` through PR #51. [D7 closure](phases/D7.md) and [BUILD_STATE](BUILD_STATE.md) record final gates. Current phase: [internal pilot](phases/PILOT.md), actionable onboarding deployed through PR #52 as `9bf27e0`; both release gates passed with 22 migrations. The owner-requested badge/icon presentation follow-up is in local acceptance; reusable quick picks are deferred. Release E has not started.
 
 Release A closed after A11 PR #14 merged as `3deed08d8db2a92fcf4dc29a6a879a9945260049`. Read-only preflight verified [Deploy staging 34175768644](https://github.com/Beeyach/bloomops/actions/runs/34175768644) and [remote zero-to-current 34175768643](https://github.com/Beeyach/bloomops/actions/runs/34175768643) completed successfully on that exact SHA.
 

@@ -38,7 +38,7 @@ async function capture(label,page,width){
 }
 try{
  const reference=await browser.newPage();
- try{await reference.goto('https://bloomlab-preview.cool-sunset-2169.workers.dev/design',{waitUntil:'domcontentloaded',timeout:15000});await reference.screenshot({path:join(out,'reference.png'),fullPage:true});console.log('Design reference fetched for visual inspection.');}catch{console.log('Design reference unavailable; repository tokens used.');}finally{await reference.close();}
+ try{await reference.goto('https://bloomlab-preview.cool-sunset-2169.workers.dev/design',{waitUntil:'domcontentloaded',timeout:15000});await reference.getByText('Palette',{exact:true}).first().waitFor({timeout:15000});await reference.screenshot({path:join(out,'reference.png'),fullPage:true});console.log('Design reference fetched for visual inspection.');}catch{console.log('Design reference unavailable; repository tokens used.');}finally{await reference.close();}
  const owner=await login('pilot-owner@example.test');const p=owner.page; owner.context.setDefaultTimeout(20000);
  await p.goto(base+'/clients/new');
  const email=`pilot-client-${randomUUID()}@example.test`;
@@ -46,6 +46,9 @@ try{
  await p.getByRole('button',{name:'Add client',exact:true}).click();await p.waitForURL(url => /^\/clients\/[^/]+$/.test(url.pathname) && url.pathname !== '/clients/new');const clientId=new URL(p.url()).pathname.split('/').at(-1);
  await p.getByRole('link',{name:'Services',exact:true}).click();await p.getByRole('button',{name:'Add service',exact:true}).click();
  const dialog=p.getByRole('dialog');await dialog.getByLabel('Service',{exact:true}).selectOption({label:'Kajabi · Systems'});await dialog.getByRole('button',{name:'Add service',exact:true}).click();await dialog.waitFor({state:'hidden'});
+ await p.getByRole('button',{name:'Add service',exact:true}).click();
+ const socialOption=dialog.getByLabel('Service',{exact:true}).locator('option').filter({hasText:/^Social(?: Media(?: Management)?)? · Social$/});
+ await dialog.getByLabel('Service',{exact:true}).selectOption(await socialOption.getAttribute('value'));await dialog.getByRole('button',{name:'Add service',exact:true}).click();await dialog.waitFor({state:'hidden'});
  await p.getByRole('button',{name:'Activate Client',exact:true}).click();await p.getByText('Client activated. The portal invitation has been sent.',{exact:true}).waitFor();
  const token=mail(email).text.match(/\/invite\/([A-Za-z0-9_-]+)/)[1];const client=await login(email,'/invite/'+token);const c=client.page; client.context.setDefaultTimeout(20000);
  await c.getByRole('button',{name:'Accept and continue'}).click();await c.waitForURL('**/portal');
@@ -54,6 +57,12 @@ try{
  await capture('waiting',c,390);
  await p.goto(base+`/clients/${clientId}?tab=onboarding`);
  const row=(page,title)=>page.locator('li.bo-onboarding-item').filter({has:page.getByRole('heading',{name:title,exact:true})});
+ check('responsibility, audience and verification are separate readable badges',await row(p,'Instagram access').getByRole('list',{name:'Step details'}).innerText().then(text=>['Client task','Client-visible','Verification required'].every(label=>text.includes(label))&&!text.includes('·')));
+ check('metadata badge colors distinguish their meanings',await row(p,'Instagram access').locator('.bo-onboarding-badge').evaluateAll(nodes=>new Set(nodes.map(n=>getComputedStyle(n).backgroundColor)).size===3));
+ check('Instagram access uses the Instagram mark',await row(p,'Instagram access').locator('.bo-onboarding-art-instagram svg').count()===1);
+ check('course videos use a video icon',await row(p,'Course videos').locator('.bo-onboarding-art-video svg').count()===1);
+ for(const width of [1440,1024,768,390,320])await capture('agency-badges',p,width);
+ await p.setViewportSize({width:1440,height:900});
  async function configure(title,type,url,instructions){
   console.log(`Configuring ${title}`);
   await row(p,title).getByRole('button',{name:/Set up step|Edit instructions/}).click();
@@ -78,12 +87,15 @@ try{
  check('opening a destination does not complete the step',await row(c,'Brand assets').getByRole('button',{name:'Confirm completed'}).isVisible());
  const link=row(c,'Agreement').getByRole('link',{name:/Open agreement/});check('external agreement link suppresses referrer and opener',await link.getAttribute('rel')==='noopener noreferrer'&&await link.getAttribute('referrerpolicy')==='no-referrer');
  check('essential actions have line icons',await c.locator('.bo-onboarding-controls .bo-btn svg').count()>0);
+ check('portal excludes agency metadata badges',await c.getByRole('list',{name:'Step details'}).count()===0);
+ check('portal retains Instagram and video identities before setup',await row(c,'Instagram access').locator('.bo-onboarding-art-instagram').count()===1&&await row(c,'Course videos').locator('.bo-onboarding-art-video').count()===1);
  check('repeated Your steps heading removed',await c.getByRole('heading',{name:'Your steps',exact:true}).count()===0);
  for(const width of [1440,1024,768,390,320])await capture('actionable',c,width);
  await c.emulateMedia({reducedMotion:'reduce'});await capture('reduced-motion',c,390);
  await row(c,'Brand assets').getByRole('button',{name:'Confirm completed'}).click();await c.getByRole('button',{name:'Show completed (1)'}).waitFor();await c.reload();
  check('completed confirmation persists and collapses',await row(c,'Brand assets').count()===0);
  await c.getByRole('button',{name:'Show completed (1)'}).click();await row(c,'Brand assets').getByText('Complete',{exact:true}).waitFor();check('completed history remains accessible',true);
+ check('completion retains the asset icon and shows a separate success status',await row(c,'Brand assets').locator('.bo-onboarding-art-assets').count()===1&&await row(c,'Brand assets').getByText('Complete',{exact:true}).getAttribute('class').then(value=>value.includes('bo-status-success')));
  await row(c,'Kajabi access').getByRole('button',{name:'Submit for verification'}).click();await c.getByText('Thank you. We’ll check this step and confirm it for you.').waitFor();await p.reload();
  await row(p,'Kajabi access').getByRole('button',{name:'Verify step'}).click();await row(p,'Kajabi access').getByText('Completed',{exact:true}).waitFor();await c.reload();
  check('team verification remains separate from Client submission',await c.getByRole('button',{name:'Show completed (2)'}).isVisible());

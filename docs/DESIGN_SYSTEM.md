@@ -537,3 +537,17 @@ Evaluate:
 - responsive composition
 - long-session comfort
 - accessibility
+
+## Owner feedback — operational metadata and icons (2026-09-12)
+
+Do not join responsibility, visibility and verification requirements into a
+flat middle-dot-separated text line. Give these distinct meanings compact,
+readable badges with restrained semantic tints, borders, a visible label and
+an appropriate glyph. Group and wrap them naturally on mobile. Reserve status
+pills for lifecycle state; do not turn dates, IDs or every sentence into badges.
+
+Use recognizable platform marks where a platform is explicitly identified
+(for example Instagram access), and specific media/task icons where applicable
+(video for Course videos, imagery for Brand assets, signing for Agreement).
+Keep a step's identity icon after completion; show completion separately in
+its status. Reuse the icon vocabulary and consistent sizing. No emojis.
