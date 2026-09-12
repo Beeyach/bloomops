@@ -1,7 +1,7 @@
 import { withApiErrors } from '@/lib/bloomops/api-handler.mjs';
 import { json } from '@/lib/bloomops/access.mjs';
 import { contentAccess, contentBody, contentResponse } from '@/lib/bloomops/content-api.mjs';
-import { getContent, updateContent } from '@/lib/bloomops/content.mjs';
+import { getInternalContent as getContent, updateContent } from '@/lib/bloomops/content.mjs';
 export const dynamic = 'force-dynamic';
 export const GET = withApiErrors(async (req,context) => {
   const {contentId}=await context.params;

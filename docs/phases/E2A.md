@@ -2,7 +2,7 @@
 
 ## Objective
 
-Establish explicit production context and safe Ads parent storage inside canonical Content while every existing Content surface remains Social-only. This is the first implementation slice under [E2](E2.md) and [RELEASE_E](../RELEASE_E.md). Implementation is underway; [BUILD_STATE](../BUILD_STATE.md) owns current status.
+Establish explicit production context and safe Ads parent storage inside canonical Content while every existing Content surface remains Social-only. This is the first implementation slice under [E2](E2.md) and [RELEASE_E](../RELEASE_E.md). **CLOSED** through [PR #56](https://github.com/Bloomwired/bloomops/pull/56) on verified `2a73193d23e8e83673153e0e4512ddcae2bb6505`, with staging/zero/live acceptance and 23 migrations; [BUILD_STATE](../BUILD_STATE.md) owns current status.
 
 Start from verified `f2a2bb0c7e665a5bd77cd010544a226c4da934a9`, with 22 migrations. Read the canonical working agreements, E2 identity/containment rules, and relevant current schema, C1–C6 Content/access/File/approval code before editing. Work in the isolated checkout and preserve unrelated original schema/D2/instruction work.
 
@@ -73,3 +73,7 @@ Do not activate E2B or seed remote Ads records before the E2A version is accepte
 - **Review/publication:** one fresh read-only Sol High implementation review after verification, with at most one focused re-review if findings cause fixes. Publish within standing authorization only after local acceptance; verify exact merged-source staging, zero-to-current and live schema identity before closing E2A. Update BUILD_STATE/INDEX and implemented DOMAIN_MODEL facts with evidence and any limitations.
 
 Planning preparation alone requires source/link/diff checks and self-review under the usage-aware policy. It does not satisfy these implementation gates or authorize calling E2A complete. No user decision or credential currently blocks the E2A implementation contract.
+
+## Closure
+
+Implemented and deployed as `2a73193`; `0022_e2a_content_context` is the 23rd migration. Full Node acceptance, 73 affected review-fix tests, 224 native D1/R2 checks, final fresh/repeat verification, Cloudflare build and 145 browser/HTTP checks /53 captures pass. One Sol High review and one focused re-review resolved the Ads replacement-identity finding. Exact-SHA staging `34707425150` and zero-to-current `34707425223` passed; live staging identity/schema match. BUILD_STATE records the full evidence and downloaded-log limitation. No Ads creative activation or production change. The [E2B implementation](E2B.md) is locally verified from this deployed compatibility baseline; its publication gates remain pending.
