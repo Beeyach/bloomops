@@ -19,6 +19,8 @@ import { listDeliverables } from '@/lib/bloomops/deliverables.mjs';
 import DeliverableControls from '@/components/bloomops/DeliverableControls';
 import { listFiles } from '@/lib/bloomops/files.mjs';
 import FileControls from '@/components/bloomops/FileControls';
+import SystemsBuildControls from '@/components/bloomops/SystemsBuildControls';
+import { systemsBlueprintOptions } from '@/lib/bloomops/systems-blueprint-preparation.mjs';
 
 export const dynamic = 'force-dynamic';
 // Metadata and the page share this request's authorized Project read. React
@@ -47,11 +49,14 @@ export default async function ProjectPage({ params }) {
     listDeliverables(db, actor, project.id),
     listFiles(db, actor, project.id),
   ]));
+  const blueprint = mayManage && project.status === 'planned' && project.serviceEngagementId && !milestones.items.length && !actions.items?.length && !deliverables.items.length && !files.items.length
+    ? await systemsBlueprintOptions(access.db, { actor, projectId: project.id }) : null;
   const clientHref = clientResource && evaluate(actor, { action: 'client.view', resource: clientResource }).allowed ? `/clients/${project.clientId}` : null;
   return <>
     <Button href="/work?tab=projects" variant="ghost" size="sm">Back to projects</Button>
     <PageHeader title={project.name} subtitle={[project.clientName, project.serviceName].filter(Boolean).join(' · ')} />
     {mayManage ? <ProjectControls key={project.revision} project={project} options={{ ...options, canRestrict: options.canRestrict || assignments.some(a => a.membershipId === actor.membershipId) }} clientHref={clientHref} /> : <Section id="project-details" title="Details"><ProjectFacts project={project} clientHref={clientHref} />{project.statusReason && <p className="bo-body bo-project-reason">{project.statusReason}</p>}</Section>}
+    {mayManage && <SystemsBuildControls key={JSON.stringify([actor.workspaceId, actor.membershipId, project.id])} projectId={project.id} retryScope={JSON.stringify([actor.workspaceId, actor.membershipId])} options={blueprint?.ok ? blueprint : null} />}
     <MilestoneControls projectId={project.id} summary={milestones} mayManage={mayManage} canRestrict={options?.canRestrict || assignments.some(a => a.membershipId === actor.membershipId)} />
     <ProjectActions projectId={project.id} items={actions.items || []} members={options?.members || []} milestones={milestones.items.map(({ id, name }) => ({ id, name }))}
       mayManage={mayManage} membershipId={actor.membershipId} canRestrict={options?.canRestrict || assignments.some(a => a.membershipId === actor.membershipId)} />
