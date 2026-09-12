@@ -550,4 +550,6 @@ Use recognizable platform marks where a platform is explicitly identified
 (for example Instagram access), and specific media/task icons where applicable
 (video for Course videos, imagery for Brand assets, signing for Agreement).
 Keep a step's identity icon after completion; show completion separately in
-its status. Reuse the icon vocabulary and consistent sizing. No emojis.
+its status. Onboarding title icons use a compact 28px tile with a 16px glyph,
+centered on the title row; Required/Optional belongs below that row. Reuse the
+icon vocabulary and consistent sizing. No emojis.

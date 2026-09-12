@@ -2239,8 +2239,10 @@ select.bo-control {
 .bo-build-sequence { min-height: 44px; padding: 12px 0; cursor: pointer; }
 
 /* Onboarding: one heading, purposeful line icons and compact completed work. */
-.bo-onboarding-step-title { display: flex; gap: 12px; align-items: flex-start; min-width: 0; }
-.bo-onboarding-art { display: grid; place-items: center; flex: 0 0 40px; width: 40px; height: 40px; border-radius: 10px; color: var(--bo-text-soft); background: var(--bo-mist); border: 1px solid var(--bo-border); }
+.bo-onboarding-step-title { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 2px 8px; align-items: center; min-width: 0; }
+.bo-onboarding-step-title > div { display: contents; }
+.bo-onboarding-step-title .bo-small { grid-column: 2; }
+.bo-onboarding-art { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; color: var(--bo-text-soft); background: var(--bo-mist); border: 1px solid var(--bo-border); }
 .bo-onboarding-art-instagram { color: #a52a65; background: #fcecf3; border-color: #efd2e0; }
 .bo-onboarding-art-video { color: #6650a1; background: var(--bo-lilac); border-color: #ded5f1; }
 .bo-onboarding-art-assets { color: #276d68; background: #e8f5f1; border-color: #cce6dc; }
