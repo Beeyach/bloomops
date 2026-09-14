@@ -1,0 +1,33 @@
+{
+  "candidateSha": "04cd43aa73c39a64b301d514e5afc4542ca648df",
+  "stagingWorkflow": 34831084932,
+  "syntheticOnly": true,
+  "workspaceId": "0bb31d4d-768e-447e-ab3a-6873d8b32f00",
+  "checks": [
+    "Existing authenticated session remains valid after deployment",
+    "Fresh workspace starts with zero prospects and all five canonical service choices",
+    "Explicit synthetic conversion creates Draft client and Planned Kajabi engagement",
+    "Client opens canonical record with prospect history backlink",
+    "Conversion receipt survives reread with same client/service IDs and permanent outreach stop",
+    "Missing templates are reported separately and do not undo conversion",
+    "Typed draft survives reload; initial recovery shows counts/date only",
+    "Explicit recovery checks access then reveals retained value without saving",
+    "Actual offline save failure retains reviewed value and offers retry",
+    "Reconnected explicit retry succeeds; Undo restores Kajabi at revision3 and says field changes undone",
+    "Workspace switch to operations hides draft and profile API returns404",
+    "Returning to original workspace offers its retained draft with no automatic value exposure",
+    "Concurrent server edit is detected during recovery and retry leaves newer value at revision4",
+    "Wrong recovery identity403, foreign record404, wrong initiating save identity403; no revision/value changes",
+    "Cancel clears pending review and recovery prompt",
+    "Desktop1440 and phone390/320 visual checks; no document overflow",
+    "Loading skeleton captured on phone"
+  ],
+  "limits": [
+    "Real logout/revocation and committed-but-lost-response scenarios retain accepted isolated test evidence; owner live session was not signed out",
+    "Onboarding templates are absent in the fresh QA workspace; successful generation retains accepted isolated P5C evidence",
+    "No live provider-egress interception; only app actions documented above were invoked, no send/invitation action",
+    "Native retry assertion passed but was not separately serialized in native-catalogue.json",
+    "Mobile emulation changed document context; resumed after reload and recaptured readable recovery detail"
+  ],
+  "migrationCount": 44
+}
