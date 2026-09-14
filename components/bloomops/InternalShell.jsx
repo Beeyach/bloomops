@@ -4,6 +4,7 @@ import InternalNav from './InternalNav';
 import MobileNav from './MobileNav';
 import AccountMenu from './AccountMenu';
 import ShellHosts from './ShellHosts';
+import SearchLink from './SearchLink';
 
 // The internal application chrome, rendered by app/(internal)/layout.jsx
 // for Owner, Admin, Project Manager, and Team Member. One composition,
@@ -32,6 +33,7 @@ export default function InternalShell({ workspace, user, roleLabel, children }) 
             </div>
           </div>
           <div className="bo-sidebar-scroll">
+            <SearchLink />
             <InternalNav items={INTERNAL_NAV} />
           </div>
           <div className="bo-sidebar-foot">
@@ -46,7 +48,7 @@ export default function InternalShell({ workspace, user, roleLabel, children }) 
                 <div className="bo-workspace-name">{workspace.name}</div>
               </div>
             </div>
-            <AccountMenu {...account} placement="down" compact settingsHref="/settings" />
+            <div className="bo-topbar-tools"><SearchLink compact/><AccountMenu {...account} placement="down" compact settingsHref="/settings" /></div>
           </header>
           <main id="main" className="bo-page" tabIndex={-1}>
             {children}

@@ -1,0 +1,471 @@
+{
+  "baseline": "main 9763650 runtime (accepted stack build; only build-state docs differ)",
+  "method": "Local built Worker, identical isolated fixture and zero artificial D1 latency; seven rounds, two warmups; full destination plus two frames. Cold JS decoded bytes measured separately.",
+  "limitations": "Local synthetic Worker, five retained samples per route/width. No production latency or scale claim.",
+  "routes": [
+    {
+      "width": 1440,
+      "route": "Home",
+      "before": {
+        "width": 1440,
+        "route": "Home",
+        "samples": 5,
+        "visibleMs": {
+          "median": 62.5,
+          "p95": 79.10009765625,
+          "min": 61.800048828125,
+          "max": 79.10009765625
+        },
+        "requests": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "statements": [
+          11,
+          11,
+          11,
+          11,
+          11
+        ],
+        "invocations": [
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      "after": {
+        "width": 1440,
+        "route": "Home",
+        "samples": 5,
+        "visibleMs": {
+          "median": 62.5,
+          "p95": 79,
+          "min": 62.099853515625,
+          "max": 79
+        },
+        "requests": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "statements": [
+          11,
+          11,
+          11,
+          11,
+          11
+        ],
+        "invocations": [
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "width": 1440,
+      "route": "Clients",
+      "before": {
+        "width": 1440,
+        "route": "Clients",
+        "samples": 5,
+        "visibleMs": {
+          "median": 62.400146484375,
+          "p95": 62.7001953125,
+          "min": 62.300048828125,
+          "max": 62.7001953125
+        },
+        "requests": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "statements": [
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        "invocations": [
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      "after": {
+        "width": 1440,
+        "route": "Clients",
+        "samples": 5,
+        "visibleMs": {
+          "median": 62.699951171875,
+          "p95": 62.89990234375,
+          "min": 62.199951171875,
+          "max": 62.89990234375
+        },
+        "requests": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "statements": [
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        "invocations": [
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "width": 1440,
+      "route": "Work",
+      "before": {
+        "width": 1440,
+        "route": "Work",
+        "samples": 5,
+        "visibleMs": {
+          "median": 62.400146484375,
+          "p95": 62.900146484375,
+          "min": 61.900146484375,
+          "max": 62.900146484375
+        },
+        "requests": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "statements": [
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "invocations": [
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      "after": {
+        "width": 1440,
+        "route": "Work",
+        "samples": 5,
+        "visibleMs": {
+          "median": 62.699951171875,
+          "p95": 62.699951171875,
+          "min": 62.199951171875,
+          "max": 62.699951171875
+        },
+        "requests": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "statements": [
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "invocations": [
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "width": 390,
+      "route": "Home",
+      "before": {
+        "width": 390,
+        "route": "Home",
+        "samples": 5,
+        "visibleMs": {
+          "median": 63.2998046875,
+          "p95": 80.099853515625,
+          "min": 62.5,
+          "max": 80.099853515625
+        },
+        "requests": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "statements": [
+          11,
+          11,
+          11,
+          11,
+          11
+        ],
+        "invocations": [
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      "after": {
+        "width": 390,
+        "route": "Home",
+        "samples": 5,
+        "visibleMs": {
+          "median": 63.099853515625,
+          "p95": 63.199951171875,
+          "min": 62.199951171875,
+          "max": 63.199951171875
+        },
+        "requests": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "statements": [
+          11,
+          11,
+          11,
+          11,
+          11
+        ],
+        "invocations": [
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "width": 390,
+      "route": "Clients",
+      "before": {
+        "width": 390,
+        "route": "Clients",
+        "samples": 5,
+        "visibleMs": {
+          "median": 63.199951171875,
+          "p95": 63.5,
+          "min": 62.89990234375,
+          "max": 63.5
+        },
+        "requests": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "statements": [
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        "invocations": [
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      "after": {
+        "width": 390,
+        "route": "Clients",
+        "samples": 5,
+        "visibleMs": {
+          "median": 62.800048828125,
+          "p95": 63.2998046875,
+          "min": 62.5,
+          "max": 63.2998046875
+        },
+        "requests": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "statements": [
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        "invocations": [
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "width": 390,
+      "route": "Work",
+      "before": {
+        "width": 390,
+        "route": "Work",
+        "samples": 5,
+        "visibleMs": {
+          "median": 62.39990234375,
+          "p95": 62.60009765625,
+          "min": 61.699951171875,
+          "max": 62.60009765625
+        },
+        "requests": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "statements": [
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "invocations": [
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      "after": {
+        "width": 390,
+        "route": "Work",
+        "samples": 5,
+        "visibleMs": {
+          "median": 62.10009765625,
+          "p95": 62.2998046875,
+          "min": 61.5,
+          "max": 62.2998046875
+        },
+        "requests": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "statements": [
+          7,
+          7,
+          7,
+          7,
+          7
+        ],
+        "invocations": [
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      }
+    }
+  ],
+  "bundles": [
+    {
+      "width": 1440,
+      "route": "Home",
+      "beforeBytes": 390649,
+      "afterBytes": 390661,
+      "deltaBytes": 12,
+      "beforeRequests": 10,
+      "afterRequests": 10
+    },
+    {
+      "width": 1440,
+      "route": "Clients",
+      "beforeBytes": 390649,
+      "afterBytes": 390661,
+      "deltaBytes": 12,
+      "beforeRequests": 10,
+      "afterRequests": 10
+    },
+    {
+      "width": 1440,
+      "route": "Work",
+      "beforeBytes": 390649,
+      "afterBytes": 390661,
+      "deltaBytes": 12,
+      "beforeRequests": 10,
+      "afterRequests": 10
+    },
+    {
+      "width": 390,
+      "route": "Home",
+      "beforeBytes": 390649,
+      "afterBytes": 390661,
+      "deltaBytes": 12,
+      "beforeRequests": 10,
+      "afterRequests": 10
+    },
+    {
+      "width": 390,
+      "route": "Clients",
+      "beforeBytes": 390649,
+      "afterBytes": 390661,
+      "deltaBytes": 12,
+      "beforeRequests": 10,
+      "afterRequests": 10
+    },
+    {
+      "width": 390,
+      "route": "Work",
+      "beforeBytes": 390649,
+      "afterBytes": 390661,
+      "deltaBytes": 12,
+      "beforeRequests": 10,
+      "afterRequests": 10
+    }
+  ]
+}

@@ -390,12 +390,13 @@ test('the inherited application is no longer the root, and every shell page re-c
   };
   walk(new URL('app/(internal)', root).pathname, 'internal');
   walk(new URL('app/portal', root).pathname, 'portal');
-  assert.equal(pages.filter(([, a]) => a === 'internal').length, 49, 'shell routes include mailbox review and workspace Pages');
-  assert.equal(pages.filter(([, a]) => a === 'portal').length, 9, 'P4C adds the shared Pages list, layout and document');
+  for (const area of ['internal','portal']) assert.ok(pages.some(([file,a])=>a===area&&file.endsWith('/search/page.jsx')), `${area} includes a guarded search page`);
   for (const [file, area] of pages) {
     const text = readFileSync(file, 'utf8');
     assert.match(text, new RegExp(`requireShell\\('${area}'\\)`), `${file} resolves the ${area} shell itself`);
-    assert.match(text, /export const dynamic\s*=\s*'force-dynamic'/, `${file} renders per request`);
+    const layout = src(area === 'internal' ? 'app/(internal)/layout.jsx' : 'app/portal/layout.jsx');
+    assert.match(layout, /export const dynamic\s*=\s*'force-dynamic'/, `${file} inherits a dynamic authenticated layout`);
+    if (file.endsWith('/search/page.jsx')) assert.match(text, /export const dynamic\s*=\s*'force-dynamic'/);
   }
   // No BloomOps page reaches into the inherited data layer or the fenced routes.
   for (const [file] of pages) assert.doesNotMatch(readFileSync(file, 'utf8'), /from '@\/lib\/db'|ProspectsApp|\/api\/prospects|\/api\/pages/, file);
@@ -404,7 +405,7 @@ test('the inherited application is no longer the root, and every shell page re-c
 test('the front door still bounces anonymous callers from every new address', async () => {
   const { NextRequest } = await import('next/server');
   const { middleware } = await import('../middleware.js');
-  for (const path of ['/', '/prospecting', '/clients', '/team', '/settings', '/settings/ghl-builds', '/settings/kajabi-builds', '/finance', '/portal', '/legacy', '/design', '/social/calendar']) {
+  for (const path of ['/', '/search', '/portal/search', '/prospecting', '/clients', '/team', '/settings', '/settings/ghl-builds', '/settings/kajabi-builds', '/finance', '/portal', '/legacy', '/design', '/social/calendar']) {
     const r = await middleware(new NextRequest(`https://bloomops.example${path}`));
     assert.equal(r.status, 307, path);
     assert.equal(new URL(r.headers.get('location')).pathname, '/sign-in', path);

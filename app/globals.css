@@ -2240,3 +2240,12 @@ html[data-theme="light"]{ --highlight-wash: rgba(220,174,94,0.42); }
   .settings-grid { grid-template-columns: 190px minmax(0, 1fr); }
   .settings-rail { display: block; }
 }
+
+/* N1C: route-local search. Shared chrome contains only an ordinary link. */
+.bo-topbar-tools { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.bo-search-entry { display:flex; align-items:center; gap:12px; min-height:44px; padding:10px 16px; margin-bottom:12px; color:var(--bo-ink); text-decoration:none; border:1px solid var(--bo-border); border-radius:12px; background:var(--bo-snow); }
+.bo-search-entry:hover { background:var(--bo-surface-tint); }
+.bo-search-entry-compact { width:44px; justify-content:center; padding:10px; margin:0; }
+@media (min-width:768px) and (max-width:1023px) { .bo-sidebar-scroll>.bo-search-entry { padding:10px; justify-content:center; }.bo-sidebar-scroll>.bo-search-entry span { display:none; } }
+
+@media (min-width:768px) { .bo-topbar-internal .bo-search-entry-compact { display:none; } }

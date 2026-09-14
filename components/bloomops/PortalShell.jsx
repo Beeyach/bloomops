@@ -2,6 +2,7 @@ import BrandLogo from './BrandLogo';
 import AccountMenu from './AccountMenu';
 import ShellHosts from './ShellHosts';
 import PortalContentNav from './PortalContentNav';
+import SearchLink from './SearchLink';
 
 // The client portal chrome, rendered by app/portal/layout.jsx for Client
 // members only. Deliberately not the internal shell with parts hidden:
@@ -24,7 +25,7 @@ export default function PortalShell({ workspace, user, hasContent = false, hasPa
             <div className="bo-workspace-sub">Client portal</div>
           </div>
         </div>
-        <AccountMenu name={user.name} email={user.email} roleLabel="Client" workspaceName={workspace.name} placement="down" compact />
+        <div className="bo-topbar-tools"><SearchLink portal compact/><AccountMenu name={user.name} email={user.email} roleLabel="Client" workspaceName={workspace.name} placement="down" compact /></div>
       </header>
       {(hasContent||hasPages)&&<PortalContentNav hasContent={hasContent} hasPages={hasPages}/>}
       <main id="main" className="bo-portal-page" tabIndex={-1}>

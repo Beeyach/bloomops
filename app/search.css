@@ -1,0 +1,47 @@
+.bo-workspace-search { max-width:1040px; margin:0 auto; }
+.bo-search-form { display:flex; align-items:flex-end; gap:16px; margin:28px 0; }
+.bo-search-form label { display:flex; flex-direction:column; gap:10px; font-size:14px; font-weight:600; }
+.bo-search-form label:first-child { flex:1; min-width:0; }
+.bo-search-input { display:flex; align-items:center; gap:12px; min-height:48px; padding:0 14px; border:1px solid var(--bo-border); border-radius:12px; background:var(--bo-snow); }
+.bo-search-input input { min-width:0; width:100%; border:0; background:transparent; padding:12px 0; font-size:16px; color:var(--bo-ink); }
+.bo-search-input:focus-within { outline:2px solid var(--bo-ink); outline-offset:2px; }
+.bo-search-input input:focus { outline:none; }
+.bo-search-empty { margin:64px auto; max-width:440px; text-align:center; color:var(--bo-text-soft); }
+.bo-search-empty>svg { margin:0 auto 20px; }
+.bo-search-empty h2 { font-size:24px; color:var(--bo-ink); margin-bottom:12px; }
+.bo-search-empty p { font-size:16px; line-height:1.6; }
+.bo-search-summary { color:var(--bo-text-soft); font-size:15px; margin:0 0 28px; overflow-wrap:anywhere; }
+.bo-search-group { margin:0 0 36px; }
+.bo-search-group-head { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.bo-search-group-head h2 { font-size:22px; margin:0; }
+.bo-search-type-icon,.bo-search-record-icon { display:flex; align-items:center; justify-content:center; border-radius:10px; flex-shrink:0; }
+.bo-search-type-icon { width:40px; height:40px; }
+.bo-search-record-icon { width:36px; height:36px; }
+.bo-search-type-icon.lilac,.bo-search-record-icon.lilac { background:#eeebf6; color:#645376; }
+.bo-search-type-icon.mint,.bo-search-record-icon.mint { background:#e2f1eb; color:#356958; }
+.bo-search-type-icon.peach,.bo-search-record-icon.peach { background:#fbede1; color:#8a5d39; }
+.bo-search-group ul { list-style:none; padding:0; margin:0 0 12px; }
+.bo-search-group li { border-bottom:1px solid var(--bo-border); }
+.bo-search-result { display:flex; align-items:center; gap:16px; padding:18px 12px; min-height:72px; color:var(--bo-ink); text-decoration:none; border-radius:8px; }
+.bo-search-result:hover { background:var(--bo-snow); }
+.bo-search-result:focus-visible,.bo-search-entry:focus-visible { outline:2px solid var(--bo-ink); outline-offset:2px; }
+.bo-search-record-text { display:flex; flex:1; min-width:0; flex-direction:column; gap:6px; overflow-wrap:anywhere; }
+.bo-search-record-text strong { font-size:17px; font-weight:600; line-height:1.5; }
+.bo-search-record-text>span,.bo-search-record-text small { color:var(--bo-text-soft); font-size:14px; line-height:1.5; }
+.bo-search-result>svg { flex-shrink:0; }
+.bo-search-result .bo-prospect-avatar { width:36px; height:36px; flex-shrink:0; }
+.bo-search-pagination { display:flex; gap:16px; align-items:center; justify-content:space-between; padding:16px 0; }
+.bo-search-error { color:var(--bo-error-text); line-height:1.6; }
+.bo-search-loading>span { display:block; margin-bottom:20px; }
+.bo-search-skeleton { height:72px; margin:12px 0; background:#eae8ef; border-radius:12px; animation:bo-search-pulse 1.4s ease-in-out infinite alternate; }
+@keyframes bo-search-pulse { to { opacity:.45; } }
+@media (prefers-reduced-motion:reduce) { .bo-search-skeleton { animation:none; } }
+
+@media (max-width:767px) { .bo-search-form { flex-wrap:wrap; gap:16px 12px; }.bo-search-form label:first-child { flex-basis:100%; }.bo-search-form label:nth-child(2) { flex:1; min-width:0; }.bo-search-empty { margin:48px 0; }.bo-search-result { padding:16px 0; gap:12px; }.bo-search-pagination { gap:8px; }.bo-search-group-head h2 { font-size:21px; } }
+/* Reuse ProspectAvatar's artwork/detection in the search row geometry. */
+.bo-search-result .bo-prospect-avatar { position:relative; display:inline-grid; place-items:center; overflow:hidden; border:1px solid var(--bo-border); border-radius:10px; isolation:isolate; flex-basis:36px; }
+.bo-search-result .bo-prospect-garden { width:100%; height:100%; }
+.bo-search-result .bo-prospect-favicon { position:absolute; inset:0; width:100%; height:100%; padding:7px; object-fit:contain; background:var(--bo-snow); opacity:0; }
+.bo-search-result .bo-prospect-favicon.is-loaded { opacity:1; }
+
+.bo-search-results:focus { outline:none; }
