@@ -1,5 +1,7 @@
 # BloomOps Documentation Index
 
+Current owner priority: [Prospect sheet](PROSPECTING_SHEET.md), with [visual preview and staging evidence](previews/prospect-sheet/README.md). [BUILD_STATE](BUILD_STATE.md) records verification and the next task. Preserve [Bloomsi branding](BRANDING.md); older release directions below are historical.
+
 This repository uses selective context so coding agents do not need the entire product plan in every session.
 
 ## Always Read

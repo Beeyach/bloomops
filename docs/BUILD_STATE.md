@@ -1,4 +1,4 @@
-# BloomOps Build State
+# Bloomsi Build State
 
 ## Current direction — Prospect sheet deployed to staging; draft PR64 remains unmerged
 
@@ -18,7 +18,29 @@ Home/Clients/Work retain the same request/query counts and10 scripts each. Share
 
 The existing [staging workflow run34812410187](https://github.com/Bloomwired/bloomops/actions/runs/34812410187) succeeded on runtime commit `bbe828b0170258135013dba9e867833bbfa0b335`. Public `/api/version` reports `bbe828b`, and `/api/health` reports staging with all44 domain migrations healthy. The workflow's22 live checks and20 additional public browser checks pass. Live sign-in was visually inspected at desktop and phone sizes; the official logo bytes,1440/390/320 layouts, anonymous access denial and redirects are verified. Authenticated sheet/data journeys were tested in the isolated workspace; the owner's authenticated staging walkthrough has not been automated. No real prospect import, conversion, invitation or outreach was performed for acceptance.
 
-[Draft PR64](https://github.com/Bloomwired/bloomops/pull/64) contains the preserved prerequisite checkpoint `7dcb609`, reviewed sheet implementation `ca8612c`, and staging integration `bbe828b`. It remains unmerged and currently has conflicts against main. Later documentation-only commits record this result without changing the deployed runtime. **Next bounded task: reconcile the draft PR with main before merging**, preserving both accepted work and newer changes. The sheet/P5C slice is locally accepted and staged; broader P3/P5 work is not claimed complete. Production, DNS, original Leads That Bloom data, paid auditing, video work/tests and broader email expansion remain unchanged/paused.
+[Draft PR64](https://github.com/Bloomwired/bloomops/pull/64) contains the preserved prerequisite checkpoint `7dcb609`, reviewed sheet implementation `ca8612c`, and staging integration `bbe828b`. The implementation branch is reconciled with main `4b7acea` and remains unmerged. Later documentation-only commits record this result without changing the deployed runtime. **Next bounded task: authenticated staging acceptance**, followed by the draft PR readiness/merge checkpoint. The sheet/P5C slice is locally accepted and staged; broader P3/P5 work is not claimed complete. Production, DNS, original Leads That Bloom data, paid auditing, video work/tests and broader email expansion remain unchanged/paused.
+
+## PR64 reconciliation with main
+
+Merged main `4b7acea` into `feat/prospect-sheet` without rewriting branch history. Resolved the Pages conflict by preserving the completed workspace Pages screen; retained the current local branding-reference link. Main's branding captures and local acceptance script are preserved unchanged. Its older active-priority/resume instructions are retained below as a historical checkpoint; the sheet remains the current direction. The documentation index now points to that current state.
+
+The resulting application, dependency, migration, test and deployment files are byte-identical to the previously staged branch `8016bac` (runtime `bbe828b`). Only documentation/evidence and the previously accepted branding browser script are added or updated. No runtime rebuild, database mutation, browser fixture rerun or deployment is needed for this reconciliation. Patch hygiene, local documentation links, unchanged-runtime comparison, original source preservation and syntax of the imported browser script are checked. No fresh independent review trigger applies to this documentation/history reconciliation; the sheet and staging integration reviews remain accepted.
+
+## Historical main checkpoint — Bloomsi branding for staging
+
+Branding-only branch `feat/bloomsi-branding` in `/home/ary/Developer/bloomops-bloomsi-branding`, based on deployed main `618e18f`. Owner explicitly authorized applying the approved PR #58 logo/guide and deploying through the existing staging workflow, without production or DNS changes. Only the logo and guide are imported from PR #58 `bee6af5`; original/P1/P2 worktrees and unfinished Prospecting runtime remain separate.
+
+Implemented: original Bloomsi PNG replaces platform initial tiles on sign-in, internal and portal shells. Workspace names and person avatars remain their existing identities. Platform copy, browser titles and auth-mail text use Bloomsi; technical identifiers, stored workspaces and configured sender settings are preserved. Tablet branding uses the existing top bar for a readable full logo while retaining the navigation rail. No layout redesign, feature, migration or dependency change.
+
+Local acceptance: 54 relevant shell/auth/mail/config tests, final Cloudflare build and 64 built-Worker browser checks pass at five widths. Original PNG byte identity, workspace names, sign-in/account flows and inspected desktop/mobile/tablet captures are recorded in the [visual preview](previews/bloomsi-branding/README.md). Shared dependency reuse caused an initial local packaging failure; isolated `npm ci` fixed it. One fresh Sol High deployment review and one focused re-review are complete. Long-name sidebar overflow was fixed and verified. The reviewer retracted the portal clipping finding after the dedicated capture and full-artwork geometry checks. No remaining material finding. Exact-source staging gates are pending. Existing staging provisioning/idempotent migrations/bootstrap remain the deployment path; no new credential, schema or production target.
+
+Staging authentication now uses the public staging origin `https://staging.ops.gobloomwired.com`, matching the domain users open. Resend verified `mail.bloomsi.app` for sending and receiving. The deployed sender is `Bloomsi <sign-in@mail.bloomsi.app>`. A live sign-in request to the existing owner address was accepted and delivered with the Bloomsi subject and public staging callback. No production domain or Leadsthatbloom resource changed.
+
+Authentication and invitation emails render the approved Bloomsi lockup above the heading. The image is served from the same configured app origin, keeps useful `alt` text when images are blocked and leaves the sign-in button as the only action.
+
+The staging verifier now exercises the configured public origin. Its old Workers-address fallback did not match Better Auth's public origin and caused a false 403 after a successful deployment.
+
+After this branding deployment, resume P2B3 durable import receipts and synthetic commits in `/home/ary/Developer/bloomops-prospecting-p2`, where P2A/P2B1/P2B2 are accepted locally. P1 remains draft PR #60, unmerged. All real prospect imports, outreach and video work/tests remain paused. This checkpoint supersedes older pending E3A gate directions below: E3A was deployed on `618e18f` with 24 migrations. No Prospecting phase is deployed by this branding branch.
 
 ## Previous direction — P5B accepted; P5C next; email paused by owner
 
