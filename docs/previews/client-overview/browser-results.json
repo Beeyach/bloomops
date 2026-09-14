@@ -1,0 +1,29 @@
+{
+  "checks": [
+    "canonical client overview loads",
+    "services, work, deadlines and requests precede administrative details",
+    "multiple service engagements retain independent statuses",
+    "verification and client requests are distinct",
+    "upcoming and overdue work are separate",
+    "server streaming includes an honest loading fallback",
+    "readable layout and touch targets at 1440",
+    "readable layout and touch targets at 1024",
+    "readable layout and touch targets at 768",
+    "readable layout and touch targets at 390",
+    "readable layout and touch targets at 320",
+    "keyboard navigation has a visible focus outline",
+    "task opens its canonical full page",
+    "milestone destination has a real anchor",
+    "All projects stays scoped despite another readable client",
+    "services navigation stays on this client",
+    "existing detail editing persists after reload",
+    "contact editing remains available",
+    "assigned Team Member sees work but no restricted project or management controls",
+    "removing an assignment revokes the overview on the next request",
+    "foreign and missing clients have equal unavailable responses",
+    "Client accounts stay on the portal",
+    "empty overview describes absent work and onboarding without claiming completion",
+    "no browser runtime errors"
+  ],
+  "errors": []
+}

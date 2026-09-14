@@ -1,0 +1,21 @@
+{
+  "small": {
+    "queries": 18,
+    "bytes": 567,
+    "milliseconds": 36.54559900000004
+  },
+  "large": {
+    "queries": 18,
+    "bytes": 567,
+    "milliseconds": 9.880414999999857
+  },
+  "previousOverviewProjectRead": {
+    "items": 200,
+    "bytes": 111114
+  },
+  "currentTabProbe": {
+    "items": 1,
+    "bytes": 578
+  },
+  "note": "Synthetic SQLite/D1 adapter execution, not Cloudflare latency. Old listProjects default matches 6ab4d11. Summary adds new useful reads but avoids loading 200 projects merely to display tabs."
+}

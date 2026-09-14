@@ -1,0 +1,36 @@
+.overview { min-width: 0; }
+.services, .rows, .requests { list-style: none; margin: 0; padding: 0; }
+.services { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 32px; }
+.services li { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--bo-border); }
+.services li > div { min-width: 0; display: grid; gap: 4px; overflow-wrap: anywhere; }
+.columns { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 48px; }
+.columns > * { min-width: 0; }
+.subhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 0 4px; }
+.subhead h3 { font-size: 16px; font-weight: 600; margin: 0; }
+.rows li, .requests li { padding: 12px 0; border-bottom: 1px solid var(--bo-border); }
+.workLink { display: flex; align-items: center; gap: 12px; min-height: 44px; color: var(--bo-text); text-decoration: none; border-radius: 6px; }
+.workLink > span { min-width: 0; flex: 1; overflow-wrap: anywhere; font-weight: 500; }
+.workLink > svg { flex-shrink: 0; color: var(--bo-text-soft); }
+.workLink:hover { background: var(--bo-surface-2); }
+.workLink:focus-visible, .deadlineLink:focus-visible { outline: 2px solid var(--bo-focus); outline-offset: 3px; }
+.states { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 4px 0 0 28px; }
+.late { color: var(--bo-error-text); font-size: 14px; font-weight: 600; }
+.deadlineLink { display: flex; align-items: flex-start; gap: 16px; padding: 20px; background: var(--bo-surface-2); border-radius: 10px; color: var(--bo-text); text-decoration: none; }
+.deadlineLink > span:nth-child(2) { display: grid; flex: 1; min-width: 0; gap: 4px; overflow-wrap: anywhere; }
+.deadlineLink > svg, .dateIcon { flex-shrink: 0; }
+.dateIcon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; color: var(--bo-info-text); background: var(--bo-surface); }
+.deadlineDate { font-family: var(--bo-font-display); font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+.timezone { margin: 8px 0 0; color: var(--bo-text-soft); font-size: 13px; overflow-wrap: anywhere; }
+.overdue { display: grid; gap: 4px; margin-top: 20px; padding-left: 12px; border-left: 2px solid var(--bo-error); overflow-wrap: anywhere; }
+.overdue a { min-height: 44px; display: flex; align-items: center; }
+.progress { margin-bottom: 12px; }
+.progress progress { width: 100%; height: 6px; accent-color: var(--bo-success-text); }
+.loading { padding: 32px 0; display: grid; gap: 16px; color: var(--bo-text-soft); }
+.skeleton { height: 56px; background: var(--bo-surface-2); border-radius: 6px; }
+@media (max-width: 1024px) { .columns { gap: 24px; } }
+@media (max-width: 767px) { .columns, .services { grid-template-columns: minmax(0, 1fr); } .columns { gap: 0; } .deadlineLink { padding: 16px; gap: 12px; } }
+.progress progress { appearance: none; border: 0; border-radius: 6px; overflow: hidden; background: var(--bo-border); }
+.progress progress::-webkit-progress-bar { background: var(--bo-border); }
+.progress progress::-webkit-progress-value { background: var(--bo-success-text); border-radius: 6px; }
+.progress progress::-moz-progress-bar { background: var(--bo-success-text); border-radius: 6px; }
+@media (min-width: 768px) and (max-width: 900px) { .columns { grid-template-columns: minmax(0, 1fr); gap: 0; } }

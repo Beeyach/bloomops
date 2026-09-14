@@ -13,7 +13,7 @@ export function MilestoneProgress({ progress }) {
 export function MilestoneList({ items, controls = null }) {
   if (!items.length) return <p className="bo-body">No milestones to show yet.</p>;
   return <ol className="bo-milestones" aria-label="Milestones">
-    {items.map((item, index) => <li key={item.id} className="bo-milestone" data-milestone-id={item.id}>
+    {items.map((item, index) => <li key={item.id} className="bo-milestone" id={`milestone-${item.id}`} data-milestone-id={item.id}>
       <div className="bo-milestone-heading"><h3 className="bo-row-title">{item.name}</h3>
         <Status label={MILESTONE_STATUS_LABELS[item.status]} tone={item.status === 'completed' ? 'success' : item.status === 'waiting' ? 'warning' : 'neutral'} glyph={item.status === 'completed' ? 'check' : item.status === 'waiting' ? 'clock' : 'dot'} />
       </div>
