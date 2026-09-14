@@ -506,6 +506,32 @@
  .bo-sheet-page .bo-sheet-scroll .bo-sheet-resize{display:none;}
 }
 
+/* Compact desktop reading, with explicit navigation affordances. */
+.bo-sheet-page .bo-sheet-website { display:inline-flex; align-items:center; gap:6px; max-width:100%; }
+.bo-sheet-page .bo-sheet-website>span { min-width:0; overflow-wrap:anywhere; }
+.bo-sheet-page .bo-sheet-website>svg { flex:0 0 14px; width:14px; height:14px; margin:0; }
+.bo-sheet-page .bo-sheet-cell-content>.bo-sheet-next-action { display:inline-flex; align-items:center; justify-content:space-between; gap:8px; min-height:36px; max-width:100%; padding:6px 10px; border:1px solid #cdbbd3; border-radius:6px; background:#f6f0f8; color:#67466f; font-weight:500; line-height:1.4; text-decoration:none; }
+.bo-sheet-page .bo-sheet-next-action>span { min-width:0; overflow-wrap:anywhere; }
+.bo-sheet-page .bo-sheet-next-action>svg { flex:0 0 16px; width:16px; height:16px; margin:0; }
+.bo-sheet-page .bo-sheet-cell-content>.bo-sheet-next-action:hover { background:#ede2f1; border-color:#9f7eaa; }
+.bo-sheet-page .bo-sheet-cell-content>.bo-sheet-next-action:focus-visible { outline:2px solid var(--bo-focus); outline-offset:2px; }
+@media (min-width:768px) {
+ .bo-sheet-page .bo-sheet-table th,.bo-sheet-page .bo-sheet-table td { font-size:14px; line-height:1.45; padding-block:8px; }
+ .bo-sheet-page .bo-sheet-table th { height:44px; }
+ .bo-sheet-page .bo-sheet-table td { height:56px; }
+ .bo-sheet-page .bo-sheet-cell-content { min-height:36px; gap:8px; }
+ .bo-sheet-page .bo-sheet-stage>svg { width:16px; height:16px; }
+ .bo-sheet-page .bo-sheet-toolbar .bo-btn,.bo-sheet-page .bo-sheet-count,.bo-sheet-page .bo-sheet-search input,.bo-sheet-page .bo-sheet-active-filters,.bo-sheet-page .bo-sheet-footer { font-size:14px; }
+ .bo-sheet-page .bo-sheet-toolbar { gap:8px; padding-bottom:12px; }
+}
+@media (min-width:768px) and (pointer:fine) {
+ .bo-sheet-page .bo-sheet-toolbar .bo-btn { min-height:36px; padding:6px 10px; }
+ .bo-sheet-page .bo-sheet-search { min-height:40px; }
+}
+@media (max-width:767px),(pointer:coarse) {
+ .bo-sheet-page .bo-sheet-cell-content>.bo-sheet-next-action { min-height:44px; }
+}
+
 /* Full-page profile recovery keeps metadata separate from recovered values. */
 .bo-profile-recovery { padding:20px; margin:20px 0; border:1px solid var(--bo-border); border-radius:10px; background:var(--bo-snow); }.bo-profile-recovery h3 { margin:0 0 12px; font-size:18px; }.bo-profile-recovery>div { display:flex; align-items:center; flex-wrap:wrap; gap:12px; padding:12px 0; }.bo-profile-recovery>div>span { margin-right:auto; font-size:15px; }.bo-profile-recovery time { display:block; margin-top:6px; color:var(--bo-text-soft); font-size:14px; }
 .bo-prospect-creation-result h2,.bo-prospect-create > h2{font-size:18px;font-weight:600;line-height:1.4}

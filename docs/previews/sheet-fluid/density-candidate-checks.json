@@ -1,0 +1,18 @@
+{
+  "method": "Exact candidate CSS and matching presentation DOM on synthetic staging records; deployed acceptance pending",
+  "checks": [
+    "Compact typography and horizontal fit at 1920",
+    "Website icon stays beside URL and Next Action is visibly interactive at 1920",
+    "Compact typography and horizontal fit at 1440",
+    "Website icon stays beside URL and Next Action is visibly interactive at 1440",
+    "Compact typography and horizontal fit at 1024",
+    "Website icon stays beside URL and Next Action is visibly interactive at 1024",
+    "Compact typography and horizontal fit at 768",
+    "Website icon stays beside URL and Next Action is visibly interactive at 768",
+    "Compact typography and horizontal fit at 390",
+    "Website icon stays beside URL and Next Action is visibly interactive at 390",
+    "Compact typography and horizontal fit at 320",
+    "Website icon stays beside URL and Next Action is visibly interactive at 320",
+    "Next Action has visible keyboard focus"
+  ]
+}

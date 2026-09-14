@@ -1,6 +1,14 @@
 # Bloomsi Build State
 
-## Current direction — fluid prospect sheet accepted in staging; N2 not started
+## Current direction — compact prospect sheet and clear links; staging refinement pending
+
+Owner requested smaller prospect-sheet fonts, website icons beside their URLs and a clearly clickable Next Action. The existing isolated PR73 worktree now changes only sheet CSS and presentation markup: desktop table/toolbar text is14px with tighter row spacing, phones retain16px text and44px action targets, website text/icon share one flex link, and Next Action has a tinted border, chevron, hover and keyboard focus. Its canonical profile destination is unchanged. The accepted full-screen sheet remains in place.
+
+Final `npm run cf:build`, patch hygiene and13 candidate checks pass across1920/1440/1024/768/390/320 widths. Candidate previews use exact CSS and matching markup on synthetic staging records; they are not deployed-build evidence. Desktop and phone captures were visually inspected. One fresh Sol High deployment review found no material findings; no re-review was needed. [Evidence](previews/sheet-fluid/README.md). No schema, query, dependency, authorization or workflow change; no new data writes, broad test suite or migration run is needed for this presentation refinement.
+
+PR73 remains draft/unmerged. Existing staging remains43374cc until this refinement passes review and its authorized staging workflow completes. N2 is not started. Original LTB/voices, production/DNS, real imports/outreach, paid/video work and unrelated worktrees remain unchanged.
+
+## Previous accepted direction — fluid prospect sheet accepted in staging; N2 not started
 
 Owner requested the prospect table fill the available screen before N2. Worktree `/home/ary/Developer/bloomops-sheet-fluid`, branch `fix/prospect-sheet-fluid`, starts from main `85ab496`. Runtime `43374cc` changes only `app/prospecting.css`: smaller desktop gutters, an expanding sheet/records viewport, normal-height rows and pagination below it. Long results scroll inside with the sticky header available; phones and short screens retain natural page flow. Toolbar-bound desktop menus stay within the canvas when buttons wrap. No JavaScript, schema, query, dependency or workflow change.
 

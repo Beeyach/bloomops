@@ -1,5 +1,19 @@
 # Fluid prospect sheet
 
+## Compact typography and clear links follow-up
+
+The owner requested smaller table text, an external-link icon beside each URL and a visibly clickable Next Action. Desktop sheet text is now14px with tighter row spacing; phone text remains16px and action targets remain44px. Website text/icon share a flex link. Next Action uses a quiet tinted border, chevron and hover/focus treatment while preserving its canonical profile destination. Full-screen sizing stays in place. Only sheet CSS and presentation JSX change; no business logic, query, authorization, schema or workflow change.
+
+The final production OpenNext build and [13 candidate checks](density-candidate-checks.json) pass, covering six widths and actual keyboard focus. These previews use exact candidate CSS and matching presentation markup on existing synthetic staging records. Viewport changes can refresh React rows; checks wait for loaded records before applying the candidate markup. This evidence is distinct from final deployed acceptance, which remains pending.
+
+- [Compact desktop candidate](density-candidate-1440.jpg)
+- [Phone candidate](density-candidate-390.jpg)
+- [Phone Next Action](density-candidate-390-action.jpg)
+
+One fresh Sol High deployment review found no material findings; no re-review was needed. Staging is still the previous accepted fluid-sheet runtime below. No record edits or external audits were started.
+
+## Earlier fluid-height correction
+
 The sheet previously filled the workspace width but collapsed around a short result set, leaving most of a tall screen unused. It now fills the available desktop/tablet height with narrower outer gutters. Rows keep their normal text size and height; the records viewport expands and scrolls, with pagination below it. Phones and short screens keep their existing natural page flow.
 
 Only `app/prospecting.css` changes runtime behavior. No JavaScript, query, schema, dependency or deployment configuration change. Production OpenNext build and [23 browser/layout checks](layout-checks.json) pass. Checks used exact candidate CSS in the existing staging DOM; long-list clones were temporary layout fixtures, never database records. Real selection/clear was exercised without saving data. Final Filter/Sort/Columns checks pass at all six main widths; desktop menus anchor inside the toolbar so wrapped buttons cannot place a popup outside the canvas.
