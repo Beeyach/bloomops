@@ -1,0 +1,30 @@
+{
+  "runtime": "00d73a9",
+  "workflow": "https://github.com/Bloomwired/bloomops/actions/runs/34887059226",
+  "workspace": "Bloomsi QA — Stack 64–66",
+  "checks": [
+    "Staging runtime00d73a9 and healthy schema45 verified",
+    "Desktop Fit selection saved Maybe directly and canonical readback confirms it without review",
+    "Successive Platform selection saves WordPress while preserving saved Fit without discard prompt",
+    "Undo edits restores both real staged field changes to original values",
+    "Reload displays restored canonical Fit and Platform; existing recovery copies retained",
+    "No horizontal page or records overflow at 1920px",
+    "No horizontal page or records overflow at 1440px",
+    "No horizontal page or records overflow at 1280px",
+    "No horizontal page or records overflow at 1024px",
+    "No horizontal page or records overflow at 768px",
+    "No horizontal page or records overflow at 390px",
+    "Phone Fit selection saves Strong with canonical readback and44px Fit/Platform/Outreach targets",
+    "Phone Undo restores original Fit and Platform",
+    "Phone Outreach Record interest opens expanded preselected canonical form without submitting",
+    "Phone profile has no horizontal overflow",
+    "Task tab returned to desktop All prospects without pending task edits; existing recovery copies preserved",
+    "Final canonical profile fields and sources match baseline; only revision/updatedAt and expected edit/undo history changed"
+  ],
+  "limitations": [
+    "Remote native-popup visibility is not exposed; local Chromium true-click/tap checks passed.",
+    "Successful/failed creation regressions and adversarial permission/failure checks used isolated synthetic local storage; live checks use existing fictional QA prospect.",
+    "Version endpoint reports shortened SHA; verified00d73a9 against workflow candidate00d73a926a3c56f63d4c6bd58fc54313bf274d0e.",
+    "Staging save/undo retains expected activity and advances revision; no claim of byte-identical history."
+  ]
+}

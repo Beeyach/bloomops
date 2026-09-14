@@ -16,7 +16,7 @@ The final OpenNext build passes.122 relevant Node tests cover the sheet, drafts,
 - [Six boundary/touch checks](boundary-checks.json): first-tap menus/44px targets, real wrong-user save denial and no stale UI/draft rewrite after context invalidation.
 - [11 navigation/data checks](navigation-checks.json): creation, unchanged editor cancel, evidence/website links, search, saved edits leaving filters, Outreach event form, client handoff review and actual25-record same-workspace export/audit packages.
 
-All mutations use an independent copy of the synthetic D1/R2 fixture onlocalhost8805. All provider egress is blocked and the provider log is empty. The task-only Worker is stopped. Two harness assumptions were corrected without runtime changes: this populated fixture already contains the exact sample CSV receipt, and manual audit packages carry canonical IDs under context.prospect. Both actual behaviors are explicitly checked.
+All local test mutations use an independent copy of the synthetic D1/R2 fixture onlocalhost8805. All provider egress is blocked and the provider log is empty. The task-only Worker is stopped. Two harness assumptions were corrected without runtime changes: this populated fixture already contains the exact sample CSV receipt, and manual audit packages carry canonical IDs under context.prospect. Both actual behaviors are explicitly checked.
 
 Build-reported first-load estimates remain103kB for Home/Clients,112kB for Portal and111kB for Search. Prospecting changes121→122kB. These are rounded build estimates, not production latency measurements. No backend query, schema, dependency or workflow change; no new migrations.
 
@@ -29,4 +29,14 @@ Desktop/phone sheet and profile conflict states were inspected. Full-page phone 
 - [Desktop protected conflict](profile-conflict-1440.png)
 - [Phone protected conflict](profile-conflict-390.png)
 
-One fresh Sol High review found no material findings; no re-review was needed. Staging deployment/acceptance are pending. PR73 remains draft; N2 is paused for this owner-requested QA. Original LTB/voices, unrelated work, real outreach/imports, paid/video work, production and DNS remain unchanged.
+## Staging acceptance
+
+One fresh Sol High review found no material findings; no re-review was needed. [Workflow34887059226](https://github.com/Bloomwired/bloomops/actions/runs/34887059226) deployed runtime `00d73a926a3c56f63d4c6bd58fc54313bf274d0e` successfully. [Open staging](https://staging.ops.gobloomwired.com/prospecting).
+
+[17 authenticated deployed checks](staging-checks.json) pass: consecutive desktop Fit/Platform saves with canonical readback and no discard/review, Undo and reload, six widths without horizontal overflow, phone save/undo with44px controls, Outreach interest form navigation without submission, and version/health45. The only changed staging record was the existing fictional QA Garden Studio in Bloomsi QA — Stack64–66. All profile fields and sources match their starting values after Undo; revision/timestamp and expected edit/undo history advance. Existing user recovery copies, preferences and other browser tabs were preserved.
+
+- [Staging desktop after consecutive saves](staging-1440.jpg)
+- [Staging phone after saving Fit](staging-390.jpg)
+- [Staging phone Outreach interest form](staging-profile-390.jpg)
+
+These live captures were inspected. The remote browser cannot expose native popup-open state; actual first-click/tap popup checks are from the final local Chromium build. Creation and adversarial permission/failure regression tests remain local synthetic checks. PR73 remains draft/unmerged; N2 is unstarted. Original LTB/voices, unrelated work, real outreach/imports, paid/video work, production and DNS remain unchanged.
