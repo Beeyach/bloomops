@@ -1,0 +1,19 @@
+{
+  "runtime": "f042754a01d96f2dc37737f9f944bcfddf4b6a27",
+  "workflow": 34877680036,
+  "method": "Actual deployed UI on existing synthetic QA staging records; no injected CSS/markup, no record edits",
+  "checks": [
+    "Actual deployed runtime f042754 and staging health45 verified",
+    "Recorded Kajabi platforms load their local brand marks",
+    "Live choices fit and remain labelled at 1920",
+    "Live choices fit and remain labelled at 1440",
+    "Live choices fit and remain labelled at 1024",
+    "Live choices fit and remain labelled at 768",
+    "Live choices fit and remain labelled at 390",
+    "Live choices fit and remain labelled at 320",
+    "Keyboard opens labelled platform picker with seven choices and custom entry",
+    "Escape cancels platform editing without a save",
+    "Fit control opens the four existing canonical choices",
+    "Platform filter shows the same quick-picks and retains the current filter"
+  ]
+}

@@ -1,12 +1,12 @@
 # Bloomsi Build State
 
-## Current direction — prospect sheet pickers and platform marks; staging pending
+## Current direction — prospect sheet pickers and platform marks accepted in staging
 
 Owner requested more useful dropdowns, logos and icons. In the existing isolated PR73 branch, Platform now offers seven common choices plus custom text in row editing, filtering and bulk editing. Platform/Fit cells are labelled buttons with chevrons; Fit has distinct icons and readable colored states. Seven unmodified platform website marks are served locally with source attribution. Unknown/custom values keep a neutral icon and their exact text. Custom saved views now use the existing colored table icon instead of an unavailable icon name. Default column proportions give these controls readable space while preserving the compact full-screen layout.
 
 The final OpenNext build,33 focused sheet/draft tests,29 real built-Worker browser checks and four supplementary logo/touch checks pass. Checks use a task-only copy of the existing synthetic database on localhost8802, with provider egress blocked. Platform/custom/Fit saves and undo, no-write-before-review, filtering, bulk preview/cancel, keyboard/Escape, six widths, all seven image decodes and44px phone targets are covered. Initial visual feedback adjusted default column proportions/padding. A null-versus-empty test assertion was corrected; a full system temporary directory caused browser crashes, resolved using task-local temporary storage. [Evidence](previews/sheet-fluid/README.md). One fresh Sol High staging review found no material findings; no re-review was needed.
 
-No backend, schema, dependency or workflow change. Outreach remains derived from existing history. Staging remains54dd8ae until the reviewed refinement is deployed. PR73 stays draft/unmerged; N2 is not started. Original LTB/voices, other worktrees, production/DNS, real imports/outreach and paid/video work remain untouched.
+No backend, schema, dependency or workflow change. Outreach remains derived from existing history. **Live in [staging](https://staging.ops.gobloomwired.com/prospecting)** on `f042754a01d96f2dc37737f9f944bcfddf4b6a27`; [workflow34877680036](https://github.com/Bloomwired/bloomops/actions/runs/34877680036) succeeded. **12 actual deployed checks pass** for runtime/health45, local marks, six widths/touch targets, keyboard Platform entry/cancel, Fit choices and the existing platform filter. Desktop/phone captures were inspected. No staging record edits were needed; save/undo acceptance used the isolated local fixture. The task-only local Worker8802 is stopped. Main remains85ab496. PR73 stays draft/unmerged; next bounded task is its readiness/merge before N2. N2 is not started. Original LTB/voices, other worktrees, production/DNS, real imports/outreach and paid/video work remain untouched.
 
 ## Previous accepted direction — compact prospect sheet and clear links accepted in staging
 

@@ -13,7 +13,16 @@ The final OpenNext build and33 existing focused sheet/draft tests pass. [29 buil
 - [Desktop editor](pickers-picker-1440.png)
 - [Phone editor](pickers-picker-390.png)
 
-The first preview required wider default Platform/Fit proportions and tighter control gaps. A test compared nullable data to a native input’s empty string; corrected without a runtime change. Chromium later crashed because system `/tmp` was full; a task-local TMPDIR and already available shared libraries resolved the harness issue. All recorded checks pass on the final build. One fresh Sol High review found no material findings; no re-review was needed. Actual staging acceptance remains pending. No real record edits/imports/outreach or production/DNS changes. N2 remains unstarted.
+The first preview required wider default Platform/Fit proportions and tighter control gaps. A test compared nullable data to a native input’s empty string; corrected without a runtime change. Chromium later crashed because system `/tmp` was full; a task-local TMPDIR and already available shared libraries resolved the harness issue. All recorded checks pass on the final build. One fresh Sol High review found no material findings; no re-review was needed. Actual staging acceptance is recorded below. No real record edits/imports/outreach or production/DNS changes. N2 remains unstarted.
+
+## Picker staging result
+
+[Open staging](https://staging.ops.gobloomwired.com/prospecting). [Workflow34877680036](https://github.com/Bloomwired/bloomops/actions/runs/34877680036) succeeded on runtime `f042754a01d96f2dc37737f9f944bcfddf4b6a27`. [12 live checks](pickers-staging-checks.json) pass against actual deployed markup/styles: runtime and healthy45 migrations, local Kajabi marks, six widths and touch sizing, keyboard Platform entry/Escape, four existing Fit options, and quick-pick filtering with the current value retained. No preview CSS/markup injection or staging record edits. Save/undo data checks used the isolated local fixture above.
+
+- [Live desktop](pickers-staging-1440.jpg)
+- [Live phone properties](pickers-staging-390.jpg)
+
+Both captures were visually inspected. The task-only local Worker8802 is stopped. PR73 remains draft/unmerged; N2 has not started. No production/DNS or original LTB changes.
 
 ## Compact typography and clear links follow-up
 
