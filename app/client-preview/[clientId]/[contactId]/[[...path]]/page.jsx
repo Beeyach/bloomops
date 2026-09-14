@@ -1,3 +1,4 @@
+import UserAvatar from '@/components/bloomops/UserAvatar';
 import { notFound } from 'next/navigation';
 import { sql } from 'drizzle-orm';
 import { requireShell } from '@/lib/bloomops/shell-server.mjs';
@@ -75,7 +76,7 @@ export default async function ClientPreviewPage({ params, searchParams }) {
         {children.length>0&&<section className="bo-section"><h2 className="bo-h2">Subpages</h2><PageLinks rows={children} base={base}/></section>}
         <section className="bo-section"><h2 className="bo-h2">Discussion</h2>
           <nav className="bo-portal-content-actions" aria-label="Discussion views"><Button href={`${base}/pages/${page.id}`}>Open</Button><Button href={`${base}/pages/${page.id}?resolved=true`}>Resolved</Button></nav>
-          {discussion.messages ? <ul className="bo-rows">{discussion.messages.map(message=><li key={message.id} className="bo-row"><div><strong>{message.author}</strong><p className="bo-body" style={{whiteSpace:'pre-wrap'}}>{message.body}</p></div></li>)}</ul> : discussion.threads.length ? <ul className="bo-rows">{discussion.threads.map(thread=><li className="bo-row" key={thread.id}><div><strong>{thread.author}</strong><p className="bo-body">{thread.preview}</p><a className="bo-link" href={`${base}/pages/${page.id}?thread=${thread.id}`}>View discussion ({thread.count})</a></div></li>)}</ul> : <p className="bo-body">No discussions here yet.</p>}
+          {discussion.messages ? <ul className="bo-rows">{discussion.messages.map(message=><li key={message.id} className="bo-row"><div><span className="bo-comment-author"><UserAvatar seed={message.author} size={28} src={`/api/bloomops${base}/pages/${page.id}/photos/${message.id}`}/><strong>{message.author}</strong></span><p className="bo-body" style={{whiteSpace:'pre-wrap'}}>{message.body}</p></div></li>)}</ul> : discussion.threads.length ? <ul className="bo-rows">{discussion.threads.map(thread=><li className="bo-row" key={thread.id}><div><span className="bo-comment-author"><UserAvatar seed={thread.author} size={28} src={`/api/bloomops${base}/pages/${page.id}/photos/${thread.id}`}/><strong>{thread.author}</strong></span><p className="bo-body">{thread.preview}</p><a className="bo-link" href={`${base}/pages/${page.id}?thread=${thread.id}`}>View discussion ({thread.count})</a></div></li>)}</ul> : <p className="bo-body">No discussions here yet.</p>}
           <div className="bo-form-actions">{number>1&&<Button href={discussionHref(base,page.id,query,number-1)}>Previous page</Button>}{discussion.more&&<Button href={discussionHref(base,page.id,query,number+1)}>Next page</Button>}</div>
         </section>
       </article>;

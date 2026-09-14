@@ -7,7 +7,7 @@ import { toast } from '@/lib/toast.mjs';
 import { daysUntil, formatDate, plural } from '@/lib/bloomops/format.mjs';
 import Dialog from './Dialog';
 import { Button, EmptyState, Field, Notice, PageHeader, Section, Status, fieldAria } from './Primitives';
-import { initialsOf } from './session-client.mjs';
+import UserAvatar from './UserAvatar';
 
 // The Team screen for people who hold members.manage. Every change goes
 // through the existing routes (A3, fenced by A4), which own the rules:
@@ -59,17 +59,16 @@ export function MemberRow({ member, isSelf, busy, onSuspend, onReinstate, onRemo
   const canAct = !isSelf && member.status !== 'removed';
   return (
     <li className="bo-row bo-row-wrap">
-      <span className="bo-avatar" aria-hidden="true">
-        {initialsOf(member.name, member.email)}
-      </span>
+      <UserAvatar seed={member.name||member.email} src={`/api/bloomops/members/${member.id}/photo`}/>
       <span className="bo-row-text">
         <span className="bo-row-title">
           {member.name || member.email}
           {isSelf && <span className="bo-soft"> (you)</span>}
         </span>
         <span className="bo-row-meta">
-          {member.email} · {member.roleLabel}
-          {joined ? ` · ${joined}` : ''}
+          <span className="bo-member-email">{member.email}</span>
+          <span className="bo-member-role">{member.roleLabel}</span>
+          {joined && <span className="bo-member-joined">{joined}</span>}
         </span>
       </span>
       <span className="bo-row-end">
