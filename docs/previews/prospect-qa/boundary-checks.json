@@ -1,0 +1,10 @@
+{
+  "checks": [
+    "First tap opens Platform with44px target",
+    "First tap opens Fit with44px target",
+    "First tap opens Outreach with44px target",
+    "Wrong-user direct save is denied without changes",
+    "Late direct-save response cannot repopulate an invalidated sheet",
+    "Late response does not rewrite disposed recovery copies"
+  ]
+}

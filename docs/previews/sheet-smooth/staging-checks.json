@@ -1,0 +1,19 @@
+{
+  "runtime": "87ae52355b0086f6706a38a45f2d190867071d76",
+  "workflow": "https://github.com/Bloomwired/bloomops/actions/runs/34889760236",
+  "checks": [
+    "Staging87ae523 version and healthy schema45 verified",
+    "Live Fit selection saved Strong with canonical readback",
+    "Consecutive live Platform save preserves Fit and canonical values",
+    "Live desktop saves retain table DOM with0px movement and no table-wide Updating message",
+    "Live desktop Undo restores baseline fields and sources",
+    "Live phone save has0px table movement, no Updating interruption and no horizontal overflow",
+    "Live phone Undo and desktop reload preserve starting fields and sources; only expected revision/time/history changed",
+    "Task tab returned to desktop All prospects with restored displayed values and no pending task edits"
+  ],
+  "limits": [
+    "Only existing fictional QA Garden Studio in Bloomsi QA workspace edited; fields/sources restored through Undo. Expected edit/undo history and revision/time changes retained.",
+    "Held/delayed/failed-response, permission and broader regression checks are local synthetic tests.",
+    "Existing user recovery copies/preferences and other browser tabs preserved."
+  ]
+}

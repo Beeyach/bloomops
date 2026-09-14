@@ -1,0 +1,16 @@
+{
+  "checks": [
+    "Failed creation retains its real unsaved warning",
+    "Create form opens the actual new profile without a discard prompt",
+    "Unchanged profile editor cancels without warning",
+    "Evidence action opens its existing section",
+    "Website action is a separate safe external link",
+    "Search shows the created canonical record and singular count",
+    "A saved edit leaving the filter disappears without a false failure",
+    "Outreach interest opens the correct explicit event form",
+    "Client handoff opens its existing guarded review",
+    "export.json contains25 distinct same-workspace canonical records",
+    "audit.json contains25 distinct same-workspace canonical records"
+  ],
+  "dialogs": []
+}

@@ -1,0 +1,18 @@
+{
+  "runtime": "3949fc6577639388d24482f45d19723893c3bf47",
+  "workflow": "https://github.com/Bloomwired/bloomops/actions/runs/34883209541",
+  "checks": [
+    "Deployed Fit choice focuses readable unsaved review with visible Save changes at1440",
+    "Deployed keyboard Tab reaches Save changes",
+    "Deployed review and Save controls fit width1920",
+    "Deployed review and Save controls fit width1024",
+    "Deployed review and Save controls fit width768",
+    "Deployed review and Save controls fit width390",
+    "Deployed review and Save controls fit width320",
+    "Deployed Cancel closes pending review",
+    "Deployed phone Platform selection automatically focuses and reveals Save changes",
+    "All staging prospect rows remain byte-identical after review/cancel checks",
+    "Deployed Outreach opens the correct expanded contact form without submitting",
+    "Deployed runtime3949fc6 and staging health are verified"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "checks": [
+    "All seven local platform marks decode in browser",
+    "Native picker and Escape usable at 1440 desktop",
+    "Real touch viewport retains44px platform target",
+    "Native picker and Escape usable at 390 touch"
+  ]
+}

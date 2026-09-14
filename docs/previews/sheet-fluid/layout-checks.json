@@ -1,0 +1,28 @@
+{
+  "method": "Exact candidate CSS applied in the existing staging browser; no server/data writes. Layout clones used only for long-list scroll proof and removed. Final deployed CSS acceptance follows.",
+  "checks": [
+    "Fluid sheet has no horizontal scrolling at 1920x1080",
+    "Sheet fills available width and height with visible pagination at 1920x1080",
+    "Fluid sheet has no horizontal scrolling at 1440x900",
+    "Sheet fills available width and height with visible pagination at 1440x900",
+    "Fluid sheet has no horizontal scrolling at 1024x900",
+    "Sheet fills available width and height with visible pagination at 1024x900",
+    "Fluid sheet has no horizontal scrolling at 768x1000",
+    "Sheet fills available width and height with visible pagination at 768x1000",
+    "Fluid sheet has no horizontal scrolling at 390x844",
+    "Phone or short screen keeps natural page flow at 390x844",
+    "Fluid sheet has no horizontal scrolling at 320x780",
+    "Phone or short screen keeps natural page flow at 320x780",
+    "Fluid sheet has no horizontal scrolling at 1280x540",
+    "Phone or short screen keeps natural page flow at 1280x540",
+    "Long visual result list scrolls within the expanded records viewport",
+    "Sticky header and pagination stay available with long results",
+    "Actual bulk selection and clear remain usable in the fluid sheet",
+    "Final toolbar-anchored Filter, Sort and Columns fit at 1920 pixels",
+    "Final toolbar-anchored Filter, Sort and Columns fit at 1440 pixels",
+    "Final toolbar-anchored Filter, Sort and Columns fit at 1024 pixels",
+    "Final toolbar-anchored Filter, Sort and Columns fit at 768 pixels",
+    "Final toolbar-anchored Filter, Sort and Columns fit at 390 pixels",
+    "Final toolbar-anchored Filter, Sort and Columns fit at 320 pixels"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "runtime": "54dd8aec44c13ae4540018abaf2d1a484d60f31f",
+  "workflow": 34874879661,
+  "method": "Actual deployed CSS and JSX with synthetic staging records, no injection or record edits",
+  "checks": [
+    "Actual deployed runtime54dd8ae and staging health45 confirmed; no injected preview",
+    "Compact typography and horizontal fit at 1440",
+    "Website icon stays beside URL and Next Action is visibly interactive at 1440",
+    "Compact typography and horizontal fit at 1920",
+    "Website icon stays beside URL and Next Action is visibly interactive at 1920",
+    "Compact typography and horizontal fit at 1024",
+    "Website icon stays beside URL and Next Action is visibly interactive at 1024",
+    "Compact typography and horizontal fit at 768",
+    "Website icon stays beside URL and Next Action is visibly interactive at 768",
+    "Compact typography and horizontal fit at 390",
+    "Website icon stays beside URL and Next Action is visibly interactive at 390",
+    "Compact typography and horizontal fit at 320",
+    "Website icon stays beside URL and Next Action is visibly interactive at 320",
+    "External website retains safe HTTPS destination, separate tab and noreferrer",
+    "Deployed Next Action has visible keyboard focus",
+    "Keyboard Enter opens the original full-page prospect profile",
+    "Returning from profile restores the sheet view and two synthetic results"
+  ]
+}

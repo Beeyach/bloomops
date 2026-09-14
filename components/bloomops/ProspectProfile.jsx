@@ -14,7 +14,7 @@ const entries=section=>Object.entries(PROSPECT_FIELDS).filter(([,v])=>v.section=
 const time=value=>value?new Date(value).toLocaleString('en-US',{timeZone:'UTC',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}):'Not checked';
 const tone=fit=>fit==='strong'?'success':fit==='hold'?'warning':'neutral';
 function useReady(){const [ready,setReady]=useState(false);useEffect(()=>setReady(true),[]);return ready;}
-function useUnsaved(active){useEffect(()=>{if(!active)return;const leave=e=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',leave);return()=>window.removeEventListener('beforeunload',leave);},[active]);}
+function useUnsaved(active){const enabled=useRef(active);enabled.current=active;useEffect(()=>{if(!active)return;const leave=e=>{if(!enabled.current)return;e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',leave);return()=>window.removeEventListener('beforeunload',leave);},[active]);return()=>{enabled.current=false;};}
 function EditFields({section,values,setValues,sources,setSources,errors={},withSources=false}){
  return <div className={`bo-prospect-fields bo-prospect-fields-${section}`}>{entries(section).map(([key,spec])=>{
   const id=`prospect-${key}`,aria=fieldAria({id,hint:spec.hint,error:errors[key]}),value=values[key]??(key==='fit'?'unknown':'');
@@ -22,7 +22,7 @@ function EditFields({section,values,setValues,sources,setSources,errors={},withS
   return <div key={key} className={spec.type==='textarea'?'bo-prospect-field-wide':undefined}><Field id={id} label={spec.label} hint={spec.hint} error={errors[key]} optional={!spec.required&&key!=='fit'}>
    {spec.type==='fit'?<select {...aria} className="bo-control" value={value} onChange={change}>{Object.entries(PROSPECT_FIT).map(([k,label])=><option key={k} value={k}>{label}</option>)}</select>:spec.type==='textarea'?<textarea {...aria} className="bo-control" rows={key==='draftBody'?10:4} maxLength={spec.max} value={value} onChange={change}/>:<input {...aria} className="bo-control" type={spec.type||'text'} required={spec.required} maxLength={spec.max} value={value} onChange={change} autoComplete="off"/>}
   </Field>
-  {withSources&&<details className="bo-prospect-field-source"><summary>Source details for {spec.label.toLowerCase()}</summary>
+  {withSources&&key!=='platform'&&<details className="bo-prospect-field-source"><summary>Source details for {spec.label.toLowerCase()}</summary>
    <Field id={id+'-source'} label="Source URL"><input id={id+'-source'} className="bo-control" type="url" maxLength={2048} value={sources[key]?.url||''} onChange={e=>setSources(v=>({...v,[key]:{...v[key],url:e.target.value,checked:false,touched:true}}))}/></Field>
    <label className="bo-prospect-check"><input type="checkbox" checked={sources[key]?.checked===true} onChange={e=>setSources(v=>({...v,[key]:{...v[key],checked:e.target.checked,touched:true}}))}/>I checked this field against its source</label>
    {key==='publicEmail'&&<p className="bo-hint">A source check does not verify email delivery.</p>}
@@ -71,13 +71,13 @@ export function NewProspect({workspaceId,userId}){
  useEffect(()=>setRequestId(crypto.randomUUID()),[]);
  const draft=useMemo(()=>requestId?{section:'identity',revision:1,creationRequestId:requestId,before:blankProspect(),fields:values,sources:{},sourceBefore:{}}:null,[requestId,values]);
  const recovery=useProfileDraft({userId,workspaceId,prospectId:'new',section:'identity',creating:true,draft,onLost:()=>setLost(true),onRecover:(copy,current)=>{setValues(copy.fields);setRequestId(copy.creationRequestId);setErrors({});setCreated(current.state==='created'?current.prospect:null);setMessage(current.state==='created'?'':'Review your recovered fields before creating the prospect.');}});
- useUnsaved(!!draft&&profileDraftDirty(draft)&&!created);
+ const stopLeaveWarning=useUnsaved(!!draft&&profileDraftDirty(draft)&&!created);
  async function create(e){e.preventDefault();if(!ready||!requestId||lock.current||!recovery.valid())return;lock.current=true;setBusy(true);setMessage('');setErrors({});try{
   const current=await recovery.read(requestId);if(current.state==='created'){setCreated(current.prospect);setMessage('');return;}
   const response=await fetch('/api/bloomops/prospecting',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({workspaceId,userId,requestId,fields:Object.fromEntries(Object.entries(values).filter(([,value])=>value!==null))})});const result=await response.json();if(!recovery.valid())return;
   if([401,403,404].includes(response.status)){recovery.invalidate(true);return;}
   if(!response.ok){setErrors(result.errors||{});throw new Error(result.error||'The prospect could not be saved.');}
-  recovery.retire();setValues(blankProspect());window.location.assign('/prospecting/'+result.prospectId);
+  recovery.retire();stopLeaveWarning();setValues(blankProspect());window.location.assign('/prospecting/'+result.prospectId);
  }catch(e){if(recovery.valid()&&e.name!=='AbortError')setMessage('Create failed. Your input is still here.'+(e.message?' '+e.message:''));}finally{lock.current=false;setBusy(false);}}
  async function download(){try{await recovery.read(requestId);if(!recovery.valid())return;const url=URL.createObjectURL(new Blob([JSON.stringify({fields:values},null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='bloomsi-new-prospect-draft.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(e){if(recovery.valid()&&e.name!=='AbortError')setMessage(e.message);}}
  function reset(){if(draft&&profileDraftDirty(draft)&&!confirm('Discard this form and start another prospect?'))return;recovery.retire();setValues(blankProspect());setRequestId(crypto.randomUUID());setErrors({});setCreated(null);setMessage('');}
@@ -95,7 +95,7 @@ export function NewProspect({workspaceId,userId}){
   </fieldset></form>
  </div>;
 }
-export default function ProspectProfile({initial,userId}){
+export default function ProspectProfile({initial,userId,contactEvent=null}){
  const [data,setData]=useState(initial),[accessLost,setAccessLost]=useState(false),profile=data.profile,evidence=useRef(null);
  const recoveryProps={userId,onCurrent:current=>setData(v=>({...v,...current})),onLost:()=>setAccessLost(true)};
  async function save(input){
@@ -114,7 +114,7 @@ export default function ProspectProfile({initial,userId}){
   <Button href="/prospecting" variant="ghost" icon="chevron-left">Back to prospects</Button>
   <header className="bo-profile-header"><div className="bo-profile-heading"><ProspectAvatar id={profile.id} website={profile.website}/><div><h1 className="bo-display">{profile.businessName}</h1>{profile.niche&&<p className="bo-profile-subtitle">{profile.niche}</p>}<div className="bo-profile-fit"><Status tone={tone(profile.fit)} label={profile.fit==='strong'?'Strong fit':PROSPECT_FIT[profile.fit]}/><Status tone="neutral" label={initial.sheetFacts?.outreach||'Not contacted'}/></div></div></div><div className="bo-profile-actions"><Button href={'/prospecting/'+profile.id+'/conversion'} icon="clients">Review client handoff</Button><Button href={'/prospecting/skills?prospect='+encodeURIComponent(profile.id)} icon="skills">Use a skill</Button>{website&&<Button href={website} target="_blank" rel="noreferrer" icon="external-link">Open website</Button>}<ProspectSocialLinks links={socials}/></div></header>
   <ProspectConversionReceipt receipt={initial.conversion} compact/>
-  <ProspectContactFacts profile={profile} facts={initial.sheetFacts}/>
+  <ProspectContactFacts key={contactEvent||'default'} profile={profile} facts={initial.sheetFacts} initialKind={contactEvent||'contact'} initiallyOpen={!!contactEvent}/>
   {initial.csvSource&&<details className="bo-prospect-evidence"><summary>CSV import source</summary><p>{initial.csvSource.fileName}</p><Button href={'/prospecting?batch='+initial.csvSource.batchId}>Open import batch</Button>{['instagram','linkedin'].map(k=>safeProspectUrl(initial.csvSource.raw[k])?<p key={k}><a href={safeProspectUrl(initial.csvSource.raw[k])} target="_blank" rel="noreferrer">{k==='instagram'?'Instagram':'LinkedIn'} source</a> (unverified)</p>:null)}</details>}
   <div className="bo-profile-layout">
    <div className="bo-profile-main">
