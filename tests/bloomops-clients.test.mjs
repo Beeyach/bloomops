@@ -1002,7 +1002,8 @@ test('the portal link is never written, never requested, and never inferred from
   // Column references in joins (userId: schema.user.id) are reads; a write
   // is a literal in a values() or set() object.
   const clientsDomain = src('lib/bloomops/clients.mjs').replace(/^\s*\/\/.*$/gm, '');
-  assert.deepEqual(clientsDomain.match(/userId: (?!schema\.)[^,\n]+/g), ['userId: null'], 'creating a client writes the portal link only as null');
+  const contactInsert = clientsDomain.slice(clientsDomain.indexOf('insertSelected(db, schema.clientContacts'), clientsDomain.indexOf('activityForMutation(db, schema.clients'));
+  assert.deepEqual(contactInsert.match(/userId: (?!schema\.)[^,\n]+/g), ['userId: null'], 'the canonical primary contact insert writes its portal link only as null');
   assert.ok(!/\.set\(\{[^}]*userId/.test(clientsDomain), 'and no update in the client domain sets it');
 });
 

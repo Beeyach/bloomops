@@ -24,7 +24,7 @@ export default async function NewClientPage() {
     <>
       <PageHeader title="Add a client" subtitle="A client record with the person the agency talks to. Nobody is invited or emailed." />
       <div className="bo-page-narrow">
-        <ClientForm owners={owners} timezones={timezoneOptions()} />
+        <ClientForm key={JSON.stringify([actor.userId, actor.workspaceId])} userId={actor.userId} workspaceId={actor.workspaceId} owners={owners} timezones={timezoneOptions()} />
       </div>
     </>
   );

@@ -1,0 +1,13 @@
+{
+  "checks": [
+    "Ten stored forms are offered by metadata without exposing names",
+    "Recovery at capacity keeps all original copies and displays the recovered input",
+    "Edits at capacity remain visible without silently deleting a source",
+    "A freed slot stores corrected input before retiring the source",
+    "Recovery uses the authorized snapshot while preserving a newer source writer",
+    "A new browser context with retained storage offers metadata only",
+    "New-context recovery remains explicit and uses its original fields",
+    "Expired copies disappear without being refreshed or submitted",
+    "No provider egress"
+  ]
+}

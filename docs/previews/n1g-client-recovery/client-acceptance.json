@@ -1,0 +1,27 @@
+{
+  "checks": [
+    "Reload offers metadata without revealing stored fields",
+    "Explicit recovery restores incomplete input without creating a client",
+    "Client form fits 1440",
+    "Client form fits 1024",
+    "Client form fits 768",
+    "Client form fits 390",
+    "Client form fits 320",
+    "Failed save retains the original request and entered details",
+    "Pending request identity survives reload recovery",
+    "Repeated submit is blocked while one request is outstanding",
+    "Retry reconciles a committed request even when later input is incomplete",
+    "Real committed-but-lost response creates one canonical client, contact, history and receipt",
+    "Reload recovery finds the original saved client and retains later input",
+    "A saved creation cannot submit another client",
+    "Download contains later retained input",
+    "Wrong initiating user recovery is denied",
+    "Wrong initiating user creation is denied",
+    "Saved link opens the canonical full client record",
+    "Ordinary success navigates to the new Draft client once",
+    "Confirmed ordinary success does not resurrect its recovery copy",
+    "Quota failure keeps the visible raw input",
+    "No browser exceptions",
+    "No provider egress"
+  ]
+}
