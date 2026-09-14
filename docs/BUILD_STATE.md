@@ -1,6 +1,16 @@
 # Bloomsi Build State
 
-## Current direction — N1G client creation recovery accepted locally
+## Current direction — N1 release checkpoint in verification
+
+The owner bounded the current goal to releasing the completed N1 work. Use `/home/ary/Developer/bloomops-n1-release`, branch `release/n1-checkpoint`, based on main `9763650`. All nine open PRs were inspected: #67–72 are the accepted implementation release; #1 and #34 are unrelated older automation/model-policy work, and #58 remains the documentation/reference PR. No newer N1 PR or active client identity/contact implementation exists. Preserve the unfinished form inventory below; this checkpoint does not claim all-app recovery coverage.
+
+The six accepted heads are combined locally without rewriting history. Only BUILD_STATE and the N1 contract conflicted; both sets of phase evidence/contracts are preserved. Application code merges cleanly, preserving workspace search plus screen fit, profile/new-prospect recovery, internal/portal Pages recovery and client creation receipts. Existing individual independent reviews remain accepted. Combined331-test acceptance, production Worker build and fresh/idempotent45-migration proof pass.197 combined browser checks pass before only a final two-route search correction;13 final account-replacement checks and29 affected Node tests pass after it. The final production build passes. Same-route account replacement exposed stale search results; server user/workspace keys now reset both internal and portal search, following the accepted form boundary. The fresh release integration review is pending. [Release evidence](previews/n1-release/README.md). Nothing from this checkpoint is merged or deployed yet; staging remains the recorded `9763650` release with44 migrations.
+
+Release order: #67, #68, #69, #70, #71, #72, each explicitly targeting main when merged. Reconcile branches with fast-forward pushes only; verify the final main runtime in staging through the existing workflow. Additive migration0044 introduces client creation receipts, reaching45 domain migrations. Staging acceptance must cover the affected search, sheet, profile, new prospect, Pages and client creation flows, with desktop/mobile and permission checks using synthetic records only. Original LTB records/voices, unrelated D2 work and existing worktrees remain preserved. Production/DNS, real imports/outreach, paid audits and video remain untouched.
+
+Next after this release checkpoint: define N2's first bounded client overview slice using canonical purchased services, current work, next deadline and unresolved requests, preserving prospect links and permissions. N2 implementation has not begun. Broader client identity/contact and other form recovery remains recorded unfinished reliability work; optional integrations and paused email work remain separate.
+
+## Previous accepted direction — N1G client creation recovery accepted locally
 
 Active worktree `/home/ary/Developer/bloomops-n1g-client-creation-recovery`, branch `feat/n1g-client-creation-recovery`, starts from accepted Pages recovery head `0b2b048` in draft PR71. Main and PR58 documentation were freshly fetched and remain `9763650` and `c47c171`. PR71 is confirmed open/draft at `0b2b048`; its task-only Worker is stopped. Search and recovery drafts remain unmerged; staging has not changed.
 
