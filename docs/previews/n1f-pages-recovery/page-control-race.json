@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "Delayed use-saved refuses to replace newer mounted input",
+    "New input retains its browser copy after rejected replacement",
+    "Rejected replacement does not change the canonical record",
+    "Authorized download includes input typed during its check",
+    "Download preserves latest mounted input and browser copy",
+    "A fresh deliberate confirmation can replace the reviewed unchanged draft",
+    "No provider egress"
+  ]
+}

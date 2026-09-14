@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "Existing editor renders headings lists quotes tables and page links",
+    "Tab reaches recovery with a visible focus outline",
+    "Enter recovery preserves structured content and unfinished text",
+    "Keyboard save retains canonical rich blocks and scoped page link",
+    "Nested child remains reachable after recovery",
+    "Nested page link opens the actual child editor",
+    "No provider egress"
+  ]
+}

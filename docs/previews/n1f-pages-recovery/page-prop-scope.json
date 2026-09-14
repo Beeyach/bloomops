@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "A has a retained private draft before account replacement",
+    "Real RSC account refresh does not reload the document",
+    "B receives canonical document without A draft or recovery controls",
+    "A input never enters B browser scope",
+    "B can save a fresh authorized edit without A contents",
+    "A original scope retains its private input",
+    "No provider egress"
+  ]
+}
