@@ -9,7 +9,12 @@ The final OpenNext build and33 focused sheet/draft tests pass. **103 final built
 - [Desktop review](save-review-1440.png)
 - [Phone review](save-review-390.png)
 
-Only sheet presentation and review focus change; no backend, schema, dependency or workflow change. One fresh Sol High deployment review found no material findings; no re-review was needed. Task-only Worker8804 is stopped. Staging deployment and authenticated acceptance are pending; the task-owned browser page currently redirects to sign-in. No staging record writes, original LTB/voice changes, real outreach/imports, paid/video work or production/DNS changes. PR73 remains draft and N2 remains unstarted.
+Only sheet presentation and review focus change; no backend, schema, dependency or workflow change. One fresh Sol High deployment review found no material findings; no re-review was needed. Task-only Worker8804 is stopped.
+
+**Staging accepted:** [workflow34883209541](https://github.com/Bloomwired/bloomops/actions/runs/34883209541) succeeded on `3949fc6577639388d24482f45d19723893c3bf47`. [12 actual deployed checks](save-staging-checks.json) verify version/health45, Fit labels/focus, keyboard Tab to Save, six widths, actual phone Platform selection with automatic review scrolling, cancellation, unchanged canonical rows and the correct expanded Outreach contact form without submission. Live desktop and phone captures were visually inspected. The separate tool-created tab lacked the authenticated context; a task tab opened from the existing session resolved that limitation without owner action. User recovery copies and preferences were preserved. Desktop narrow-width checks retain one pending review across resizes; independent phone selection verifies automatic scrolling after selection. No staging record writes were needed; real save/undo/history proof uses the final isolated Worker. PR73 remains draft/unmerged and N2 remains unstarted.
+
+- [Deployed desktop review](save-staging-1440.jpg)
+- [Deployed phone review](save-staging-390.jpg)
 
 ## First-click dropdowns and Outreach
 
