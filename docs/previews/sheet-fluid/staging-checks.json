@@ -1,0 +1,27 @@
+{
+  "sha": "43374ccdbe603976906f42b9c04cf0a01c9ac8f8",
+  "origin": "https://staging.ops.gobloomwired.com",
+  "injectedCSS": false,
+  "checks": [
+    "Actual staging runtime43374cc is live with45 healthy migrations and no injected CSS",
+    "Deployed sheet fits without horizontal scrolling at 1920 pixels",
+    "Deployed desktop/tablet sheet fills the available height at 1920 pixels",
+    "Deployed toolbar menus fit at 1920 pixels",
+    "Deployed sheet fits without horizontal scrolling at 1440 pixels",
+    "Deployed desktop/tablet sheet fills the available height at 1440 pixels",
+    "Deployed toolbar menus fit at 1440 pixels",
+    "Deployed sheet fits without horizontal scrolling at 1024 pixels",
+    "Deployed desktop/tablet sheet fills the available height at 1024 pixels",
+    "Deployed toolbar menus fit at 1024 pixels",
+    "Deployed sheet fits without horizontal scrolling at 768 pixels",
+    "Deployed desktop/tablet sheet fills the available height at 768 pixels",
+    "Deployed toolbar menus fit at 768 pixels",
+    "Deployed sheet fits without horizontal scrolling at 390 pixels",
+    "Deployed toolbar menus fit at 390 pixels",
+    "Deployed sheet fits without horizontal scrolling at 320 pixels",
+    "Deployed toolbar menus fit at 320 pixels",
+    "Deployed long-list layout retains the records viewport and sticky header",
+    "Deployed pagination stays visible while long results scroll",
+    "Deployed actual selection and clear keep pagination accessible"
+  ]
+}

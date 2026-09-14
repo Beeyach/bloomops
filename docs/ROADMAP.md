@@ -8,6 +8,8 @@ PRs67–72 are merged in dependency order into main `1f9c1c1`: search, prospect 
 
 **Next, not started:** define the first N2 client overview slice from canonical purchased services, current work, next deadline and unresolved requests, preserving prospect links and permissions. Keep collaboration and authorized client preview under their separate N2 acceptance. No N2 code was added during this release checkpoint.
 
+Owner-requested follow-up before N2: the prospect sheet now fills the desktop/tablet workspace and is accepted in staging on `43374cc`. [PR73](https://github.com/Bloomwired/bloomops/pull/73) remains draft/unmerged; complete its merge checkpoint before N2. See [fluid sheet evidence](previews/sheet-fluid/README.md).
+
 ## Current owner priority — Prospecting and Pages
 
 Use [PROSPECTING_ROADMAP.md](PROSPECTING_ROADMAP.md) for the new workspace, internal prospecting area, structured profiles, Skills Library, outreach/results, main Pages and client-onboarding handoff. It supersedes earlier exclusions of prospecting and brings Pages forward from the general Operations Layer backlog. The first useful slice is the Prospecting shell and one full-page structured profile.
