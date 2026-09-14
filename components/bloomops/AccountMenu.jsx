@@ -3,7 +3,8 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Icon } from './Icons';
-import { initialsOf, signOutAndLeave } from './session-client.mjs';
+import UserAvatar from './UserAvatar';
+import { signOutAndLeave } from './session-client.mjs';
 
 // Who is signed in, and the way out. One component for the sidebar foot
 // (opens upward, shows the name), the mobile top bar and the portal
@@ -15,7 +16,6 @@ export default function AccountMenu({ name, email, roleLabel, workspaceName, pla
   const rootRef = useRef(null);
   const buttonRef = useRef(null);
   const menuId = useId();
-  const initials = initialsOf(name, email);
   const displayName = name || email;
 
   useEffect(() => {
@@ -56,9 +56,7 @@ export default function AccountMenu({ name, email, roleLabel, workspaceName, pla
         aria-label={compact ? `Account: ${displayName}` : undefined}
         onClick={() => setOpen((v) => !v)}
       >
-        <span className="bo-avatar" aria-hidden="true">
-          {initials}
-        </span>
+        <UserAvatar seed={name||email} src="/api/bloomops/profile/photo"/>
         {!compact && (
           <span className="bo-account-text">
             <span className="bo-account-name">{displayName}</span>
@@ -74,6 +72,7 @@ export default function AccountMenu({ name, email, roleLabel, workspaceName, pla
             <div className="bo-menu-email">{email}</div>
             <dl className="bo-menu-properties"><div><dt>Role</dt><dd>{roleLabel}</dd></div>{workspaceName&&<div><dt>Workspace</dt><dd>{workspaceName}</dd></div>}</dl>
           </div>
+          <Link href="/profile" role="menuitem" className="bo-menu-item" onClick={()=>setOpen(false)}><Icon name="user" size={18} className="bo-soft"/>Your profile</Link>
           <Link href="/workspaces" role="menuitem" className="bo-menu-item" onClick={()=>setOpen(false)}><Icon name="team" size={18} className="bo-soft"/>Switch workspace</Link>
           {settingsHref && (
             <Link href={settingsHref} role="menuitem" className="bo-menu-item" onClick={() => setOpen(false)}>

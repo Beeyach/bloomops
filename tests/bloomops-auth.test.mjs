@@ -26,6 +26,16 @@ async function booted(options) {
 
 const location = (res) => res.headers.get('location') || '';
 
+test('profile photo pointer cannot be set through Better Auth; own name updates still work',async()=>{
+  const t=await booted();const {cookie}=await t.signIn('owner@example.com');
+  const update=body=>t.auth.handler(new Request(`${APP_URL}/api/auth/update-user`,{method:'POST',headers:{cookie,origin:APP_URL,'content-type':'application/json'},body:JSON.stringify(body)}));
+  for(const image of ['https://example.com/photo.png',null])assert.equal((await update({image})).status,400);
+  assert.equal((await update({name:'Updated Owner'})).status,200);
+  assert.equal((await t.session(cookie)).user.name,'Updated Owner');
+  assert.equal((await t.session(cookie)).user.image,null);
+  t.raw.close();
+});
+
 test('a known address gets exactly one magic link email and the link signs them in', async () => {
   const t = await booted();
   const res = await t.requestMagicLink('Owner@Example.com');
