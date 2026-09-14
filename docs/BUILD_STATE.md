@@ -10,6 +10,10 @@ Local acceptance: 54 relevant shell/auth/mail/config tests, final Cloudflare bui
 
 Staging authentication now uses the public staging origin `https://staging.ops.gobloomwired.com`, matching the domain users open. Resend verified `mail.bloomsi.app` for sending and receiving. The deployed sender is `Bloomsi <sign-in@mail.bloomsi.app>`. A live sign-in request to the existing owner address was accepted and delivered with the Bloomsi subject and public staging callback. No production domain or Leadsthatbloom resource changed.
 
+Authentication and invitation emails render the approved Bloomsi lockup above the heading. The image is served from the same configured app origin, keeps useful `alt` text when images are blocked and leaves the sign-in button as the only action.
+
+The staging verifier now exercises the configured public origin. Its old Workers-address fallback did not match Better Auth's public origin and caused a false 403 after a successful deployment.
+
 After this branding deployment, resume P2B3 durable import receipts and synthetic commits in `/home/ary/Developer/bloomops-prospecting-p2`, where P2A/P2B1/P2B2 are accepted locally. P1 remains draft PR #60, unmerged. All real prospect imports, outreach and video work/tests remain paused. This checkpoint supersedes older pending E3A gate directions below: E3A was deployed on `618e18f` with 24 migrations. No Prospecting phase is deployed by this branding branch.
 
 ## Current Release
