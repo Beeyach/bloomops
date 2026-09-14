@@ -14,7 +14,16 @@ The final OpenNext build,33 focused sheet/draft tests and [54 real built-Worker 
 - [Phone controls](direct-direct-390.png)
 - [Open Outreach menu on a touch viewport](direct-outreach-touch.png)
 
-The actual open menus and desktop/phone layout were visually inspected. Native option popups follow the browser’s appearance. One fresh Sol High review found no material findings; no re-review was needed. Staging still uses the preceding picker implementation below until this refinement deploys. No real outreach/imports, production/DNS, paid/video or original LTB changes. N2 remains unstarted.
+The actual open menus and desktop/phone layout were visually inspected. Native option popups follow the browser’s appearance. One fresh Sol High review found no material findings; no re-review was needed. The deployed refinement is accepted below. No real outreach/imports, production/DNS, paid/video or original LTB changes. N2 remains unstarted.
+
+## Direct dropdown staging result
+
+[Open staging](https://staging.ops.gobloomwired.com/prospecting). [Workflow34880217396](https://github.com/Bloomwired/bloomops/actions/runs/34880217396) succeeded on `faf50daf552dbd9dfa04088de6f70357843a6741`. [Ten actual deployed checks](direct-staging-checks.json) pass: version and45 healthy migrations, direct Platform/Fit selection into review with cancellation, correct expanded/preselected Outreach contact form, and six widths including44px phone select targets. No CSS/markup injection, event submission or canonical record edits were needed in staging.
+
+- [Live desktop](direct-staging-1440.jpg)
+- [Live phone controls](direct-staging-390.jpg)
+
+The remote Windows browser tool does not expose native popup `:open` state, including on the unchanged Rows per page select. Therefore this result claims deployed selection/routing/layout acceptance, while first-click/first-tap popup proof comes from the57 final local Chromium checks above. The fill tool requires visible option labels; using the raw Fit value initially failed before the correct label succeeded. No application correction followed these tool observations. Desktop/phone captures were inspected. The local Worker8803 is stopped. PR73 remains draft/unmerged; N2 remains unstarted.
 
 ## Platform and Fit picker follow-up
 

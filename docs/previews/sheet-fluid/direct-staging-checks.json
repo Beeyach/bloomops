@@ -1,0 +1,18 @@
+{
+  "runtime": "faf50daf552dbd9dfa04088de6f70357843a6741",
+  "workflow": 34880217396,
+  "method": "Actual deployed UI with existing fictional QA records; direct choice review/cancel and Outreach navigation, no record writes or preview injection",
+  "limitation": "Windows remote browser tooling did not expose native :open state, including on the unchanged Rows per page select. Native first-click and first-tap opening are proven by the57 final local Chromium checks; live checks verify selection handling and routes. Tool fill uses visible option labels.",
+  "checks": [
+    "Actual staging runtime faf50da and healthy45 migrations verified",
+    "Live Platform selection goes directly to review; cancelled without saving",
+    "Live Fit selection goes directly to review; cancelled without saving",
+    "Live Outreach opens the correct expanded contact record form; no event submitted",
+    "Actual deployed selectors fit at 1920",
+    "Actual deployed selectors fit at 1440",
+    "Actual deployed selectors fit at 1024",
+    "Actual deployed selectors fit at 768",
+    "Actual deployed selectors fit at 390 with44px touch targets",
+    "Actual deployed selectors fit at 320 with44px touch targets"
+  ]
+}
