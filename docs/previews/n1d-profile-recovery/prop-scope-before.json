@@ -1,0 +1,8 @@
+{
+  "checks": [
+    "User A has a private dirty editor before replacement",
+    "A real same-route RSC refresh uses user B without document reload",
+    "Unfixed build retains A input under B props",
+    "Unfixed build writes A input into B draft scope"
+  ]
+}
