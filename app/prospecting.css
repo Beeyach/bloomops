@@ -533,13 +533,17 @@
 }
 
 /* Selectable sheet properties keep labels, marks and controls together. */
-.bo-sheet-page .bo-sheet-choice { display:flex; align-items:center; gap:4px; max-width:100%; min-width:0; min-height:36px; padding:5px; border:1px solid var(--bo-border); border-radius:6px; background:#fff; color:var(--bo-text); font:inherit; text-align:left; cursor:pointer; }
+.bo-sheet-page .bo-sheet-choice { position:relative; display:flex; align-items:center; gap:4px; max-width:100%; min-width:0; min-height:36px; padding:5px; border:1px solid var(--bo-border); border-radius:6px; background:#fff; color:var(--bo-text); font:inherit; text-align:left; cursor:pointer; }
+/* The native select receives the first click; the visible mark/label is its skin. */
+.bo-sheet-page .bo-sheet-choice>select { position:absolute; inset:-1px; width:calc(100% + 2px); height:calc(100% + 2px); min-width:0; opacity:0; cursor:pointer; font:inherit; }
+.bo-sheet-page .bo-sheet-choice>select:disabled { cursor:default; }
+.bo-sheet-page .bo-sheet-cell-editor .bo-platform-picker>select { appearance:auto; }
 .bo-sheet-page .bo-sheet-choice>span { min-width:0; overflow-wrap:anywhere; }
 .bo-sheet-page .bo-sheet-choice>svg { width:16px; height:16px; flex-shrink:0; }
-.bo-sheet-page .bo-sheet-choice>svg:last-child { width:12px; height:12px; margin-left:auto; }
+.bo-sheet-page .bo-sheet-choice>svg:last-of-type { width:12px; height:12px; margin-left:auto; }
 .bo-sheet-page .bo-sheet-choice:hover { border-color:#9f7eaa; background:#f7f3f8; }
-.bo-sheet-page .bo-sheet-choice:focus-visible { outline:2px solid var(--bo-focus); outline-offset:2px; }
-.bo-sheet-page .bo-sheet-choice:disabled { cursor:default; opacity:.55; }
+.bo-sheet-page .bo-sheet-choice:focus-within { outline:2px solid var(--bo-focus); outline-offset:2px; }
+.bo-sheet-page .bo-sheet-choice:has(select:disabled) { cursor:default; opacity:.55; }
 .bo-sheet-page .bo-sheet-choice.fit-strong { background:#edf7f1; color:#286545; border-color:#bddbc9; }
 .bo-sheet-page .bo-sheet-choice.fit-hold { background:#fff6e7; color:#805a20; border-color:#e9d5af; }
 .bo-sheet-page .bo-sheet-choice.fit-skip { background:#f1f2f6; color:#5a6173; }

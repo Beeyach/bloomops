@@ -1,5 +1,21 @@
 # Fluid prospect sheet
 
+## First-click dropdowns and Outreach
+
+Platform and Fit now receive the first click as native selects. Their existing icons/labels remain visible, but opening no longer enters an intermediate edit form. Choosing a value opens the existing review; choosing Custom platform opens text input directly. Keyboard and Escape use native behavior and retain visible focus.
+
+Outreach is a native action dropdown with Log contact, Record interest, Mark reply handled, Review outreach and Review client handoff. The first three open the correct prospect’s existing Conversation records form with the event preselected and disclosure expanded. The server only accepts the three recognized `contactEvent` display hints. Existing manual-event validation, idempotency, authority and send protection are unchanged. Arbitrary stage overrides are not introduced; contact/interest records update the existing derived status. Other choices open existing guarded reviews.
+
+The final OpenNext build,33 focused sheet/draft tests and [54 real built-Worker checks](direct-browser-checks.json) pass using an independent copy of the synthetic local D1/R2 fixture on8803, with provider egress blocked. Checks directly assert native `:open` after the first click for all three controls across six widths, with no edit form; verify keyboard/focus/Escape, no write before review, platform/custom/Fit save/undo, actual contact/interest recording, Last contacted preservation, valid navigation and unsupported query rejection. [Three additional true-touch checks](direct-touch-checks.json) verify first-tap opening,44px native hit areas and16px mobile text for every dropdown. A42px hit area inside the44px border was corrected; the final build and all54main checks were rerun successfully after that CSS-only correction. No backend/query/schema/dependency/workflow changes.
+
+- [Open Platform menu](direct-open-platform.png)
+- [Open Fit menu](direct-open-fit.png)
+- [Open Outreach menu](direct-open-outreach.png)
+- [Phone controls](direct-direct-390.png)
+- [Open Outreach menu on a touch viewport](direct-outreach-touch.png)
+
+The actual open menus and desktop/phone layout were visually inspected. Native option popups follow the browser’s appearance. One fresh Sol High review found no material findings; no re-review was needed. Staging still uses the preceding picker implementation below until this refinement deploys. No real outreach/imports, production/DNS, paid/video or original LTB changes. N2 remains unstarted.
+
 ## Platform and Fit picker follow-up
 
 Platform and Fit cells now expose labelled, bordered choices with chevrons and compact icons. Platform has seven common suggestions and a custom-text escape in row editing, filters and bulk editing. Existing values are retained exactly until deliberately changed. Fit adds distinct icons and colored readable states. Outreach still comes from recorded activity. Default column proportions give the controls room without changing saved width preferences.

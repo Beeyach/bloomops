@@ -95,7 +95,7 @@ export function NewProspect({workspaceId,userId}){
   </fieldset></form>
  </div>;
 }
-export default function ProspectProfile({initial,userId}){
+export default function ProspectProfile({initial,userId,contactEvent=null}){
  const [data,setData]=useState(initial),[accessLost,setAccessLost]=useState(false),profile=data.profile,evidence=useRef(null);
  const recoveryProps={userId,onCurrent:current=>setData(v=>({...v,...current})),onLost:()=>setAccessLost(true)};
  async function save(input){
@@ -114,7 +114,7 @@ export default function ProspectProfile({initial,userId}){
   <Button href="/prospecting" variant="ghost" icon="chevron-left">Back to prospects</Button>
   <header className="bo-profile-header"><div className="bo-profile-heading"><ProspectAvatar id={profile.id} website={profile.website}/><div><h1 className="bo-display">{profile.businessName}</h1>{profile.niche&&<p className="bo-profile-subtitle">{profile.niche}</p>}<div className="bo-profile-fit"><Status tone={tone(profile.fit)} label={profile.fit==='strong'?'Strong fit':PROSPECT_FIT[profile.fit]}/><Status tone="neutral" label={initial.sheetFacts?.outreach||'Not contacted'}/></div></div></div><div className="bo-profile-actions"><Button href={'/prospecting/'+profile.id+'/conversion'} icon="clients">Review client handoff</Button><Button href={'/prospecting/skills?prospect='+encodeURIComponent(profile.id)} icon="skills">Use a skill</Button>{website&&<Button href={website} target="_blank" rel="noreferrer" icon="external-link">Open website</Button>}<ProspectSocialLinks links={socials}/></div></header>
   <ProspectConversionReceipt receipt={initial.conversion} compact/>
-  <ProspectContactFacts profile={profile} facts={initial.sheetFacts}/>
+  <ProspectContactFacts key={contactEvent||'default'} profile={profile} facts={initial.sheetFacts} initialKind={contactEvent||'contact'} initiallyOpen={!!contactEvent}/>
   {initial.csvSource&&<details className="bo-prospect-evidence"><summary>CSV import source</summary><p>{initial.csvSource.fileName}</p><Button href={'/prospecting?batch='+initial.csvSource.batchId}>Open import batch</Button>{['instagram','linkedin'].map(k=>safeProspectUrl(initial.csvSource.raw[k])?<p key={k}><a href={safeProspectUrl(initial.csvSource.raw[k])} target="_blank" rel="noreferrer">{k==='instagram'?'Instagram':'LinkedIn'} source</a> (unverified)</p>:null)}</details>}
   <div className="bo-profile-layout">
    <div className="bo-profile-main">

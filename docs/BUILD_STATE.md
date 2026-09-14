@@ -1,6 +1,14 @@
 # Bloomsi Build State
 
-## Current direction — prospect sheet pickers and platform marks accepted in staging
+## Current direction — direct sheet dropdowns and Outreach actions; staging pending
+
+Owner reported that clicking a dropdown first entered edit mode, and requested an Outreach dropdown too. Platform and Fit now expose native selects directly under their visible icon/label treatment. A first click or keyboard opening shows choices immediately; choosing a value goes to the existing review before save. Only Custom platform opens text entry. Escape leaves the record unchanged. Existing logos, compact rows and full-screen sizing remain.
+
+Outreach now has a direct action dropdown: Log contact, Record interest, Mark reply handled, Review outreach and Review client handoff. Manual-event selections open the same prospect’s existing conversation form, expanded with the chosen event preselected through an allowlisted query. Recording date/evidence updates canonical history and the derived stage. Selecting an action alone never records or sends anything; the existing outreach/conversion review gates remain in place. This does not introduce arbitrary stage overrides or erase contact history.
+
+The final OpenNext build,33 focused sheet/draft tests and57 final built-Worker browser checks pass (54 main plus three true-touch checks). Coverage proves native first-click open without an editor, six widths, platform/custom/Fit review-save-undo, keyboard/Escape/focus, correct Outreach target/form, real synthetic contact/interest saves, unchanged Last contacted for interest, unsupported query rejection and zero provider requests. [Evidence](previews/sheet-fluid/README.md). A native hit-area check found42px inside a44px skin; the final overlay includes its border, and the rebuilt app passes all57 checks. One fresh Sol High deployment review found no material findings; no re-review was needed. Staging remainsf042754 pending reviewed deployment. No backend/schema/workflow/dependency changes. PR73 remains draft, N2 unstarted, and original LTB/voices, production/DNS and unrelated work remain unchanged.
+
+## Previous accepted direction — prospect sheet pickers and platform marks accepted in staging
 
 Owner requested more useful dropdowns, logos and icons. In the existing isolated PR73 branch, Platform now offers seven common choices plus custom text in row editing, filtering and bulk editing. Platform/Fit cells are labelled buttons with chevrons; Fit has distinct icons and readable colored states. Seven unmodified platform website marks are served locally with source attribution. Unknown/custom values keep a neutral icon and their exact text. Custom saved views now use the existing colored table icon instead of an unavailable icon name. Default column proportions give these controls readable space while preserving the compact full-screen layout.
 
