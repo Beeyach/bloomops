@@ -1,0 +1,16 @@
+{
+  "runtime": "00f540bc1814498570a2ddedbfe0e7ae1c1d3180",
+  "workflow": 34907194523,
+  "checks": [
+    "Runtime 00f540b on staging",
+    "Healthy staging schema45",
+    "Live Preview as client entry and preserved overview",
+    "Desktop empty connected-contact picker without overflow",
+    "Unlinked contact preview API404",
+    "Missing client picker404",
+    "Phone390 no overflow and44px Back target",
+    "Back to client works; task page restored to desktop1440"
+  ],
+  "recordWrites": 0,
+  "coverage": "Existing fictional QA client empty picker; populated and mutation/permission evidence is local."
+}

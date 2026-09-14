@@ -1,0 +1,14 @@
+{
+  "previewAccessQueries": 1,
+  "contactFixtureRowsAdded": 250,
+  "previewProjectsPerPage": 10,
+  "projectQueryLookahead": 11,
+  "routeFirstLoadKB": {
+    "clientPreview": 117,
+    "client": 161,
+    "prospecting": 123,
+    "pages": 118,
+    "work": 108
+  },
+  "measurement": "Node SQLite/D1 adapter query count and Next build route estimates; not remote latency"
+}
