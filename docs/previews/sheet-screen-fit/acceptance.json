@@ -1,0 +1,31 @@
+{
+  "checks": [
+    "No horizontal scrolling at 1920",
+    "All seven fields remain displayed at 1920",
+    "No horizontal scrolling at 1440",
+    "All seven fields remain displayed at 1440",
+    "No horizontal scrolling at 1280",
+    "All seven fields remain displayed at 1280",
+    "No horizontal scrolling at 1024",
+    "All seven fields remain displayed at 1024",
+    "No horizontal scrolling at 768",
+    "All seven fields remain displayed at 768",
+    "No horizontal scrolling at 390",
+    "All seven fields remain displayed at 390",
+    "No horizontal scrolling at 320",
+    "All seven fields remain displayed at 320",
+    "Business has a readable desktop width",
+    "Keyboard resize adjusts column proportions",
+    "Resizing keeps the table within the screen",
+    "Page selection retains working bulk actions",
+    "Inline editing saves through the existing review",
+    "Undo restores the original field",
+    "All optional fields remain available without scrolling sideways",
+    "Existing wide saved preferences cannot force horizontal scrolling",
+    "All optional fields fit the phone",
+    "Phone selection remains available",
+    "Business link opens the full-page profile",
+    "Returning to the sheet preserves columns and fit",
+    "No browser exceptions"
+  ]
+}
