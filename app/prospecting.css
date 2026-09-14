@@ -576,3 +576,7 @@
 .bo-sheet-save-status svg { width:16px; height:16px; }
 .bo-sheet-save-status.saved { color:#286545; }
 .bo-sheet-save-status.error { color:#9d3434; }
+
+/* Reserve quiet save feedback so a cell change never moves the records. */
+.bo-sheet-feedback { display:flex; flex-direction:column; justify-content:center; flex:0 0 136px; min-height:40px; }
+.bo-sheet-feedback .bo-sheet-save-status { min-height:20px; white-space:nowrap; }

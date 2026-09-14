@@ -115,6 +115,8 @@ Initial loading uses skeleton rows matching actual columns and row heights. Prof
 
 During filtering, sorting and refresh, preserve existing rows and show a small updating indicator. Prevent stale bulk actions while query scope changes. Replace content without layout jumps and retain focus. Avoid flashing skeletons for near-instant responses.
 
+Owner correction: after a cell save, retain the mounted table and use quiet background reconciliation. Do not insert a table-wide Updating line or keep unrelated controls blocked while that read finishes. Keep compact save feedback in reserved space. Newer saves must supersede older reads; filters/counts still reconcile with the canonical sheet, and failed reconciliation must remain retryable. Query changes retain their stale-action guard.
+
 For longer audit/import jobs use a restrained local garden-themed animation, based on an approved asset or the existing icon library. Preserve the official logo. Show actual progress such as 8 of 20 checked when known. Use an indeterminate indicator otherwise. Do not fabricate percentages or completion times.
 
 Distinguish upload, row checking and saving, along with queued, working, failed and completed jobs. Provide useful errors and retries rather than indefinite spinning. A quiet progress control opens job details only when needed. Completion gets a short check transition. Respect reduced motion and avoid unnecessary off-screen animation, bouncing controls or artificial delays.

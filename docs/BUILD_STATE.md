@@ -1,6 +1,12 @@
 # Bloomsi Build State
 
-## Current direction — full prospect table/profile QA and direct saves
+## Current direction — quiet prospect sheet saves
+
+Owner reported a loading effect on every edit and asked what Outreach reflects. Actual accepted-build reproduction measured a36px table jump from the Updating paragraph, with controls disabled through a post-save fetch. Direct-cell same-query reconciliation now runs quietly in the background; confirmed values stay visible and another edit can begin before that read returns. Older reads cannot replace newer saves. Reserved toolbar feedback prevents direct-save layout jumps. Explicit refresh/query changes retain stale-action guards, and failures/access loss remain visible and safe. Outreach reflects canonical contact/reply/interest/client outcome history; its menu opens actions, without arbitrary status overrides or sending.
+
+Final OpenNext build,33 focused Node tests and53 built-Worker browser checks pass (21 quiet-save checks plus32 existing save/recovery regressions). Five measured widths have under1px table-top movement; before-fix reproduction moved36px. Desktop/phone visuals inspected; unrelated route and Prospecting rounded build estimates remain unchanged. [Evidence and limitations](previews/sheet-smooth/README.md). No backend/schema/dependency/workflow changes or new migrations. One fresh Sol High review identified stale cells enabled during non-direct reconciliation. That path now retains its foreground guard; a held-Undo test was added. Final rebuilt browser checks pass; the single focused re-review accepted the correction with no remaining material findings. Staging deployment/acceptance are pending; staging still runs00d73a9. PR73 remains draft/unmerged; N2 is unstarted. Root D2 work, original LTB/voices, production/DNS, real imports/outreach and paid/video remain preserved.
+
+## Previous direction — full prospect table/profile QA and direct saves
 
 Owner reported unchanged dropdown values and discard prompts, then requested QA of the whole prospect table and page. Local reproduction confirms the earlier per-cell review caused those symptoms; the prior visibility fix did not satisfy the expected interaction. Platform/Fit now save on selection, show the pending value and Saving/Saved/failure feedback, and preserve canonical compare/retry/undo. Custom/text cells use one Save field action. Bulk/pasted changes and failed/recovered fields retain review and genuine unsaved-work guards. Query changes cannot interrupt an in-flight save.
 
