@@ -1,0 +1,17 @@
+{
+  "runtime": "03331fccfe336fc930e80ccc22048aa20e1aec71",
+  "workflow": 34895977975,
+  "checks": [
+    "Deployed03331fc with healthy staging schema45",
+    "Desktop Contact stays70.19px high while editing with a visible Save button",
+    "Labelled Save commits Contact canonically in one action without review",
+    "Real Undo restores fresh QA profile fields and sources; expected revision/history retained",
+    "Phone Contact keeps row height with clear label,44px controls and no overflow",
+    "Full profile omits platform source-detail editor while retaining platform field and other sources",
+    "Restored desktop sheet without open editor, old recovery banner or horizontal overflow"
+  ],
+  "limitations": [
+    "Drafts recovery/menu behavior verified on isolated built Worker; no existing user recovery copies were restored or discarded in staging.",
+    "Initial live read ran before Saving completed; helper now waits for save status. Phone control was centered before its successful native click. QA fields and sources restored by actual Undo."
+  ]
+}
