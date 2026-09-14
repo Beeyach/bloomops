@@ -2,7 +2,7 @@
 
 ## Current direction — N1B sheet draft recovery accepted locally
 
-The owner requested continued work from accepted N1A. Active worktree: `/home/ary/Developer/bloomops-n1b-sheet-drafts`, branch `feat/n1b-sheet-drafts`, based on PR65 head `15d8b69`. PR64 and PR65 worktrees remain clean and unchanged; latest main is `4b7acea`. Staging still serves accepted sheet runtime `bbe828b`. Read [N1B contract](phases/N1.md) and [NEXT_PHASES](NEXT_PHASES.md).
+The owner requested continued work from accepted N1A. Active worktree: `/home/ary/Developer/bloomops-n1b-sheet-drafts`, branch `feat/n1b-sheet-drafts`, based on PR65 head `15d8b69`. Accepted implementation `25efc52` is pushed in [draft PR66](https://github.com/Bloomwired/bloomops/pull/66), stacked on PR65 without merging either prerequisite. PR64 and PR65 worktrees remain clean and unchanged; latest main is `4b7acea`. Staging still serves accepted sheet runtime `bbe828b`. Read [N1B contract](phases/N1.md) and [NEXT_PHASES](NEXT_PHASES.md).
 
 Typed cells and pending reviewed fields are retained in browser-local copies scoped to the original user/workspace, with a separate writer ID per mounted sheet. Recovery first offers counts/dates; an explicit read-only endpoint checks the current identity, workspace authority and every referenced record before showing values. Recovered fields retain original comparison values/query and accept corrections to incomplete input. No automatic submission occurs. Save/undo requests from this UI also bind the initiating user ID to prevent accidental writes under a replaced session.
 
