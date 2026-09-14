@@ -1,6 +1,12 @@
 # Bloomsi Build State
 
-## Current direction — PR73 merged; N2 client overview contract prepared
+## Current direction — N2A client overview reviewed; staging pending
+
+Active worktree `/home/ary/Developer/bloomops-n2-client-overview`, branch `feat/n2-client-overview`, [draft PR74](https://github.com/Bloomwired/bloomops/pull/74), based on latest main6ab4d11. N2A now has a server-composed overview of purchased services, bounded open work, a true next deadline and unresolved onboarding requests. Existing client gates, child visibility, timezone/dependency semantics, required-item progress, edit/activation/contact/tab flows and original LTB/worktrees are preserved. No new migration, dependency, cache or mutation endpoint.
+
+75 focused Node checks and 24 built-Worker browser checks pass; [visuals and measured evidence](previews/client-overview/README.md). The final build includes the narrow-tablet layout. One Sol High review found a client-scope navigation defect in All projects; it now opens the client Projects tab, with a second-client regression. The single focused re-review passed with no material findings. **Staging is still the accepted PR73 release; N2A is not yet deployed or merged.** First unfinished task: complete N2A staging deployment and live acceptance. N2B preview, photos, discussion, notifications and broader save/recovery inventory remain separate work. Production/DNS, real imports/outreach, paid APIs and video remain paused.
+
+## Previous checkpoint — PR73 merged; N2 client overview contract prepared
 
 The prospect-sheet follow-up is merged through [PR73](https://github.com/Bloomwired/bloomops/pull/73) as `6ab4d1167dd3f3bcf7cf40fcc1bbf9091443175f`. Latest main was85ab496 and PR head509b114; the merge tree exactly matches the reviewed branch. Only documentation/evidence followed accepted runtime03331fc. No new runtime change or repeated broad review was needed for this release checkpoint. The existing112 browser/35 Node checks, bounded Sol High review/re-review and seven live checks remain the implementation evidence.
 

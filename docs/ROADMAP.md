@@ -2,17 +2,17 @@
 
 This is sequencing guidance, not permission to pre-build future work.
 
-## Current checkpoint — prospect sheet merged; N2A contract prepared
+## Current checkpoint — N2A implemented; acceptance pending
 
 PR73 merged as `6ab4d11` with the previously reviewed and staged prospect sheet. Both merged staging and zero-to-current workflows passed on that exact SHA. [BUILD_STATE](BUILD_STATE.md) records exact evidence and the active worktree.
 
-**Next:** implement the [N2A client overview contract](phases/N2.md) from the closed release. The contract is prepared from current code; runtime implementation is not started. Client preview, profile photos, discussion and in-app notifications retain separate N2 acceptance.
+**Next:** complete review and staging acceptance for the implemented [N2A client overview](phases/N2.md). BUILD_STATE records the current gates. Client preview, profile photos, discussion and in-app notifications retain separate N2 acceptance.
 
 ## Previous checkpoint — N1 release accepted in staging
 
 PRs67–72 are merged in dependency order into main `1f9c1c1`: search, prospect sheet screen fit and profile/new-prospect/Pages/client-creation recovery. Combined build/tests,45 fresh/idempotent migrations and the required Sol High review/re-review pass. Both merged-main workflows are green;24 public and63 distinct authenticated staging checks verify the affected flows. [BUILD_STATE](BUILD_STATE.md) and [release evidence](previews/n1-release/README.md) record exact results, visuals and limitations. The broader all-app form-recovery inventory remains explicit and is not declared complete.
 
-The N1 checkpoint identified the first N2 client overview contract as the next task. That contract is now prepared above; no N2 runtime code is implemented.
+The N1 checkpoint identified the first N2 client overview contract as the next task. That contract and its current acceptance are recorded above.
 
 Owner-requested follow-up before N2: the prospect sheet now fills the desktop/tablet workspace and is accepted in staging on `43374cc`. [PR73](https://github.com/Bloomwired/bloomops/pull/73) is now merged as6ab4d11; its final acceptance and subsequent editor refinements are recorded in BUILD_STATE. See [fluid sheet evidence](previews/sheet-fluid/README.md).
 

@@ -46,6 +46,8 @@ async function resolveWithExtensions(base, context, nextResolve) {
 }
 
 export async function load(url, context, nextLoad) {
+  // Render tests assert semantics; real CSS/layout is checked in the browser.
+  if (url.endsWith('.module.css')) return { format: 'module', source: 'export default {};', shortCircuit: true };
   if (url.endsWith('.jsx')) {
     const source = await readFile(fileURLToPath(url), 'utf8');
     const { code } = await esbuild.transform(source, {

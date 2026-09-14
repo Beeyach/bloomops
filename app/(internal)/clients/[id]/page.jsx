@@ -1,3 +1,6 @@
+import { Suspense } from 'react';
+import { clientOverview } from '@/lib/bloomops/client-overview.mjs';
+import ClientWorkOverview, { ClientWorkLoading, ClientWorkError } from '@/components/bloomops/ClientWorkOverview';
 import ProspectClientOrigin from '@/components/bloomops/ProspectClientOrigin';
 import Onboarding from '@/components/bloomops/Onboarding';
 import { onboardingView } from '@/lib/bloomops/onboarding-views.mjs';
@@ -63,7 +66,7 @@ export default async function ClientDetailPage({ params, searchParams }) {
   const mayManage = evaluate(actor, { action: 'client.manage', resource }).allowed;
   const mayActivate = evaluate(actor, { action: 'client.activate', resource }).allowed;
   const activation = await activationSummary(access.db, access.workspace.id, client.id);
-  const projects = await listProjects(access.db, actor, { clientId: client.id });
+  const projects = await listProjects(access.db, actor, { clientId: client.id, limit: query?.tab === 'projects' ? 200 : 1 });
   const hasProjects = projects.items.length > 0;
   const tab = isClientTab(query?.tab, hasProjects) ? query.tab : 'overview';
   const contacts = await listContacts(access.db, access.workspace.id, client.id);
@@ -75,7 +78,7 @@ export default async function ClientDetailPage({ params, searchParams }) {
       {mayActivate && <ClientActivation clientId={client.id} draft={client.relationshipStatus === 'draft'} activation={activation} />}
       <ClientTabs clientId={client.id} active={tab} hasProjects={hasProjects} />
       {tab === 'projects' && <Section id="projects" title="Projects"><ProjectList projects={projects.items} hasMore={projects.hasMore} /></Section>}
-      {tab === 'overview' && <OverviewTab access={access} client={client} contacts={contacts} mayManage={mayManage} />}
+      {tab === 'overview' && <OverviewTab access={access} actor={actor} client={client} contacts={contacts} mayManage={mayManage} />}
       {tab === 'services' && <ServicesTab access={access} actor={actor} client={client} mayManage={mayManage} />}
       {tab === 'onboarding' && <OnboardingTab access={access} actor={actor} client={client} />}
       {tab === 'team' && <TeamTab access={access} actor={actor} client={client} mayManage={mayManage} />}
@@ -84,10 +87,20 @@ export default async function ClientDetailPage({ params, searchParams }) {
   );
 }
 
-async function OverviewTab({ access, client, contacts, mayManage }) {
+async function OperationalOverview({ access, actor, client }) {
+  let overview;
+  try { overview = await clientOverview(access.db, actor, client.id); }
+  catch { return <ClientWorkError clientId={client.id}/>; }
+  if (!overview) notFound();
+  return <ClientWorkOverview clientId={client.id} overview={overview}/>;
+}
+
+async function OverviewTab({ access, actor, client, contacts, mayManage }) {
+  const operations = <Suspense fallback={<ClientWorkLoading/>}><OperationalOverview access={access} actor={actor} client={client}/></Suspense>;
   if (!mayManage) {
     return (
       <>
+        {operations}
         <Section id="details" title="Details">
           <ClientFactsList client={client} />
         </Section>
@@ -111,6 +124,7 @@ async function OverviewTab({ access, client, contacts, mayManage }) {
   const owners = await ownerCandidates(access.db, access.workspace.id, { clientId: client.id });
   return (
     <>
+      {operations}
       <ClientOverview client={client} owners={owners} timezones={timezoneOptions()} />
       <ClientContacts clientId={client.id} clientName={client.name} contacts={contacts} />
     </>

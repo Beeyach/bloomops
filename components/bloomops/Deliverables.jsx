@@ -5,7 +5,7 @@ import { DeliverableFiles } from './Files';
 
 export function DeliverableList({ items = [], files = [], controls = null }) {
   if (!items.length) return <p className="bo-body">No Deliverables to show yet.</p>;
-  return <ul className="bo-deliverables" aria-label="Deliverables">{items.map(item => <li key={item.id} className="bo-deliverable" data-deliverable-id={item.id}>
+  return <ul className="bo-deliverables" aria-label="Deliverables">{items.map(item => <li key={item.id} className="bo-deliverable" id={`deliverable-${item.id}`} data-deliverable-id={item.id}>
     <div className="bo-deliverable-heading"><h3 className="bo-row-title">{item.title}</h3>
       <Status label={DELIVERABLE_STATUS_LABELS[item.status]} tone={item.status === 'delivered' ? 'success' : 'neutral'} glyph={item.status === 'delivered' ? 'check' : 'dot'} />
     </div>
