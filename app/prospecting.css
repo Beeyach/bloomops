@@ -532,6 +532,30 @@
  .bo-sheet-page .bo-sheet-cell-content>.bo-sheet-next-action { min-height:44px; }
 }
 
+/* Selectable sheet properties keep labels, marks and controls together. */
+.bo-sheet-page .bo-sheet-choice { display:flex; align-items:center; gap:4px; max-width:100%; min-width:0; min-height:36px; padding:5px; border:1px solid var(--bo-border); border-radius:6px; background:#fff; color:var(--bo-text); font:inherit; text-align:left; cursor:pointer; }
+.bo-sheet-page .bo-sheet-choice>span { min-width:0; overflow-wrap:anywhere; }
+.bo-sheet-page .bo-sheet-choice>svg { width:16px; height:16px; flex-shrink:0; }
+.bo-sheet-page .bo-sheet-choice>svg:last-child { width:12px; height:12px; margin-left:auto; }
+.bo-sheet-page .bo-sheet-choice:hover { border-color:#9f7eaa; background:#f7f3f8; }
+.bo-sheet-page .bo-sheet-choice:focus-visible { outline:2px solid var(--bo-focus); outline-offset:2px; }
+.bo-sheet-page .bo-sheet-choice:disabled { cursor:default; opacity:.55; }
+.bo-sheet-page .bo-sheet-choice.fit-strong { background:#edf7f1; color:#286545; border-color:#bddbc9; }
+.bo-sheet-page .bo-sheet-choice.fit-hold { background:#fff6e7; color:#805a20; border-color:#e9d5af; }
+.bo-sheet-page .bo-sheet-choice.fit-skip { background:#f1f2f6; color:#5a6173; }
+.bo-sheet-page .bo-sheet-choice.fit-unknown { color:#667085; }
+.bo-platform-logo { width:18px; height:18px; flex:0 0 18px; object-fit:contain; }
+.bo-platform-picker { display:flex; align-items:center; gap:6px; min-width:0; width:100%; }
+.bo-platform-picker>.bo-platform-fallback { width:18px; height:18px; flex:0 0 18px; color:var(--bo-text-soft); }
+.bo-platform-picker>select,.bo-platform-picker>input { min-width:0; width:100%; }
+.bo-platform-options { display:inline-flex; align-items:center; justify-content:center; flex:0 0 44px; width:44px; min-height:44px; border:1px solid var(--bo-border); border-radius:6px; background:#fff; cursor:pointer; }
+.bo-platform-options>svg { width:16px; height:16px; }
+.bo-sheet-page .bo-sheet-cell-editor:has(.bo-platform-picker) .bo-platform-picker { flex:1 1 100%; }
+.bo-sheet-page .bo-sheet-cell-content:has(>.bo-sheet-choice) { padding-right:0; }
+@media (max-width:767px),(pointer:coarse) {
+ .bo-sheet-page .bo-sheet-choice { min-height:44px; }
+}
+
 /* Full-page profile recovery keeps metadata separate from recovered values. */
 .bo-profile-recovery { padding:20px; margin:20px 0; border:1px solid var(--bo-border); border-radius:10px; background:var(--bo-snow); }.bo-profile-recovery h3 { margin:0 0 12px; font-size:18px; }.bo-profile-recovery>div { display:flex; align-items:center; flex-wrap:wrap; gap:12px; padding:12px 0; }.bo-profile-recovery>div>span { margin-right:auto; font-size:15px; }.bo-profile-recovery time { display:block; margin-top:6px; color:var(--bo-text-soft); font-size:14px; }
 .bo-prospect-creation-result h2,.bo-prospect-create > h2{font-size:18px;font-weight:600;line-height:1.4}

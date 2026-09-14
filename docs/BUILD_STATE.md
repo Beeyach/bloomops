@@ -1,6 +1,14 @@
 # Bloomsi Build State
 
-## Current direction — compact prospect sheet and clear links accepted in staging
+## Current direction — prospect sheet pickers and platform marks; staging pending
+
+Owner requested more useful dropdowns, logos and icons. In the existing isolated PR73 branch, Platform now offers seven common choices plus custom text in row editing, filtering and bulk editing. Platform/Fit cells are labelled buttons with chevrons; Fit has distinct icons and readable colored states. Seven unmodified platform website marks are served locally with source attribution. Unknown/custom values keep a neutral icon and their exact text. Custom saved views now use the existing colored table icon instead of an unavailable icon name. Default column proportions give these controls readable space while preserving the compact full-screen layout.
+
+The final OpenNext build,33 focused sheet/draft tests,29 real built-Worker browser checks and four supplementary logo/touch checks pass. Checks use a task-only copy of the existing synthetic database on localhost8802, with provider egress blocked. Platform/custom/Fit saves and undo, no-write-before-review, filtering, bulk preview/cancel, keyboard/Escape, six widths, all seven image decodes and44px phone targets are covered. Initial visual feedback adjusted default column proportions/padding. A null-versus-empty test assertion was corrected; a full system temporary directory caused browser crashes, resolved using task-local temporary storage. [Evidence](previews/sheet-fluid/README.md). One fresh Sol High staging review found no material findings; no re-review was needed.
+
+No backend, schema, dependency or workflow change. Outreach remains derived from existing history. Staging remains54dd8ae until the reviewed refinement is deployed. PR73 stays draft/unmerged; N2 is not started. Original LTB/voices, other worktrees, production/DNS, real imports/outreach and paid/video work remain untouched.
+
+## Previous accepted direction — compact prospect sheet and clear links accepted in staging
 
 Owner requested smaller prospect-sheet fonts, website icons beside their URLs and a clearly clickable Next Action. The existing isolated PR73 worktree now changes only sheet CSS and presentation markup: desktop table/toolbar text is14px with tighter row spacing, phones retain16px text and44px action targets, website text/icon share one flex link, and Next Action has a tinted border, chevron, hover and keyboard focus. Its canonical profile destination is unchanged. The accepted full-screen sheet remains in place.
 

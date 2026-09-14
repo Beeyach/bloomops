@@ -1,5 +1,20 @@
 # Fluid prospect sheet
 
+## Platform and Fit picker follow-up
+
+Platform and Fit cells now expose labelled, bordered choices with chevrons and compact icons. Platform has seven common suggestions and a custom-text escape in row editing, filters and bulk editing. Existing values are retained exactly until deliberately changed. Fit adds distinct icons and colored readable states. Outreach still comes from recorded activity. Default column proportions give the controls room without changing saved width preferences.
+
+Seven unmodified platform website marks are served locally; [asset origins](../../../public/brand/platforms/README.md) identify their official sources. Unknown/custom platforms retain text and a neutral systems icon. Custom saved views now reuse the colored table icon. No runtime lookup service, dependency, query, backend, authorization, schema or workflow change.
+
+The final OpenNext build and33 existing focused sheet/draft tests pass. [29 built-Worker checks](pickers-browser-checks.json) verify the real app on a separate copy of synthetic local D1/R2, with provider egress blocked. Coverage includes platform/custom/Fit preview-save-undo, historical values, no write on choice alone, platform filtering, bulk preview/cancel, keyboard activation/Escape and closed/open editor fit at six widths. [Four extra checks](pickers-visual-checks.json) verify all seven image decodes,44px touch targets and native picker/Escape on desktop and real mobile emulation. Desktop and phone captures were inspected.
+
+- [Platform logos and Fit icons on desktop](pickers-logos-1440.png)
+- [Phone properties](pickers-logos-390-fields.png)
+- [Desktop editor](pickers-picker-1440.png)
+- [Phone editor](pickers-picker-390.png)
+
+The first preview required wider default Platform/Fit proportions and tighter control gaps. A test compared nullable data to a native input’s empty string; corrected without a runtime change. Chromium later crashed because system `/tmp` was full; a task-local TMPDIR and already available shared libraries resolved the harness issue. All recorded checks pass on the final build. One fresh Sol High review found no material findings; no re-review was needed. Actual staging acceptance remains pending. No real record edits/imports/outreach or production/DNS changes. N2 remains unstarted.
+
 ## Compact typography and clear links follow-up
 
 The owner requested smaller table text, an external-link icon beside each URL and a visibly clickable Next Action. Desktop sheet text is now14px with tighter row spacing; phone text remains16px and action targets remain44px. Website text/icon share a flex link. Next Action uses a quiet tinted border, chevron and hover/focus treatment while preserving its canonical profile destination. Full-screen sizing stays in place. Only sheet CSS and presentation JSX change; no business logic, query, authorization, schema or workflow change.

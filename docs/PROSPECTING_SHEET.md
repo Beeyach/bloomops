@@ -30,6 +30,8 @@ Support keyboard movement, range selection, validated copy/paste, column resizin
 
 Owner typography correction: use compact14px desktop sheet text and tighter spacing while retaining readable16px phone text and44px touch actions. Keep the website external-link icon beside its URL. Give Next Action a quiet bordered, tinted control with a directional icon and visible hover/focus, preserving its profile destination. This explicit density request supersedes the earlier instruction against shrinking type.
 
+Owner picker/icon correction: Platform and Fit should have obvious selectable controls. Offer common platform choices in row editing, filters and bulk editing, with an escape to custom text that preserves historical values. Show recognizable locally served platform marks beside recorded names, and readable Fit text with color and a distinct icon. Keep existing review/save/undo behavior. Outreach remains derived from canonical activity; a decorative dropdown must not fabricate contact history.
+
 Keep profile identity, assessment, evidence, outreach and activity structured as described in [the profile reference](design-references/README.md). Skills must be able to read and write authorized structured fields without parsing a pasted audit or guessing from colours.
 
 ## Saved views and personal preferences

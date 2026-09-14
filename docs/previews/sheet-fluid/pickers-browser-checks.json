@@ -1,0 +1,33 @@
+{
+  "checks": [
+    "Platform cell opens a labelled native picker",
+    "Existing platform text survives opening",
+    "Picking a platform does not write before review",
+    "Platform choice saves through canonical sheet review",
+    "HighLevel mark loads locally",
+    "Undo restores original platform",
+    "Custom platform survives returning to suggestions",
+    "Custom platform saves without forced vocabulary",
+    "Custom historical value is an exact selectable option",
+    "Escape cancels platform editing",
+    "Keyboard activates Fit picker",
+    "Fit choice saves with text and icon",
+    "Fit undo restores original value",
+    "Platform dropdown filters canonical rows",
+    "Bulk platform choices use the existing review without immediate writes",
+    "Sheet choices fit at 1920",
+    "Open platform editor fits at 1920",
+    "Sheet choices fit at 1440",
+    "Open platform editor fits at 1440",
+    "Sheet choices fit at 1024",
+    "Open platform editor fits at 1024",
+    "Sheet choices fit at 768",
+    "Open platform editor fits at 768",
+    "Sheet choices fit at 390",
+    "Open platform editor fits at 390",
+    "Sheet choices fit at 320",
+    "Open platform editor fits at 320",
+    "No browser runtime errors",
+    "No server provider requests"
+  ]
+}
