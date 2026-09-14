@@ -30,7 +30,7 @@ test('committed staging resources, origins and mail are explicit and isolated fr
     assert.equal(new Set(value).size, 3);
   assert.equal(config.vars.BLOOMOPS_MAIL_TRANSPORT, 'r2-dev');
   assert.equal(config.env.staging.vars.BLOOMOPS_ENV, 'staging');
-  assert.match(config.env.staging.vars.BLOOMOPS_APP_URL, /^https:\/\/bloomops-staging\./);
+  assert.equal(config.env.staging.vars.BLOOMOPS_APP_URL, 'https://staging.ops.gobloomwired.com');
   assert.equal(config.env.production.vars.BLOOMOPS_APP_URL, undefined);
 });
 for (const corruption of [
