@@ -2,11 +2,11 @@
 
 This is sequencing guidance, not permission to pre-build future work.
 
-## Current checkpoint — N2A implemented; acceptance pending
+## Current checkpoint — N2A accepted in staging; PR74 unmerged
 
 PR73 merged as `6ab4d11` with the previously reviewed and staged prospect sheet. Both merged staging and zero-to-current workflows passed on that exact SHA. [BUILD_STATE](BUILD_STATE.md) records exact evidence and the active worktree.
 
-**Next:** complete review and staging acceptance for the implemented [N2A client overview](phases/N2.md). BUILD_STATE records the current gates. Client preview, profile photos, discussion and in-app notifications retain separate N2 acceptance.
+**Next:** PR74 readiness/merge, then define the N2B read-only client preview. The [N2A overview](phases/N2.md) passes its local build/tests, bounded Sol review and staging acceptance on e0ed7a1; BUILD_STATE records the exact evidence. Client preview, profile photos, discussion and in-app notifications retain separate N2 acceptance.
 
 ## Previous checkpoint — N1 release accepted in staging
 

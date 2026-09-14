@@ -16,4 +16,25 @@ The internal server composition refreshes authority, preserves the client route 
 
 The external Bloomlab design gallery returned its application error screen, despite HTTP200. The committed design guide and current Bloomsi primitives/official logo were used. Browser setup reused existing extracted libraries and task-local temporary storage because system /tmp was full. Harness corrections used the actual contact Save label and page readback (the client detail API exposes PATCH, not GET), and waited for reload after existing router refresh. These were test assumptions, not app save failures. No video tests, real mail, paid APIs, imports/outreach, production/DNS or original LTB changes.
 
-The initial Sol High review found that All projects lost client scope at the Work route. It now opens the canonical client Projects tab; the single focused re-review passed with no material findings. Staging acceptance remains pending; see BUILD_STATE for the final gates. The final build and browser run include the narrow-tablet spacing refinement and a second-client regression for the Projects destination.
+The initial Sol High review found that All projects lost client scope at the Work route. It now opens the canonical client Projects tab; the single focused re-review passed with no material findings. Staging acceptance passed; BUILD_STATE records the release gate. The final build and browser run include the narrow-tablet spacing refinement and a second-client regression for the Projects destination.
+
+
+## Reproduce locally
+
+Use a fresh isolated worktree with Node22+, locked dependencies and an ignored local-only `.dev.vars`. Run the repository's local schema/inherited/domain migration commands in order, then:
+
+```bash
+node scripts/client-overview-fixture-local.mjs /tmp/n2-fixture.sql
+npx --no-install wrangler d1 execute DB --local --file=/tmp/n2-fixture.sql
+npm run cf:build
+npx --no-install wrangler dev --local --port 8809 --inspector-port 9309
+```
+
+In another terminal, set `BLOOMOPS_BROWSER_BASE=http://localhost:8809`, `BLOOMOPS_BROWSER_EVIDENCE_DIR` to a task-local directory and `BLOOMOPS_PLAYWRIGHT_PACKAGE` to the existing Playwright package.json, then run `node scripts/client-overview-browser-local.mjs`. This environment used `/tmp/bloomops-pilot-tools/package.json` and its extracted libraries via `LD_LIBRARY_PATH=/tmp/bloomops-pilot-tools/libs/usr/lib/x86_64-linux-gnu`; `TMPDIR` pointed to a task-local directory. The fixture script emits SQL from synthetic migrated SQLite records and assumes its fixed IDs are absent. The browser harness makes only local QA edits and captures local R2 sign-in mail; it rejects deployed origins. Keep its storage-state.json out of Git.
+
+
+## Staging acceptance
+
+[Workflow34903134066](https://github.com/Bloomwired/bloomops/actions/runs/34903134066) succeeded on `e0ed7a16e973cb1d5d33daa0ec2f7334c5286fa9`. Public version and health confirm that runtime on staging with45 migrations. [Live checks](staging-checks.json) cover the four overview sections, desktop1440/phone390 without overflow, 44px phone summary links, existing edit/contact/activation controls, honest empty states and Services/Onboarding/client-scoped Tasks destinations. Missing clients remain404. The task tab was restored to desktop.
+
+[Deployed desktop](staging-desktop.jpg) and [deployed phone](staging-phone.jpg) were visually inspected. The existing QA workspace had no clients. One fictional draft client `QA Bloomsi Client Overview` and its required primary contact were created through the existing API, with an example.invalid address. No activation, invitation or real communication occurred. Its [staging preview](https://staging.ops.gobloomwired.com/clients/097f94a802a8426cb017aa94fcc72d20) requires the existing QA workspace. Live acceptance covers the empty state; the populated preview and mutation/permission matrix are the isolated local evidence above. Local Worker8809 is stopped. PR74 remains draft/unmerged; no new migrations or production/DNS changes.

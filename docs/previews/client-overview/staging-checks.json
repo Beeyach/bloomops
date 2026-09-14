@@ -1,0 +1,43 @@
+{
+  "runtime": "e0ed7a16e973cb1d5d33daa0ec2f7334c5286fa9",
+  "workflow": {
+    "id": 34903134066,
+    "conclusion": "success"
+  },
+  "environment": "staging",
+  "schemaMigrations": 45,
+  "clientId": "097f94a802a8426cb017aa94fcc72d20",
+  "fixture": "One explicitly named QA draft client and primary contact, in the existing Bloomsi QA workspace; synthetic example.invalid email. No activation or invitation.",
+  "desktop": {
+    "width": 1440,
+    "overview": true,
+    "viewportOverflow": false,
+    "sections": [
+      "Purchased services",
+      "Current work",
+      "Next deadline",
+      "Open requests"
+    ],
+    "detailsControl": true,
+    "contacts": true,
+    "activationControl": true
+  },
+  "phone": {
+    "width": 390,
+    "overview": true,
+    "viewportOverflow": false,
+    "summaryLinksUnder44px": 0
+  },
+  "states": {
+    "onboardingNotCreated": true,
+    "noUpcomingDeadline": true
+  },
+  "destinations": {
+    "services": 200,
+    "onboarding": 200,
+    "clientScopedTasks": 200,
+    "missingClient": 404
+  },
+  "restoredDesktop": true,
+  "limitations": "Live checks use the empty QA draft. Populated services, deadlines, onboarding states, saves and full permission matrix use the isolated built-Worker and domain evidence. Initial QA create was rejected for omitted required contact fields; corrected before any successful creation. No real client or prospect import, communication, production, DNS or original LTB change."
+}
