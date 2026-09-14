@@ -1,0 +1,31 @@
+{
+  "base": "https://staging.ops.gobloomwired.com",
+  "sha": "1f9c1c1",
+  "checks": [
+    "Reviewed commit is live",
+    "Staging environment and45 migrations are healthy",
+    "Deployed logo exactly matches approved bytes",
+    "Bloomsi browser title at 1440",
+    "Official sign-in logo loads at 1440",
+    "Readable sign-in without horizontal overflow at 1440",
+    "No browser exception at 1440",
+    "Signed-out prospect sheet remains gated at 1440",
+    "Bloomsi browser title at 390",
+    "Official sign-in logo loads at 390",
+    "Readable sign-in without horizontal overflow at 390",
+    "No browser exception at 390",
+    "Signed-out prospect sheet remains gated at 390",
+    "Bloomsi browser title at 320",
+    "Official sign-in logo loads at 320",
+    "Readable sign-in without horizontal overflow at 320",
+    "No browser exception at 320",
+    "Signed-out prospect sheet remains gated at 320",
+    "Signed-out data denied: /api/bloomops/prospecting/sheet",
+    "Signed-out data denied: /api/bloomops/prospecting/sample-csv",
+    "Signed-out recovery/search denied: /api/bloomops/search",
+    "Signed-out recovery/search denied: /api/bloomops/prospecting/creation-recovery",
+    "Signed-out recovery/search denied: /api/bloomops/clients/recovery",
+    "Signed-out recovery/search denied: /api/bloomops/pages/00000000-0000-4000-8000-000000000000/recovery"
+  ],
+  "limitations": "Signed-out final-main verification. Authenticated staging acceptance is recorded separately."
+}

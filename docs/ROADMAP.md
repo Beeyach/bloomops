@@ -2,11 +2,11 @@
 
 This is sequencing guidance, not permission to pre-build future work.
 
-## Current checkpoint — release accepted N1 work
+## Current checkpoint — N1 release accepted in staging
 
-Reconcile and release PRs67–72: search, the prospect sheet screen fit and profile/new-prospect/Pages/client-creation recovery. Combined acceptance, safe ordered merges and final authenticated staging verification are required; see [BUILD_STATE](BUILD_STATE.md) for exact results. The current checkpoint does not claim the remaining all-app form inventory is complete.
+PRs67–72 are merged in dependency order into main `1f9c1c1`: search, prospect sheet screen fit and profile/new-prospect/Pages/client-creation recovery. Combined build/tests,45 fresh/idempotent migrations and the required Sol High review/re-review pass. Both merged-main workflows are green;24 public and63 distinct authenticated staging checks verify the affected flows. [BUILD_STATE](BUILD_STATE.md) and [release evidence](previews/n1-release/README.md) record exact results, visuals and limitations. The broader all-app form-recovery inventory remains explicit and is not declared complete.
 
-After the checkpoint, define the first N2 client overview slice from canonical services, work, deadlines and requests. Keep collaboration and authorized client preview under their separate N2 acceptance, and do not begin N2 during this release.
+**Next, not started:** define the first N2 client overview slice from canonical purchased services, current work, next deadline and unresolved requests, preserving prospect links and permissions. Keep collaboration and authorized client preview under their separate N2 acceptance. No N2 code was added during this release checkpoint.
 
 ## Current owner priority — Prospecting and Pages
 

@@ -1,0 +1,99 @@
+{
+  "base": "https://staging.ops.gobloomwired.com",
+  "sha": "1f9c1c14051f5887b5b351f3c0ba774a08d5a600",
+  "checkedAt": "2026-09-14",
+  "authenticatedChecks": [
+    "Search shows all five canonical record types",
+    "Full prospect, client and task links are correct",
+    "Authorized file download returns exact stored bytes",
+    "Wrong initiating user search is denied",
+    "Same-route workspace refresh clears the old query and results",
+    "Departed workspace search is denied by the server",
+    "Returning to the original test scope starts clean",
+    "Staging sheet fits the desktop canvas without horizontal scrolling",
+    "Business opens the full profile and Website remains visible",
+    "Bulk selection and clear selection work",
+    "Reviewed inline edit saves and Undo restores the original value",
+    "Staging phone sheet has no horizontal scrolling",
+    "Saved personal view, platform filter, date order and50-row preference survive reload",
+    "Sample CSV remains a working download",
+    "Sheet business link navigates to the full prospect profile",
+    "Profile save failure preserves the edited field",
+    "Reload keeps profile recovery metadata private until authorized review",
+    "Recovered profile fields save to the canonical record",
+    "Wrong-user profile recovery is denied",
+    "New prospect failure follows one actual committed creation",
+    "Later prospect input remains editable after the lost reply",
+    "New prospect recovery reveals fields only after checking current access",
+    "Lost-reply recovery finds the original prospect and retains later input",
+    "Replaying the original request returns the same prospect",
+    "Recovered new prospect receipt fits the phone",
+    "Authorized prospect receipt and later input remain readable after the mobile viewport reload",
+    "Client creation commits once before the simulated lost reply",
+    "Retry finds the original client even when newer email input is incomplete",
+    "Later client input is retained without another creation",
+    "Saved client link targets the canonical client",
+    "Client reload recovery checks access before revealing retained input",
+    "Client draft download preserves incomplete later input",
+    "Exact client creation replay returns the original client",
+    "Wrong-user client recovery is denied",
+    "Saved client action opens the actual full client record",
+    "Internal Page retains its formatted body",
+    "Internal Page failed autosave preserves its new title",
+    "Page reload shows metadata before revealing retained content",
+    "Reviewing recovered Page content does not autosave it",
+    "Explicit recovered Page save preserves rich content",
+    "Wrong-user Page recovery is denied",
+    "Original selected workspace is restored and verified",
+    "Portal search includes shared parent and inherited child pages",
+    "Portal search excludes private pages and internal record types",
+    "Portal file download works through its authorized result",
+    "Portal search fits the phone",
+    "Portal failed autosave preserves edited input",
+    "Portal recovery reveals input only after authorized review",
+    "Portal recovered content waits for explicit save",
+    "Portal recovery saves canonical title and rich body",
+    "Portal retry confirms a committed but lost reply without another write or revision",
+    "Portal inherited child opens through the actual nested page link",
+    "Revoked portal access removes the editor and rejects the retained save",
+    "Revoked page is denied by the canonical API",
+    "Portal search excludes the revoked parent and inherited subtree",
+    "Both previously captured QA profiles remain byte-identical after release acceptance",
+    "Revoked portal draft leaves the canonical title and revision unchanged",
+    "All 17 selected prospect fields fit the staging desktop without sideways scrolling",
+    "All 17 selected fields and full profile link remain available at 320 pixels without sideways scrolling",
+    "Final staging recheck serves merged main with all 45 migrations healthy",
+    "Restoration readback confirms QA owner role, unlinked synthetic contact and revoked test grant",
+    "Staging database contains exactly one recovered prospect, client receipt and primary contact",
+    "Synthetic acceptance created no invitations, onboarding runs, deliveries, conversions or CSV imports"
+  ],
+  "fixture": "Separate receipt-bound synthetic QA workspace",
+  "cleanup": {
+    "role": "owner",
+    "contactLinked": false,
+    "grant": "none",
+    "originalWorkspaceSelectionRestored": true
+  },
+  "preservation": {
+    "checks": [
+      "Both previously captured QA profiles remain byte-identical after release acceptance"
+    ],
+    "workspaceId": "0bb31d4d-768e-447e-ab3a-6873d8b32f00",
+    "rows": [
+      {
+        "id": "e33c3bdd-8351-44f1-8cfc-8ab106338c6c",
+        "hash": "b20d3c9388135be0d4555233f636957641d6e549bd71aa876f267adf73e0565e"
+      },
+      {
+        "id": "f002cba9-2b51-4b5e-8c21-e92bda82f5df",
+        "hash": "dfd885c374abd65fe909618bc55ef967b963ee876ac06f2db5327b4c47eeeadb"
+      }
+    ]
+  },
+  "limitations": [
+    "Live checks use synthetic records. Full concurrency, storage-boundary and real account/logout replacement matrices are covered by isolated built-Worker acceptance, not all repeated in the owner browser.",
+    "Temporary 503 responses simulate connection loss; lost-reply cases perform the real canonical commit before withholding the response.",
+    "Synthetic .test websites intentionally do not resolve; garden fallback avatars remain visible.",
+    "The original LTB database was never targeted for fixture edits; no full before/after remote LTB snapshot was taken."
+  ]
+}
