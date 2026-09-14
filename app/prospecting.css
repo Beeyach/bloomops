@@ -436,7 +436,7 @@
 .bo-sheet-recovery{margin-bottom:20px;padding:20px;background:var(--bo-snow,#fff);border:1px solid var(--bo-border,#dce0ec);border-radius:12px}.bo-sheet-recovery h2{font-size:20px;margin:0 0 16px}.bo-sheet-recovery>div{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0}.bo-sheet-recovery time{display:block;color:var(--bo-muted,#64708b)}.bo-sheet-recovery p{margin-top:16px}.bo-sheet-recovered-value{display:block;margin-top:12px;font-weight:500}.bo-sheet-recovered-value input{display:block;margin-top:8px;width:100%;max-width:540px}.bo-sheet-change-list p{overflow-wrap:anywhere}
 
 /* Fit the sheet to the workspace canvas; saved widths act as proportions. */
-.bo-page:has(>.bo-sheet-page) { max-width:none; padding:24px; }
+.bo-page:has(>.bo-sheet-page) { max-width:none; padding:20px 16px; }
 .bo-sheet-page .bo-sheet { container-type:inline-size; padding:12px; max-height:none; overflow:visible; box-shadow:none; animation:none; }
 .bo-sheet-page .bo-sheet-scroll { scroll-padding-left:0; }
 .bo-sheet-page .bo-sheet-table { width:100%; min-width:0; }
@@ -449,6 +449,23 @@
 .bo-sheet-page .bo-status { white-space:nowrap; }
 .bo-sheet-page .bo-status svg { width:10px; height:10px; }
 .bo-sheet-field-label,.bo-sheet-select-label { display:none; }
+@media (min-width:768px) {
+ .bo-sheet-toolbar { position:relative; }
+ .bo-sheet-toolbar>.bo-sheet-menu-anchor:not(:first-child) { position:static; }
+ .bo-sheet-toolbar>.bo-sheet-menu-anchor:not(:first-child)>.bo-sheet-menu { left:auto; right:0; }
+}
+/* Keep the working area open even with a short result set. Rows retain their
+   natural height; only the records viewport grows, with pagination below it. */
+@media (min-width:768px) and (min-height:600px) {
+ .bo-main:has(>.bo-page>.bo-sheet-page) { height:100dvh; min-height:0; }
+ .bo-main:has(>.bo-page>.bo-sheet-page)>.bo-topbar { flex-shrink:0; }
+ .bo-page:has(>.bo-sheet-page) { display:flex; flex:1; min-height:0; overflow-y:auto; }
+ .bo-sheet-page { display:flex; flex-direction:column; flex:1; min-width:0; min-height:0; }
+ .bo-sheet-page>*,.bo-sheet-page .bo-sheet>* { flex-shrink:0; }
+ .bo-sheet-page .bo-sheet { display:flex; flex-direction:column; flex:1 1 auto; min-height:360px; }
+ .bo-sheet-page .bo-sheet-scroll { flex:1 1 160px; min-height:160px; max-height:none; }
+ .bo-sheet-page .bo-sheet-skeleton { flex:1 1 160px; min-height:160px; }
+}
 @media(max-width:767px) { .bo-page:has(>.bo-sheet-page) { padding:20px 12px calc(var(--bo-tabbar) + 32px); }.bo-sheet-page .bo-sheet-search { min-width:0; flex-basis:100%; max-width:none; }.bo-sheet-page .bo-sheet-menu { width:min(290px,calc(100vw - 64px)); } }
 .bo-sheet-page .bo-sheet-wrap-fields .bo-sheet-table{display:block;}
 .bo-sheet-page .bo-sheet-wrap-fields colgroup{display:none;}

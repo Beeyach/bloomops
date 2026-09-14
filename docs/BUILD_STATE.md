@@ -1,5 +1,11 @@
 # Bloomsi Build State
 
+## Current direction — fluid prospect sheet correction before N2
+
+Owner requested the prospect table fill the available screen before N2. Worktree `/home/ary/Developer/bloomops-sheet-fluid`, branch `fix/prospect-sheet-fluid`, starts from main `85ab496`. Only runtime change is scoped CSS in `app/prospecting.css`: reduce desktop outer gutters and give the sheet the remaining viewport height, with normal-height rows, an expanding records viewport and pagination beneath it. Long results scroll inside the sheet; phones and short screens retain natural page flow. No data, JavaScript, schema, dependency, workflow or N2 change.
+
+The production OpenNext build and 23 focused browser/layout checks pass. Exact candidate CSS was applied to the existing staging DOM for preview at 1920,1440,1024,768,390,320 pixels and a short1280x540 viewport. Long-result DOM clones were used only for scroll geometry and removed; actual bulk selection/clear works. Desktop and phone visuals were inspected. One required Sol High review is pending before staging through the existing workflow. [Preview and evidence](previews/sheet-fluid/README.md). Original LTB/voices, unrelated work, production/DNS, real imports/outreach, paid and video remain unchanged. N2 is not started.
+
 ## Current direction — N1 release checkpoint complete; N2 not started
 
 The owner bounded this checkpoint to releasing accepted N1 work. PRs **#67–72 are merged into main in dependency order**, ending at `1f9c1c14051f5887b5b351f3c0ba774a08d5a600`. The final main tree exactly matches independently reviewed candidate `71a6388`. Worktree: `/home/ary/Developer/bloomops-n1-release`, branch `release/n1-checkpoint`. Subsequent release-note commits change documentation/evidence only; the deployed application remains this merged-main runtime.
