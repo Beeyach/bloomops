@@ -1,6 +1,30 @@
 # Bloomsi Build State
 
-## Current direction — Prospect sheet screen fit locally accepted
+## Current direction — Full roadmap goal active; N1D profile recovery accepted locally
+
+Owner set the persistent goal: **finish everything** in the agreed Bloomsi roadmap. Keep the whole objective active; a passing slice or draft PR is not overall completion. The previous goal step made implementation progress. Latest main was fetched and remains `9763650`; PR67 search and PR68 screen fit are still open drafts with local acceptance, not merged/deployed. Production/DNS, live prospect imports/outreach, paid audits and video work/tests retain their existing restrictions. Continue useful authorized work rather than stopping at these pending release gates.
+
+Current worktree `/home/ary/Developer/bloomops-n1d-profile-recovery`, branch `feat/n1d-profile-recovery`, starts from PR68 head `331e765`. Read the [N1D contract](phases/N1.md). Existing full-page prospect editors only warned on leave; the new implementation retains per-tab, user/workspace/prospect-scoped copies for all four profile sections, with original revision/values/source controls, ten-copy/seven-day/256KiB bounds, conditional deletion and logout invalidation. Recovery reveals only counts/dates until an explicit bound server authority check succeeds. Canonical updates accept an optional initiating user ID while preserving old callers. Retry compares normalized values and provenance, confirms already-saved values without another write, or preserves conflicting drafts for deliberate review. The same structured forms remain in place.
+
+Current evidence:36 focused profile/store/canonical/sheet tests pass; final OpenNext build passes;42 main built-Worker checks and17 transition/native checks pass. Recovery, incomplete source controls, real lost replies, conflicts, storage limits, original-user/workspace binding, revocation during reads, real switch/logout and independent tab stability are verified. Shared JS adds53 bytes; Home/Clients/Work request/query counts remain unchanged. The final asset sizes match the measured build. One fresh Sol High independent review found a same-route account-prop replacement gap. The profile is now keyed by initiating user/workspace/prospect. Four unfixed-build checks reproduce the gap; seven final built-Worker regression checks pass after correction, along with the final rebuild and36 focused tests. The single focused re-review accepts the fix with no remaining material findings. Accepted implementation `829df36` is pushed in [draft PR69](https://github.com/Bloomwired/bloomops/pull/69), stacked on PR68. It is not merged or deployed. N1D is accepted locally; total browser/native acceptance is66 checks, with the earlier59 preceding only the server key fix. [Visual evidence and verification limits](previews/n1d-profile-recovery/README.md). No deployment or migration. Private evidence `/home/ary/Developer/bloomops-n1d-profile-recovery-evidence/`.
+
+The [remaining N1 inventory](phases/N1.md#remaining-n1-inventory--inspected-after-n1d) identifies new prospect creation recovery next, then Pages lifecycle/recovery, client creation/identity/contact concurrency, project/content forms and remaining record controls. These gaps are recorded from the actual current paths, not counted as complete.
+
+Full-goal completion ledger (verify against the linked contracts before closing):
+
+| Requirement area | Authoritative current evidence / remaining work |
+| --- | --- |
+| Prospecting sheet/import/manual audit/client handoff | Accepted merged release9763650; original LTB preserved. Screen-fit correction is accepted draft PR68, pending release. |
+| N1 reliable saves, recovery, search | Sheet save/draft recovery deployed; search accepted draft PR67. Profile recovery in progress. Inventory and complete remaining new-record/client/Pages forms before closing N1. |
+| N2 client overview/preview/collaboration | Implement and verify `NEXT_PHASES.md` and `COLLABORATION_NOTIFICATIONS.md`; no completion evidence yet. |
+| N3 client reporting | Implement and verify `CLIENT_REPORTING.md`: canonical reports, reviewed import, charts, publication snapshots and portal/PDF. |
+| N4 reusable work and Pages | Reuse existing generation/editor engines; verify dated instantiation, retries, links, nesting and recovery against `NEXT_PHASES.md`. |
+| N5 optional connections | Source/account selection and activation retain their explicit gates; no automatic sending or connection from the broad goal. |
+| Operational roadmap and final release | Audit remaining A–G requirements and newer owner overrides against main and existing in-flight work; preserve unrelated worktrees. Drafts/local tests alone do not satisfy release gates or prove the entire app complete. |
+
+Next concrete actions: implement N1E new-prospect form recovery in a separate worktree using the contract appended to `phases/N1.md`. Keep the existing search/screen-fit drafts and pending staging release state clear. No new project-status file or replacement roadmap is needed.
+
+## Previous accepted direction — Prospect sheet screen fit locally accepted
 
 Owner requested that the prospect table fill the screen without sideways scrolling. Active worktree `/home/ary/Developer/bloomops-sheet-screen-fit`, branch `fix/prospect-sheet-screen-fit`, is isolated from N1C PR67 and starts from latest fetched main `9763650`. The [sheet contract](PROSPECTING_SHEET.md) records the new direction; [visual preview and checks](previews/sheet-screen-fit/README.md) show actual synthetic local records. This layout correction is not merged or deployed; staging remains at the accepted release checkpoint.
 

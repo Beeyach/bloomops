@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "User A has a private dirty editor before replacement",
+    "A real same-route RSC refresh uses user B without document reload",
+    "Replacement user never receives the old mounted editor",
+    "No old values are persisted into the replacement user scope",
+    "New user editor starts with canonical saved fields",
+    "New user explicitly saves only their own fresh edit",
+    "User A original scoped copy remains available"
+  ]
+}
