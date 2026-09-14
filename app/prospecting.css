@@ -596,3 +596,33 @@
 .bo-sheet-offscreen-drafts { margin-top:12px; }
 .bo-sheet-offscreen-drafts>summary { cursor:pointer; color:var(--bo-text-soft); }
 @media(max-width:767px) { .bo-sheet-cell-recovery { font-size:14px; }.bo-sheet-cell-recovery button { min-height:44px; }.bo-sheet-recovery>summary { min-height:44px; } }
+
+/* Editing overlays the existing cell so opening a field does not resize rows. */
+.bo-sheet-page .bo-sheet-table td.is-editing { position:relative; z-index:9; }
+.bo-sheet-page .is-editing>.bo-sheet-cell-content { visibility:hidden; }
+.bo-sheet-page .bo-sheet-cell-editor { position:absolute; right:8px; top:50%; transform:translateY(-50%); display:flex; flex-wrap:nowrap; align-items:center; gap:6px; width:320px; max-width:calc(100cqw - 32px); padding:4px; border:1px solid #9f7eaa; border-radius:8px; background:var(--bo-snow); box-shadow:0 2px 8px #19172b14; }
+.bo-sheet-page .bo-sheet-business .bo-sheet-cell-editor { right:auto; left:8px; }
+.bo-sheet-page .bo-sheet-cell-editor>input,.bo-sheet-page .bo-sheet-cell-editor>select,.bo-sheet-page .bo-sheet-cell-editor:has(.bo-platform-picker) .bo-platform-picker { flex:1 1 0; min-width:0; width:0; }
+.bo-sheet-page .bo-sheet-cell-editor input,.bo-sheet-page .bo-sheet-cell-editor select { min-height:32px; padding:5px 8px; font-size:14px; }
+.bo-sheet-page .bo-sheet-cell-editor>button { flex-shrink:0; min-width:32px; min-height:32px; border-radius:5px; }
+.bo-sheet-page .bo-sheet-cell-editor>.bo-sheet-save-field { padding:5px 12px; background:var(--bo-ink,#18152b); color:#fff; font:inherit; font-weight:600; }
+.bo-sheet-page .bo-sheet-cell-editor button:focus-visible { outline:2px solid var(--bo-focus); outline-offset:2px; }
+.bo-sheet-page .bo-sheet-cell-editor .bo-platform-options { flex-basis:32px; width:32px; min-height:32px; }
+.bo-sheet-page .bo-sheet-recovery { margin:0; padding:0; border:0; border-radius:0; background:transparent; }
+.bo-sheet-page .bo-sheet-recovery>summary { min-height:36px; gap:6px; padding:6px 10px; margin:0; border:1px solid var(--bo-border); border-radius:8px; background:var(--bo-snow); color:var(--bo-text); white-space:nowrap; }
+.bo-sheet-page .bo-sheet-recovery>summary>span { margin:0; font-variant-numeric:tabular-nums; }
+.bo-sheet-page .bo-sheet-recovery>.bo-sheet-draft-menu { display:block; margin:0; }
+.bo-sheet-page .bo-sheet-draft-menu h3 { border:0; margin:0 0 8px; padding:0; }
+.bo-sheet-page .bo-sheet-draft-menu>div { display:flex; flex-wrap:wrap; gap:8px; padding:12px 0; border-top:1px solid var(--bo-border); }
+.bo-sheet-page .bo-sheet-draft-menu>div>span { flex-basis:100%; }
+.bo-sheet-page .bo-sheet-draft-menu p { font-size:13px; color:var(--bo-text-soft); }
+.bo-sheet-page .bo-sheet-wrap-fields td:not(.bo-sheet-business) .bo-sheet-cell-editor { top:auto; bottom:8px; transform:none; }
+@container(max-width:900px) {
+ .bo-sheet-page .bo-sheet-scroll td:not(.bo-sheet-business) .bo-sheet-cell-editor { top:auto; bottom:8px; transform:none; }
+}
+@media(max-width:767px),(pointer:coarse) {
+ .bo-sheet-page .bo-sheet-cell-editor input,.bo-sheet-page .bo-sheet-cell-editor select { min-height:44px; font-size:16px; }
+ .bo-sheet-page .bo-sheet-cell-editor>button,.bo-sheet-page .bo-sheet-cell-editor .bo-platform-options { min-width:44px; min-height:44px; }
+ .bo-sheet-page .bo-sheet-cell-editor .bo-platform-options { flex-basis:44px; }
+ .bo-sheet-page .bo-sheet-recovery>summary { min-height:44px; }
+}

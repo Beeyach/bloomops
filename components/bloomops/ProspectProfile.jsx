@@ -22,7 +22,7 @@ function EditFields({section,values,setValues,sources,setSources,errors={},withS
   return <div key={key} className={spec.type==='textarea'?'bo-prospect-field-wide':undefined}><Field id={id} label={spec.label} hint={spec.hint} error={errors[key]} optional={!spec.required&&key!=='fit'}>
    {spec.type==='fit'?<select {...aria} className="bo-control" value={value} onChange={change}>{Object.entries(PROSPECT_FIT).map(([k,label])=><option key={k} value={k}>{label}</option>)}</select>:spec.type==='textarea'?<textarea {...aria} className="bo-control" rows={key==='draftBody'?10:4} maxLength={spec.max} value={value} onChange={change}/>:<input {...aria} className="bo-control" type={spec.type||'text'} required={spec.required} maxLength={spec.max} value={value} onChange={change} autoComplete="off"/>}
   </Field>
-  {withSources&&<details className="bo-prospect-field-source"><summary>Source details for {spec.label.toLowerCase()}</summary>
+  {withSources&&key!=='platform'&&<details className="bo-prospect-field-source"><summary>Source details for {spec.label.toLowerCase()}</summary>
    <Field id={id+'-source'} label="Source URL"><input id={id+'-source'} className="bo-control" type="url" maxLength={2048} value={sources[key]?.url||''} onChange={e=>setSources(v=>({...v,[key]:{...v[key],url:e.target.value,checked:false,touched:true}}))}/></Field>
    <label className="bo-prospect-check"><input type="checkbox" checked={sources[key]?.checked===true} onChange={e=>setSources(v=>({...v,[key]:{...v[key],checked:e.target.checked,touched:true}}))}/>I checked this field against its source</label>
    {key==='publicEmail'&&<p className="bo-hint">A source check does not verify email delivery.</p>}

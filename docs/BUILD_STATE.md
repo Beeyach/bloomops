@@ -1,6 +1,12 @@
 # Bloomsi Build State
 
-## Current direction — inline prospect edit recovery
+## Current direction — compact text editing and clear Save
+
+Owner requested removal of the Current platform source-detail control, less movement when editing Contact, and clearer saving without the earlier-visit recovery banner. The active PR73 worktree preserves existing save/recovery behavior. Text cells now use a compact editor with labelled Save, over the existing cell footprint; earlier copies move to a Drafts toolbar menu. The platform source control is omitted without deleting stored provenance. No server/schema/workflow/dependency changes or migrations.
+
+Read-only reproduction on staging measured Contact’s row growing70.19→109px when opened; the original Save button had no visible text. Final build,35 Node tests and112 built-Worker browser checks pass (59 inline/editor,32 save,21 quiet-save), including stable row height, readable labelled Save and bounded Drafts at five widths, plus source-control visibility and recovery/authority regressions. Initial profile-label test assumptions and phone label overlap were corrected and rechecked. [Evidence and visuals](previews/sheet-editor/README.md). Rounded route estimates remain unchanged. One bounded Sol High review found overlapping Drafts and Filter menus. Drafts now uses the same panel state as the other toolbar menus; switching in both directions has a regression at all five widths. The rebuilt Worker passes all112 browser checks, including menu switching at five widths. The single focused Sol High re-review accepted the correction with no remaining material findings. Staging acceptance is pending. N2 is unstarted, PR73 remains draft/unmerged, and original LTB/voices, unrelated root work, production/DNS, real imports/outreach and paid/video remain preserved.
+
+## Previous direction — inline prospect edit recovery
 
 Owner rejected the disruptive Review change flow and repeated confirmations. Read-only inspection of the open owner tab identified an old recovered Platform value compared against a newer saved value; generic Retry could not resolve that conflict, and global review blocked other edits. Ordinary failures/recovered values now stay beside their field with Retry or explicit Use my value / Keep saved for a real conflict. Replacement still compares against the displayed saved value. Multiple pending cells and unfinished text survive another edit or view change without discard prompts. Older copies are collapsed, already-saved copies retire after an authorized check, and off-page/hidden pending fields remain accessible. Bulk/paste Apply and genuine page-departure guards remain; no automatic recovery submission or outreach changes.
 
