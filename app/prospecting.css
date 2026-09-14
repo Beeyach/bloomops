@@ -491,3 +491,6 @@
 
 /* Full-page profile recovery keeps metadata separate from recovered values. */
 .bo-profile-recovery { padding:20px; margin:20px 0; border:1px solid var(--bo-border); border-radius:10px; background:var(--bo-snow); }.bo-profile-recovery h3 { margin:0 0 12px; font-size:18px; }.bo-profile-recovery>div { display:flex; align-items:center; flex-wrap:wrap; gap:12px; padding:12px 0; }.bo-profile-recovery>div>span { margin-right:auto; font-size:15px; }.bo-profile-recovery time { display:block; margin-top:6px; color:var(--bo-text-soft); font-size:14px; }
+.bo-prospect-creation-result h2,.bo-prospect-create > h2{font-size:18px;font-weight:600;line-height:1.4}
+.bo-prospect-creation-result h2{margin:0 0 8px}
+.bo-prospect-create > h2{margin:24px 0 16px}
