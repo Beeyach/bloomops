@@ -1,0 +1,1119 @@
+{
+  "method": "Local built Worker, zero artificial D1 latency, same isolated fixture; seven rounds, two warmups; full destination plus two frames. Cold JS decoded bytes measured separately.",
+  "summary": [
+    {
+      "width": 1440,
+      "route": "Home",
+      "samples": 5,
+      "visibleMs": {
+        "median": 62.800048828125,
+        "p95": 79.300048828125,
+        "min": 62.5,
+        "max": 79.300048828125
+      },
+      "requests": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "statements": [
+        11,
+        11,
+        11,
+        11,
+        11
+      ],
+      "invocations": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "Clients",
+      "samples": 5,
+      "visibleMs": {
+        "median": 62.7998046875,
+        "p95": 62.89990234375,
+        "min": 61.89990234375,
+        "max": 62.89990234375
+      },
+      "requests": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "statements": [
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "invocations": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "Work",
+      "samples": 5,
+      "visibleMs": {
+        "median": 62.800048828125,
+        "p95": 63.10009765625,
+        "min": 62.5,
+        "max": 63.10009765625
+      },
+      "requests": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "statements": [
+        7,
+        7,
+        7,
+        7,
+        7
+      ],
+      "invocations": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "width": 390,
+      "route": "Home",
+      "samples": 5,
+      "visibleMs": {
+        "median": 63.5,
+        "p95": 79.400146484375,
+        "min": 63.199951171875,
+        "max": 79.400146484375
+      },
+      "requests": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "statements": [
+        11,
+        11,
+        11,
+        11,
+        11
+      ],
+      "invocations": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "width": 390,
+      "route": "Clients",
+      "samples": 5,
+      "visibleMs": {
+        "median": 63.199951171875,
+        "p95": 63.400146484375,
+        "min": 62.60009765625,
+        "max": 63.400146484375
+      },
+      "requests": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "statements": [
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "invocations": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "width": 390,
+      "route": "Work",
+      "samples": 5,
+      "visibleMs": {
+        "median": 62.39990234375,
+        "p95": 62.7998046875,
+        "min": 62.300048828125,
+        "max": 62.7998046875
+      },
+      "requests": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "statements": [
+        7,
+        7,
+        7,
+        7,
+        7
+      ],
+      "invocations": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    }
+  ],
+  "bundles": [
+    {
+      "width": 1440,
+      "route": "Home",
+      "scriptRequests": 10,
+      "scriptBytes": 391049,
+      "scripts": [
+        {
+          "path": "/_next/static/chunks/webpack-80bbd9d7d359d95b.js",
+          "bytes": 3745
+        },
+        {
+          "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js",
+          "bytes": 173025
+        },
+        {
+          "path": "/_next/static/chunks/main-app-18159359c58d23c6.js",
+          "bytes": 527
+        },
+        {
+          "path": "/_next/static/chunks/1255-623a1bc706ecd6cc.js",
+          "bytes": 174198
+        },
+        {
+          "path": "/_next/static/chunks/6304-9baa05723bb5b01d.js",
+          "bytes": 11821
+        },
+        {
+          "path": "/_next/static/chunks/176-bab32583cced85ff.js",
+          "bytes": 8741
+        },
+        {
+          "path": "/_next/static/chunks/app/error-24b323f435583695.js",
+          "bytes": 1541
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-8f2404aab9609434.js",
+          "bytes": 1178
+        },
+        {
+          "path": "/_next/static/chunks/994-db01f1a7ab03ef38.js",
+          "bytes": 9549
+        },
+        {
+          "path": "/_next/static/chunks/app/(internal)/layout-18ca06d1dc2ebb91.js",
+          "bytes": 6724
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "Clients",
+      "scriptRequests": 10,
+      "scriptBytes": 391049,
+      "scripts": [
+        {
+          "path": "/_next/static/chunks/webpack-80bbd9d7d359d95b.js",
+          "bytes": 3745
+        },
+        {
+          "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js",
+          "bytes": 173025
+        },
+        {
+          "path": "/_next/static/chunks/app/error-24b323f435583695.js",
+          "bytes": 1541
+        },
+        {
+          "path": "/_next/static/chunks/6304-9baa05723bb5b01d.js",
+          "bytes": 11821
+        },
+        {
+          "path": "/_next/static/chunks/main-app-18159359c58d23c6.js",
+          "bytes": 527
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-8f2404aab9609434.js",
+          "bytes": 1178
+        },
+        {
+          "path": "/_next/static/chunks/176-bab32583cced85ff.js",
+          "bytes": 8741
+        },
+        {
+          "path": "/_next/static/chunks/1255-623a1bc706ecd6cc.js",
+          "bytes": 174198
+        },
+        {
+          "path": "/_next/static/chunks/994-db01f1a7ab03ef38.js",
+          "bytes": 9549
+        },
+        {
+          "path": "/_next/static/chunks/app/(internal)/layout-18ca06d1dc2ebb91.js",
+          "bytes": 6724
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "Work",
+      "scriptRequests": 10,
+      "scriptBytes": 391049,
+      "scripts": [
+        {
+          "path": "/_next/static/chunks/webpack-80bbd9d7d359d95b.js",
+          "bytes": 3745
+        },
+        {
+          "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js",
+          "bytes": 173025
+        },
+        {
+          "path": "/_next/static/chunks/6304-9baa05723bb5b01d.js",
+          "bytes": 11821
+        },
+        {
+          "path": "/_next/static/chunks/app/error-24b323f435583695.js",
+          "bytes": 1541
+        },
+        {
+          "path": "/_next/static/chunks/main-app-18159359c58d23c6.js",
+          "bytes": 527
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-8f2404aab9609434.js",
+          "bytes": 1178
+        },
+        {
+          "path": "/_next/static/chunks/176-bab32583cced85ff.js",
+          "bytes": 8741
+        },
+        {
+          "path": "/_next/static/chunks/1255-623a1bc706ecd6cc.js",
+          "bytes": 174198
+        },
+        {
+          "path": "/_next/static/chunks/994-db01f1a7ab03ef38.js",
+          "bytes": 9549
+        },
+        {
+          "path": "/_next/static/chunks/app/(internal)/layout-18ca06d1dc2ebb91.js",
+          "bytes": 6724
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "route": "Home",
+      "scriptRequests": 10,
+      "scriptBytes": 391049,
+      "scripts": [
+        {
+          "path": "/_next/static/chunks/webpack-80bbd9d7d359d95b.js",
+          "bytes": 3745
+        },
+        {
+          "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js",
+          "bytes": 173025
+        },
+        {
+          "path": "/_next/static/chunks/6304-9baa05723bb5b01d.js",
+          "bytes": 11821
+        },
+        {
+          "path": "/_next/static/chunks/app/error-24b323f435583695.js",
+          "bytes": 1541
+        },
+        {
+          "path": "/_next/static/chunks/main-app-18159359c58d23c6.js",
+          "bytes": 527
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-8f2404aab9609434.js",
+          "bytes": 1178
+        },
+        {
+          "path": "/_next/static/chunks/176-bab32583cced85ff.js",
+          "bytes": 8741
+        },
+        {
+          "path": "/_next/static/chunks/1255-623a1bc706ecd6cc.js",
+          "bytes": 174198
+        },
+        {
+          "path": "/_next/static/chunks/994-db01f1a7ab03ef38.js",
+          "bytes": 9549
+        },
+        {
+          "path": "/_next/static/chunks/app/(internal)/layout-18ca06d1dc2ebb91.js",
+          "bytes": 6724
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "route": "Clients",
+      "scriptRequests": 10,
+      "scriptBytes": 391049,
+      "scripts": [
+        {
+          "path": "/_next/static/chunks/webpack-80bbd9d7d359d95b.js",
+          "bytes": 3745
+        },
+        {
+          "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js",
+          "bytes": 173025
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-8f2404aab9609434.js",
+          "bytes": 1178
+        },
+        {
+          "path": "/_next/static/chunks/app/error-24b323f435583695.js",
+          "bytes": 1541
+        },
+        {
+          "path": "/_next/static/chunks/main-app-18159359c58d23c6.js",
+          "bytes": 527
+        },
+        {
+          "path": "/_next/static/chunks/6304-9baa05723bb5b01d.js",
+          "bytes": 11821
+        },
+        {
+          "path": "/_next/static/chunks/176-bab32583cced85ff.js",
+          "bytes": 8741
+        },
+        {
+          "path": "/_next/static/chunks/1255-623a1bc706ecd6cc.js",
+          "bytes": 174198
+        },
+        {
+          "path": "/_next/static/chunks/994-db01f1a7ab03ef38.js",
+          "bytes": 9549
+        },
+        {
+          "path": "/_next/static/chunks/app/(internal)/layout-18ca06d1dc2ebb91.js",
+          "bytes": 6724
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "route": "Work",
+      "scriptRequests": 10,
+      "scriptBytes": 391049,
+      "scripts": [
+        {
+          "path": "/_next/static/chunks/webpack-80bbd9d7d359d95b.js",
+          "bytes": 3745
+        },
+        {
+          "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js",
+          "bytes": 173025
+        },
+        {
+          "path": "/_next/static/chunks/6304-9baa05723bb5b01d.js",
+          "bytes": 11821
+        },
+        {
+          "path": "/_next/static/chunks/app/error-24b323f435583695.js",
+          "bytes": 1541
+        },
+        {
+          "path": "/_next/static/chunks/main-app-18159359c58d23c6.js",
+          "bytes": 527
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-8f2404aab9609434.js",
+          "bytes": 1178
+        },
+        {
+          "path": "/_next/static/chunks/176-bab32583cced85ff.js",
+          "bytes": 8741
+        },
+        {
+          "path": "/_next/static/chunks/1255-623a1bc706ecd6cc.js",
+          "bytes": 174198
+        },
+        {
+          "path": "/_next/static/chunks/994-db01f1a7ab03ef38.js",
+          "bytes": 9549
+        },
+        {
+          "path": "/_next/static/chunks/app/(internal)/layout-18ca06d1dc2ebb91.js",
+          "bytes": 6724
+        }
+      ]
+    }
+  ],
+  "samples": [
+    {
+      "width": 1440,
+      "round": 0,
+      "route": "Home",
+      "visibleMs": 76.5,
+      "requests": 1,
+      "statements": 11,
+      "invocations": 2,
+      "serverMs": [
+        29
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 0,
+      "route": "Clients",
+      "visibleMs": 62.5,
+      "requests": 1,
+      "statements": 3,
+      "invocations": 2,
+      "serverMs": [
+        13
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 0,
+      "route": "Work",
+      "visibleMs": 61.800048828125,
+      "requests": 1,
+      "statements": 7,
+      "invocations": 2,
+      "serverMs": [
+        16
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 1,
+      "route": "Home",
+      "visibleMs": 62.10009765625,
+      "requests": 1,
+      "statements": 11,
+      "invocations": 2,
+      "serverMs": [
+        22
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 1,
+      "route": "Clients",
+      "visibleMs": 62.60009765625,
+      "requests": 1,
+      "statements": 3,
+      "invocations": 2,
+      "serverMs": [
+        11
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 1,
+      "route": "Work",
+      "visibleMs": 62.89990234375,
+      "requests": 1,
+      "statements": 7,
+      "invocations": 2,
+      "serverMs": [
+        16
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 2,
+      "route": "Home",
+      "visibleMs": 62.5,
+      "requests": 1,
+      "statements": 11,
+      "invocations": 2,
+      "serverMs": [
+        21
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 2,
+      "route": "Clients",
+      "visibleMs": 62.89990234375,
+      "requests": 1,
+      "statements": 3,
+      "invocations": 2,
+      "serverMs": [
+        13
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 2,
+      "route": "Work",
+      "visibleMs": 62.5,
+      "requests": 1,
+      "statements": 7,
+      "invocations": 2,
+      "serverMs": [
+        15
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 3,
+      "route": "Home",
+      "visibleMs": 62.800048828125,
+      "requests": 1,
+      "statements": 11,
+      "invocations": 2,
+      "serverMs": [
+        22
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 3,
+      "route": "Clients",
+      "visibleMs": 62.800048828125,
+      "requests": 1,
+      "statements": 3,
+      "invocations": 2,
+      "serverMs": [
+        12
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 3,
+      "route": "Work",
+      "visibleMs": 62.800048828125,
+      "requests": 1,
+      "statements": 7,
+      "invocations": 2,
+      "serverMs": [
+        15
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 4,
+      "route": "Home",
+      "visibleMs": 62.89990234375,
+      "requests": 1,
+      "statements": 11,
+      "invocations": 2,
+      "serverMs": [
+        23
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 4,
+      "route": "Clients",
+      "visibleMs": 61.89990234375,
+      "requests": 1,
+      "statements": 3,
+      "invocations": 2,
+      "serverMs": [
+        14
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 4,
+      "route": "Work",
+      "visibleMs": 62.89990234375,
+      "requests": 1,
+      "statements": 7,
+      "invocations": 2,
+      "serverMs": [
+        15
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 5,
+      "route": "Home",
+      "visibleMs": 62.699951171875,
+      "requests": 1,
+      "statements": 11,
+      "invocations": 2,
+      "serverMs": [
+        22
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 5,
+      "route": "Clients",
+      "visibleMs": 62.7998046875,
+      "requests": 1,
+      "statements": 3,
+      "invocations": 2,
+      "serverMs": [
+        13
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 5,
+      "route": "Work",
+      "visibleMs": 62.5,
+      "requests": 1,
+      "statements": 7,
+      "invocations": 2,
+      "serverMs": [
+        16
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 6,
+      "route": "Home",
+      "visibleMs": 79.300048828125,
+      "requests": 1,
+      "statements": 11,
+      "invocations": 2,
+      "serverMs": [
+        26
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 6,
+      "route": "Clients",
+      "visibleMs": 62.5,
+      "requests": 1,
+      "statements": 3,
+      "invocations": 2,
+      "serverMs": [
+        11
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 1440,
+      "round": 6,
+      "route": "Work",
+      "visibleMs": 63.10009765625,
+      "requests": 1,
+      "statements": 7,
+      "invocations": 2,
+      "serverMs": [
+        14
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 0,
+      "route": "Home",
+      "visibleMs": 78.2998046875,
+      "requests": 1,
+      "statements": 11,
+      "invocations": 2,
+      "serverMs": [
+        23
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 0,
+      "route": "Clients",
+      "visibleMs": 63.39990234375,
+      "requests": 1,
+      "statements": 3,
+      "invocations": 2,
+      "serverMs": [
+        14
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 0,
+      "route": "Work",
+      "visibleMs": 62,
+      "requests": 1,
+      "statements": 7,
+      "invocations": 2,
+      "serverMs": [
+        16
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 1,
+      "route": "Home",
+      "visibleMs": 63.10009765625,
+      "requests": 1,
+      "statements": 11,
+      "invocations": 2,
+      "serverMs": [
+        22
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 1,
+      "route": "Clients",
+      "visibleMs": 63.300048828125,
+      "requests": 1,
+      "statements": 3,
+      "invocations": 2,
+      "serverMs": [
+        13
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 1,
+      "route": "Work",
+      "visibleMs": 62.300048828125,
+      "requests": 1,
+      "statements": 7,
+      "invocations": 2,
+      "serverMs": [
+        16
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 2,
+      "route": "Home",
+      "visibleMs": 79.400146484375,
+      "requests": 1,
+      "statements": 11,
+      "invocations": 2,
+      "serverMs": [
+        25
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 2,
+      "route": "Clients",
+      "visibleMs": 62.89990234375,
+      "requests": 1,
+      "statements": 3,
+      "invocations": 2,
+      "serverMs": [
+        11
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 2,
+      "route": "Work",
+      "visibleMs": 62.300048828125,
+      "requests": 1,
+      "statements": 7,
+      "invocations": 2,
+      "serverMs": [
+        14
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 3,
+      "route": "Home",
+      "visibleMs": 63.199951171875,
+      "requests": 1,
+      "statements": 11,
+      "invocations": 2,
+      "serverMs": [
+        21
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 3,
+      "route": "Clients",
+      "visibleMs": 62.60009765625,
+      "requests": 1,
+      "statements": 3,
+      "invocations": 2,
+      "serverMs": [
+        12
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 3,
+      "route": "Work",
+      "visibleMs": 62.5,
+      "requests": 1,
+      "statements": 7,
+      "invocations": 2,
+      "serverMs": [
+        17
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 4,
+      "route": "Home",
+      "visibleMs": 63.2001953125,
+      "requests": 1,
+      "statements": 11,
+      "invocations": 2,
+      "serverMs": [
+        20
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 4,
+      "route": "Clients",
+      "visibleMs": 63.400146484375,
+      "requests": 1,
+      "statements": 3,
+      "invocations": 2,
+      "serverMs": [
+        11
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 4,
+      "route": "Work",
+      "visibleMs": 62.39990234375,
+      "requests": 1,
+      "statements": 7,
+      "invocations": 2,
+      "serverMs": [
+        13
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 5,
+      "route": "Home",
+      "visibleMs": 63.5,
+      "requests": 1,
+      "statements": 11,
+      "invocations": 2,
+      "serverMs": [
+        21
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 5,
+      "route": "Clients",
+      "visibleMs": 63.300048828125,
+      "requests": 1,
+      "statements": 3,
+      "invocations": 2,
+      "serverMs": [
+        14
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 5,
+      "route": "Work",
+      "visibleMs": 62.300048828125,
+      "requests": 1,
+      "statements": 7,
+      "invocations": 2,
+      "serverMs": [
+        15
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 6,
+      "route": "Home",
+      "visibleMs": 63.5,
+      "requests": 1,
+      "statements": 11,
+      "invocations": 2,
+      "serverMs": [
+        19
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 6,
+      "route": "Clients",
+      "visibleMs": 63.199951171875,
+      "requests": 1,
+      "statements": 3,
+      "invocations": 2,
+      "serverMs": [
+        12
+      ],
+      "delayMs": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "round": 6,
+      "route": "Work",
+      "visibleMs": 62.7998046875,
+      "requests": 1,
+      "statements": 7,
+      "invocations": 2,
+      "serverMs": [
+        14
+      ],
+      "delayMs": [
+        0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "checks": [
+    "Actual same-route account replacement remounts the form without document reload",
+    "Replacement account sees no original input or recovery offer",
+    "Original and replacement drafts keep separate users",
+    "Returning original account explicitly recovers only its own copy",
+    "Native concurrent requests return one canonical client",
+    "Native receipt, primary contact and activity are each recorded once",
+    "Native manager recovery uses identity, capability and one bound receipt read",
+    "Actual workspace switch invalidates mounted input but retains original scoped copies",
+    "Original workspace recovery is denied under another selected workspace",
+    "Returning original workspace restores the retained form explicitly",
+    "Late recovery after page departure cannot reveal old fields",
+    "Recovery control is reachable with Tab",
+    "Enter performs explicit recovery",
+    "Revoked membership blocks recovery and clears only that scope",
+    "Revoked direct creation is denied",
+    "Actual logout clears copies and invalidates other active forms",
+    "Logged-out reload requires sign-in and cannot resurrect copies",
+    "No provider egress"
+  ]
+}

@@ -1,6 +1,16 @@
 # Bloomsi Build State
 
-## Current direction — Full roadmap goal active; N1F Pages recovery accepted locally
+## Current direction — N1G client creation recovery accepted locally
+
+Active worktree `/home/ary/Developer/bloomops-n1g-client-creation-recovery`, branch `feat/n1g-client-creation-recovery`, starts from accepted Pages recovery head `0b2b048` in draft PR71. Main and PR58 documentation were freshly fetched and remain `9763650` and `c47c171`. PR71 is confirmed open/draft at `0b2b048`; its task-only Worker is stopped. Search and recovery drafts remain unmerged; staging has not changed.
+
+Follow the [N1G contract](phases/N1.md#n1g--client-creation-recovery-accepted-locally). Client creation now retains bounded original-user/workspace/writer copies, exact pending input and request identity. Explicit recovery checks current authority before showing fields. The canonical client/contact/activity transaction and new immutable receipt commit atomically under live creator/owner eligibility. Lost replies return the original client; later input remains downloadable and cannot silently create another record. Original role rules, Draft/On Track defaults and unlinked contacts remain intact. Existing field-only callers retain their API with live transaction authority.
+
+119 focused tests, the final OpenNext build and 56 native/browser checks pass. The final 23 main checks include incomplete later input after a real committed-but-lost reply; earlier nine storage, 18 lifecycle and six native checks precede only that form validation-order correction. Actual same-route RSC account replacement, logout/workspace switching, revoked membership, keyboard, ten-copy/quota/expiry/CAS, native concurrent creation and transaction rollback are covered. Desktop/phone visuals inspected; five widths fit. Migration0044 reaches45 domain migrations; fresh/second-pass verification and populated-copy preservation of112 application tables/old schema pass. Home/Clients/Work retain one request,11/3/7 statements and two D1 calls; shared JS grows51 bytes to391049, with final bundle sizes matching measurement. [Evidence and limitations](previews/n1g-client-recovery/README.md).
+
+One fresh Sol High independent review found no material findings and independently passed the28 creation/store tests. No re-review is needed. N1G is accepted locally; implementation commit and draft PR publication are next. No merge or deployment is claimed. Next remaining N1 task after acceptance is client identity/contact edit concurrency and recovery, preserving primary/portal/lifecycle rules. Original LTB records/voices, unrelated root D2 work and accepted worktrees remain preserved. No deployment, production/DNS, real import/outreach, paid audits or video work/tests. Private evidence `/home/ary/Developer/bloomops-n1g-client-creation-recovery-evidence/`; isolated synthetic Worker8800 is running for review follow-up.
+
+## Previous accepted direction — N1F Pages recovery accepted locally
 
 N1E new-prospect recovery is accepted locally and pushed in draft PR70 (`0c88481`, documentation head `c4924c7`), stacked on PR69. Search PR67, screen fit PR68 and profile recovery PR69 retain their accepted local evidence and pending release state. Latest fetched main remains `9763650`; staging has not changed.
 
