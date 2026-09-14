@@ -1,6 +1,14 @@
 # Bloomsi Build State
 
-## Current direction — direct sheet dropdowns and Outreach actions accepted in staging
+## Current direction — make the sheet save step visible
+
+Owner approved the dropdown appearance but reported that the controls seemed nonfunctional. In the existing isolated PR73 worktree, selection now focuses and reveals the required review with an explicit unsaved instruction and readable Fit values. Cancel returns to the originating dropdown when available. Replacement choices also reveal their review; choosing an unchanged value creates no empty review. The canonical reviewed save, recovery, retry, undo and Outreach activity flows are preserved.
+
+Final OpenNext build,33 focused sheet/draft tests and103 final built-Worker browser checks pass:54 existing direct-dropdown/save/undo/Outreach checks,46 new review visibility/focus/Tab/cancel/replacement checks across six widths, and three real-touch checks. Actual writes use a task-only copy of synthetic D1/R2 on8804; provider egress is blocked and the provider log is empty. Desktop/phone review visuals were inspected. [Evidence](previews/sheet-fluid/README.md#visible-save-review). No backend/schema/dependency/workflow changes or migrations.
+
+One fresh Sol High deployment review found no material findings; no re-review was needed. The task-only Worker8804 is stopped. Staging still runsfaf50da while deployment/acceptance are pending. A new task-owned browser tab redirects to sign-in; authenticated live acceptance requires a renewed owner session. Main remains85ab496 and PR73 remains draft. Finish this review/staging acceptance and the PR73 readiness checkpoint before N2; N2 is unstarted. Original LTB/voices, other worktrees, production/DNS, real imports/outreach and paid/video work remain unchanged.
+
+## Previous accepted direction — direct sheet dropdowns and Outreach actions accepted in staging
 
 Owner reported that clicking a dropdown first entered edit mode, and requested an Outreach dropdown too. Platform and Fit now expose native selects directly under their visible icon/label treatment. A first click or keyboard opening shows choices immediately; choosing a value goes to the existing review before save. Only Custom platform opens text entry. Escape leaves the record unchanged. Existing logos, compact rows and full-screen sizing remain.
 

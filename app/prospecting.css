@@ -565,3 +565,9 @@
 .bo-prospect-creation-result h2,.bo-prospect-create > h2{font-size:18px;font-weight:600;line-height:1.4}
 .bo-prospect-creation-result h2{margin:0 0 8px}
 .bo-prospect-create > h2{margin:24px 0 16px}
+
+/* Keep the reviewed save step visible after an inline choice, including phones. */
+.bo-sheet-review { scroll-margin-block:20px; border-radius:8px; }
+.bo-sheet-review:focus { outline:2px solid var(--bo-focus); outline-offset:4px; }
+.bo-sheet-review h2 { margin:0; font-size:20px; }
+.bo-sheet-review-hint { flex-basis:100%; margin:0; color:var(--bo-text-soft); }

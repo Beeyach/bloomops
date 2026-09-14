@@ -1,5 +1,16 @@
 # Fluid prospect sheet
 
+## Visible save review
+
+Owner reported that the dropdowns looked better but seemed nonfunctional. A selection still displayed the saved value while the required review appeared below the records area without focus or scrolling. The existing save path remains explicit: opening a review now focuses it and brings it into view, explains that the choice is unsaved, and shows readable Fit labels. Cancel restores focus to the originating dropdown when it still exists. Replacing an unsaved choice brings the new review into view again; unchanged choices do not create an empty review. Recovered input remains editable without refocusing on each keystroke.
+
+The final OpenNext build and33 focused sheet/draft tests pass. **103 final built-Worker checks pass** against an independent synthetic local D1/R2 copy on8804, with provider egress blocked: [54 dropdown/save/undo/Outreach checks](save-browser-checks.json), [46 review visibility/keyboard/cancel checks](save-clarity-checks.json), and [three true-touch checks](save-touch-checks.json). Six widths cover1920/1440/1024/768/390/320. Canonical Platform/custom/Fit writes and undo, actual manual contact/interest history, no write before Save, no provider calls, visible Save controls, focus/Tab, cancellation and replacement are verified. Desktop and mobile screenshots were inspected.
+
+- [Desktop review](save-review-1440.png)
+- [Phone review](save-review-390.png)
+
+Only sheet presentation and review focus change; no backend, schema, dependency or workflow change. One fresh Sol High deployment review found no material findings; no re-review was needed. Task-only Worker8804 is stopped. Staging deployment and authenticated acceptance are pending; the task-owned browser page currently redirects to sign-in. No staging record writes, original LTB/voice changes, real outreach/imports, paid/video work or production/DNS changes. PR73 remains draft and N2 remains unstarted.
+
 ## First-click dropdowns and Outreach
 
 Platform and Fit now receive the first click as native selects. Their existing icons/labels remain visible, but opening no longer enters an intermediate edit form. Choosing a value opens the existing review; choosing Custom platform opens text input directly. Keyboard and Escape use native behavior and retain visible focus.
