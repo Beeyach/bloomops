@@ -1,5 +1,9 @@
 # Bloomsi Build State
 
+## Prospect sheet handoff recorded 2026-09-14
+
+Added [PROSPECTING_SHEET.md](PROSPECTING_SHEET.md) and three visual references. The owner requires a real prospect sheet with editable fields, bulk selection/manual audit packages, saved views and filters, date sorting, 25/50/100/200 rows per page, website links, coloured view icons, a parser-matched Sample CSV download, import preview/duplicate checks, loading skeletons and a linked client/onboarding handoff. Updated AGENTS, the design checklist and the roadmap so P1 cannot be satisfied by a small list plus a profile. Current implementation must be inspected before continuing. Existing build evidence below remains historical. Optional paid audits and video stay later. Documentation and image changes only. Validation: image-copy hashes, local relative links and whitespace checks. Runtime tests and deployment are not applicable to this handoff.
+
 ## Bloomsi name and logo handoff (2026-09-13)
 
 Owner selected **Bloomsi** and reports purchasing **bloomsi.app**. Added the exact supplied charcoal PNG at `public/brand/bloomsi-lockup-charcoal.png` and [BRANDING.md](BRANDING.md). Agent instructions, design checklist, profile reference and prospecting roadmap now point to the official branding. Existing release evidence and technical identifiers are preserved. Asset/documentation only; no running UI, DNS or deployment changes. Validation: source-copy hash match, PNG metadata, relative-link and whitespace checks; runtime tests are not applicable.

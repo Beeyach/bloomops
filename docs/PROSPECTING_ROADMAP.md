@@ -6,7 +6,7 @@ Owner direction recorded 13 September 2026. **Planning only: no phase below is i
 
 BloomOps will combine internal prospecting, client operations and Pages in one application. It supplies the design, shell, identity and permission model. Reuse useful Leads That Bloom functionality selectively; do not embed its entire application or reproduce its crowded interface.
 
-The first usable slice is a Prospecting destination, its contextual sidebar and one full-page structured prospect profile. Raw import, skills, outreach and results then make that surface useful. Main Pages and the client-to-onboarding handoff are core priorities. Paid bulk auditing and video improvements are later extensions.
+The first usable slice is a Prospecting destination, its contextual sidebar, a usable spreadsheet-style prospect table with bulk selection, and a full-page structured prospect profile. Follow the [14 September sheet build contract](PROSPECTING_SHEET.md) and its committed visuals for the current requirements. Raw import, skills, outreach and results then make that surface useful. Main Pages and the client-to-onboarding handoff are core priorities. Paid bulk auditing and video improvements are later extensions.
 
 ## Non-negotiable boundaries
 
@@ -86,14 +86,16 @@ Finish a bounded slice before adding another. P4 and P5 are core work and must n
 - [ ] New connections, queues and sending are inactive until explicitly configured.
 - [ ] Each following phase has an implementation contract, dependencies and measurable checks. No new database/auth/UI framework is needed merely for consolidation.
 
-## P1 — Prospecting shell and one proper profile
+## P1 Prospecting sheet and full-page profiles
+
+The [sheet build contract](PROSPECTING_SHEET.md) supersedes the earlier small-list interpretation. Read it before this phase, including the manual bulk workflow, saved preferences, sorting, row counts, website links, colours and loading states. Inspect and extend already completed P1 work rather than rebuilding it.
 
 For profile UI edits, inspect the [visual reference and owner corrections](design-references/README.md). Keep a website favicon before the business name, with a garden-themed SVG fallback; social icons are icon-only links beside Open website, shown only for detected profiles. The written corrections override omissions in the image.
 
 ### Work
 
 - [ ] Add route-based Prospecting navigation within the BloomOps internal shell. Build the contextual sidebar and return path. Load only destinations that work.
-- [ ] Build a small readable prospect list. Keep useful filters behind a focused control instead of stacked rows of chips and counters.
+- [ ] Build the editable prospect sheet with bounded pagination, configurable columns and rows per page, saved views/preferences, date sorting, separate website links and explicit bulk selection as defined in PROSPECTING_SHEET.md. Keep controls focused and avoid stacked chips and counters.
 - [ ] Open a prospect as a full page. Prefer inline editing; reserve dialogs for small focused decisions. Avoid nested drawers and multiple tab layers.
 - [ ] Establish stable workspace-scoped prospect fields and identifiers. Keep structured records in the existing relational model, with migrations for new schema.
 
@@ -108,11 +110,12 @@ For profile UI edits, inspect the [visual reference and owner corrections](desig
 | Outreach | Drafts, actual last contact, next scheduled action, reply/stop state and automation state |
 | Activity | Timestamped actor/action records, with detailed history available on demand |
 
-Strong/Hold/Skip describes fit; it is separate from outreach stage. A Strong prospect is worth relevant outreach, not a confirmed buyer. Keep evidence and opportunity separate: an optional improvement is not a broken website.
+Strong/Hold/Skip describes fit and is separate from outreach stage. The sheet contract proposes Maybe as the display label for Hold qualification only, with Unreviewed for unset fit. Inspect existing semantics before mapping labels, especially outreach pauses. A Strong prospect is worth relevant outreach, not a confirmed buyer. Keep evidence and opportunity separate: an optional improvement is not a broken website.
 
 ### Done when
 
 - [ ] A user can find the website/platform, understand the opportunity, edit a field and reach the relevant draft without a cramped side panel.
+- [ ] The sheet acceptance checks in PROSPECTING_SHEET.md pass for views, personal preferences, sorting, page sizes, website/profile links, selection and loading states. P2 supplies real import/template/manual batch work, and P5 supplies the existing client/onboarding handoff.
 - [ ] Empty, unknown, loading, error and saved states are understandable. Source/date metadata does not become another compressed text chain.
 - [ ] Semantic fields and controls are readable by skills; no important value requires interpreting a prose audit or visual badge colour.
 - [ ] Desktop, 390px and 320px checks confirm readable spacing, keyboard/focus behaviour and no clipping.

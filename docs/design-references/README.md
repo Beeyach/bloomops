@@ -1,5 +1,7 @@
 # Prospect profile visual reference
 
+For the Prospects spreadsheet, use [the sheet build contract](../PROSPECTING_SHEET.md) and its three linked images. The sheet and full-page profile are both required views of the same records.
+
 Brand update: the platform is now **Bloomsi**. Use the [official owner-supplied logo and brand guide](../BRANDING.md). Any BloomOps/Bloom Studio labels or generated marks in this mockup are superseded.
 
 Owner feedback recorded 13 September 2026. Use this image and the corrections below when editing the Prospecting profile. The corrections take precedence wherever the mockup differs. This is a generated design reference with fictional data, not a screenshot of shipped functionality or audit evidence.
