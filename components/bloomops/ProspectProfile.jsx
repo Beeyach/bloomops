@@ -65,19 +65,35 @@ function EditableSection({section,title,displayTitle=title,icon,data,userId,onSa
   {footer}
  </section>;
 }
-export function NewProspect({workspaceId}){
- const ready=useReady(),[requestId,setRequestId]=useState(''),[values,setValues]=useState({}),[busy,setBusy]=useState(false),[errors,setErrors]=useState({}),[message,setMessage]=useState('');
- useEffect(()=>setRequestId(crypto.randomUUID()),[]);useUnsaved(Object.values(values).some(Boolean)&&!busy);
- async function create(e){e.preventDefault();if(!ready||busy)return;setBusy(true);setMessage('');setErrors({});try{
-  const response=await fetch('/api/bloomops/prospecting',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({workspaceId,requestId,fields:values})});const result=await response.json();
+const blankProspect=()=>Object.fromEntries(entries('identity').map(([key])=>[key,null]));
+export function NewProspect({workspaceId,userId}){
+ const ready=useReady(),[requestId,setRequestId]=useState(''),[values,setValues]=useState(blankProspect),[busy,setBusy]=useState(false),[errors,setErrors]=useState({}),[message,setMessage]=useState(''),[created,setCreated]=useState(null),[lost,setLost]=useState(false),lock=useRef(false);
+ useEffect(()=>setRequestId(crypto.randomUUID()),[]);
+ const draft=useMemo(()=>requestId?{section:'identity',revision:1,creationRequestId:requestId,before:blankProspect(),fields:values,sources:{},sourceBefore:{}}:null,[requestId,values]);
+ const recovery=useProfileDraft({userId,workspaceId,prospectId:'new',section:'identity',creating:true,draft,onLost:()=>setLost(true),onRecover:(copy,current)=>{setValues(copy.fields);setRequestId(copy.creationRequestId);setErrors({});setCreated(current.state==='created'?current.prospect:null);setMessage(current.state==='created'?'':'Review your recovered fields before creating the prospect.');}});
+ useUnsaved(!!draft&&profileDraftDirty(draft)&&!created);
+ async function create(e){e.preventDefault();if(!ready||!requestId||lock.current||!recovery.valid())return;lock.current=true;setBusy(true);setMessage('');setErrors({});try{
+  const current=await recovery.read(requestId);if(current.state==='created'){setCreated(current.prospect);setMessage('');return;}
+  const response=await fetch('/api/bloomops/prospecting',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({workspaceId,userId,requestId,fields:Object.fromEntries(Object.entries(values).filter(([,value])=>value!==null))})});const result=await response.json();if(!recovery.valid())return;
+  if([401,403,404].includes(response.status)){recovery.invalidate(true);return;}
   if(!response.ok){setErrors(result.errors||{});throw new Error(result.error||'The prospect could not be saved.');}
-  window.location.assign('/prospecting/'+result.prospectId);
- }catch(e){setMessage(e.message);setBusy(false);}}
- return <form onSubmit={create} className="bo-prospect-create" aria-label="New prospect"><fieldset disabled={!ready||busy}>
+  recovery.retire();setValues(blankProspect());window.location.assign('/prospecting/'+result.prospectId);
+ }catch(e){if(recovery.valid()&&e.name!=='AbortError')setMessage('Create failed. Your input is still here.'+(e.message?' '+e.message:''));}finally{lock.current=false;setBusy(false);}}
+ async function download(){try{await recovery.read(requestId);if(!recovery.valid())return;const url=URL.createObjectURL(new Blob([JSON.stringify({fields:values},null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='bloomsi-new-prospect-draft.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(e){if(recovery.valid()&&e.name!=='AbortError')setMessage(e.message);}}
+ function reset(){if(draft&&profileDraftDirty(draft)&&!confirm('Discard this form and start another prospect?'))return;recovery.retire();setValues(blankProspect());setRequestId(crypto.randomUUID());setErrors({});setCreated(null);setMessage('');}
+ if(lost)return <div><p role="alert">Your account or workspace access changed.</p><Button onClick={()=>window.location.reload()}>Reload</Button></div>;
+ return <div className="bo-prospect-create">
+  {recovery.storageError&&<p className="bo-prospect-notice" role="alert">{recovery.storageError}</p>}
+  {recovery.copies.length>0&&!busy&&<div className="bo-profile-recovery" aria-label="New prospect recovery copies"><h2>Recovery copies</h2>{recovery.copies.map(copy=><div key={copy.key}><span>{copy.count} {copy.count===1?'field':'fields'}<time dateTime={new Date(copy.at).toISOString()}>{new Date(copy.at).toLocaleString()}</time></span><Button disabled={recovery.recovering} onClick={()=>{if(!draft||!profileDraftDirty(draft)||confirm('Replace the current unsaved input with this recovery copy?'))recovery.recover(copy.key);}}>Review recovered fields</Button><Button disabled={recovery.recovering} variant="ghost" onClick={()=>{if(confirm('Discard this recovery copy?'))recovery.discard(copy.key);}}>Discard copy</Button></div>)}</div>}
+  {recovery.recovering&&<p role="status">Checking current workspace access…</p>}{recovery.error&&<p role="alert">{recovery.error}</p>}
   {message&&<p className="bo-prospect-notice" role="alert">{message}</p>}
-  <EditFields section="identity" values={values} setValues={setValues} errors={errors}/>
-  <div className="bo-prospect-form-actions"><Button type="submit" variant="primary" loading={busy}>Create prospect</Button><Button href="/prospecting">Cancel</Button></div>
- </fieldset></form>;
+  {created&&<div className="bo-prospect-notice bo-prospect-creation-result"><h2>Prospect already created</h2><p>{created.businessName}</p><div className="bo-prospect-form-actions"><Button href={'/prospecting/'+created.id} variant="primary">Open saved prospect</Button><Button onClick={download}>Download my input</Button><Button onClick={reset}>Start another prospect</Button></div></div>}
+  {created&&<h2>Your input</h2>}
+  <form onSubmit={create} aria-label="New prospect"><fieldset disabled={!ready||!requestId||busy||recovery.recovering||!!created}>
+   <EditFields section="identity" values={values} setValues={setValues} errors={errors}/>
+   {!created&&<div className="bo-prospect-form-actions"><Button type="submit" variant="primary" loading={busy}>Create prospect</Button><Button href="/prospecting">Cancel</Button>{busy&&<span role="status">Creating…</span>}</div>}
+  </fieldset></form>
+ </div>;
 }
 export default function ProspectProfile({initial,userId}){
  const [data,setData]=useState(initial),[accessLost,setAccessLost]=useState(false),profile=data.profile,evidence=useRef(null);

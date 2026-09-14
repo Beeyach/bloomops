@@ -1,0 +1,10 @@
+{
+  "checks": [
+    "User A has a private dirty editor before replacement",
+    "A real same-route RSC refresh uses user B without document reload",
+    "Replacement user sees a blank new form without A input",
+    "No A input is persisted into B new-form scope",
+    "B explicitly creates only their own fresh input",
+    "User A original scoped new-form copy is retained"
+  ]
+}
