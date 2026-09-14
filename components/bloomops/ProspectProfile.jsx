@@ -14,7 +14,7 @@ const entries=section=>Object.entries(PROSPECT_FIELDS).filter(([,v])=>v.section=
 const time=value=>value?new Date(value).toLocaleString('en-US',{timeZone:'UTC',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}):'Not checked';
 const tone=fit=>fit==='strong'?'success':fit==='hold'?'warning':'neutral';
 function useReady(){const [ready,setReady]=useState(false);useEffect(()=>setReady(true),[]);return ready;}
-function useUnsaved(active){useEffect(()=>{if(!active)return;const leave=e=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',leave);return()=>window.removeEventListener('beforeunload',leave);},[active]);}
+function useUnsaved(active){const enabled=useRef(active);enabled.current=active;useEffect(()=>{if(!active)return;const leave=e=>{if(!enabled.current)return;e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',leave);return()=>window.removeEventListener('beforeunload',leave);},[active]);return()=>{enabled.current=false;};}
 function EditFields({section,values,setValues,sources,setSources,errors={},withSources=false}){
  return <div className={`bo-prospect-fields bo-prospect-fields-${section}`}>{entries(section).map(([key,spec])=>{
   const id=`prospect-${key}`,aria=fieldAria({id,hint:spec.hint,error:errors[key]}),value=values[key]??(key==='fit'?'unknown':'');
@@ -71,13 +71,13 @@ export function NewProspect({workspaceId,userId}){
  useEffect(()=>setRequestId(crypto.randomUUID()),[]);
  const draft=useMemo(()=>requestId?{section:'identity',revision:1,creationRequestId:requestId,before:blankProspect(),fields:values,sources:{},sourceBefore:{}}:null,[requestId,values]);
  const recovery=useProfileDraft({userId,workspaceId,prospectId:'new',section:'identity',creating:true,draft,onLost:()=>setLost(true),onRecover:(copy,current)=>{setValues(copy.fields);setRequestId(copy.creationRequestId);setErrors({});setCreated(current.state==='created'?current.prospect:null);setMessage(current.state==='created'?'':'Review your recovered fields before creating the prospect.');}});
- useUnsaved(!!draft&&profileDraftDirty(draft)&&!created);
+ const stopLeaveWarning=useUnsaved(!!draft&&profileDraftDirty(draft)&&!created);
  async function create(e){e.preventDefault();if(!ready||!requestId||lock.current||!recovery.valid())return;lock.current=true;setBusy(true);setMessage('');setErrors({});try{
   const current=await recovery.read(requestId);if(current.state==='created'){setCreated(current.prospect);setMessage('');return;}
   const response=await fetch('/api/bloomops/prospecting',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({workspaceId,userId,requestId,fields:Object.fromEntries(Object.entries(values).filter(([,value])=>value!==null))})});const result=await response.json();if(!recovery.valid())return;
   if([401,403,404].includes(response.status)){recovery.invalidate(true);return;}
   if(!response.ok){setErrors(result.errors||{});throw new Error(result.error||'The prospect could not be saved.');}
-  recovery.retire();setValues(blankProspect());window.location.assign('/prospecting/'+result.prospectId);
+  recovery.retire();stopLeaveWarning();setValues(blankProspect());window.location.assign('/prospecting/'+result.prospectId);
  }catch(e){if(recovery.valid()&&e.name!=='AbortError')setMessage('Create failed. Your input is still here.'+(e.message?' '+e.message:''));}finally{lock.current=false;setBusy(false);}}
  async function download(){try{await recovery.read(requestId);if(!recovery.valid())return;const url=URL.createObjectURL(new Blob([JSON.stringify({fields:values},null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='bloomsi-new-prospect-draft.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(e){if(recovery.valid()&&e.name!=='AbortError')setMessage(e.message);}}
  function reset(){if(draft&&profileDraftDirty(draft)&&!confirm('Discard this form and start another prospect?'))return;recovery.retire();setValues(blankProspect());setRequestId(crypto.randomUUID());setErrors({});setCreated(null);setMessage('');}

@@ -571,3 +571,8 @@
 .bo-sheet-review:focus { outline:2px solid var(--bo-focus); outline-offset:4px; }
 .bo-sheet-review h2 { margin:0; font-size:20px; }
 .bo-sheet-review-hint { flex-basis:100%; margin:0; color:var(--bo-text-soft); }
+
+.bo-sheet-save-status { display:inline-flex; align-items:center; gap:6px; font-size:14px; color:var(--bo-text-soft); }
+.bo-sheet-save-status svg { width:16px; height:16px; }
+.bo-sheet-save-status.saved { color:#286545; }
+.bo-sheet-save-status.error { color:#9d3434; }

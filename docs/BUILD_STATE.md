@@ -1,6 +1,16 @@
 # Bloomsi Build State
 
-## Current direction — visible sheet save review accepted in staging
+## Current direction — full prospect table/profile QA and direct saves
+
+Owner reported unchanged dropdown values and discard prompts, then requested QA of the whole prospect table and page. Local reproduction confirms the earlier per-cell review caused those symptoms; the prior visibility fix did not satisfy the expected interaction. Platform/Fit now save on selection, show the pending value and Saving/Saved/failure feedback, and preserve canonical compare/retry/undo. Custom/text cells use one Save field action. Bulk/pasted changes and failed/recovered fields retain review and genuine unsaved-work guards. Query changes cannot interrupt an in-flight save.
+
+Broader QA found a second real bug: a successful creation could show its own unsaved warning before opening the saved prospect. Only that form's warning is now synchronously disabled after confirmed creation; failed creation still retains input and its warning. A committed local-only regression script covers both fixes.
+
+Final OpenNext build,122 relevant Node tests (plus23 affected profile/creation checks after the warning fix) and128 final built-Worker browser checks pass. Coverage spans direct saves and undo, failure/lost response/concurrency/recovery, all four profile editors and permissions, view/filter/date/paging/column controls, bulk/export/manual-audit packages, Sample CSV/duplicates, creation and navigation, six widths and real-touch controls. [Exact evidence, harness corrections, bundle comparison and visuals](previews/prospect-qa/README.md). Task-only synthetic Worker8805 is stopped; no provider calls or new migration. Home/Clients/Portal/Search build estimates are unchanged; Prospecting grows about1kB. No backend/schema/dependency/workflow changes.
+
+One fresh Sol High review found no material findings; no re-review was needed. Staging still runs3949fc6; deployment/acceptance are pending. PR73 stays draft/unmerged and main remains85ab496. Finish this QA deployment and actual staging saves/undo before resuming PR73 readiness or N2. N2 has not started. Original LTB/voices, root D2 work and other worktrees, production/DNS, real imports/outreach and paid/video work remain untouched.
+
+## Previous direction — visible sheet save review accepted in staging
 
 Owner approved the dropdown appearance but reported that the controls seemed nonfunctional. In the existing isolated PR73 worktree, selection now focuses and reveals the required review with an explicit unsaved instruction and readable Fit values. Cancel returns to the originating dropdown when available. Replacement choices also reveal their review; choosing an unchanged value creates no empty review. The canonical reviewed save, recovery, retry, undo and Outreach activity flows are preserved.
 
