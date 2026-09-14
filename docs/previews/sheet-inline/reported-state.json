@@ -1,0 +1,9 @@
+{
+  "observed": "Read-only inspection of owner tab58",
+  "problem": "Recovered Platform draft retains original Unknown baseline while newer canonical platform differs",
+  "draft": "Shopify",
+  "displayedSaved": "Webflow",
+  "visibleError": "This field changed. Review the latest record before saving.",
+  "oldFlow": "Review change / Retry failed changes / Cancel; next cell asks to discard",
+  "mutations": "None in owner tab"
+}

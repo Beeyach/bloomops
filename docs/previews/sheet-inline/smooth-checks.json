@@ -1,0 +1,25 @@
+{
+  "checks": [
+    "Pending background read keeps table position and DOM stable",
+    "Confirmed save has no table-wide Updating message",
+    "Next dropdown is usable while revalidation is pending",
+    "First save is canonical before background read finishes",
+    "Older background response cannot revert the newer save",
+    "Consecutive saves preserve both canonical fields",
+    "Undo reconciliation keeps stale cells guarded until canonical rows arrive",
+    "Undo committed original values before the held read finishes",
+    "Undo restores displayed fields and enables editing after reconciliation",
+    "Background read failure retains confirmed save",
+    "Failed revalidation can be explicitly refreshed",
+    "Query scope change disables stale row actions",
+    "Background refresh reconciles filtered membership and count",
+    "Stable direct-save geometry and no overflow at 1440",
+    "Stable direct-save geometry and no overflow at 1024",
+    "Stable direct-save geometry and no overflow at 768",
+    "Stable direct-save geometry and no overflow at 390",
+    "Stable direct-save geometry and no overflow at 320",
+    "Denied background read clears the table and invalidates access",
+    "No browser exceptions",
+    "No provider calls"
+  ]
+}

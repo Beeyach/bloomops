@@ -580,3 +580,19 @@
 /* Reserve quiet save feedback so a cell change never moves the records. */
 .bo-sheet-feedback { display:flex; flex-direction:column; justify-content:center; flex:0 0 136px; min-height:40px; }
 .bo-sheet-feedback .bo-sheet-save-status { min-height:20px; white-space:nowrap; }
+
+/* Recovery belongs to the affected field, without taking over ordinary editing. */
+.bo-sheet-recovery>summary { display:flex; align-items:center; gap:8px; cursor:pointer; min-height:32px; font-size:14px; color:var(--bo-text-soft); }
+.bo-sheet-recovery>summary svg { width:16px; height:16px; }
+.bo-sheet-recovery>summary>span { margin-left:auto; }
+.bo-sheet-recovery[open]>summary { margin-bottom:12px; }
+.bo-sheet-cell-recovery { display:grid; gap:6px; margin-top:8px; font-size:12px; line-height:1.4; color:#8a5421; overflow-wrap:anywhere; }
+.bo-sheet-cell-recovery>div { display:flex; flex-wrap:wrap; gap:6px; }
+.bo-sheet-cell-recovery button { border:1px solid #dbcbbd; border-radius:6px; padding:5px 8px; min-height:30px; background:#fffaf5; color:#714920; cursor:pointer; font:inherit; }
+.bo-sheet-cell-recovery button:disabled { opacity:.5; cursor:default; }
+.bo-sheet-cell-recovery button:focus-visible { outline:2px solid #99649d; outline-offset:2px; }
+.bo-sheet-cell-recovery label { display:grid; gap:4px; }
+.bo-sheet-cell-recovery input { width:100%; min-width:0; font:inherit; padding:8px; border:1px solid var(--bo-border); border-radius:6px; }
+.bo-sheet-offscreen-drafts { margin-top:12px; }
+.bo-sheet-offscreen-drafts>summary { cursor:pointer; color:var(--bo-text-soft); }
+@media(max-width:767px) { .bo-sheet-cell-recovery { font-size:14px; }.bo-sheet-cell-recovery button { min-height:44px; }.bo-sheet-recovery>summary { min-height:44px; } }

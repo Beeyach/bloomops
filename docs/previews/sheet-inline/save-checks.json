@@ -1,0 +1,40 @@
+{
+  "checks": [
+    "Fit selection immediately saves canonical Maybe",
+    "Single choice needs no review or discard dialog",
+    "Next dropdown saves without discarding the preceding choice",
+    "Saved feedback is visible",
+    "Both choices survive reload",
+    "Chosen value appears while save is pending",
+    "In-flight field blocks duplicate control writes",
+    "Delayed save confirms the chosen value",
+    "Failed direct save retains selected value beside its cell for retry",
+    "Failure visibly says not saved",
+    "Retry commits retained choice and clears stale failure",
+    "Lost reply retains inline recovery even though server committed",
+    "Lost reply retry confirms without another write",
+    "Concurrent field change is protected",
+    "Custom platform saves with one explicit action",
+    "Text edit saves without a second confirmation",
+    "Undo restores confirmed custom and text changes",
+    "Failed direct choice survives reload for inline recovery",
+    "Recovered choice saves canonical value",
+    "Direct save works at 1920",
+    "Direct save works at 1440",
+    "Direct save works at 1024",
+    "Direct save works at 768",
+    "Direct save works at 390",
+    "Direct save works at 320",
+    "Keyboard opens native choices",
+    "Business opens canonical full-page profile",
+    "Profile return retains search and canonical choices",
+    "Failed creation keeps the genuine unsaved warning",
+    "Confirmed creation opens profile without an unsaved warning",
+    "No browser exceptions",
+    "No provider calls"
+  ],
+  "dialogs": [
+    "",
+    ""
+  ]
+}
