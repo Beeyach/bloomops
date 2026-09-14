@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "Old-format copy gets a first-observation clock without exposing input",
+    "Reload does not extend old-format retention",
+    "Reviewed old-format copy retains its exact original source until save",
+    "Confirmed save retires both legacy source and its clock",
+    "Expired legacy source is removed and cannot be recovered",
+    "Expiry does not change the canonical document",
+    "No provider egress"
+  ]
+}
