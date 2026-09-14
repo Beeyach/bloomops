@@ -17,12 +17,14 @@ Follow [NEXT_PHASES.md](NEXT_PHASES.md). Inspect existing code and preserve comp
 | Phase | Scope |
 |---|---|
 | N1 | Autosave/recovery and permission-aware global search |
-| N2 | Existing client overview improvements and read-only Preview as client |
+| N2 | Client overview/preview, user profile photos, comments and basic in-app notifications |
 | N3 | Client reports with numeric templates, reviewed CSV imports, charts, portal publication and PDF export |
 | N4 | Reusable job setups and continued improvements to the existing main Pages editor |
 | N5 | Optional reporting source connections, then separately configured schedules |
 
 Reports are structured client/service records with narrative support from the existing editor. Use [CLIENT_REPORTING.md](CLIENT_REPORTING.md). Begin with manual GHL campaign and social media report templates. Pages may link to or display authorized reports but do not own the metric data. Reporting connections and scheduled delivery are later work.
+
+Use [COLLABORATION_NOTIFICATIONS.md](COLLABORATION_NOTIFICATIONS.md) for profile uploads and record-linked comments. Add in-app mentions/replies/assignments with N2. Optional Resend email delivery follows accepted event permissions and user preferences, using the owner's intended @bloomsi.app sender domain after verification. Sending and inbound reply handling are separate setup tasks.
 
 ## Release A — Activation + Onboarding
 

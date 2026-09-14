@@ -12,13 +12,17 @@ Add one search control for authorized prospects, clients, tasks, pages and files
 
 Done when delayed saves, offline/network failure, concurrent edits, navigation and retry do not silently lose or overwrite work, and search results stay within current permissions. Check desktop, keyboard and narrow layouts. Measure save/search load against the current app.
 
-## Phase N2 Client overview and client preview
+## Phase N2 Client overview, profiles and collaboration
+
+Follow [COLLABORATION_NOTIFICATIONS.md](COLLABORATION_NOTIFICATIONS.md) for optional user-uploaded profile photos, record-linked comments/replies/mentions and a basic in-app notification inbox. Reuse existing identity, files, comments and events. Keep internal/client visibility explicit. Basic notifications cover direct mentions, replies and assignments. Resend email delivery comes later.
 
 Improve the existing client overview. Show purchased services, current work, the next deadline and unresolved requests. Use canonical engagements, projects and onboarding records. Keep detailed history and internal notes available without filling the overview with them. Preserve the prospect-to-client link.
 
 Add an authorized Preview as client mode using the same server-side visibility rules as the real portal. Label the selected client and preview mode clearly. Preview is read-only and cannot send, approve, pay, sign, impersonate a session or mutate client records. Do not simulate visibility only by hiding UI elements. Stop preview immediately when access changes. Test direct routes and media/file permissions as well as the page itself.
 
 Done when an internal user can understand current work and see the exact eligible client-facing content without exposing private material or changing the client's data.
+
+Also verify photo upload/removal and fallbacks, comment visibility/permissions, mention eligibility, unread counts, deduplication, mute and revoked access. These collaboration checks are required independently from visual client preview.
 
 ## Phase N3 Client reporting
 
@@ -43,5 +47,11 @@ Only after manual reports are useful, choose one requested source connection at 
 Scheduled refresh and scheduled delivery are separate capabilities. A refresh does not publish or send. Delivery requires a reviewed recipient list, schedule and explicit activation, with stop/retry rules that prevent duplicate messages. Respect existing credential and workspace isolation rules. Do not promise that all values shown in a provider's UI are available through its API.
 
 ## Shared acceptance
+
+### Later collaboration email delivery
+
+After N2 in-app notification events and preferences are accepted, add optional Resend collaboration emails following [COLLABORATION_NOTIFICATIONS.md](COLLABORATION_NOTIFICATIONS.md). The owner intends @bloomsi.app sender addresses. Inspect and verify the actual domain setup before activation. This can be scoped independently from reporting connectors, and neither is a prerequisite for profile pictures or comments. Inbound email-to-comment replies and push/SMS notifications remain later ideas.
+
+### Phase checks
 
 Each phase needs a bounded implementation contract based on current code, migration requirements if any, meaningful checks and visual review. Build only the phase being worked on and preserve active work. Keep route-specific code and reporting queries out of unrelated pages. Use measured performance comparisons, clear loading/error states, reduced motion and the owner's readability rules. Update BUILD_STATE.md with actual evidence and remaining work. This plan alone authorizes no live data changes, account connections, messages, DNS changes or deployments.

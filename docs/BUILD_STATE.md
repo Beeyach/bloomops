@@ -1,5 +1,9 @@
 # Bloomsi Build State
 
+## Profiles, comments and notifications planned 2026-09-14
+
+Added [COLLABORATION_NOTIFICATIONS.md](COLLABORATION_NOTIFICATIONS.md) and extended N2 with profile uploads, existing-record comments/replies/mentions and a small in-app notification inbox. Optional Resend collaboration email follows working permissions/preferences and verified @bloomsi.app configuration. The owner has specified the domain but no DNS, sender, inbound mailbox or delivery setup was verified or changed here. Updated roadmap and agent links. Documentation only. Validation: relative links and whitespace checks. No runtime tests, uploads, messages or deployments were performed.
+
 ## Next phases and client reporting planned 2026-09-14
 
 Added [NEXT_PHASES.md](NEXT_PHASES.md) for N1 save/recovery and search, N2 client overview and read-only client preview, N3 reporting, N4 reusable work and main Pages improvements, and N5 optional reporting connections. Added [CLIENT_REPORTING.md](CLIENT_REPORTING.md) for manual GHL/social templates, reviewed CSV input, typed metrics, source/period rules, charts, client portal publication snapshots and PDF export. Updated the roadmap, product specification and agent entry points. Active Prospecting work stays first. This is documentation only, with no report generation, runtime change, account connection, delivery, migration or deployment. Validation: relative links and whitespace checks. Existing release evidence below remains historical and must be checked against the current application before implementation.

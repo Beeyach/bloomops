@@ -6,6 +6,8 @@ The 14 September 2026 owner direction requires a spreadsheet-style Prospects scr
 
 After the active Prospecting work, follow [docs/NEXT_PHASES.md](docs/NEXT_PHASES.md) for save/recovery, search, client overview/preview, reporting and reusable work. [docs/CLIENT_REPORTING.md](docs/CLIENT_REPORTING.md) defines structured client reports with manual entry/import, charts, publication snapshots and portal/PDF output. Pages can supply narrative and authorized links but are not the metric database. These are future phases, not permission to interrupt or expand a current implementation task.
 
+N2 also includes user profile pictures, record-linked comments and basic in-app mentions/replies/assignment notifications. Follow [docs/COLLABORATION_NOTIFICATIONS.md](docs/COLLABORATION_NOTIFICATIONS.md). Resend is the existing email provider and the owner intends @bloomsi.app senders. Collaboration email activation and inbound processing remain later work, after domain verification, visibility checks and user preferences. Do not change DNS or send email merely to apply these instructions.
+
 `AGENTS.md` is the canonical repository instruction file for coding agents. Read and follow it before implementation work.
 
 BloomOps is an agency operations and client portal system. The owner-approved target also includes internal prospecting in a fresh workspace; see [the Prospecting and Pages roadmap](docs/PROSPECTING_ROADMAP.md). That roadmap is planned work, not a statement that the features have shipped.
