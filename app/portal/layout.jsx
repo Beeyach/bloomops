@@ -1,4 +1,5 @@
 import { requireShell } from '@/lib/bloomops/shell-server.mjs';
+import {hasSharedPages} from '@/lib/bloomops/pages.mjs';
 import PortalShell from '@/components/bloomops/PortalShell';
 import { hasPortalContent } from '@/lib/bloomops/portal-content.mjs';
 
@@ -10,9 +11,9 @@ export const dynamic = 'force-dynamic';
 
 export default async function PortalLayout({ children }) {
   const { access, actor } = await requireShell('portal');
-  const hasContent = await hasPortalContent(access.db, actor);
+  const [hasContent,hasPages]=await Promise.all([hasPortalContent(access.db,actor),hasSharedPages(access.db,actor)]);
   return (
-    <PortalShell workspace={access.workspace} user={access.user} hasContent={hasContent}>
+    <PortalShell workspace={access.workspace} user={access.user} hasContent={hasContent} hasPages={hasPages}>
       {children}
     </PortalShell>
   );

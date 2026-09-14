@@ -1,0 +1,90 @@
+#!/usr/bin/env node
+// Synthetic-only D1 fixtures in the existing isolated test database, never8787.
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {dirname,resolve,join} from 'node:path';
+import {mkdirSync,writeFileSync,readFileSync} from 'node:fs';
+import {bloomOpsDb} from '../lib/bloomops/db.mjs';
+import {loadActor} from '../lib/bloomops/authorization.mjs';
+import {resolveWorkspaceAccess} from '../lib/bloomops/membership.mjs';
+import {createProspect,updateProspect} from '../lib/bloomops/prospects.mjs';
+import {saveProspectSender,saveProspectOutreach,approveProspectOutreach} from '../lib/bloomops/prospect-outreach.mjs';
+import {getProspectDelivery,prepareProspectDelivery,sendProspectIntroduction,cancelProspectDelivery} from '../lib/bloomops/prospect-delivery.mjs';
+import {getProspectReplies,checkProspectReplies,stopProspectOutreach} from '../lib/bloomops/prospect-replies.mjs';
+import {sealGoogle,GOOGLE_SCOPES} from '../lib/bloomops/prospect-google-provider.mjs';
+const out=resolve(process.argv[2]),configPath=resolve(process.argv[3]),config=JSON.parse(readFileSync(configPath,'utf8'));
+assert.equal(config.d1_databases[0].database_id,'bloomops-p3c1-isolated');
+const require=createRequire(import.meta.url),wrangler=dirname(require.resolve('wrangler/package.json')),{Miniflare,convertV4MiniflareOptions}=require(require.resolve('miniflare',{paths:[wrangler]}));
+const checks=[];mkdirSync(out,{recursive:true});const check=(name,value)=>{assert.ok(value,name);checks.push(name);console.log('ok '+name);};
+const mf=new Miniflare(convertV4MiniflareOptions({compatibilityDate:'2025-05-01',cf:false,modules:true,script:'export default {fetch(){return new Response("synthetic only")}}',d1Databases:{DB:'bloomops-p3c1-isolated'},resourcePersistencePath:join(dirname(configPath),'.wrangler/state/v3')}));
+try{
+ const binding=await mf.getD1Database('DB'),db=bloomOpsDb(binding),first=(sql,...args)=>binding.prepare(sql).bind(...args).first(),run=(sql,...args)=>binding.prepare(sql).bind(...args).run();
+ check('Native isolated database has migration36',(await first('SELECT count(*) n FROM d1_migrations')).n===36);
+ const prefix='p3c3b-'+crypto.randomUUID().slice(0,8),ws=prefix+'-ws',user=prefix+'-owner',member=prefix+'-member',session=prefix+'-session',email=user+'@example.test',now=Date.now();
+ await binding.batch([binding.prepare("INSERT INTO workspaces(id,name,slug,purpose) VALUES(?,?,?,'prospecting')").bind(ws,'Garden Prospecting',ws),binding.prepare('INSERT INTO user(id,name,email,email_verified) VALUES(?,?,?,1)').bind(user,'Local Owner',email),binding.prepare("INSERT INTO workspace_memberships(id,workspace_id,user_id,role,status) VALUES(?,?,?,'owner','active')").bind(member,ws,user),binding.prepare('INSERT INTO session(id,user_id,token,expires_at,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind(session,user,prefix+'-token',now+86400000,now,now)]);
+ const actor=await loadActor(db,await resolveWorkspaceAccess(db,user,{workspaceId:ws})),env={BLOOMOPS_ENV:'development',BLOOMOPS_MAIL_TRANSPORT:'r2-dev',BLOOMOPS_APP_URL:'http://localhost:8788',BLOOMOPS_GOOGLE_CONNECT_ENABLED:'true',BLOOMOPS_GOOGLE_CLIENT_ID:'synthetic.apps.googleusercontent.com',BLOOMOPS_GOOGLE_CLIENT_SECRET:'synthetic-secret',BLOOMOPS_GOOGLE_TOKEN_KEY:'12'.repeat(32),BLOOMOPS_GOOGLE_TEST_SEND_ENABLED:'true',BLOOMOPS_GOOGLE_TEST_RECIPIENT:'inbox@example.test'};
+ await saveProspectSender(db,actor,{workspaceId:ws,expectedRevision:0,fields:{provider:'google_workspace',email:'hello@example.test',displayName:'Ary at Bloomwired'}});
+ const tokenBox=await sealGoogle({key:env.BLOOMOPS_GOOGLE_TOKEN_KEY},ws+':tokens',JSON.stringify({accessToken:'synthetic-access',refreshToken:'synthetic-refresh',expiresAt:new Date(now+3600000).toISOString()}));
+ await run("INSERT INTO prospect_google_connections(workspace_id,revision,sender_email,account_email,token_box,granted_scope,active,authorized_by_membership_id,authorizer_updated_at,check_status) SELECT ?,1,'hello@example.test','hello@example.test',?,?,1,id,updated_at,'healthy' FROM workspace_memberships WHERE id=?",ws,tokenBox,GOOGLE_SCOPES.join(' '),member);
+ const create=async name=>{
+  const fields={recipient:'inbox@example.test',timeZone:'America/Los_Angeles',subject:'Bloomsi controlled delivery check',intro:'Hi Ary,\n\nThis is a controlled test of Bloomsi email delivery. No reply or action is needed.\n\nAry at Bloomwired',followUp2:'Unused test follow-up.',followUp3:'Unused test follow-up.'};
+  const {prospectId}=await createProspect(db,{actor,input:{workspaceId:ws,requestId:crypto.randomUUID(),fields:{businessName:name,publicEmail:fields.recipient,timeZone:fields.timeZone,fit:'strong',observedFacts:'Synthetic controlled inbox.',evidenceDate:'2026-09-13',evidenceTarget:'https://example.test',proposedWork:'Check the controlled introduction.'}}});
+  await updateProspect(db,{actor,id:prospectId,input:{workspaceId:ws,expectedRevision:1,fields:{publicEmail:fields.recipient},sources:{publicEmail:{url:'https://example.test/contact',checked:true}}}});
+  const revisions={workspaceId:ws,prospectId,expectedRevision:0,expectedProfileRevision:2,expectedSenderRevision:1};assert.ok((await saveProspectOutreach(db,actor,{...revisions,sourceResultId:null,fields})).saved);assert.ok((await approveProspectOutreach(db,actor,{...revisions,expectedRevision:1,reviewed:true})).approved);
+  const data=await getProspectDelivery(db,actor,env,prospectId);return {workspaceId:ws,prospectId,approvalId:data.approvalId};
+ };
+ const input=await create('Native delivery fixture'),prepared=await Promise.all([1,2].map(()=>prepareProspectDelivery(db,actor,input)));
+ check('Native preparation retries make one immutable receipt',prepared[0].deliveryId===prepared[1].deliveryId);env.BLOOMOPS_GOOGLE_TEST_DELIVERY_ID=prepared[0].deliveryId;
+ const command={workspaceId:ws,prospectId:input.prospectId,deliveryId:prepared[0].deliveryId};let calls=0;
+ const results=await Promise.all([1,2].map(()=>sendProspectIntroduction(db,actor,env,session,{...command,reviewed:true},{fetcher:async()=>{calls++;return Response.json({id:'native-message',threadId:'native-thread'});}})));
+ check('Native concurrent sends contact the injected provider once',calls===1&&results.filter(r=>r.processed).length===1);
+ const row=await first('SELECT * FROM prospect_deliveries WHERE id=?',command.deliveryId);check('Native acceptance preserves provider message and thread',row.state==='accepted'&&row.provider_message_id==='native-message'&&row.provider_thread_id==='native-thread');
+ check('Native replay cannot send again',(await sendProspectIntroduction(db,actor,env,session,{...command,reviewed:true})).conflict);
+ check('Submitted mail cannot be cancelled as though recalled',(await cancelProspectDelivery(db,actor,command)).conflict);
+
+ const prepareBrowser=async(name,tag)=>{const draft=await create(name),prepared=await prepareProspectDelivery(db,actor,draft);env.BLOOMOPS_GOOGLE_TEST_DELIVERY_ID=prepared.deliveryId;const sendCommand={workspaceId:ws,prospectId:draft.prospectId,deliveryId:prepared.deliveryId};assert.ok((await sendProspectIntroduction(db,actor,env,session,{...sendCommand,reviewed:true},{fetcher:async()=>Response.json({id:tag+'-message',threadId:tag+'-thread'})})).processed);return {...sendCommand,...await first('SELECT message_id FROM prospect_deliveries WHERE id=?',prepared.deliveryId)};};
+ const browser=await prepareBrowser('Garden reply review','browser'),secondary=await prepareBrowser('Garden disabled check','disabled');
+ const protectedPrepared=await create('Garden prepared duplicate'),protectedReceipt=await prepareProspectDelivery(db,actor,protectedPrepared);assert.ok(protectedReceipt.prepared);
+ env.BLOOMOPS_GOOGLE_TEST_DELIVERY_ID=command.deliveryId;
+
+ env.BLOOMOPS_GOOGLE_REPLY_CHECK_ENABLED='true';env.BLOOMOPS_GOOGLE_REPLY_DELIVERY_ID=command.deliveryId;
+ const read=()=>getProspectReplies(db,actor,env,input.prospectId);
+ const request=async()=>{const data=await read();return {...command,expectedRevision:data.revision,senderRevision:data.senderRevision,connectionRevision:data.connectionRevision,reviewed:true};};
+ const providerRfc='<native-google-accepted@example.test>';
+ const thread=()=>({id:'native-thread',messages:[{id:'native-message',threadId:'native-thread',labelIds:['SENT'],internalDate:String(now),payload:{headers:[{name:'Message-ID',value:providerRfc},{name:'From',value:'hello@example.test'},{name:'To',value:'inbox@example.test'}]}},{id:'native-reply',threadId:'native-thread',labelIds:['INBOX'],internalDate:String(now+1000),payload:{headers:[{name:'Message-ID',value:'<native-reply@example.test>'},{name:'In-Reply-To',value:providerRfc},{name:'From',value:'inbox@example.test'}]}}]});
+ const requestInput=await request();let reads=0;
+ const checksRun=await Promise.all([1,2].map(()=>checkProspectReplies(db,actor,env,session,requestInput,{fetcher:async()=>{reads++;return Response.json(thread());}})));
+ check('Native concurrent thread checks call provider once',reads===1&&checksRun.filter(x=>x.checked).length===1);
+ check('Native reply creates a durable hold',(await read()).state.holdState==='held');
+ check('Native returned RFC ancestry preserves the immutable submitted receipt',(await read()).observations[0].match==='reply_chain'&&(await first('SELECT message_id FROM prospect_deliveries WHERE id=?',command.deliveryId)).message_id===row.message_id&&row.message_id!==providerRfc);
+ const identityBefore=await first('SELECT * FROM prospect_delivery_identities WHERE delivery_id=?',command.deliveryId);
+ check('Native verified identity records the exact accepted provider provenance',identityBefore.rfc_message_id===providerRfc&&identityBefore.account_email===row.account_email&&identityBefore.provider_message_id===row.provider_message_id&&identityBefore.provider_thread_id===row.provider_thread_id&&identityBefore.verified_by_membership_id===member&&identityBefore.connection_revision===1);
+ await checkProspectReplies(db,actor,env,session,await request(),{clock:()=>new Date(Date.now()+31000),fetcher:async()=>Response.json(thread())});
+ check('Native duplicate observation creates one record and event',(await first('SELECT count(*) n FROM prospect_reply_observations WHERE prospect_id=?',input.prospectId)).n===1&&(await first("SELECT count(*) n FROM activity_events WHERE subject_id=? AND event_type='PROSPECT_REPLY_OBSERVED'",input.prospectId)).n===1);
+ check('Native replay preserves identity and creates one verification event',JSON.stringify(await first('SELECT * FROM prospect_delivery_identities WHERE delivery_id=?',command.deliveryId))===JSON.stringify(identityBefore)&&(await first("SELECT count(*) n FROM activity_events WHERE subject_id=? AND event_type='PROSPECT_DELIVERY_IDENTITY_VERIFIED'",input.prospectId)).n===1);
+ const longThread=thread();
+ for(let i=1;i<99;i++)longThread.messages.push({id:'native-reply-'+i,threadId:'native-thread',labelIds:['INBOX'],internalDate:String(now+1000+i),payload:{headers:[{name:'Message-ID',value:'<native-reply-'+i+'@example.test>'},{name:'In-Reply-To',value:providerRfc},{name:'From',value:'inbox@example.test'}]}});
+ const longResult=await checkProspectReplies(db,actor,env,session,await request(),{clock:()=>new Date(Date.now()+62000),fetcher:async()=>Response.json(longThread)});
+ check('Native 100-message thread completes atomically within D1 limits',longResult.checked&&(await read()).state.holdState==='held'&&(await first('SELECT count(*) n FROM prospect_reply_observations WHERE prospect_id=?',input.prospectId)).n===99&&(await first("SELECT count(*) n FROM activity_events WHERE subject_id=? AND event_type='PROSPECT_REPLY_OBSERVED'",input.prospectId)).n===99);
+ const empty=thread();empty.messages.pop();await checkProspectReplies(db,actor,env,session,await request(),{clock:()=>new Date(Date.now()+93000),fetcher:async()=>Response.json(empty)});
+ check('Native empty check never clears the earlier hold',(await read()).state.holdState==='held');
+ const changedIdentity=thread();changedIdentity.messages[0].payload.headers[0].value='<conflicting-native@example.test>';
+ const conflictResult=await checkProspectReplies(db,actor,env,session,await request(),{clock:()=>new Date(Date.now()+124000),fetcher:async()=>Response.json(changedIdentity)});
+ check('Native identity conflict finishes unresolved and held without changing evidence',conflictResult.status==='unresolved'&&(await read()).state.checkStatus==='unresolved'&&(await read()).state.holdState==='held'&&JSON.stringify(await first('SELECT * FROM prospect_delivery_identities WHERE delivery_id=?',command.deliveryId))===JSON.stringify(identityBefore)&&(await first('SELECT count(*) n FROM prospect_reply_observations WHERE prospect_id=?',input.prospectId)).n===99);
+ await assert.rejects(()=>run("UPDATE prospect_delivery_identities SET rfc_message_id='<changed@example.test>' WHERE delivery_id=?",command.deliveryId),/immutable/);
+ await assert.rejects(()=>run('DELETE FROM prospect_delivery_identities WHERE delivery_id=?',command.deliveryId),/permanent/);
+ check('Native identity update and deletion are rejected',true);
+ check('Native human stop records evidence',(await stopProspectOutreach(db,actor,session,{...command,expectedRevision:(await read()).revision,reason:'opt_out',note:'Synthetic recipient asked to stop.',reviewed:true})).stopped);
+ check('Native stopped state cannot check or resume',(await read()).canCheck===false&&(await read()).state.holdState==='stopped');
+ check('Native denied workspace cannot read observations',await getProspectReplies(db,{...actor,workspaceId:'foreign'},env,input.prospectId)===null);
+ const protectedUnprepared=await create('Garden protected contact');
+ check('Native stopped recipient blocks duplicate preparation',(await prepareProspectDelivery(db,actor,protectedUnprepared)).conflict&&(await first('SELECT count(*) n FROM prospect_deliveries WHERE prospect_id=?',protectedUnprepared.prospectId)).n===0);
+ let blockedCalls=0;const protectionEnv={...env,BLOOMOPS_GOOGLE_TEST_DELIVERY_ID:protectedReceipt.deliveryId};
+ check('Native stopped recipient blocks stale prepared send',(await sendProspectIntroduction(db,actor,protectionEnv,session,{workspaceId:ws,prospectId:protectedPrepared.prospectId,deliveryId:protectedReceipt.deliveryId,reviewed:true},{fetcher:async()=>{blockedCalls++;return Response.json({id:'must-not-send',threadId:'must-not-send'});}})).conflict&&blockedCalls===0);
+ check('Native delivery exposes protection while keeping content approval',(await getProspectDelivery(db,actor,env,protectedUnprepared.prospectId)).recipientProtection.kind==='stopped'&&Boolean((await getProspectDelivery(db,actor,env,protectedUnprepared.prospectId)).approvalId));
+
+ writeFileSync(join(out,'browser-fixture.json'),JSON.stringify({workspaceId:ws,userId:user,memberId:member,email,prospectId:browser.prospectId,deliveryId:browser.deliveryId,messageId:browser.message_id,secondaryId:secondary.prospectId,protectedPreparedId:protectedPrepared.prospectId,protectedPreparedDeliveryId:protectedReceipt.deliveryId,protectedUnpreparedId:protectedUnprepared.prospectId,recipient:'inbox@example.test',configPath},null,2)+'\n');
+ check('Legacy sends and accounts remain empty',(await first('SELECT count(*) n FROM send_events')).n===0&&(await first('SELECT count(*) n FROM gmail_accounts')).n===0);
+ check('Native foreign keys are clean',(await binding.prepare('PRAGMA foreign_key_check').all()).results.length===0);
+ writeFileSync(join(out,'native-results.json'),JSON.stringify({passed:checks.length,checks,nativeD1:true,provider:'injected synthetic responses'},null,2)+'\n');
+}finally{await mf.dispose();}

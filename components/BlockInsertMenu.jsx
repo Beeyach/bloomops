@@ -84,7 +84,7 @@ const GROUPS = [
 const ITEM =
   'flex items-center gap-2.5 w-full pl-3 pr-2 py-1.5 rounded-[7px] text-left text-[13px] text-ink-2 hover:bg-hover-wash-soft transition';
 
-export default function BlockInsertMenu({ editor, pos, above, onClose, tools }) {
+export default function BlockInsertMenu({ editor, pos, above, onClose, tools, allowDatabaseViews = true, databaseSource = 'prospects' }) {
   // The gutter passes a number; the slash menu passes a {from,to} range so
   // picking a block replaces the empty paragraph the "/" was typed in.
   const at = typeof pos === 'number' ? pos : pos.from;
@@ -101,16 +101,18 @@ export default function BlockInsertMenu({ editor, pos, above, onClose, tools }) 
 
   const groups = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    if (!q) return GROUPS;
-    return GROUPS
+    const available = GROUPS.map(g => ({...g, items: g.items.filter(i => allowDatabaseViews || i.node?.type !== 'databaseView')})).filter(g => g.items.length);
+    if (!q) return available;
+    return available
       .map((g) => ({ ...g, items: g.items.filter((i) => i.label.toLowerCase().includes(q)) }))
       .filter((g) => g.items.length > 0);
-  }, [filter]);
+  }, [filter, allowDatabaseViews]);
 
   async function insert(item) {
     onClose();
     if (item.node) {
-      editor.chain().insertContentAt(pos, item.node).focus().run();
+      const node = item.node.type === 'databaseView' && databaseSource === 'actions' ? {...item.node, attrs: {...item.node.attrs, source: 'actions', groupBy: 'status'}} : item.node;
+      editor.chain().insertContentAt(pos, node).focus().run();
       return;
     }
     // Actions need the editor's own commands or a dialog, so they run after
@@ -202,7 +204,7 @@ export default function BlockInsertMenu({ editor, pos, above, onClose, tools }) 
         ))}
       </div>
       <div className="px-3 pt-1.5 pb-0.5 text-[11px] text-ink-3 border-t border-line mt-1">
-        Adding {above ? 'above' : 'below'} · Esc to close
+        {allowDatabaseViews && databaseSource !== 'actions' ? <>Adding {above ? 'above' : 'below'} · Esc to close</> : 'Press Esc to close.'}
       </div>
     </div>
   );

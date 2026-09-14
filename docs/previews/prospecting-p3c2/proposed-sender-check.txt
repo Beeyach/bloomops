@@ -1,0 +1,8 @@
+AUTHORIZED AND SENT ONCE — Google accepted 2026-09-13T08:20:00.799Z; owner confirmed sign-off visible, spacing too tight
+From: Ary at Bloomwired <hello@bloomwired.io>
+To: aryannelombres@gmail.com
+Subject: Bloomsi sender and sign-off check
+
+This checks the updated sender name and a compact sign-off.
+Thanks,
+Ary at Bloomwired

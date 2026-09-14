@@ -2,7 +2,7 @@
 
 ## Status and objective
 
-Implementation contract prepared on 2026-09-12. Start from accepted `09de9d61d419add9a9e85d8e5e933936b5561154`, 23 migrations. Follow [E3](E3.md), [RELEASE_E](../RELEASE_E.md) and [BUILD_STATE](../BUILD_STATE.md). E3A implementation and local acceptance are complete in the isolated checkout. One fresh Sol High review and one focused re-review resolved the requested-round replacement finding. Additive migration 0023 and scoped compatibility/retention changes await exact-source publication gates; they are not yet deployed.
+Implementation contract prepared on 2026-09-12. Start from accepted `09de9d61d419add9a9e85d8e5e933936b5561154`, 23 migrations. Follow [E3](E3.md), [RELEASE_E](../RELEASE_E.md) and [BUILD_STATE](../BUILD_STATE.md). **CLOSED** through [PR #59](https://github.com/Bloomwired/bloomops/pull/59) on verified `618e18fbb9241f3523f362f292a0e336c1ed0c81`. Local acceptance, one Sol High review and one focused re-review, exact-SHA staging/remote-zero gates and live identity/schema pass; additive `0023` is deployed and the schema has 24 migrations. E3B activation remains unfinished.
 
 Establish immutable ordered media evidence within canonical Content review revisions while all active approval request/response/portal paths remain Social-only. Existing E2B internal creative workflows and shared Work/Social storage keep working. E3A must be verified and deployed before E3B creates Ads review rounds or exposes selected media.
 
@@ -82,3 +82,7 @@ E3A becomes the minimum compatible application fallback once E3B creates Ads med
 7. Update existing BUILD_STATE/INDEX and implemented DOMAIN_MODEL facts. Publish within standing authorization only after acceptance; verify exact merge SHA for staging, disposable remote zero-to-current and live identity/schema before closing E3A. Record actual cleanup evidence and limitations. E3 remains open; next write E3B's exact activation/routes/query/DTO/atomic request contract from the accepted foundation.
 
 The original contract preparation was documentation-only. Implementation acceptance and release evidence are recorded in BUILD_STATE; this contract does not independently assert gate completion.
+
+## Accepted implementation
+
+Implemented and deployed on `618e18f`; no approval/portal activation. The review's partial-index requested-round replacement finding is resolved, with 141 affected and 97 native evidence checks plus pre-fix reproduction. Full 6,112, focused 860, existing native 171, Cloudflare build, 160 browser checks/95 captures, populated upgrade and final fresh/repeat verification pass at the source boundaries recorded in BUILD_STATE. Exact-SHA staging 34713560289 and remote-zero 34713560190 pass; live staging confirms 24 migrations. BUILD_STATE owns full evidence and downloaded-log limitations. Next write E3B's exact activation contract from this accepted foundation.

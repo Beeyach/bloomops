@@ -1,0 +1,10 @@
+{
+  "checks": [
+    "UUID array rejected with400",
+    "object rejected with400",
+    "String UUID reaches duplicate conflict",
+    "No profiles, receipts or events changed"
+  ],
+  "passed": 4,
+  "nativeD1": true
+}

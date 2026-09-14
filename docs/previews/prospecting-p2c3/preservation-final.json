@@ -1,0 +1,48 @@
+{
+  "workspaces": {
+    "originalRows": 65,
+    "unchanged": true
+  },
+  "bloomops_prospects": {
+    "originalRows": 68,
+    "unchanged": true
+  },
+  "prospects": {
+    "originalRows": 728,
+    "unchanged": true
+  },
+  "send_events": {
+    "originalRows": 18,
+    "unchanged": true
+  },
+  "reply_events": {
+    "originalRows": 0,
+    "unchanged": true
+  },
+  "prospect_field_sources": {
+    "originalRows": 76,
+    "unchanged": true
+  },
+  "activity_events": {
+    "originalRows": 77,
+    "unchanged": true
+  },
+  "prospect_import_receipts": {
+    "originalRows": 4,
+    "unchanged": true
+  },
+  "prospect_import_rows": {
+    "originalRows": 59,
+    "unchanged": true
+  },
+  "prospect_skill_results": {
+    "originalRows": 9,
+    "unchanged": true
+  },
+  "integrity": [
+    [
+      "ok"
+    ]
+  ],
+  "foreignKeyViolations": []
+}

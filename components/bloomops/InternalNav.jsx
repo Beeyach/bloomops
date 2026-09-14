@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { INTERNAL_NAV, activeKey, navGroups } from '@/lib/bloomops/navigation.mjs';
+import { INTERNAL_NAV, PROSPECTING_NAV, inProspecting, activeKey, navGroups } from '@/lib/bloomops/navigation.mjs';
 import { Icon } from './Icons';
 
 // The internal navigation, drawn from lib/bloomops/navigation.mjs. The
@@ -11,16 +11,16 @@ import { Icon } from './Icons';
 // in tests with a known active key; InternalNav derives the active key
 // from the route.
 
-export function NavList({ items = INTERNAL_NAV, active = null, LinkComponent = Link, onNavigate = null }) {
+export function NavList({ items = INTERNAL_NAV, active = null, LinkComponent = Link, onNavigate = null, label='Main' }) {
   const groups = navGroups(items);
   return (
-    <nav aria-label="Main">
+    <nav aria-label={label}>
       {groups.map((group) => (
         <ul key={group.key} className="bo-nav bo-nav-group" aria-label={group.label}>
           {group.items.map((item) => (
             <li key={item.key}>
               <LinkComponent
-                href={item.href}
+                href={item.href} prefetch={item.key==='prospecting'?false:undefined}
                 className="bo-nav-item"
                 aria-current={active === item.key ? 'page' : undefined}
                 onClick={onNavigate || undefined}
@@ -38,5 +38,6 @@ export function NavList({ items = INTERNAL_NAV, active = null, LinkComponent = L
 
 export default function InternalNav({ items = INTERNAL_NAV }) {
   const pathname = usePathname();
-  return <NavList items={items} active={activeKey(pathname, items)} />;
+  const contextual=inProspecting(pathname),visible=contextual?PROSPECTING_NAV:items;
+  return <>{contextual&&<p className="bo-context-title">Prospecting</p>}<NavList items={visible} active={activeKey(pathname, visible)} label={contextual?'Prospecting':'Main'}/></>;
 }

@@ -1,0 +1,81 @@
+#!/usr/bin/env node
+// P2A acceptance (add --export for P2B1) against the built local Worker. Creates only isolated synthetic data.
+import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+import {createHash,randomUUID} from 'node:crypto';
+import {createRequire} from 'node:module';
+import {mkdirSync,writeFileSync} from 'node:fs';
+import {resolve,join} from 'node:path';
+import {checkSourceExport} from './_prospect-source-export-browser.mjs';
+import {checkImportCommit} from './_prospect-import-commit-browser.mjs';
+import {checkImportPreview} from './_prospect-import-preview-browser.mjs';
+const exportChecks=process.argv.includes('--export'),importChecks=process.argv.includes('--import')||process.argv.includes('--commit'),commitChecks=process.argv.includes('--commit');
+const out=resolve(process.argv[2]||'/tmp/bloomops-p2a-evidence'),base='http://localhost:8787';
+const health=await(await fetch(base+'/api/health')).json();
+assert.equal(health.environment,'development');assert.equal(health.auth.mail,'r2-dev');
+const cli=args=>execFileSync('npx',['--no-install','wrangler',...args],{encoding:'utf8',stdio:['ignore','pipe','pipe']});
+const query=q=>JSON.parse(cli(['d1','execute','DB','--local','--command',q,'--json']))[0].results;
+const lit=v=>v==null?'NULL':typeof v==='number'?String(v):"'"+String(v).replaceAll("'","''")+"'";
+const statements=[],insert=(table,row)=>statements.push(`INSERT INTO ${table}(${Object.keys(row)}) VALUES(${Object.values(row).map(lit)});`);
+const prefix='p2a-'+randomUUID().slice(0,8),dest=prefix+'-fresh',src=prefix+'-source',empty=prefix+'-empty',foreign=prefix+'-foreign',user=prefix+'-owner',email=user+'@example.com';
+for(const [id,name,purpose] of [[dest,'Garden Prospecting','prospecting'],[src,'Garden source sample','operations'],[empty,'Empty source sample','operations'],[foreign,'Private source sample','operations']])insert('workspaces',{id,slug:id,name,purpose});
+insert('user',{id:user,name:'Garden Owner',email,email_verified:1});
+for(const id of [dest,src,empty])insert('workspace_memberships',{id:id+'-member',workspace_id:id,user_id:user,role:'owner',status:'active'});
+for(let i=0;i<53;i++)insert('prospects',{workspace:src,business_name:['Fern & Field Studio','Willow House','Clover Collective'][i]||`Garden Studio ${String(i).padStart(2,'0')}`,name:'Maya Example',domain:'example.com',email:`garden-${i}@example.com`,stage:'New',created_at:'2026-09-12 00:00:00',updated_at:'2026-09-12 00:00:00',info:i===2?'Prior conversation needs review':null,do_not_contact:i===3?1:0,pending_draft:i===4?'PRIVATE DRAFT BODY':null});
+insert('prospects',{workspace:foreign,business_name:'PRIVATE FOREIGN RECORD',stage:'New'});
+statements.push(`INSERT INTO send_events(workspace,prospect_id,sent_at,dedupe_key,subject) SELECT ${lit(src)},id,'2026-09-12',${lit(prefix)},'PRIVATE EMAIL BODY' FROM prospects WHERE workspace=${lit(src)} AND business_name='Willow House';`);
+mkdirSync(out,{recursive:true,mode:0o700});writeFileSync(join(out,'fixture.sql'),statements.join('\n'),{mode:0o600});cli(['d1','execute','DB','--local','--file',join(out,'fixture.sql')]);
+const snapshot=()=>JSON.stringify({prospects:query(`SELECT * FROM prospects WHERE workspace=${lit(src)} ORDER BY id`),sends:query(`SELECT * FROM send_events WHERE workspace=${lit(src)} ORDER BY id`),canonical:query(`SELECT * FROM bloomops_prospects WHERE workspace_id=${lit(dest)}`)});
+let before=snapshot();
+const {chromium}=createRequire('/tmp/bloomops-pilot-tools/package.json')('playwright');
+const browser=await chromium.launch({headless:true,args:['--no-sandbox']}),checks=[],check=(name,value)=>{assert.ok(value,name);checks.push(name);};
+try{
+ const context=await browser.newContext(),page=await context.newPage(),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ const login=await context.request.post(base+'/api/auth/sign-in/magic-link',{headers:{origin:base},data:{email,callbackURL:'/workspaces'}});assert.equal(login.status(),200);
+ const raw=cli(['r2','object','get',`bloomops-files-dev/dev-mail/${createHash('sha256').update(email).digest('hex')}.json`,'--local','--pipe']);
+ const link=JSON.parse(raw.slice(raw.indexOf('{'))).text.match(/https?:\/\/\S+/)[0];assert.ok(link.startsWith(base+'/api/auth/magic-link/verify?'));
+ await page.goto(link,{waitUntil:'networkidle'});
+ assert.equal((await context.request.post(base+'/api/bloomops/workspaces/select',{headers:{origin:base},data:{workspaceId:dest}})).status(),200);
+ const api='/api/bloomops/prospecting/source-preview',preview='/prospecting/import?source='+src;
+ check('No source is selected automatically',(await(await context.request.get(base+api)).json()).selectionRequired===true);
+ await page.goto(base+'/prospecting/import',{waitUntil:'networkidle'});
+ check('Only accessible source choices appear',(await page.locator('#source-workspace option').allTextContents()).join('|')==='Choose a workspace|Empty source sample|Garden source sample');
+ await page.locator('#source-workspace').focus();await page.keyboard.press('Tab');check('Keyboard reaches Review source',await page.getByRole('button',{name:'Review source',exact:true}).evaluate(el=>el===document.activeElement));
+ await page.locator('#source-workspace').selectOption(src);await page.getByRole('button',{name:'Review source',exact:true}).click();await page.waitForURL('**/prospecting/import?source='+src);
+ const response=await context.request.get(base+api+'?source='+src),data=await response.json();
+ check('Native D1 returns 50 bounded records and honest counts',response.status()===200&&data.rows.length===50&&data.counts.ready===46&&data.counts.worked===3&&data.counts.review===1&&data.more);
+ check('New stage cannot hide recorded sends',data.rows.find(r=>r.businessName==='Willow House').status==='worked');
+ check('Payload excludes private history',!JSON.stringify(data).includes('PRIVATE'));
+ await page.getByText('Raw identity fields',{exact:true}).first().click();check('Raw details retain readable field labels',await page.locator('.bo-source-rows>li').first().getByText('Public email',{exact:true}).isVisible());
+ for(const width of [1440,1024,768,390,320]){
+  await page.setViewportSize({width,height:1000});await page.goto(base+preview,{waitUntil:'networkidle'});
+  check(`No horizontal overflow at ${width}px`,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  if(width<=390)check(`Mobile source control is at least 44px at ${width}px`,(await page.locator('#source-workspace').boundingBox()).height>=44);
+  await page.screenshot({path:join(out,`source-${width}.png`),fullPage:false});
+  if(width===1440||width===390){await page.locator('.bo-source-rows').scrollIntoViewIfNeeded();await page.screenshot({path:join(out,`source-records-${width}.png`),fullPage:false});}
+ }
+ await page.getByRole('link',{name:'Next page',exact:true}).click();await page.waitForLoadState('networkidle');
+ check('Next page shows remaining three records',await page.locator('.bo-source-rows>li').count()===3);
+ await page.getByRole('link',{name:'First page',exact:true}).click();await page.waitForLoadState('networkidle');check('First page returns to 50 records',await page.locator('.bo-source-rows>li').count()===50);
+ await page.goto(base+'/prospecting/import?source='+empty,{waitUntil:'networkidle'});check('Empty source has an honest empty state',await page.getByText('No source prospects on this page',{exact:true}).isVisible());
+ check('Invalid cursor is rejected',(await context.request.get(base+api+'?source='+src+'&after=-1')).status()===400);
+ check('Foreign source is denied',(await context.request.get(base+api+'?source='+foreign)).status()===404);
+ check('Preview has no write endpoint',(await context.request.post(base+api,{headers:{origin:base},data:{source:src}})).status()===405);
+ query(`UPDATE workspace_memberships SET status='suspended' WHERE id=${lit(src+'-member')}`);
+ check('Revoked source membership is denied',(await context.request.get(base+api+'?source='+src)).status()===404);
+ await page.goto(base+preview,{waitUntil:'networkidle'});check('Revoked source page exposes no records',await page.locator('.bo-source-rows>li').count()===0);
+ query(`UPDATE workspace_memberships SET status='active' WHERE id=${lit(src+'-member')}`);
+ query(`UPDATE workspace_memberships SET role='team_member' WHERE id=${lit(dest+'-member')}`);
+ check('Demoted destination membership is denied',(await context.request.get(base+api+'?source='+src)).status()===403);
+ query(`UPDATE workspace_memberships SET role='owner' WHERE id=${lit(dest+'-member')}`);
+ check('Preview leaves all source rows, send history and destination prospects unchanged',snapshot()===before);
+ if(exportChecks)before=await checkSourceExport({context,page,base,src,foreign,dest,preview,data,out,query,lit,snapshot,check});
+ if(importChecks)await checkImportPreview({context,page,base,src,foreign,dest,out,query,lit,snapshot,check});
+ if(commitChecks)await checkImportCommit({context,page,base,src,foreign,dest,out,query,lit,check});
+ await page.goto(base+'/prospecting',{waitUntil:'networkidle'});await page.getByRole('link',{name:'New prospect',exact:true}).click();await page.waitForLoadState('networkidle');
+ check('Existing P1 new profile form remains reachable',await page.getByLabel('Business name',{exact:true}).isVisible());
+ check('No browser runtime errors',errors.length===0);
+ writeFileSync(join(out,'results.json'),JSON.stringify({checks,sourcePreserved:true,nativeD1:true,widths:[1440,1024,768,390,320]},null,2));
+ console.log(JSON.stringify({passed:checks.length,sourcePreserved:true,nativeD1:true,widths:[1440,1024,768,390,320]}));
+}catch(error){console.error(error.message.replace(/https?:\/\/\S+/g,'[redacted URL]'));process.exitCode=1;}finally{await browser.close();}

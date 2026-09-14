@@ -1,0 +1,3 @@
+# Repository defaults; an explicit session model/effort choice takes precedence.
+model = "gpt-6-astra"
+model_reasoning_effort = "medium"

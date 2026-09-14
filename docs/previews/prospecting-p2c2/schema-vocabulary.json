@@ -1,0 +1,27 @@
+{
+  "supportedKeywords": [
+    "$schema",
+    "type",
+    "additionalProperties",
+    "properties",
+    "required",
+    "const",
+    "enum",
+    "minLength",
+    "maxLength",
+    "pattern",
+    "format",
+    "minimum",
+    "items",
+    "additionalItems",
+    "minItems",
+    "maxItems",
+    "contains",
+    "allOf",
+    "if",
+    "then",
+    "anyOf"
+  ],
+  "allCatalogSchemasCovered": true,
+  "validFixtures": 3
+}

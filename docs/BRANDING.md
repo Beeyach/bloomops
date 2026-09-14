@@ -19,6 +19,6 @@ Use the supplied charcoal script wordmark and mauve flower as the branding refer
 
 Use **Bloomsi** for platform headings, navigation branding, page titles, onboarding copy and new documentation. Link back here rather than relying on older BloomOps/Bloom Studio labels in mockups. Preserve actual workspace names, customer names and historical release evidence.
 
-Reuse the current design system and the [profile layout reference](https://github.com/Bloomwired/bloomops/blob/bee6af59a1bb7a33c38107e38a17bc15b65d8bd6/docs/design-references/README.md); this logo does not replace the owner's spacing, readability or accessibility requirements. Prospect favicons and garden SVG fallbacks identify individual businesses, separately from Bloomsi's platform logo.
+Reuse the current design system and the [profile layout reference](design-references/README.md); this logo does not replace the owner's spacing, readability or accessibility requirements. Prospect favicons and garden SVG fallbacks identify individual businesses, separately from Bloomsi's platform logo.
 
 The GitHub repository and existing package names, database names, deployment identifiers and environment configuration remain unchanged by this asset/documentation handoff. Introducing the brand into running screens is implementation work; this commit does not claim a live rebrand, DNS cutover or deployment.

@@ -13,3 +13,35 @@ BLOOMOPS_AUTH_SECRET=replace-me-with-32-or-more-random-characters-0123456789
 # BLOOMOPS_MAIL_TRANSPORT=resend.
 # BLOOMOPS_RESEND_API_KEY=re_xxxxxxxx
 # BLOOMOPS_MAIL_FROM=BloomOps <onboarding@resend.dev>
+
+# Prospecting Google connection (P3B). Independent of legacy GOOGLE_* values.
+# Keep disabled until the reviewed callback/client setup is explicitly approved.
+# BLOOMOPS_GOOGLE_CONNECT_ENABLED=true
+# BLOOMOPS_GOOGLE_CLIENT_ID=your-web-client.apps.googleusercontent.com
+# BLOOMOPS_GOOGLE_CLIENT_SECRET=your-web-client-secret
+# BLOOMOPS_GOOGLE_TOKEN_KEY=64-hex-characters-from-32-random-bytes
+# The callback is BLOOMOPS_APP_URL + /api/bloomops/prospecting/google/callback.
+# Never copy an original-LTB client secret, token or token-encryption key.
+
+# P3C2: local controlled test only. Leave disabled until the owner has approved
+# this exact prepared receipt, its message and its owner-controlled recipient.
+# Development + loopback app URL + r2-dev are required; deployed sending is off.
+BLOOMOPS_GOOGLE_TEST_SEND_ENABLED=false
+BLOOMOPS_GOOGLE_TEST_DELIVERY_ID=
+BLOOMOPS_GOOGLE_TEST_RECIPIENT=
+
+# P3C3B: exact-thread metadata check only, separately authorized after review.
+# No mailbox watch, body download, sending or automatic sequence is enabled.
+BLOOMOPS_GOOGLE_REPLY_CHECK_ENABLED=false
+BLOOMOPS_GOOGLE_REPLY_DELIVERY_ID=
+
+# P3C3E4/E5 exact saved report body check: guarded local review UI/API.
+# Requires the existing exact discovery workspace/account gate as well.
+# A previous header-only mailbox check does not authorize this body read.
+BLOOMOPS_GOOGLE_REPORT_CHECK_ENABLED=false
+BLOOMOPS_GOOGLE_REPORT_RUN_ID=
+BLOOMOPS_GOOGLE_REPORT_MESSAGE_ID=
+
+# P3C3F1: explicit local starting point from a recent complete saved collection.
+# This makes no provider request and does not release outreach holds.
+BLOOMOPS_GOOGLE_CHECKPOINT_ENABLED=false

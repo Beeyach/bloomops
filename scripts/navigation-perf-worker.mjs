@@ -31,6 +31,7 @@ function outerTable(query) {
   }
 }
 function category(query) {
+  if (/\b(bloomops_prospects|prospect_field_sources)\b/.test(query)) return 'prospecting';
   query = query.match(/^WITH bo_read\((?:bo_c\d+,?)+\) AS \(([\s\S]*)\) SELECT \* FROM bo_read$/)?.[1] || query;
   // Authorization loaders select plain columns. Do not mistake an EXISTS
   // subquery in a page projection for the top-level actor loader.

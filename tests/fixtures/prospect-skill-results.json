@@ -1,0 +1,158 @@
+[
+  {
+    "format": "bloomsi.skill-result",
+    "version": 1,
+    "skill": {
+      "id": "audit",
+      "version": "1.0.0"
+    },
+    "sourceContext": {
+      "workspaceId": "synthetic-garden",
+      "prospectId": "synthetic-fern",
+      "revision": 3
+    },
+    "status": "needs_review",
+    "fields": {
+      "platform": "GHL",
+      "observedFacts": "The public resource link opens a PDF. The booking link opens a calendar popup.",
+      "unknowns": "Backend emails and delivery have not been tested.",
+      "fit": "unknown",
+      "proposedWork": "Consider a clearer explanation of the course options; validate relevance with the owner first."
+    },
+    "observations": [
+      {
+        "targetUrl": "https://fern.example.com/guide.pdf",
+        "observedAt": "2026-09-12",
+        "interaction": "Opened the public guide link in a synthetic example.",
+        "outcome": "observed",
+        "description": "A readable PDF opened. Direct download is intentional, not a missing form."
+      },
+      {
+        "targetUrl": "https://fern.example.com/book",
+        "observedAt": "2026-09-12",
+        "interaction": "Opened a calendar popup in a synthetic example without submitting.",
+        "outcome": "observed",
+        "description": "A calendar is visible in the popup; no appointment was created."
+      },
+      {
+        "targetUrl": "https://fern.example.com/",
+        "observedAt": "2026-09-12",
+        "interaction": "Compared rendered text with hidden code in a synthetic example.",
+        "outcome": "observed",
+        "description": "A hidden placeholder was absent from rendered content; it is not a visitor-visible defect."
+      }
+    ],
+    "fieldSources": [],
+    "contactResearch": {
+      "state": "unresolved",
+      "email": null,
+      "sourceUrl": null,
+      "confidence": "unknown",
+      "deliveryVerified": false
+    },
+    "offer": {
+      "suggestion": "Course-option explanation",
+      "approvalSource": null,
+      "price": null,
+      "approvedClaims": []
+    },
+    "followUps": [],
+    "unknowns": [
+      "Public contact remains unresolved.",
+      "Backend reminders and delivery remain unknown.",
+      "An old footer does not establish that the business is inactive."
+    ],
+    "fullReport": "Hand-authored synthetic contract example, not a live audit or generated model result. Existing GHL may support useful extensions. No price, claim, delivery or sending status is approved."
+  },
+  {
+    "format": "bloomsi.skill-result",
+    "version": 1,
+    "skill": {
+      "id": "outreach",
+      "version": "1.0.0"
+    },
+    "sourceContext": {
+      "workspaceId": "synthetic-garden",
+      "prospectId": "synthetic-fern",
+      "revision": 3
+    },
+    "status": "ready",
+    "fields": {
+      "draftSubject": "A thought on your course options",
+      "draftBody": "Hi Maya,\n\nYour Fern course page makes the six-week programme clear. Would a short comparison of the course options be useful?\n\nThank you,\nAry"
+    },
+    "observations": [],
+    "fieldSources": [],
+    "contactResearch": {
+      "state": "found",
+      "email": "hello@fern.example.com",
+      "sourceUrl": "https://fern.example.com/contact",
+      "confidence": "medium",
+      "deliveryVerified": false
+    },
+    "offer": {
+      "suggestion": "Course-option explanation",
+      "approvalSource": null,
+      "price": null,
+      "approvedClaims": []
+    },
+    "followUps": [
+      {
+        "sequence": 2,
+        "body": "Hi Maya, a simple comparison could help visitors see who each course option suits. Would an outline be useful?"
+      },
+      {
+        "sequence": 3,
+        "body": "Hi Maya, happy to share that outline if it would help. Is comparing the course options something you are considering?"
+      }
+    ],
+    "unknowns": [
+      "No sending approval or conversation history is included."
+    ],
+    "fullReport": "Hand-authored synthetic contract example, not a live audit or generated model result. Existing GHL may support useful extensions. No price, claim, delivery or sending status is approved."
+  },
+  {
+    "format": "bloomsi.skill-result",
+    "version": 1,
+    "skill": {
+      "id": "follow-up",
+      "version": "1.0.0"
+    },
+    "sourceContext": {
+      "workspaceId": "synthetic-garden",
+      "prospectId": "synthetic-fern",
+      "revision": 3
+    },
+    "status": "ready",
+    "fields": {},
+    "observations": [],
+    "fieldSources": [],
+    "contactResearch": {
+      "state": "found",
+      "email": "hello@fern.example.com",
+      "sourceUrl": "https://fern.example.com/contact",
+      "confidence": "medium",
+      "deliveryVerified": false
+    },
+    "offer": {
+      "suggestion": "Course-option explanation",
+      "approvalSource": null,
+      "price": null,
+      "approvedClaims": []
+    },
+    "followUps": [
+      {
+        "sequence": 2,
+        "body": "Hi Maya, a simple comparison could help visitors see who each course option suits. Would an outline be useful?"
+      },
+      {
+        "sequence": 3,
+        "body": "Hi Maya, happy to share that outline if it would help. Is comparing the course options something you are considering?"
+      }
+    ],
+    "unknowns": [
+      "No sending approval or conversation history is included."
+    ],
+    "fullReport": "Hand-authored synthetic contract example, not a live audit or generated model result. Existing GHL may support useful extensions. No price, claim, delivery or sending status is approved."
+  }
+]

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { promptDialog } from '../lib/dialog.mjs';
 import { marked } from 'marked';
 import { useEditor, useEditorState, EditorContent } from '@tiptap/react';
@@ -8,6 +8,7 @@ import { isTextSelection } from '@tiptap/core';
 import { BubbleMenu } from '@tiptap/react/menus';
 import { DragHandle } from '@tiptap/extension-drag-handle-react';
 import BlockInsertMenu from './BlockInsertMenu';
+import {pageWorkNode} from './bloomops/PageWorkNode';
 import { DatabaseViewWithView } from './DatabaseViewNode';
 import { EquationWithView } from './EquationNode';
 import StarterKit from '@tiptap/starter-kit';
@@ -18,12 +19,14 @@ import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
 import { TableKit } from '@tiptap/extension-table';
 import Highlight from '@tiptap/extension-highlight';
-import { Callout, Toggle, ToggleSummary, ToggleBody, Columns, Column } from '../lib/editor-extensions.mjs';
+import { Callout, Toggle, ToggleSummary, ToggleBody, Columns, Column, DatabaseView } from '../lib/editor-extensions.mjs';
 import { EmbedWithView } from './EmbedView';
 import { matchEmbed, isFacebookShare } from '../lib/embeds.mjs';
 import { Icon } from './Icons';
 
 import { toast } from '../lib/toast.mjs';
+import {pageLinkRows,pageLinkStarterKit} from '../lib/editor-page-links.mjs';
+import {canMoveDocumentBlock,moveDocumentBlock} from '../lib/editor-block-move.mjs';
 // Markdown paste, Obsidian-style: pasted plain text that carries md
 // structure (headings, lists, bold, fences, links) converts to rich blocks.
 function looksLikeMarkdown(text) {
@@ -328,13 +331,15 @@ async function resolveShareLink(url) {
 }
 
 export default function RichEditor({
-  value, onSave, placeholder, onReady,
+  value, onSave, placeholder, onReady, onChange, allowDatabaseViews = true, workViewContext = null, allowBlockMovement = false,
   // Notion-style inline triggers: "/" opens the block menu, "@" mentions a
   // prospect or another page. All optional — the editor works without them.
-  prospects = [], allPages = [], onOpenProspect, onOpenPage,
+  prospects = [], allPages = [], onOpenProspect, onOpenPage, pageLinkWorkspaceId = null,
 }) {
   const saveRef = useRef(onSave);
   saveRef.current = onSave;
+  const changeRef = useRef(onChange);
+  changeRef.current = onChange;
   const fileInputRef = useRef(null);
   const rootRef = useRef(null);
   // {left, top, range} for "/", {left, top, at} for "@" — caret-anchored.
@@ -345,12 +350,14 @@ export default function RichEditor({
     const c = view.coordsAtPos(from);
     const host = rootRef.current?.getBoundingClientRect();
     if (!host) return null;
-    return { left: Math.max(0, c.left - host.left), top: c.bottom - host.top };
+    const left = pageLinkWorkspaceId ? Math.min(c.left - host.left, Math.max(0, host.width - 260)) : c.left - host.left;
+    return { left: Math.max(0, left), top: c.bottom - host.top };
   }
+  const workExtension = useMemo(() => workViewContext ? pageWorkNode(workViewContext) : null, [workViewContext?.pageId, workViewContext?.workspaceId, workViewContext?.canReadWork]);
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
-      StarterKit,
+      pageLinkWorkspaceId ? pageLinkStarterKit : StarterKit,
       Placeholder.configure({ placeholder: placeholder || 'Write anything. Type "#" for a heading, "-" for a list. Paste images or YouTube links right in.' }),
       TaskList,
       TaskItem.configure({ nested: true }),
@@ -365,12 +372,16 @@ export default function RichEditor({
       Columns,
       Column,
       EmbedWithView,
-      DatabaseViewWithView,
+      workExtension || (allowDatabaseViews ? DatabaseViewWithView : DatabaseView),
       EquationWithView,
     ],
     content: toHtml(value),
+    onUpdate: ({ editor }) => { const html = editor.getHTML(); changeRef.current?.(html === '<p></p>' ? '' : html); },
     editorProps: {
       handleKeyDown: (view, event) => {
+        if(allowBlockMovement&&(event.ctrlKey||event.metaKey)&&event.shiftKey&&!event.altKey&&['ArrowUp','ArrowDown'].includes(event.key)){
+          event.preventDefault();moveDocumentBlock(view.state,event.key==='ArrowUp'?-1:1,tr=>view.dispatch(tr));return true;
+        }
         // "/" on an empty paragraph opens the block menu right at the caret
         // (the same menu the gutter + opens — one menu, two ways in). The
         // keystroke is consumed; the menu's own filter box takes the typing.
@@ -519,6 +530,9 @@ export default function RichEditor({
   }, []);
 
   const insertImage = () => fileInputRef.current?.click();
+  const blockMoves=useEditorState({editor,selector:({editor:current})=>({up:canMoveDocumentBlock(current?.state,-1),down:canMoveDocumentBlock(current?.state,1)})});
+  function moveBlock(direction){if(editor){moveDocumentBlock(editor.state,direction,tr=>editor.view.dispatch(tr));editor.commands.focus();}}
+
   const insertVideo = async () => {
     const url = await promptDialog({ title: 'Embed video', placeholder: 'Paste a YouTube link', confirmLabel: 'Embed' });
     if (url && url.trim()) editor?.chain().focus().setYoutubeVideo({ src: url.trim() }).run();
@@ -573,10 +587,13 @@ export default function RichEditor({
       }} className="relative rich-editor" onBlur={handleBlur}>
       <input type="file" accept="image/*" ref={fileInputRef} onChange={pickImage} className="hidden" />
 
+      {allowBlockMovement&&editor&&<div className="bo-page-block-tools" role="toolbar" aria-label="Move document block"><span>Move block</span><button type="button" aria-label="Move block up" title="Move block up (Ctrl/Cmd+Shift+Up)" disabled={!blockMoves?.up} onMouseDown={e=>e.preventDefault()} onClick={()=>moveBlock(-1)}><Icon name="chevron-up" size={18}/></button><button type="button" aria-label="Move block down" title="Move block down (Ctrl/Cmd+Shift+Down)" disabled={!blockMoves?.down} onMouseDown={e=>e.preventDefault()} onClick={()=>moveBlock(1)}><Icon name="chevron-down" size={18}/></button></div>}
       {/* Slash menu: the gutter's block menu, opened from the keyboard. */}
       {slash && editor && (
         <div className="absolute z-50" style={{ left: slash.left, top: slash.top }}>
           <BlockInsertMenu
+            allowDatabaseViews={workViewContext ? workViewContext.canReadWork : allowDatabaseViews}
+            databaseSource={workViewContext ? 'actions' : 'prospects'}
             editor={editor}
             pos={slash.range}
             tools={{ insertImage, insertVideo }}
@@ -589,6 +606,7 @@ export default function RichEditor({
           <MentionMenu
             prospects={prospects}
             pages={allPages}
+            workspaceId={pageLinkWorkspaceId}
             onClose={() => { setMention(null); editor.commands.focus(); }}
             onPick={(href, label) => {
               editor
@@ -652,6 +670,8 @@ export default function RichEditor({
             </span>
             {insert && (
               <BlockInsertMenu
+            allowDatabaseViews={workViewContext ? workViewContext.canReadWork : allowDatabaseViews}
+            databaseSource={workViewContext ? 'actions' : 'prospects'}
                 editor={editor}
                 pos={insert.pos}
                 above={insert.above}
@@ -695,15 +715,19 @@ export default function RichEditor({
 // The "@" menu: search prospects and workspace pages, insert a mention
 // link. Enter picks the highlighted row, arrows move, Esc closes. Kept
 // deliberately small — it is a picker, not a second command palette.
-function MentionMenu({ prospects, pages, onPick, onClose }) {
+function MentionMenu({ prospects, pages, workspaceId, onPick, onClose }) {
+  const listId = useId();
   const [q, setQ] = useState('');
   const [at, setAt] = useState(0);
   const inputRef = useRef(null);
   useEffect(() => { inputRef.current?.focus(); }, []);
+  useEffect(() => {
+    if (workspaceId) document.getElementById(`${listId}-${at}`)?.scrollIntoView({block: 'nearest'});
+  }, [at, q, workspaceId, listId]);
 
   const needle = q.trim().toLowerCase();
   const hit = (t) => String(t || '').toLowerCase().includes(needle);
-  const rows = [
+  const rows = workspaceId ? pageLinkRows(pages, workspaceId, q) : [
     ...prospects
       .filter((p) => !needle || hit(p.name) || hit(p.business_name) || hit(p.email))
       .slice(0, 6)
@@ -728,11 +752,17 @@ function MentionMenu({ prospects, pages, onPick, onClose }) {
 
   return (
     <div
-      className="absolute left-0 top-1 z-50 w-[260px] glass-panel !bg-panel p-1.5"
+      className={"absolute left-0 top-1 z-50 w-[260px] glass-panel !bg-panel p-1.5" + (workspaceId ? " bo-page-link-picker" : "")}
       onMouseDown={(e) => e.stopPropagation()}
     >
       <input
         ref={inputRef}
+        aria-label={workspaceId ? 'Find a page' : 'Mention a prospect or page'}
+        role={workspaceId ? 'combobox' : undefined}
+        aria-expanded={workspaceId ? true : undefined}
+        aria-controls={workspaceId ? listId : undefined}
+        aria-activedescendant={workspaceId && rows[at] ? `${listId}-${at}` : undefined}
+        aria-autocomplete={workspaceId ? 'list' : undefined}
         value={q}
         onChange={(e) => { setQ(e.target.value); setAt(0); }}
         onKeyDown={(e) => {
@@ -742,21 +772,25 @@ function MentionMenu({ prospects, pages, onPick, onClose }) {
           else if (e.key === 'Enter') {
             e.preventDefault();
             const r = rows[at];
-            if (r) onPick(r.href, `@${r.label}`);
+            if (r) onPick(r.href, workspaceId ? r.label : `@${r.label}`);
             else onClose();
           }
         }}
-        placeholder="Mention a prospect or page…"
+        placeholder={workspaceId ? "Search pages…" : "Mention a prospect or page…"}
         className="w-full mb-1 bg-input-bg border border-line rounded-[7px] px-2.5 py-1.5 text-[13px] text-ink placeholder:text-ink-3 focus:outline-none focus:border-rose"
       />
-      <div className="max-h-[260px] overflow-y-auto slim-scroll">
+      <div id={listId} role={workspaceId ? "listbox" : undefined} aria-label={workspaceId ? "Pages" : undefined} className="max-h-[260px] overflow-y-auto slim-scroll">
         {rows.length === 0 && (
           <div className="px-3 py-2 text-[12.5px] text-ink-3">No matches.</div>
         )}
         {rows.map((r, i) => (
           <button
             key={r.key}
-            onClick={() => onPick(r.href, `@${r.label}`)}
+            id={`${listId}-${i}`}
+            type="button"
+            role={workspaceId ? 'option' : undefined}
+            aria-selected={workspaceId ? i === at : undefined}
+            onClick={() => onPick(r.href, workspaceId ? r.label : `@${r.label}`)}
             onMouseEnter={() => setAt(i)}
             className={'flex items-center gap-2.5 w-full pl-3 pr-2 py-1.5 rounded-[7px] text-left text-[13px] transition ' + (
               i === at ? 'bg-hover-wash text-ink' : 'text-ink-2'

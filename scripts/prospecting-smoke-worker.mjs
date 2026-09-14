@@ -1,0 +1,68 @@
+import assert from 'node:assert/strict';
+import {drizzle} from 'drizzle-orm/d1';
+import * as schema from '../lib/bloomops/schema.mjs';
+import {loadActor} from '../lib/bloomops/authorization.mjs';
+import {resolveWorkspaceAccess} from '../lib/bloomops/membership.mjs';
+import {createProspectingWorkspace,listMyWorkspaces} from '../lib/bloomops/workspaces.mjs';
+import {createProspect,getProspect,listProspects,updateProspect} from '../lib/bloomops/prospects.mjs';
+import {legacyAppAllowed} from '../lib/workspace.mjs';
+export default {async fetch(request,env){
+ if(env.PROSPECTING_DISPOSABLE!=='local-only'||new URL(request.url).hostname!=='localhost')return new Response(null,{status:403});
+ const messages=[],check=(label,ok)=>{assert.ok(ok,label);messages.push(label);};
+ const run=(q,...p)=>env.DB.prepare(q).bind(...p).run(),all=async(q,...p)=>(await env.DB.prepare(q).bind(...p).all()).results;
+ try{
+  for(const migration of PROSPECTING_MIGRATIONS.slice(0,24))for(const q of migration)await run(q);
+  await run("INSERT INTO workspaces(id,name,slug) VALUES('original','Original workspace','ary'),('other','Other workspace','other')");
+  await run("INSERT INTO user(id,name,email,email_verified) VALUES('ary','Ary','ary@example.com',1),('stranger','Stranger','stranger@example.com',1)");
+  await run("INSERT INTO workspace_memberships(id,workspace_id,user_id,role,status) VALUES('m-ary','original','ary','admin','active')");
+  await run('CREATE TABLE prospects(id INTEGER PRIMARY KEY,workspace TEXT,audit TEXT)');await run("INSERT INTO prospects VALUES(1,'ary','Retained source audit')");
+  await run('CREATE TABLE settings(workspace TEXT,key TEXT,value TEXT)');await run("INSERT INTO settings VALUES('ary','voices','retained original voice settings')");
+  const original=JSON.stringify(await all('SELECT * FROM workspaces')),source=JSON.stringify(await all('SELECT * FROM prospects')),settings=JSON.stringify(await all('SELECT * FROM settings'));
+  await env.FILES.put('original/voice-fixture',new Uint8Array([1,3,5,7]));
+  for(const migration of PROSPECTING_MIGRATIONS.slice(24))for(const q of migration)await run(q);
+  check('populated upgrade preserves original workspaces',JSON.stringify((await all('SELECT * FROM workspaces')).map(({purpose,...row})=>row))===original);
+  const db=drizzle(env.DB,{schema}),access=await resolveWorkspaceAccess(db,'ary'),actor=await loadActor(db,access);
+  const input={name:'Fresh Prospecting',sourceWorkspaceId:'original',requestId:crypto.randomUUID()};
+  const results=await Promise.all([createProspectingWorkspace(db,{actor,input}),createProspectingWorkspace(db,{actor,input})]);
+  check('native concurrent creation is retry-safe',results.every(r=>r.ok)&&results[0].workspaceId===results[1].workspaceId);
+  const workspaceId=results[0].workspaceId,fresh=await resolveWorkspaceAccess(db,'ary',{workspaceId});
+  check('explicit selection reaches only its owner membership',fresh.membership.role==='owner'&&fresh.workspace.purpose==='prospecting');
+  check('unknown membership never gains workspace by email',await resolveWorkspaceAccess(db,'stranger',{workspaceId})===null);
+  check('old workspace stays accessible',legacyAppAllowed(access));check('fresh workspace cannot use legacy routes',!legacyAppAllowed(fresh));
+  check('chooser lists only own memberships',(await listMyWorkspaces(db,'ary')).length===2&&(await listMyWorkspaces(db,'stranger')).length===0);
+  check('fresh workspace has no inherited prospects',(await all('SELECT id FROM prospects WHERE workspace=?',fresh.workspace.slug)).length===0);
+  check('original prospects and voice settings unchanged',JSON.stringify(await all('SELECT * FROM prospects'))===source&&JSON.stringify(await all('SELECT * FROM settings'))===settings);
+  check('original stored object retained',JSON.stringify([...new Uint8Array(await(await env.FILES.get('original/voice-fixture')).arrayBuffer())])==='[1,3,5,7]');
+  for(const q of ["UPDATE workspaces SET purpose='operations' WHERE id=?","INSERT OR REPLACE INTO workspaces(id,name,slug,purpose) SELECT id,name,slug,'operations' FROM workspaces WHERE id=?","UPDATE workspace_creations SET initial_name='Forged' WHERE workspace_id=?","DELETE FROM workspace_creations WHERE workspace_id=?"]){await assert.rejects(()=>run(q,workspaceId));check('native workspace identity/receipt rewrite denied',true);}
+  const freshActor=await loadActor(db,fresh),prospectInput={workspaceId,requestId:crypto.randomUUID(),fields:{businessName:'Cedar 100%_',website:'https://example.com'}};
+  check('native new canonical list starts empty',(await listProspects(db,freshActor)).rows.length===0);
+  const created=await Promise.all([createProspect(db,{actor:freshActor,input:prospectInput}),createProspect(db,{actor:freshActor,input:prospectInput})]);
+  check('native prospect creation retry is one record',created.every(r=>r.ok)&&created[0].prospectId===created[1].prospectId);
+  const prospectId=created[0].prospectId;
+  check('native search escapes wildcards literally',(await listProspects(db,freshActor,{q:'%_'})).rows.length===1);
+  const patch={workspaceId,expectedRevision:1,fields:{fit:'strong',fitReason:'Relevant public course',publicEmail:'hello@example.com',evidenceDate:'2026-09-12',evidenceReport:'Observed the public page',evidenceLimitations:'No backend access',draftBody:'A manual draft'},sources:{publicEmail:{url:'https://example.com/contact',checked:true}}};
+  check('native atomic profile, provenance, report and draft save',(await updateProspect(db,{actor:freshActor,id:prospectId,input:patch})).ok);
+  let profile=await getProspect(db,freshActor,prospectId);
+  check('native aliased profile history maps correct actor and metadata',profile.profile.revision===2&&profile.activity.length===2&&profile.activity[0].actorName==='Ary'&&profile.activity.some(e=>e.metadata.fields.includes('fit')));
+  check('native field source check is retained',profile.sources.find(s=>s.fieldKey==='publicEmail').verification==='checked');
+  check('native stale revision cannot overwrite',(await updateProspect(db,{actor:freshActor,id:prospectId,input:patch})).reason==='conflict');
+  check('native original workspace cannot read new profile',await getProspect(db,actor,prospectId)===null);
+  check('native wrong workspace write denied',!(await updateProspect(db,{actor,id:prospectId,input:{...patch,workspaceId:'original'}})).ok);
+  const concurrent=await Promise.all(['hold','skip'].map(fit=>updateProspect(db,{actor:freshActor,id:prospectId,input:{workspaceId,expectedRevision:2,fields:{fit}}})));
+  check('native concurrent save has one winner',concurrent.filter(r=>r.ok).length===1&&concurrent.filter(r=>r.reason==='conflict').length===1);
+  await run("CREATE TRIGGER fixture_reject_profile BEFORE UPDATE ON bloomops_prospects BEGIN SELECT RAISE(ABORT,'fixture failure'); END");
+  await assert.rejects(()=>updateProspect(db,{actor:freshActor,id:prospectId,input:{workspaceId,expectedRevision:3,fields:{location:'Sydney'}}}));
+  profile=await getProspect(db,freshActor,prospectId);
+  check('native failed final write rolls back source and activity',profile.profile.revision===3&&profile.activity.length===3&&!profile.sources.some(s=>s.fieldKey==='location'));
+  await run('DROP TRIGGER fixture_reject_profile');
+  for(const q of ["UPDATE bloomops_prospects SET workspace_id='other',revision=revision+1",'INSERT OR REPLACE INTO bloomops_prospects SELECT * FROM bloomops_prospects',"UPDATE prospect_field_sources SET workspace_id='other'"]){await assert.rejects(()=>run(q));check('native profile/source identity rewrite denied',true);}
+  await run("UPDATE workspace_memberships SET role='team_member' WHERE id='m-ary'");
+  check('stale administrator cannot create after demotion',!(await createProspectingWorkspace(db,{actor,input:{...input,requestId:crypto.randomUUID()}})).ok);
+  await run("UPDATE workspace_memberships SET status='suspended' WHERE workspace_id=?",workspaceId);
+  check('native revoked owner cannot read or save profile',await getProspect(db,freshActor,prospectId)===null&&!(await updateProspect(db,{actor:freshActor,id:prospectId,input:{workspaceId,expectedRevision:3,fields:{fit:'strong'}}})).ok);
+  check('selected membership revocation has no fallback',await resolveWorkspaceAccess(db,'ary',{workspaceId})===null);
+  check('original membership still has its own scope',(await resolveWorkspaceAccess(db,'ary',{workspaceId:'original'})).membership.role==='team_member');
+  check('native foreign keys and integrity pass',!(await all('PRAGMA foreign_key_check')).length&&(await all('PRAGMA quick_check'))[0].quick_check==='ok');
+  return Response.json({messages,checks:messages.length});
+ }catch(error){return Response.json({messages,error:error.stack},{status:500});}
+}};

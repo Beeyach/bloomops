@@ -2,7 +2,7 @@
 
 ## Purpose
 
-BloomOps is a post-sale agency operations and client portal system.
+BloomOps is an agency operations and client portal system, with internal prospecting planned under the owner-approved [Prospecting and Pages roadmap](PROSPECTING_ROADMAP.md). The roadmap extends the original post-sale boundary without declaring unfinished features shipped.
 
 It is built first for Ellen's agency, with Ary as an administrator and Systems/GHL fulfillment provider. It should be simple enough for Ellen to operate without overwhelm, structured enough for a future project manager to run approximately ten clients, and polished enough for non-technical clients to use comfortably.
 
@@ -30,18 +30,15 @@ BloomOps owns:
 - client success signals
 - client portal
 
-BloomOps does not own:
+## Planned internal Prospecting area
 
-- lead sourcing
-- website auditing
-- prospect qualification
-- cold outreach
-- sales prospecting follow-up
-- Gmail reply sync for prospects
+The 13 September 2026 owner direction adds selected raw lead import, website auditing, qualification, outreach, Gmail reply tracking, optional approved follow-ups, Skills Library and Results inside BloomOps. Use its existing design system and a focused contextual sidebar. Pages remains a main application area.
 
-Those remain in Leadsthatbloom.
+Ary will start in a fresh workspace. Keep the original Leads That Bloom app or her original workspace intact; do not merge old prospect history into the new workspace. Only selected untouched raw prospect fields are exported/imported explicitly. Source records, old conversations and active schedules remain separate. Import does not send messages, enable automation or copy credentials.
 
-A future handoff may convert a won prospect into a BloomOps client, but that is not part of Release A.
+A deliberate same-workspace Convert to client action will link/create the canonical client, confirm services and start existing activation/onboarding. It preserves linked sales history and stops cold outreach. This is upcoming work, not a change to historical Release A acceptance.
+
+Preserve every voice recording. Video fixes, narration generation and video tests remain paused. Follow [PROSPECTING_ROADMAP.md](PROSPECTING_ROADMAP.md) for phase order, profile fields, skills, statistics, performance and acceptance criteria.
 
 ## Primary Users
 
@@ -78,6 +75,7 @@ Uses a calm portal with only relevant client-visible items.
 Target internal navigation:
 
 - Home
+- Prospecting (planned; contextual sidebar)
 - Clients
 - Onboarding
 - Work

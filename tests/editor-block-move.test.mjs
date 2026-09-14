@@ -1,0 +1,31 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {Schema} from '@tiptap/pm/model';
+import {EditorState,TextSelection,NodeSelection,AllSelection} from '@tiptap/pm/state';
+import {history,undo,redo} from '@tiptap/pm/history';
+import {canMoveDocumentBlock,moveDocumentBlock} from '../lib/editor-block-move.mjs';
+const schema=new Schema({nodes:{doc:{content:'block+'},paragraph:{group:'block',content:'text*'},box:{group:'block',content:'block+'},atom:{group:'block',atom:true},text:{}},marks:{strong:{}}});
+const p=text=>schema.node('paragraph',null,text?schema.text(text):null),doc=(...nodes)=>schema.node('doc',null,nodes);
+const state=(d,selection)=>EditorState.create({doc:d,selection,plugins:[history()]});
+const move=(s,direction)=>{let next=s;const result=moveDocumentBlock(s,direction,tr=>next=s.apply(tr));return {next,result};};
+test('up/down swaps whole document blocks without changing their text',()=>{const a=p('First'),b=p('Second'),c=p('Third'),d=doc(a,b,c),s=state(d,TextSelection.create(d,a.nodeSize+2));const down=move(s,1);assert.ok(down.result);assert.deepEqual(down.next.doc.toJSON(),doc(a,c,b).toJSON());assert.equal(down.next.selection.$from.parent.textContent,'Second');assert.equal(down.next.selection.$from.parentOffset,1);const up=move(down.next,-1);assert.deepEqual(up.next.doc.toJSON(),d.toJSON());});
+test('nested block content and marks move intact as a unit',()=>{const nested=schema.node('box',null,[schema.node('paragraph',null,schema.text('Strong',[schema.mark('strong')])),p('More')]),tail=p('After'),d=doc(nested,tail),s=state(d,TextSelection.create(d,3)),next=move(s,1).next;assert.deepEqual(next.doc.child(1).toJSON(),nested.toJSON());assert.equal(next.selection.$from.parent.textContent,'Strong');assert.equal(next.selection.$from.parentOffset,1);});
+test('forward and reverse text selections preserve their exact range',()=>{for(const reverse of [false,true]){const a=p('First'),b=p('Second'),d=doc(a,b),from=a.nodeSize+2,to=a.nodeSize+5,s=state(d,TextSelection.create(d,reverse?to:from,reverse?from:to)),next=move(s,-1).next;assert.equal(next.selection.anchor,s.selection.anchor-a.nodeSize);assert.equal(next.selection.head,s.selection.head-a.nodeSize);assert.equal(next.doc.textBetween(next.selection.from,next.selection.to),'eco');}});
+test('node selections remain selected after moving an atomic block',()=>{const a=p('First'),atom=schema.node('atom'),d=doc(a,atom),s=state(d,NodeSelection.create(d,a.nodeSize)),next=move(s,-1).next;assert.ok(next.selection instanceof NodeSelection);assert.equal(next.selection.from,0);assert.equal(next.selection.node.type.name,'atom');});
+test('boundary, invalid direction and multi-block selection leave the document unchanged',()=>{const a=p('First'),b=p('Second'),d=doc(a,b);for(const [selection,direction] of [[TextSelection.create(d,1),-1],[TextSelection.create(d,a.nodeSize+1),1],[TextSelection.create(d,1,a.nodeSize+2),1],[new AllSelection(d),1],[TextSelection.create(d,1),0]]){const s=state(d,selection),moved=move(s,direction);assert.equal(moved.result,false);assert.equal(moved.next,s);}assert.equal(canMoveDocumentBlock(null,1),false);});
+test('undo and redo preserve content and selection through movement',()=>{const a=p('First'),b=p('Second'),d=doc(a,b),s=state(d,TextSelection.create(d,a.nodeSize+2));let current=move(s,-1).next;assert.ok(undo(current,tr=>current=current.apply(tr)));assert.deepEqual(current.doc.toJSON(),d.toJSON());assert.deepEqual(current.selection.toJSON(),s.selection.toJSON());assert.ok(redo(current,tr=>current=current.apply(tr)));assert.deepEqual(current.doc.toJSON(),doc(b,a).toJSON());});
+test('checking availability never dispatches or changes state',()=>{const a=p('First'),b=p('Second'),d=doc(a,b),s=state(d,TextSelection.create(d,1));assert.equal(canMoveDocumentBlock(s,1),true);assert.equal(moveDocumentBlock(s,1),true);assert.deepEqual(s.doc.toJSON(),d.toJSON());});
+
+test('StarterKit gap cursor follows the same divider across unequal blocks in both directions',async()=>{
+ const {getSchema}=await import('@tiptap/core'),{default:StarterKit}=await import('@tiptap/starter-kit'),{GapCursor}=await import('@tiptap/pm/gapcursor');
+ const real=getSchema([StarterKit]),hr=()=>real.node('horizontalRule'),paragraph=real.node('paragraph',null,real.text('A longer neighboring block'));
+ const d=real.node('doc',null,[hr(),hr(),paragraph,hr()]);
+ let current=EditorState.create({doc:d,selection:new GapCursor(d.resolve(1)),plugins:[history()]});
+ assert.ok(GapCursor.valid(current.selection.$from));
+ current=move(current,1).next;
+ assert.equal(current.selection.from,1+paragraph.nodeSize);assert.equal(current.selection.$from.nodeAfter.type.name,'horizontalRule');
+ assert.equal(current.doc.child(1).type.name,'paragraph');
+ current=move(current,-1).next;
+ assert.equal(current.selection.from,1);assert.equal(current.selection.$from.nodeAfter.type.name,'horizontalRule');assert.deepEqual(current.doc.toJSON(),d.toJSON());
+ assert.ok(undo(current,tr=>current=current.apply(tr)));assert.ok(current.selection instanceof GapCursor);
+});

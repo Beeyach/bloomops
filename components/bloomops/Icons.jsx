@@ -4,6 +4,20 @@
 // on the server and in tests alike.
 
 const PATHS = {
+  send: <><path d="m22 2-7 20-4-9L2 9zM22 2 11 13"/></>,
+  search: <><circle cx="10" cy="10" r="6.5"/><path d="m15 15 6 6"/></>,
+  filter: <path d="M3 4h18l-7 8v7l-4 2v-9z"/>,
+  sort: <><path d="M7 3v18m-4-4 4 4 4-4M17 21V3m-4 4 4-4 4 4"/></>,
+  edit: <><path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 14z"/></>,
+  close: <path d="m6 6 12 12M6 18 18 6"/>,
+
+  table: <><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M10 4v16"/></>,
+  message: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
+  overview: <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><path d="M14 15h7M14 20h5"/></>,
+  history: <><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 6v6l4 2"/></>,
+  skills: <><path d="M12 5c-3-2-7-2-10-1v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1zM12 5v15"/></>,
+  copy: <><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V3H3v13h5"/></>,
+  prospecting: <><circle cx="10" cy="10" r="6.5"/><path d="m15 15 6 6M7.5 10h5M10 7.5v5"/></>,
   // Instagram geometry shared with the existing editor icon vocabulary.
   instagram: <><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></>,
   video: <><rect x="3" y="4" width="18" height="16" rx="3" /><path d="m10 8 6 4-6 4z" fill="currentColor" stroke="none" /></>,
@@ -13,6 +27,7 @@ const PATHS = {
   eye: <><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></>,
   lock: <><rect x="5" y="10" width="14" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" /></>,
   'shield-check': <><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z" /><path d="m8 12 3 3 5-6" /></>,
+  download: <><path d="M12 3v13m-5-5 5 5 5-5M4 16v4h16v-4" /></>,
   upload: <><path d="M12 16V3m-5 5 5-5 5 5M4 16v4h16v-4" /></>,
   calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 3v4m10-4v4M3 11h18" /></>,
   'external-link': <><path d="M14 3h7v7m0-7L10 14M10 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5" /></>,

@@ -169,6 +169,146 @@
       "when": 1789238789065,
       "tag": "0023_e3a_review_media",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
+      "when": 1789241650167,
+      "tag": "0024_p0_workspace_foundation",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "6",
+      "when": 1789243510350,
+      "tag": "0025_p1_prospect_profiles",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "6",
+      "when": 1789256018435,
+      "tag": "0026_p2b3_import_receipts",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "6",
+      "when": 1789271446125,
+      "tag": "0027_p2c2_skill_results",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "6",
+      "when": 1789273938448,
+      "tag": "0028_p3a_outreach_review",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "6",
+      "when": 1789276211706,
+      "tag": "0029_p3b_google_connection",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "6",
+      "when": 1789282671732,
+      "tag": "0030_p3c1_google_checks",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "6",
+      "when": 1789284536652,
+      "tag": "0031_p3c2_controlled_delivery",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "6",
+      "when": 1789289424196,
+      "tag": "0032_p3c3b_reply_review",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "6",
+      "when": 1789294428403,
+      "tag": "0033_p3c3d_delivery_identity",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "6",
+      "when": 1789300869208,
+      "tag": "0034_p3c3d3_saved_discovery",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "6",
+      "when": 1789306882569,
+      "tag": "0035_p3c3d4b_recovery_evidence",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "6",
+      "when": 1789313563024,
+      "tag": "0036_p3c3e4_report_evidence",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "6",
+      "when": 1789318552728,
+      "tag": "0037_p3c3f1_monitoring_checkpoint",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "6",
+      "when": 1789320590190,
+      "tag": "0038_p4a_workspace_pages",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "6",
+      "when": 1789322869424,
+      "tag": "0039_p4b_page_hierarchy",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "6",
+      "when": 1789325168379,
+      "tag": "0040_p4c_page_sharing",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "6",
+      "when": 1789327259550,
+      "tag": "0041_p4d_page_comments",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "6",
+      "when": 1789357629526,
+      "tag": "0042_p5b_prospect_conversion",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "6",
+      "when": 1789360878755,
+      "tag": "0043_prospect_sheet",
+      "breakpoints": true
     }
   ]
 }

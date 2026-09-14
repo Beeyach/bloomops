@@ -1,0 +1,27 @@
+{
+  "base": "https://staging.ops.gobloomwired.com",
+  "sha": "bbe828b",
+  "checks": [
+    "Reviewed commit is live",
+    "Staging environment and44 migrations are healthy",
+    "Deployed logo exactly matches approved bytes",
+    "Bloomsi browser title at 1440",
+    "Official sign-in logo loads at 1440",
+    "Readable sign-in without horizontal overflow at 1440",
+    "No browser exception at 1440",
+    "Signed-out prospect sheet remains gated at 1440",
+    "Bloomsi browser title at 390",
+    "Official sign-in logo loads at 390",
+    "Readable sign-in without horizontal overflow at 390",
+    "No browser exception at 390",
+    "Signed-out prospect sheet remains gated at 390",
+    "Bloomsi browser title at 320",
+    "Official sign-in logo loads at 320",
+    "Readable sign-in without horizontal overflow at 320",
+    "No browser exception at 320",
+    "Signed-out prospect sheet remains gated at 320",
+    "Signed-out data denied: /api/bloomops/prospecting/sheet",
+    "Signed-out data denied: /api/bloomops/prospecting/sample-csv"
+  ],
+  "limitations": "Signed-out live verification only; authenticated sheet/data behaviour covered by isolated acceptance. No real sign-in email or prospect mutation requested."
+}

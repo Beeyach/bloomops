@@ -93,27 +93,27 @@ const outcome = (d) => (d.kind === 'ok' ? `ok:${d.shell}` : d.kind === 'redirect
 
 // ── navigation metadata ──────────────────────────────────────────────────
 
-test('the internal navigation is the eleven PRODUCT_SPEC destinations, in order, with explicit labels and one path each', () => {
+test('the internal navigation is the twelve approved destinations, in order, with explicit labels and one path each', () => {
   assert.deepEqual(
     INTERNAL_NAV.map((i) => i.label),
-    ['Home', 'Clients', 'Onboarding', 'Work', 'Social', 'Ads', 'Systems', 'Pages', 'Team', 'Finance', 'Settings'],
+    ['Home', 'Prospecting', 'Clients', 'Onboarding', 'Work', 'Social', 'Ads', 'Systems', 'Pages', 'Team', 'Finance', 'Settings'],
   );
-  assert.deepEqual(INTERNAL_NAV.map((i) => i.href), ['/', '/clients', '/onboarding', '/work', '/social', '/ads', '/systems', '/pages', '/team', '/finance', '/settings']);
-  assert.equal(new Set(INTERNAL_NAV.map((i) => i.key)).size, 11);
+  assert.deepEqual(INTERNAL_NAV.map((i) => i.href), ['/', '/prospecting', '/clients', '/onboarding', '/work', '/social', '/ads', '/systems', '/pages', '/team', '/finance', '/settings']);
+  assert.equal(new Set(INTERNAL_NAV.map((i) => i.key)).size, 12);
   for (const item of INTERNAL_NAV) {
     assert.match(item.label, /^[A-Za-z ]+$/, `${item.key}: label is words, not emoji`);
     assert.ok(item.purpose.length > 20, `${item.key} says what it is for`);
     assert.ok(['now', 'later'].includes(item.availability), item.key);
     assert.ok(NAV_GROUPS.some((g) => g.key === item.group), `${item.key} belongs to a group`);
   }
-  assert.deepEqual(INTERNAL_NAV.filter((i) => i.availability === 'now').map((i) => i.key), ['home', 'clients', 'onboarding', 'work', 'social', 'systems', 'team', 'settings'], 'Release A areas, Work, Social and D1 Systems are live');
-  assert.equal(JSON.stringify(INTERNAL_NAV).match(/prospect|leads?that|outreach|gmail/i), null, 'no prospecting destination in BloomOps navigation');
-  assert.equal(navGroups().reduce((n, g) => n + g.items.length, 0), 11, 'every destination is in exactly one group');
+  assert.deepEqual(INTERNAL_NAV.filter((i) => i.availability === 'now').map((i) => i.key), ['home', 'prospecting', 'clients', 'onboarding', 'work', 'social', 'systems', 'pages', 'team', 'settings'], 'Release A areas, Work, Social, Systems and workspace Pages are live');
+  assert.equal(JSON.stringify(INTERNAL_NAV.map(({href})=>href)).match(/legacy|outreach|gmail/i), null, 'no inherited automation destination in BloomOps navigation');
+  assert.equal(navGroups().reduce((n, g) => n + g.items.length, 0), 12, 'every destination is in exactly one group');
 });
 
-test('the phone composition keeps every destination: four on the bar, seven behind More, none dropped', () => {
+test('the phone composition keeps every destination: four on the bar, eight behind More, none dropped', () => {
   assert.deepEqual(mobilePrimary().map((i) => i.key), ['home', 'clients', 'onboarding', 'team']);
-  assert.deepEqual(mobileMore().map((i) => i.key), ['work', 'social', 'ads', 'systems', 'pages', 'finance', 'settings']);
+  assert.deepEqual(mobileMore().map((i) => i.key), ['prospecting', 'work', 'social', 'ads', 'systems', 'pages', 'finance', 'settings']);
   assert.equal(mobilePrimary().length + mobileMore().length, INTERNAL_NAV.length);
 });
 
@@ -251,30 +251,30 @@ test('Home, Clients, and Onboarding read real state through the actor\'s own sco
 
 const shellProps = { workspace: { id: 'w', name: 'Agency A' }, user: { id: 'u', name: 'Ary Admin', email: 'admin@example.com' }, roleLabel: 'Admin' };
 
-test('the internal shell carries the whole navigation once per geometry, the workspace, the person, and no prospecting', () => {
+test('the internal shell carries the whole navigation once per geometry, the workspace, the person, and no inherited prospecting UI', () => {
   const html = render(InternalShell, shellProps, 'PAGE');
   assert.ok(html.includes('PAGE'));
   assert.equal((html.match(/aria-label="Main"/g) || []).length, 2, 'one sidebar navigation, one tab bar; the stylesheet shows one at a time');
   for (const item of INTERNAL_NAV) assert.ok(html.includes(`href="${item.href}"`), `${item.label} is reachable`);
   assert.ok(html.includes('Agency A') && html.includes('Ary Admin') && html.includes('Admin'));
-  assert.doesNotMatch(html, /prospect|Leads That Bloom|Search prospects|legacy/i);
+  assert.doesNotMatch(html, /Leads That Bloom|Search prospects|legacy/i);
   assert.ok(html.includes('id="main"') && html.includes('href="#main"'), 'a skip link to the main landmark');
   assert.ok(html.includes('aria-label="Workspace"'), 'the sidebar is a landmark');
   assert.doesNotMatch(html, /[\u{1F300}-\u{1FAFF}]/u, 'no emoji navigation');
 });
 
-test('the navigation marks exactly one destination current, and More holds the seven off-bar destinations', () => {
+test('the navigation marks exactly one destination current, and More holds the eight off-bar destinations', () => {
   const sidebar = render(NavList, { active: 'team' });
   assert.equal((sidebar.match(/aria-current="page"/g) || []).length, 1);
   assert.match(sidebar, /href="\/team"[^>]*aria-current="page"|aria-current="page"[^>]*href="\/team"/);
-  assert.equal((sidebar.match(/class="bo-nav-item"/g) || []).length, 11);
+  assert.equal((sidebar.match(/class="bo-nav-item"/g) || []).length, 12);
   assert.equal((render(NavList, { active: null }).match(/aria-current/g) || []).length, 0, 'an unknown route lights nothing');
   const bar = render(TabBar, { active: 'settings' });
   assert.equal((bar.match(/<a /g) || []).length, 4);
   assert.match(bar, /aria-expanded="false"/, 'More is a button that opens a dialog');
   assert.match(bar, /<button[^>]*aria-current="page"/, 'a destination behind More lights More');
   const sheet = render(MoreSheet, { active: 'settings', open: true, onClose: () => {} });
-  assert.equal((sheet.match(/class="bo-nav-item"/g) || []).length, 7);
+  assert.equal((sheet.match(/class="bo-nav-item"/g) || []).length, 8);
   assert.match(sheet, /role="dialog"[^>]*aria-modal="true"/);
   assert.equal((sheet.match(/aria-current="page"/g) || []).length, 1);
 });
@@ -314,8 +314,8 @@ test('Home tells the truth about zero, by scope, and maps every area with its av
   assert.match(some, /3 service engagements in delivery/);
   assert.match(some, /1 client with onboarding still open/);
   const map = render(AreaMap);
-  assert.equal((map.match(/Available now/g) || []).length, 7, 'Clients, Onboarding, Work, Social, Systems, Team, Settings');
-  assert.equal((map.match(/Not available yet/g) || []).length, 3, 'Ads, Pages, Finance');
+  assert.equal((map.match(/Available now/g) || []).length, 8, 'Clients, Onboarding, Work, Social, Systems, Pages, Team, Settings');
+  assert.equal((map.match(/Not available yet/g) || []).length, 2, 'Ads, Finance');
   assert.doesNotMatch(map, /Welcome back/i);
 });
 
@@ -390,8 +390,8 @@ test('the inherited application is no longer the root, and every shell page re-c
   };
   walk(new URL('app/(internal)', root).pathname, 'internal');
   walk(new URL('app/portal', root).pathname, 'portal');
-  assert.equal(pages.filter(([, a]) => a === 'internal').length, 27, 'eleven destinations, Client and Project create/detail, Action detail, Social Content pages, four Ads creative pages, GHL/Kajabi setup and one layout');
-  assert.equal(pages.filter(([, a]) => a === 'portal').length, 6, 'C6 adds the Content list and detail pages');
+  assert.equal(pages.filter(([, a]) => a === 'internal').length, 49, 'shell routes include mailbox review and workspace Pages');
+  assert.equal(pages.filter(([, a]) => a === 'portal').length, 9, 'P4C adds the shared Pages list, layout and document');
   for (const [file, area] of pages) {
     const text = readFileSync(file, 'utf8');
     assert.match(text, new RegExp(`requireShell\\('${area}'\\)`), `${file} resolves the ${area} shell itself`);
@@ -404,7 +404,7 @@ test('the inherited application is no longer the root, and every shell page re-c
 test('the front door still bounces anonymous callers from every new address', async () => {
   const { NextRequest } = await import('next/server');
   const { middleware } = await import('../middleware.js');
-  for (const path of ['/', '/clients', '/team', '/settings', '/settings/ghl-builds', '/settings/kajabi-builds', '/finance', '/portal', '/legacy', '/design', '/social/calendar']) {
+  for (const path of ['/', '/prospecting', '/clients', '/team', '/settings', '/settings/ghl-builds', '/settings/kajabi-builds', '/finance', '/portal', '/legacy', '/design', '/social/calendar']) {
     const r = await middleware(new NextRequest(`https://bloomops.example${path}`));
     assert.equal(r.status, 307, path);
     assert.equal(new URL(r.headers.get('location')).pathname, '/sign-in', path);

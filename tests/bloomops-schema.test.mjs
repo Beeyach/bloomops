@@ -57,14 +57,20 @@ test('a fresh database reaches the A2 schema from the committed migrations alone
   const expected = schema.BLOOMOPS_TABLES.map(getTableName).sort();
   const present = tableNames(db);
   for (const name of expected) assert.ok(present.includes(name), `missing table ${name}`);
-  assert.equal(expected.length, 45, 'E3A adds ordered review media evidence');
+  assert.equal(expected.length, 78, 'Prospect sheet adds CSV batch and row receipts');
   const extra = present.filter((n) => !expected.includes(n) && n !== 'sqlite_sequence');
   assert.deepEqual(extra, [], 'no unplanned tables');
 });
 
 test('migrations are additive and ordered, so applying them is deterministic', () => {
   const files = migrationFiles();
-  assert.equal(files.length, 24);
+  assert.equal(files.length, 44);
+  assert.equal(files[43].tag,'0043_prospect_sheet');
+  assert.equal(files[42].tag,'0042_p5b_prospect_conversion');
+  assert.equal(files[33].tag, '0033_p3c3d_delivery_identity');
+  assert.equal(files[34].tag, '0034_p3c3d3_saved_discovery');
+  assert.equal(files[31].tag, '0031_p3c2_controlled_delivery');
+  assert.equal(files[32].tag, '0032_p3c3b_reply_review');
   assert.equal(files[8].tag, '0008_b1_projects_core');
   assert.equal(files[9].tag, '0009_b2_milestones');
   assert.equal(files[10].tag, '0010_b3_actions_dependencies');
@@ -88,9 +94,16 @@ test('migrations are additive and ordered, so applying them is deterministic', (
     const sql = readFileSync(url, 'utf8');
     // E2A replaces exactly one insert guard in place; all historical trigger
     // names and every other destructive operation remain protected.
-    const replacements = {'0022_e2a_content_context':['content_items_social_service'], '0023_e3a_review_media':['content_review_revisions_insert_guard','content_approval_rounds_insert_guard']}[tag] || [];
+    const replacements = {'0037_p3c3f1_monitoring_checkpoint':['prospect_discovery_runs_kind_insert'], '0022_e2a_content_context':['content_items_social_service'], '0023_e3a_review_media':['content_review_revisions_insert_guard','content_approval_rounds_insert_guard']}[tag] || [];
     let withoutReplacement=sql;
     for(const name of replacements){withoutReplacement=withoutReplacement.replace(`DROP TRIGGER ${name};`,'');assert.ok(sql.includes(`CREATE TRIGGER ${name} BEFORE INSERT`));}
+    if(tag==='0041_p4d_page_comments'){
+      // SQLite must rebuild this leaf table to widen its CHECK. Copy every
+      // grant unchanged before replacing it; populated migration proof applies.
+      assert.match(sql,/INSERT INTO `__new_bloomops_page_grants`[\s\S]+SELECT [\s\S]+FROM `bloomops_page_grants`/);
+      assert.match(sql,/ALTER TABLE `__new_bloomops_page_grants` RENAME TO `bloomops_page_grants`/);
+      withoutReplacement=withoutReplacement.replace('DROP TABLE `bloomops_page_grants`;','');
+    }
     assert.doesNotMatch(withoutReplacement, /\bDROP\s+(TABLE|INDEX|TRIGGER)\b/i, 'No table/index/other trigger removal');
     if (tag === '0022_e2a_content_context') assert.match(sql, /CREATE TRIGGER content_items_social_service BEFORE INSERT ON content_items/);
     assert.doesNotMatch(sql, /bloomtrack|412a33ad|leadsthatbloom/i, 'no Leadsthatbloom names');

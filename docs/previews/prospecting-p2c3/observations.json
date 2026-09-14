@@ -1,0 +1,73 @@
+{
+  "observations": [
+    {
+      "targetUrl": "http://127.0.0.1:41409/",
+      "observedAt": "2026-09-13T04:18:32.241Z",
+      "interaction": "Waited for delayed programme content.",
+      "outcome": "observed",
+      "description": "The supported option includes a live question session; the delayed content rendered."
+    },
+    {
+      "targetUrl": "http://127.0.0.1:41409/",
+      "observedAt": "2026-09-13T04:18:32.245Z",
+      "interaction": "Compared the rendered page with its hidden placeholder.",
+      "outcome": "observed",
+      "description": "The placeholder is hidden and absent from visible page text; it is not a visitor-visible defect."
+    },
+    {
+      "targetUrl": "http://127.0.0.1:41409/guide.pdf",
+      "observedAt": "2026-09-13T04:18:32.295Z",
+      "interaction": "Clicked the public course-guide download.",
+      "outcome": "observed",
+      "description": "The PDF downloaded directly and completely. No opt-in form is needed for this intentional open resource."
+    },
+    {
+      "targetUrl": "http://127.0.0.1:41409/about",
+      "observedAt": "2026-09-13T04:18:32.857Z",
+      "interaction": "Opened About in a new tab and read the dated announcement.",
+      "outcome": "observed",
+      "description": "A cohort announcement dated 2026-09-13 is visible. The older footer does not establish abandonment."
+    },
+    {
+      "targetUrl": "http://127.0.0.1:41409/calendar",
+      "observedAt": "2026-09-13T04:18:32.898Z",
+      "interaction": "Opened the calendar dialog and inspected its iframe without selecting an appointment.",
+      "outcome": "observed",
+      "description": "The GoHighLevel calendar is visible in the popup iframe. Existing GHL is not a reason to skip this prospect; no booking or backend reminder was tested."
+    },
+    {
+      "targetUrl": "http://127.0.0.1:41409/contact",
+      "observedAt": "2026-09-13T04:18:33.118Z",
+      "interaction": "Read the public contact page after same-tab navigation.",
+      "outcome": "observed",
+      "description": "A public enquiries email and invitation to use direct messages are visible. Neither establishes delivery verification or a broken funnel."
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/calendar"
+    },
+    {
+      "method": "GET",
+      "path": "/guide.pdf"
+    },
+    {
+      "method": "GET",
+      "path": "/about"
+    },
+    {
+      "method": "GET",
+      "path": "/contact"
+    },
+    {
+      "method": "GET",
+      "path": "/unavailable"
+    }
+  ],
+  "fixtureOnly": true
+}
