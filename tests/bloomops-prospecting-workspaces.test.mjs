@@ -4,6 +4,7 @@ import {testAuth,run,one,all,APP_URL} from './_bloomops-db.mjs';
 import {getAccess,getActor} from '../lib/bloomops/access.mjs';
 import {createProspectingWorkspace,listMyWorkspaces} from '../lib/bloomops/workspaces.mjs';
 import {legacyAppAllowed} from '../lib/workspace.mjs';
+import {DEFAULT_DEPARTMENTS,DEFAULT_SERVICE_TYPES,ensureWorkspaceServiceCatalog} from '../lib/bloomops/service-catalog.mjs';
 import {selectedWorkspace} from '../lib/bloomops/workspace-selection.mjs';
 
 async function setup(context){
@@ -60,4 +61,23 @@ test('workspace purpose and creation provenance cannot be rewritten by replaceme
  for(const q of ["UPDATE workspaces SET purpose='prospecting' WHERE id='original'","INSERT OR REPLACE INTO workspaces(id,name,slug,purpose) VALUES('original','Changed','original','prospecting')","UPDATE workspace_creations SET initial_name='Changed'","DELETE FROM workspace_creations","INSERT OR REPLACE INTO workspace_creations SELECT * FROM workspace_creations"] )assert.throws(()=>run(t.raw,q));
  for(const role of ['project_manager','team_member','client'])assert.equal((await createProspectingWorkspace(t.db,{actor:{...t.actor,role},input:{...t.input,requestId:crypto.randomUUID()}})).ok,false);
  assert.equal((await createProspectingWorkspace(t.db,{actor:t.actor,input:{...t.input,sourceWorkspaceId:'other'}})).ok,false);
+});
+
+test('fresh catalogue matches canonical defaults, stays workspace-local and preserves retry customizations',async context=>{
+ const t=await setup(context);await ensureWorkspaceServiceCatalog(t.db,'original');
+ const original={departments:all(t.raw,"SELECT * FROM departments WHERE workspace_id='original'"),types:all(t.raw,"SELECT * FROM service_types WHERE workspace_id='original'")};
+ const [a,b]=await Promise.all([createProspectingWorkspace(t.db,{actor:t.actor,input:t.input}),createProspectingWorkspace(t.db,{actor:t.actor,input:t.input})]);assert.ok(a.ok&&b.ok);assert.equal(a.workspaceId,b.workspaceId);
+ assert.deepEqual(all(t.raw,'SELECT name,slug,position FROM departments WHERE workspace_id=? ORDER BY position',a.workspaceId).map(row=>({...row})),DEFAULT_DEPARTMENTS.map(({name,slug,position})=>({name,slug,position})));
+ assert.deepEqual(all(t.raw,'SELECT s.name,s.slug,d.slug department FROM service_types s JOIN departments d ON d.id=s.department_id AND d.workspace_id=s.workspace_id WHERE s.workspace_id=? ORDER BY s.slug',a.workspaceId).map(row=>({...row})),[...DEFAULT_SERVICE_TYPES].sort((a,b)=>a.slug.localeCompare(b.slug)));
+ assert.deepEqual(all(t.raw,"SELECT * FROM departments WHERE workspace_id='original'"),original.departments);assert.deepEqual(all(t.raw,"SELECT * FROM service_types WHERE workspace_id='original'"),original.types);
+ run(t.raw,"UPDATE service_types SET name='Custom GHL',active=0 WHERE workspace_id=? AND slug='ghl'",a.workspaceId);const before=all(t.raw,'SELECT * FROM service_types WHERE workspace_id=?',a.workspaceId);
+ assert.equal((await createProspectingWorkspace(t.db,{actor:t.actor,input:t.input})).unchanged,true);assert.deepEqual(all(t.raw,'SELECT * FROM service_types WHERE workspace_id=?',a.workspaceId),before);
+ for(const table of ['bloomops_clients','service_engagements','onboarding_instances'])assert.equal(one(t.raw,`SELECT count(*) n FROM ${table} WHERE workspace_id=?`,a.workspaceId).n,0);
+});
+test('catalogue failure rolls back the entire fresh workspace; revoked source creates no catalogue',async context=>{
+ const t=await setup(context);run(t.raw,"CREATE TRIGGER reject_fixture_catalog BEFORE INSERT ON service_types WHEN NEW.slug='kajabi' BEGIN SELECT RAISE(ABORT,'fixture catalogue failure'); END");
+ await assert.rejects(()=>createProspectingWorkspace(t.db,{actor:t.actor,input:t.input}),/fixture catalogue failure/);
+ assert.equal(one(t.raw,'SELECT count(*) n FROM workspaces').n,2);for(const table of ['departments','service_types','workspace_creations','activity_events'])assert.equal(one(t.raw,`SELECT count(*) n FROM ${table}`).n,0);
+ run(t.raw,'DROP TRIGGER reject_fixture_catalog');const batch=t.d1.batch;t.d1.batch=async statements=>{run(t.raw,"UPDATE workspace_memberships SET status='suspended' WHERE id='m-ary'");return batch(statements);};
+ assert.equal((await createProspectingWorkspace(t.db,{actor:t.actor,input:t.input})).ok,false);assert.equal(one(t.raw,'SELECT count(*) n FROM departments').n,0);assert.equal(one(t.raw,'SELECT count(*) n FROM service_types').n,0);
 });
