@@ -1,0 +1,487 @@
+{
+  "method": "Local built Worker, zero artificial D1 latency, same isolated fixture; seven rounds, two warmups; full destination plus two frames. Cold JS decoded bytes measured separately.",
+  "summary": [
+    {
+      "width": 1440,
+      "route": "Home",
+      "samples": 5,
+      "visibleMs": {
+        "median": 78.800048828125,
+        "p95": 96,
+        "min": 62.699951171875,
+        "max": 96
+      },
+      "requests": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "statements": [
+        11,
+        11,
+        11,
+        11,
+        11
+      ],
+      "invocations": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "Clients",
+      "samples": 5,
+      "visibleMs": {
+        "median": 62.5,
+        "p95": 62.699951171875,
+        "min": 61.900146484375,
+        "max": 62.699951171875
+      },
+      "requests": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "statements": [
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "invocations": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "Work",
+      "samples": 5,
+      "visibleMs": {
+        "median": 62.5,
+        "p95": 62.800048828125,
+        "min": 62.5,
+        "max": 62.800048828125
+      },
+      "requests": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "statements": [
+        7,
+        7,
+        7,
+        7,
+        7
+      ],
+      "invocations": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "width": 390,
+      "route": "Home",
+      "samples": 5,
+      "visibleMs": {
+        "median": 63.099853515625,
+        "p95": 63.39990234375,
+        "min": 63,
+        "max": 63.39990234375
+      },
+      "requests": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "statements": [
+        11,
+        11,
+        11,
+        11,
+        11
+      ],
+      "invocations": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "width": 390,
+      "route": "Clients",
+      "samples": 5,
+      "visibleMs": {
+        "median": 62.89990234375,
+        "p95": 63.39990234375,
+        "min": 62.7998046875,
+        "max": 63.39990234375
+      },
+      "requests": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "statements": [
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "invocations": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "width": 390,
+      "route": "Work",
+      "samples": 5,
+      "visibleMs": {
+        "median": 62.300048828125,
+        "p95": 62.5,
+        "min": 62,
+        "max": 62.5
+      },
+      "requests": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "statements": [
+        7,
+        7,
+        7,
+        7,
+        7
+      ],
+      "invocations": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    }
+  ],
+  "bundles": [
+    {
+      "width": 1440,
+      "route": "Home",
+      "scriptRequests": 10,
+      "scriptBytes": 390998,
+      "scripts": [
+        {
+          "path": "/_next/static/chunks/webpack-80bbd9d7d359d95b.js",
+          "bytes": 3745
+        },
+        {
+          "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js",
+          "bytes": 173025
+        },
+        {
+          "path": "/_next/static/chunks/6304-9baa05723bb5b01d.js",
+          "bytes": 11821
+        },
+        {
+          "path": "/_next/static/chunks/app/error-77c025bc651d93a3.js",
+          "bytes": 1541
+        },
+        {
+          "path": "/_next/static/chunks/main-app-217c84d7eba0880d.js",
+          "bytes": 527
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-77e8de0c2ace46b0.js",
+          "bytes": 1178
+        },
+        {
+          "path": "/_next/static/chunks/176-bab32583cced85ff.js",
+          "bytes": 8741
+        },
+        {
+          "path": "/_next/static/chunks/1255-623a1bc706ecd6cc.js",
+          "bytes": 174198
+        },
+        {
+          "path": "/_next/static/chunks/994-04d863e651c3fe6c.js",
+          "bytes": 9498
+        },
+        {
+          "path": "/_next/static/chunks/app/(internal)/layout-bc47348595d58c01.js",
+          "bytes": 6724
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "Clients",
+      "scriptRequests": 10,
+      "scriptBytes": 390998,
+      "scripts": [
+        {
+          "path": "/_next/static/chunks/webpack-80bbd9d7d359d95b.js",
+          "bytes": 3745
+        },
+        {
+          "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js",
+          "bytes": 173025
+        },
+        {
+          "path": "/_next/static/chunks/6304-9baa05723bb5b01d.js",
+          "bytes": 11821
+        },
+        {
+          "path": "/_next/static/chunks/app/error-77c025bc651d93a3.js",
+          "bytes": 1541
+        },
+        {
+          "path": "/_next/static/chunks/main-app-217c84d7eba0880d.js",
+          "bytes": 527
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-77e8de0c2ace46b0.js",
+          "bytes": 1178
+        },
+        {
+          "path": "/_next/static/chunks/176-bab32583cced85ff.js",
+          "bytes": 8741
+        },
+        {
+          "path": "/_next/static/chunks/1255-623a1bc706ecd6cc.js",
+          "bytes": 174198
+        },
+        {
+          "path": "/_next/static/chunks/994-04d863e651c3fe6c.js",
+          "bytes": 9498
+        },
+        {
+          "path": "/_next/static/chunks/app/(internal)/layout-bc47348595d58c01.js",
+          "bytes": 6724
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "Work",
+      "scriptRequests": 10,
+      "scriptBytes": 390998,
+      "scripts": [
+        {
+          "path": "/_next/static/chunks/webpack-80bbd9d7d359d95b.js",
+          "bytes": 3745
+        },
+        {
+          "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js",
+          "bytes": 173025
+        },
+        {
+          "path": "/_next/static/chunks/6304-9baa05723bb5b01d.js",
+          "bytes": 11821
+        },
+        {
+          "path": "/_next/static/chunks/app/error-77c025bc651d93a3.js",
+          "bytes": 1541
+        },
+        {
+          "path": "/_next/static/chunks/main-app-217c84d7eba0880d.js",
+          "bytes": 527
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-77e8de0c2ace46b0.js",
+          "bytes": 1178
+        },
+        {
+          "path": "/_next/static/chunks/176-bab32583cced85ff.js",
+          "bytes": 8741
+        },
+        {
+          "path": "/_next/static/chunks/1255-623a1bc706ecd6cc.js",
+          "bytes": 174198
+        },
+        {
+          "path": "/_next/static/chunks/app/(internal)/layout-bc47348595d58c01.js",
+          "bytes": 6724
+        },
+        {
+          "path": "/_next/static/chunks/994-04d863e651c3fe6c.js",
+          "bytes": 9498
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "route": "Home",
+      "scriptRequests": 10,
+      "scriptBytes": 390998,
+      "scripts": [
+        {
+          "path": "/_next/static/chunks/webpack-80bbd9d7d359d95b.js",
+          "bytes": 3745
+        },
+        {
+          "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js",
+          "bytes": 173025
+        },
+        {
+          "path": "/_next/static/chunks/6304-9baa05723bb5b01d.js",
+          "bytes": 11821
+        },
+        {
+          "path": "/_next/static/chunks/app/error-77c025bc651d93a3.js",
+          "bytes": 1541
+        },
+        {
+          "path": "/_next/static/chunks/main-app-217c84d7eba0880d.js",
+          "bytes": 527
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-77e8de0c2ace46b0.js",
+          "bytes": 1178
+        },
+        {
+          "path": "/_next/static/chunks/176-bab32583cced85ff.js",
+          "bytes": 8741
+        },
+        {
+          "path": "/_next/static/chunks/1255-623a1bc706ecd6cc.js",
+          "bytes": 174198
+        },
+        {
+          "path": "/_next/static/chunks/994-04d863e651c3fe6c.js",
+          "bytes": 9498
+        },
+        {
+          "path": "/_next/static/chunks/app/(internal)/layout-bc47348595d58c01.js",
+          "bytes": 6724
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "route": "Clients",
+      "scriptRequests": 10,
+      "scriptBytes": 390998,
+      "scripts": [
+        {
+          "path": "/_next/static/chunks/webpack-80bbd9d7d359d95b.js",
+          "bytes": 3745
+        },
+        {
+          "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js",
+          "bytes": 173025
+        },
+        {
+          "path": "/_next/static/chunks/6304-9baa05723bb5b01d.js",
+          "bytes": 11821
+        },
+        {
+          "path": "/_next/static/chunks/app/error-77c025bc651d93a3.js",
+          "bytes": 1541
+        },
+        {
+          "path": "/_next/static/chunks/main-app-217c84d7eba0880d.js",
+          "bytes": 527
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-77e8de0c2ace46b0.js",
+          "bytes": 1178
+        },
+        {
+          "path": "/_next/static/chunks/176-bab32583cced85ff.js",
+          "bytes": 8741
+        },
+        {
+          "path": "/_next/static/chunks/1255-623a1bc706ecd6cc.js",
+          "bytes": 174198
+        },
+        {
+          "path": "/_next/static/chunks/994-04d863e651c3fe6c.js",
+          "bytes": 9498
+        },
+        {
+          "path": "/_next/static/chunks/app/(internal)/layout-bc47348595d58c01.js",
+          "bytes": 6724
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "route": "Work",
+      "scriptRequests": 10,
+      "scriptBytes": 390998,
+      "scripts": [
+        {
+          "path": "/_next/static/chunks/webpack-80bbd9d7d359d95b.js",
+          "bytes": 3745
+        },
+        {
+          "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js",
+          "bytes": 173025
+        },
+        {
+          "path": "/_next/static/chunks/6304-9baa05723bb5b01d.js",
+          "bytes": 11821
+        },
+        {
+          "path": "/_next/static/chunks/app/error-77c025bc651d93a3.js",
+          "bytes": 1541
+        },
+        {
+          "path": "/_next/static/chunks/main-app-217c84d7eba0880d.js",
+          "bytes": 527
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-77e8de0c2ace46b0.js",
+          "bytes": 1178
+        },
+        {
+          "path": "/_next/static/chunks/176-bab32583cced85ff.js",
+          "bytes": 8741
+        },
+        {
+          "path": "/_next/static/chunks/1255-623a1bc706ecd6cc.js",
+          "bytes": 174198
+        },
+        {
+          "path": "/_next/static/chunks/994-04d863e651c3fe6c.js",
+          "bytes": 9498
+        },
+        {
+          "path": "/_next/static/chunks/app/(internal)/layout-bc47348595d58c01.js",
+          "bytes": 6724
+        }
+      ]
+    }
+  ]
+}

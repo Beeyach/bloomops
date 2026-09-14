@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "Native Page recovery stays within D1 binding limits",
+    "Delayed save shows Saving state",
+    "Input during a delayed save serializes into the next revision",
+    "Confirmed save preserves another writers newer source copy",
+    "Quota failure retains recovered input and its original source",
+    "Save remains usable after browser storage failure",
+    "Ten-copy cap keeps the verified source and mounted recovered input",
+    "Confirmed save at the cap retires only its verified source",
+    "Actual workspace switch invalidates mounted Page input and preserves its copy",
+    "Bound recovery is refused in the other selected workspace",
+    "Returning to original workspace permits explicit recovery",
+    "Late recovery response after pagehide cannot reopen the editor",
+    "Actual logout clears modern copies and invalidates the other editor",
+    "Logout also clears legacy copies in the other active tab",
+    "Signed-out Page reload requires sign-in",
+    "Disposed writers cannot recreate cleared page copies",
+    "No provider egress"
+  ]
+}
