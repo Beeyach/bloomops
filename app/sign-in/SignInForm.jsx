@@ -42,7 +42,7 @@ export default function SignInForm({ next = '/', buttonLabel = 'Email me a sign-
           Check your email
         </h2>
         <p className="bo-body">
-          If <span className="bo-strong">{email.trim()}</span> belongs to a BloomOps workspace, a sign-in link is on its way. It works once and expires in 15 minutes.
+          If <span className="bo-strong">{email.trim()}</span> belongs to a Bloomsi workspace, a sign-in link is on its way. It works once and expires in 15 minutes.
         </p>
         <Button variant="ghost" onClick={() => setSent(false)} style={{ marginTop: 16, marginLeft: -16 }}>
           Use a different address

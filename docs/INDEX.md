@@ -19,7 +19,7 @@ For every implementation session:
 - `RELEASE_C.md` — closed Social scope and C1–C7 history
 - `RELEASE_D.md` — closed Systems-only release and D1–D7 sequence
 - `RELEASE_E.md` — Ads boundaries and E1–E5 sequence; `phases/E2.md` and `phases/E2B.md` record accepted internal creative production; `phases/E3.md` and `phases/E3A.md` route approval/media work; E3A is closed on `618e18f`; E3B activation contract is next
-- `PROSPECTING_ROADMAP.md` — approved P0–P5 scope; `phases/P0_P1.md` owns the active fresh-workspace/profile slice
+- `PROSPECTING_ROADMAP.md` — approved P0–P5 scope; `phases/P0_P1.md` records the accepted fresh-workspace/profile slice; `phases/P2.md` owns accepted raw imports/receipts and manual skills/context export; structured result review/application is accepted; controlled audit journey acceptance is complete; `phases/P3.md` owns sender identity/content review and the P3B Google connection/timing preview and P3C1 connection reliability/P3C2 controlled delivery, with three separately authorized tests received and sender/paragraph presentation accepted, followed by P3C3 exact-thread reply/stop handling
 - `ROADMAP.md` — later releases and sequencing
 - `DESIGN_SYSTEM.md` — Bloomlab-derived visual language, tokens, component behavior, accessibility, and BloomOps adaptation rules
 - `DESIGN_CHECKLIST.md` — per-screen visual QA and responsive/accessibility acceptance checklist
@@ -30,7 +30,9 @@ Do not automatically load every planning document into context.
 
 ## Current Build
 
-**Active owner-directed task: Prospecting P0/P1**, isolated branch `feat/prospecting-p0-p1` from `618e18f`. P0/P1 is complete in [draft PR #60](https://github.com/Bloomwired/bloomops/pull/60), with [visual preview](previews/prospecting-p1/README.md). See [P0/P1 contract](phases/P0_P1.md) and [BUILD_STATE](BUILD_STATE.md) for verification; nothing is merged or deployed. Ads E3B is deferred, not completed. The following entries retain the accepted release history.
+**Active owner-directed phase: P3**, following locally accepted P2 on `feat/prospecting-p2-eligibility`. [P3](phases/P3.md) records confirmed Google Workspace/hello@bloomwired.io, P3A sender/draft/content approval/Overview and P3B connection/timing preview. [Google setup](GOOGLE_CONNECTION_SETUP.md) records verified local consent/refresh and the still-disabled controlled test gate. [P3C2 preview](previews/prospecting-p3c2/README.md) records accepted local delivery/recovery verification; Google accepted two separately authorized tests; the owner confirmed receipt and visible compact sign-off but requested restored paragraph spacing. The subsequently authorized spaced test was accepted once and the owner replied perfect; presentation is accepted and test sending remains disabled. [P3A preview](previews/prospecting-p3a/README.md) records actual local captures and verification; [BUILD_STATE](BUILD_STATE.md) owns current review acceptance. P1 remains draft PR #60 at `67b94eb`; subsequent work is local/uncommitted and undeployed. Full P3–P5 remain unfinished; Ads E3B is deferred. The following entries retain accepted release history.
+P3C3B live reply acceptance now passes: one exact-thread incoming observation and durable hold. [P3C3C preview](previews/prospecting-p3c3c/README.md) records recipient protection across duplicate prospects, with52 focused,20 native and51 browser checks passing; independent Sol High review is accepted. The owner’s standing direction removes repeated approval prompts for necessary current test-conversation checks. Broader discovery/recovery and scheduling/Results remain unfinished; see BUILD_STATE.
+
 
 Release E — Ads is underway; E1, E2 and [E3A](phases/E3A.md) are closed on verified `618e18f`, with 24 migrations. The first unfinished task is E3B’s activation contract under [E3](phases/E3.md). See [RELEASE_E](RELEASE_E.md) and [BUILD_STATE](BUILD_STATE.md).
 
@@ -118,3 +120,37 @@ Use the current phase file identified above and let it tell the coding agent whi
 - Product/domain documents contain durable planning truth.
 - Do not duplicate large specs across phase files if a canonical planning document already owns that truth.
 - When architecture changes by explicit user decision, update the canonical document first, then any affected phase files.
+
+P3C3D1 verified returned delivery identity is accepted locally:121 focused,24 native D1 and51 browser checks, final build, additive0033 fresh/repeat/populated migration proof and one Sol High review pass. See [BUILD_STATE](BUILD_STATE.md), the [P3 contract](phases/P3.md) and [identity model](DOMAIN_MODEL.md#verified-provider-identities-p3c3d1-local-implementation). Next is bounded broader discovery against registered identities; no new mailbox read or send was activated.
+
+P3C3D2 bounded history/metadata discovery is accepted locally:128 distinct focused tests, both real workerd readers, final build and one Sol High review plus its focused correction re-review. It matches registered returned identities across threads, with conservative unresolved cursor behavior. No route or mailbox monitoring is enabled. Next is durable discovery progress/recovery holds and explicit bootstrap coverage; see [BUILD_STATE](BUILD_STATE.md) and [P3](phases/P3.md).
+
+P3C3D3 saved discovery progress and recovery holds are accepted locally:183 focused tests,22 native D1 checks, additive0034 fresh/repeat/populated migration proof, Worker build and one Sol High review pass. Startup remains explicitly unverified and empty checks cannot remove holds. Next is historical coverage and gap recovery; no route/job or live mailbox access is enabled. See [BUILD_STATE](BUILD_STATE.md), [P3](phases/P3.md) and the [saved discovery model](DOMAIN_MODEL.md#saved-discovery-runs-p3c3d3-local-implementation).
+
+P3C3D4A historical metadata collection is accepted locally:130 focused tests, both affected real workerd readers, final Worker build, preservation checks and one Sol High review pass. No schema/UI/route or live access changed. Collection returns matched and unassigned proposals without claiming coverage or advancing a cursor. Next is guarded durable recovery and history catch-up; see [BUILD_STATE](BUILD_STATE.md), [P3](phases/P3.md) and [collection proposals](DOMAIN_MODEL.md#historical-collection-proposals-p3c3d4a).
+
+P3C3D4B saved recovery evidence is accepted locally:174 focused tests,29 native D1 checks including100 targets/80 evidence records, additive0035 migration proofs, final build and one Sol High review. Recovery preserves operational cursors and holds. Next is the local mailbox review surface; [BUILD_STATE](BUILD_STATE.md) owns evidence.
+
+P3C3D4C mailbox review is accepted locally:43 focused tests,61 browser checks plus2 mobile-control checks, final build, preservation and one Sol High review with its focused correction re-review. [Visual preview](previews/prospecting-p3c3d4c/README.md). No migration or live collection; [BUILD_STATE](BUILD_STATE.md) records the next live scope boundary.
+
+P3C3D4D prerequisites are live-verified: the existing connection and three exact owner test threads, three registered identities, prior reply/hold preserved. Broader mailbox collection remains pending the owner's scope decision; see [BUILD_STATE](BUILD_STATE.md). No new implementation or migration.
+
+P3C3D4D approved live mailbox collection is verified:4 messages read,1 matched reply/0 unassigned,catch-up complete,8 browser checks. Coverage remains unverified and all test conversations held. Existing preview flags remain disabled; [BUILD_STATE](BUILD_STATE.md) records evidence and next local delivery-status scope.
+
+P3C3E1 delivery-status field parsing is accepted locally:139 focused tests, syntax/preservation, and one Sol High review with its focused correction re-review. No application caller, provider reader or automatic bounce classification. Next is bounded MIME extraction and exact-message/recipient association; [BUILD_STATE](BUILD_STATE.md) owns current evidence.
+
+P3C3E2 MIME extraction and exact accepted-message/recipient association are accepted locally:277 focused tests, Worker build/preservation and one Sol High review (72 independent association tests). No provider/caller/persistence or automatic verdict. Next agent-owned code is bounded exact-candidate retrieval; see [BUILD_STATE](BUILD_STATE.md).
+
+P3C3E3 exact saved-report provider retrieval is accepted locally:303 distinct focused checks including real workerd, preservation and one Sol High review (97 independent tests). No app caller/persistence/live access or automatic verdict. Next agent-owned code is guarded durable report evidence; see [BUILD_STATE](BUILD_STATE.md).
+
+P3C3E4 guarded durable report evidence is accepted locally:230 focused tests,19 native D1 checks, Worker build/migration/preservation and one Sol High review (152 independent tests). Migration0036 adds two empty local tables. No UI/route/live access or automatic verdict. Next agent-owned code is the report review surface; see [BUILD_STATE](BUILD_STATE.md).
+
+P3C3E5 Delivery reports review is accepted locally:72 focused tests,61 browser checks, final build/preservation and one Sol High review (11 independent tests). [Visual preview](previews/prospecting-p3c3e5/README.md). No migration/live action; next local task is report-linked human stop review. See [BUILD_STATE](BUILD_STATE.md).
+
+P3C3E6 report-linked human stop review is accepted locally:101 focused tests,52 built-browser checks, final build/preservation and one Sol High review with its focused correction re-review (41 independent tests). [Visual preview](previews/prospecting-p3c3e6/README.md). No migration/live action; next local task is mailbox coverage/hold resolution. See [BUILD_STATE](BUILD_STATE.md).
+
+P3C3F1 reviewed monitoring checkpoint is accepted locally after one Sol High review and focused correction re-review. [Visual preview](previews/prospecting-p3c3f1/README.md). Additive migration0037 preserves existing records; no provider request or hold release. [BUILD_STATE](BUILD_STATE.md) owns evidence. Further email work is paused by owner; P4 Pages is active.
+
+P4 Pages is active by owner direction; P3 email is paused. [P4 contract](phases/P4.md) scopes the first create/edit/save slice and later hierarchy/sharing work. [Pages inventory](PAGES_SYSTEM.md) identifies the reused editor and remaining legacy seams. BUILD_STATE owns acceptance.
+
+P4A workspace Pages is accepted locally:103 focused checks,45 built-browser checks, final build/migration/preservation and one Sol High review. [Visual preview](previews/pages-p4a/README.md). Next is P4B hierarchy/search; email remains paused. See [BUILD_STATE](BUILD_STATE.md).

@@ -13,7 +13,7 @@ export default async function WorkspacesPage({searchParams}){
  const rawPage=Number((await searchParams).page||1),page=Number.isInteger(rawPage)&&rawPage>=1&&rawPage<=10000?rawPage:1;
  const workspaces=await listMyWorkspaces(access.db,access.user.id,{page});
  return <div className="bo-root"><main id="main" className="bo-workspace-page">
-  <Button href={access.membership?.role==='client'?'/portal':'/'} variant="ghost" icon="chevron-left">Back to BloomOps</Button>
+  <Button href={access.membership?.role==='client'?'/portal':'/'} variant="ghost" icon="chevron-left">Back to Bloomsi</Button>
   <PageHeader title="Your workspaces" subtitle="Choose where you want to work."/>
   <p className="bo-body">Signed in as <strong>{access.user.name}</strong></p><p className="bo-small">{access.user.email}</p>
   <WorkspaceChooser workspaces={workspaces.slice(0,100).map(w=>({...w,roleLabel:ROLE_LABELS[w.role]}))} currentId={access.workspace?.id||null} canCreate={['owner','admin'].includes(access.membership?.role)}/>

@@ -1,0 +1,56 @@
+#!/usr/bin/env node
+// P3C1 built Worker on8788 with an isolated local DB/R2 and intercepted egress.
+// The test harness must never point at the owner's connected preview on8787.
+import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+import {createHash,randomUUID} from 'node:crypto';
+import {createRequire} from 'node:module';
+import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
+import {resolve,join} from 'node:path';
+import {sealGoogle} from '../lib/bloomops/prospect-google-provider.mjs';
+const base='http://localhost:8788',out=resolve(process.argv[2]),configPath=resolve(process.argv[3]),config=JSON.parse(readFileSync(configPath,'utf8'));
+assert.equal(config.d1_databases[0].database_id,'bloomops-p3c1-isolated');assert.equal(config.r2_buckets[0].bucket_name,'bloomops-files-p3c1-isolated');
+const health=await(await fetch(base+'/api/health')).json();assert.equal(health.environment,'development');assert.equal(health.auth.mail,'r2-dev');assert.equal(health.ok,true);mkdirSync(out,{recursive:true});
+const cli=args=>execFileSync('npx',['--no-install','wrangler',...args,'--config',configPath],{encoding:'utf8',stdio:['ignore','pipe','pipe']});
+const query=sql=>JSON.parse(cli(['d1','execute','DB','--local','--command',sql,'--json']))[0].results;
+const lit=s=>"'"+String(s).replaceAll("'","''")+"'",prefix='p3c1-'+randomUUID().slice(0,8),ws=prefix+'-workspace',user=prefix+'-owner',member=prefix+'-member',email=user+'@example.test';
+const box=async(refresh='synthetic-original',expired=false)=>sealGoogle({key:'12'.repeat(32)},ws+':tokens',JSON.stringify({accessToken:'synthetic-access',refreshToken:refresh,expiresAt:new Date(expired?0:Date.now()+3600000).toISOString()}));
+query(`INSERT INTO user(id,name,email,email_verified) VALUES(${lit(user)},'Local Owner',${lit(email)},1);INSERT INTO workspaces(id,slug,name,purpose) VALUES(${lit(ws)},${lit(ws)},'Garden Prospecting','prospecting');INSERT INTO workspace_memberships(id,workspace_id,user_id,role,status) VALUES(${lit(member)},${lit(ws)},${lit(user)},'owner','active');INSERT INTO prospect_senders(workspace_id,provider,email,display_name,revision,updated_by_membership_id) VALUES(${lit(ws)},'google_workspace','hello@example.test','Ary',1,${lit(member)});INSERT INTO prospect_google_connections(workspace_id,revision,sender_email,account_email,token_box,granted_scope,active,authorized_by_membership_id,authorizer_updated_at) SELECT ${lit(ws)},1,'hello@example.test','hello@example.test',${lit(await box())},'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send',1,id,updated_at FROM workspace_memberships WHERE id=${lit(member)};`);
+const {chromium}=createRequire('/tmp/bloomops-pilot-tools/package.json')('playwright'),browser=await chromium.launch({headless:true,args:['--no-sandbox']}),checks=[];
+const check=(name,pass)=>{console.log((pass?'ok ':'FAIL ')+name);assert.ok(pass,name);checks.push(name);};let page;
+try{
+ const context=await browser.newContext(),errors=[];page=await context.newPage();page.on('dialog',d=>d.accept());page.on('pageerror',()=>errors.push('runtime error'));await page.emulateMedia({reducedMotion:'reduce'});
+ const headers={origin:base};assert.equal((await context.request.post(base+'/api/auth/sign-in/magic-link',{headers,data:{email,callbackURL:'/prospecting/sender'}})).status(),200);
+ const raw=cli(['r2','object','get',`bloomops-files-p3c1-isolated/dev-mail/${createHash('sha256').update(email).digest('hex')}.json`,'--local','--pipe']);await page.goto(JSON.parse(raw.slice(raw.indexOf('{'))).text.match(/https?:\/\/\S+/)[0],{waitUntil:'networkidle'});
+ const post=(path,data)=>context.request.post(base+'/api/bloomops/prospecting/'+path,{headers,data}),get=async()=> (await context.request.get(base+'/api/bloomops/prospecting/google/status')).json();
+ const seed=async(refresh='synthetic-original',expired=false)=>query(`UPDATE prospect_google_connections SET token_box=${lit(await box(refresh,expired))},revision=revision+1,check_id=NULL,check_expires_at=NULL,checked_at=NULL,check_status='unchecked' WHERE workspace_id=${lit(ws)};`);
+ const reload=()=>page.goto(base+'/prospecting/sender',{waitUntil:'networkidle'}),button=()=>page.getByRole('button',{name:'Check connection',exact:true});
+ const perform=async()=>{const response=page.waitForResponse(r=>r.url()===base+'/api/bloomops/prospecting/google/check'&&r.request().method()==='POST');await button().click();const result=await(await response).json();await page.waitForResponse('**/api/bloomops/prospecting/google/status');await page.waitForTimeout(80);return result;};
+ check('Stored connection is available without a provider request on GET',(await get()).connected&&query(`SELECT count(*) n FROM activity_events WHERE workspace_id=${lit(ws)} AND event_type='PROSPECT_GOOGLE_CHECKED'`)[0].n===0);
+ for(const width of [1440,1024,768,390,320]){await page.setViewportSize({width,height:1000});await page.locator('.bo-google-connection').scrollIntoViewIfNeeded();check(`Connection actions fit ${width}px`,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));check(`Check target remains readable at ${width}px`,await button().evaluate(n=>n.getBoundingClientRect().height>=44));await page.screenshot({path:join(out,`connection-${width}.png`),fullPage:false});}
+ await seed('synthetic-original',true);await reload();check('Expired access shows Check needed',(await get()).status==='check-needed'&&await page.getByText('Check needed',{exact:true}).isVisible());
+ await button().focus();const keyboardResponse=page.waitForResponse('**/api/bloomops/prospecting/google/check');await page.keyboard.press('Enter');await keyboardResponse;await page.getByText('Google connection checked. Sending is still off.',{exact:true}).waitFor();
+ check('Keyboard check refreshes and focuses successful result',await page.getByText('Google connection checked. Sending is still off.',{exact:true}).evaluate(n=>document.activeElement===n));
+ check('Native callback check persisted one healthy event',query(`SELECT count(*) n FROM activity_events WHERE workspace_id=${lit(ws)} AND event_type='PROSPECT_GOOGLE_CHECKED'`)[0].n===1&&(await get()).connected);
+ check('Status never exposes credentials',!Object.keys(await get()).some(k=>/token|secret|verifier|checkId|memberUpdatedAt/i.test(k)));
+ await page.screenshot({path:join(out,'checked-320.png'),fullPage:false});
+ const tooSoon=await perform();check('Cooldown prevents immediate repeated provider checks',Boolean(tooSoon.conflict)&&await page.getByRole('alert').filter({hasText:'already running or was just completed'}).isVisible());
+ const data=await get(),payload={workspaceId:ws,senderRevision:data.senderRevision,expectedRevision:data.revision};
+ check('Cross-origin check is rejected',(await context.request.post(base+'/api/bloomops/prospecting/google/check',{headers:{origin:'https://foreign.example'},data:payload})).status()===403);
+ check('Oversized check body is rejected',(await post('google/check',{...payload,padding:'x'.repeat(5000)})).status()===400);
+ check('Stale connection revision is rejected',(await post('google/check',{...payload,expectedRevision:0})).status()===409);
+ check('Wrong workspace input is rejected',(await post('google/check',{...payload,workspaceId:'foreign-workspace'})).status()===409);
+ await seed('synthetic-transient');await reload();const priorBox=query(`SELECT token_box FROM prospect_google_connections WHERE workspace_id=${lit(ws)}`)[0].token_box;check('Transient provider failure has retryable status',(await perform()).status==='temporary'&&(await get()).status==='check-failed');
+ check('Transient provider failure preserves encrypted grant',query(`SELECT token_box FROM prospect_google_connections WHERE workspace_id=${lit(ws)}`)[0].token_box===priorBox);
+ check('Phone error receives focus above bottom navigation',await page.locator('.bo-google-connection [role="alert"]').evaluate(n=>document.activeElement===n&&n.getBoundingClientRect().bottom<=(document.querySelector('.bo-tabbar')?.getBoundingClientRect().top||innerHeight)));
+ await page.screenshot({path:join(out,'temporary-error-320.png'),fullPage:false});
+ await seed();await reload();check('Retry after provider recovery restores verified access',(await perform()).status==='healthy'&&(await get()).connected);
+ await seed('synthetic-revoked');await reload();check('Invalid refresh grant displays reconnect requirement',(await perform()).status==='reconnect'&&(await get()).status==='reconnect'&&await page.getByRole('button',{name:'Connect Google',exact:true}).isVisible());check('Revoked access cannot repeatedly refresh',await button().count()===0);
+ await page.setViewportSize({width:1440,height:1000});await page.screenshot({path:join(out,'reconnect-1440.png'),fullPage:false});
+ await seed();await reload();await page.getByLabel(/^Sender name/).fill('Unsaved name');check('Unsaved sender edits disable connection checks',await button().isDisabled());await reload();
+ let release,entered;const gate=new Promise(r=>release=r),pending=new Promise(r=>entered=r);await page.route('**/api/bloomops/prospecting/google/check',async route=>{entered();await gate;await route.continue();});await button().click();await pending;check('In-flight check prevents duplicate clicks',await button().isDisabled());await page.getByLabel(/^Sender name/).fill('New unsaved name');const done=page.waitForResponse('**/api/bloomops/prospecting/google/check');release();await done;await page.waitForTimeout(150);check('A late success is not presented for unsaved sender edits',await page.getByText('Google connection checked. Sending is still off.',{exact:true}).count()===0);await page.unroute('**/api/bloomops/prospecting/google/check');
+ await reload();const current=await get(),currentPayload={workspaceId:ws,senderRevision:current.senderRevision,expectedRevision:current.revision};
+ for(const role of ['project_manager','team_member','client']){query(`UPDATE workspace_memberships SET role=${lit(role)} WHERE id=${lit(member)}`);check('Check denied for '+role,[403,404].includes((await post('google/check',currentPayload)).status()));}query(`UPDATE workspace_memberships SET role='owner',status='suspended' WHERE id=${lit(member)}`);check('Check denied for suspended owner',[401,403,404].includes((await post('google/check',currentPayload)).status()));
+ query(`UPDATE workspace_memberships SET status='active' WHERE id=${lit(member)}`);await reload();check('No send or legacy account created',query('SELECT count(*) n FROM send_events')[0].n===0&&query('SELECT count(*) n FROM gmail_accounts')[0].n===0);check('Native foreign keys clean',query('PRAGMA foreign_key_check').length===0);check('No browser runtime errors',errors.length===0);
+ writeFileSync(join(out,'browser-results.json'),JSON.stringify({passed:checks.length,checks,workspaceId:ws,widths:[1440,1024,768,390,320],provider:'isolated workerd outbound interception; no external provider calls',nativeD1:true},null,2)+'\n');
+}catch{if(page)await page.screenshot({path:join(out,'failure.png'),fullPage:false});console.error('Isolated browser verification failed. Inspect the safe check log and screenshot.');process.exitCode=1;}finally{await browser.close();}

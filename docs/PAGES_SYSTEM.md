@@ -1,5 +1,7 @@
 # BloomOps Pages System
 
+P4 is now active after the owner paused further email work. The following inventory records the inherited implementation; current integration acceptance lives in [P4](phases/P4.md) and [BUILD_STATE](BUILD_STATE.md).
+
 This document captures the existing Notion-like Pages implementation in `Beeyach/bloomtrack-pro` that BloomOps intends to preserve and adapt.
 
 The actual code will be imported into BloomOps by A0 because BloomOps is seeded from the tracked `bloomtrack-pro` snapshot. Do not rebuild this system from scratch unless repository evidence shows a specific part must be replaced.
@@ -335,3 +337,19 @@ When BloomOps reaches its Pages/SOP phase:
 The target is not a full Notion clone.
 
 The target is BloomOps Pages: a strong freeform document system embedded inside a structured agency operations product.
+
+
+## P4A implementation inventory
+
+- RichEditor already implements slash insertion, rich marks/headings/lists/tasks, block controls, tables, callouts/toggles/columns, images, equations and embeds. Reuse its parser and serializer. The earlier description of gutter-only insertion is historical; the current code handles `/` on an empty paragraph.
+- PageView owns legacy `/api/pages/:id/share` calls, inherited emoji selection and blur-save feedback. Main Bloomsi Pages composes RichEditor in its own wrapper instead of mounting those legacy services.
+- Page tree helpers preserve depth/cycle/orphan invariants and remain ready for later hierarchy integration. P4A starts with the canonical page list and individual documents.
+- A new opt-in change callback supports autosave without changing legacy blur-save defaults. Main Pages disables legacy operational view insertion/readers while retaining DatabaseView block configuration through the existing static node. Existing source documents and public routes are untouched.
+- The new save session serializes revisions and retains a user/workspace/page-scoped tab recovery draft through failure or conflict. Another revision cannot be silently overwritten. Recovery is local to that browser tab, not a cross-device backup.
+- Main Pages authoring initially uses current Owner/Admin membership, a canonical `bloomops_pages` table and guarded BloomOps APIs. Portal/public sharing, client visibility, attachments, copies/imports and operational projections are not enabled by this first slice.
+
+## P4I canonical Work projections
+
+Main Bloomsi Pages now uses the existing DatabaseView node with `source=actions`. Shared Table/Board/Calendar/Gallery presenters are extracted into `DatabaseViewPresentation.jsx`; legacy source fetching, writes and defaults remain in DatabaseViewNode. Bloomsi stores only layout/status-filter configuration, and explicitly loads up to50 currently authorized Actions through its page-scoped endpoint. The final query intersects Page permission with canonical Action access. Client page sharing does not reveal internal Actions. No operational writes are offered in the block.
+
+Page editors save configuration through existing document revisions; readers use temporary controls and an isolated sanitized-markup host. The reader loads no TipTap runtime. Phone calendars show a date list; other source/invalid block configurations remain unavailable. Public token routes and existing legacy documents are unchanged.

@@ -1,0 +1,126 @@
+{
+  "rows": [
+    {
+      "width": 1440,
+      "route": "Home",
+      "beforeMedian": 212.10009765625,
+      "afterMedian": 212,
+      "beforeP95": 228.5,
+      "afterP95": 228.400146484375,
+      "requests": 1,
+      "statements": 15,
+      "calls": 3
+    },
+    {
+      "width": 1440,
+      "route": "Clients",
+      "beforeMedian": 161.60009765625,
+      "afterMedian": 146.300048828125,
+      "beforeP95": 163,
+      "afterP95": 162.900146484375,
+      "requests": 1,
+      "statements": 3,
+      "calls": 2
+    },
+    {
+      "width": 1440,
+      "route": "Work",
+      "beforeMedian": 212.199951171875,
+      "afterMedian": 212.599853515625,
+      "beforeP95": 245,
+      "afterP95": 229.099853515625,
+      "requests": 1,
+      "statements": 7,
+      "calls": 2
+    },
+    {
+      "width": 390,
+      "route": "Home",
+      "beforeMedian": 213.099853515625,
+      "afterMedian": 213.10009765625,
+      "beforeP95": 213.199951171875,
+      "afterP95": 213.2001953125,
+      "requests": 1,
+      "statements": 15,
+      "calls": 3
+    },
+    {
+      "width": 390,
+      "route": "Clients",
+      "beforeMedian": 146.800048828125,
+      "afterMedian": 146.89990234375,
+      "beforeP95": 163.699951171875,
+      "afterP95": 163.5,
+      "requests": 1,
+      "statements": 3,
+      "calls": 2
+    },
+    {
+      "width": 390,
+      "route": "Work",
+      "beforeMedian": 212.699951171875,
+      "afterMedian": 212.5,
+      "beforeP95": 229.199951171875,
+      "afterP95": 229.099853515625,
+      "requests": 1,
+      "statements": 7,
+      "calls": 2
+    }
+  ],
+  "bundles": [
+    {
+      "width": 1440,
+      "route": "Home",
+      "before": 388457,
+      "after": 388810,
+      "delta": 353,
+      "beforeRequests": 10,
+      "afterRequests": 10
+    },
+    {
+      "width": 1440,
+      "route": "Clients",
+      "before": 388457,
+      "after": 388810,
+      "delta": 353,
+      "beforeRequests": 10,
+      "afterRequests": 10
+    },
+    {
+      "width": 1440,
+      "route": "Work",
+      "before": 388457,
+      "after": 388810,
+      "delta": 353,
+      "beforeRequests": 10,
+      "afterRequests": 10
+    },
+    {
+      "width": 390,
+      "route": "Home",
+      "before": 388457,
+      "after": 388810,
+      "delta": 353,
+      "beforeRequests": 10,
+      "afterRequests": 10
+    },
+    {
+      "width": 390,
+      "route": "Clients",
+      "before": 388457,
+      "after": 388810,
+      "delta": 353,
+      "beforeRequests": 10,
+      "afterRequests": 10
+    },
+    {
+      "width": 390,
+      "route": "Work",
+      "before": 388457,
+      "after": 388810,
+      "delta": 353,
+      "beforeRequests": 10,
+      "afterRequests": 10
+    }
+  ]
+}

@@ -204,7 +204,7 @@ export function Notice({ tone = 'info', children, className = '', role = null })
 // An area that exists in the product's map but does no work yet: its
 // purpose, what will live in it, and the plain statement that nothing
 // here is live. No sample records, no counts, no controls.
-export function AreaPreview({ title, purpose, items = [], note = 'This area is part of a later BloomOps release. Nothing here is live yet.' }) {
+export function AreaPreview({ title, purpose, items = [], note = 'This area is part of a later Bloomsi release. Nothing here is live yet.' }) {
   return (
     <>
       <PageHeader title={title} subtitle={purpose} />

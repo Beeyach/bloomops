@@ -54,7 +54,7 @@ export default async function InvitePage({ params }) {
     return (
       <AuthShell
         title={`Join ${workspace.name}`}
-        lead={`You have been invited to join ${workspace.name} on BloomOps as ${roleLabel}. Sign in with the invited email address to accept.`}
+        lead={`You have been invited to join ${workspace.name} on Bloomsi as ${roleLabel}. Sign in with the invited email address to accept.`}
       >
         <SignInForm next={`/invite/${token}`} buttonLabel="Email me a link to accept" />
       </AuthShell>

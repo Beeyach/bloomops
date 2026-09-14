@@ -1,3 +1,4 @@
+import BrandLogo from './BrandLogo';
 import AccountMenu from './AccountMenu';
 import ShellHosts from './ShellHosts';
 import PortalContentNav from './PortalContentNav';
@@ -9,7 +10,7 @@ import PortalContentNav from './PortalContentNav';
 // person; the page underneath is calm and short. Portal destinations
 // (Content, Projects, Files) join here only when the features behind them
 // exist and apply to this client.
-export default function PortalShell({ workspace, user, hasContent = false, children }) {
+export default function PortalShell({ workspace, user, hasContent = false, hasPages = false, children }) {
   return (
     <div className="bo-root bo-portal">
       <a className="bo-skip" href="#main">
@@ -17,9 +18,7 @@ export default function PortalShell({ workspace, user, hasContent = false, child
       </a>
       <header className="bo-topbar">
         <div className="bo-topbar-title">
-          <span className="bo-mark" aria-hidden="true">
-            {String(workspace.name || 'B').trim().charAt(0).toUpperCase()}
-          </span>
+          <BrandLogo />
           <div style={{ minWidth: 0 }}>
             <div className="bo-workspace-name">{workspace.name}</div>
             <div className="bo-workspace-sub">Client portal</div>
@@ -27,7 +26,7 @@ export default function PortalShell({ workspace, user, hasContent = false, child
         </div>
         <AccountMenu name={user.name} email={user.email} roleLabel="Client" workspaceName={workspace.name} placement="down" compact />
       </header>
-      {hasContent && <PortalContentNav />}
+      {(hasContent||hasPages)&&<PortalContentNav hasContent={hasContent} hasPages={hasPages}/>}
       <main id="main" className="bo-portal-page" tabIndex={-1}>
         {children}
       </main>

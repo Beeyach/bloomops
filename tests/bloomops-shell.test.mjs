@@ -106,7 +106,7 @@ test('the internal navigation is the twelve approved destinations, in order, wit
     assert.ok(['now', 'later'].includes(item.availability), item.key);
     assert.ok(NAV_GROUPS.some((g) => g.key === item.group), `${item.key} belongs to a group`);
   }
-  assert.deepEqual(INTERNAL_NAV.filter((i) => i.availability === 'now').map((i) => i.key), ['home', 'prospecting', 'clients', 'onboarding', 'work', 'social', 'systems', 'team', 'settings'], 'Release A areas, Work, Social and D1 Systems are live');
+  assert.deepEqual(INTERNAL_NAV.filter((i) => i.availability === 'now').map((i) => i.key), ['home', 'prospecting', 'clients', 'onboarding', 'work', 'social', 'systems', 'pages', 'team', 'settings'], 'Release A areas, Work, Social, Systems and workspace Pages are live');
   assert.equal(JSON.stringify(INTERNAL_NAV.map(({href})=>href)).match(/legacy|outreach|gmail/i), null, 'no inherited automation destination in BloomOps navigation');
   assert.equal(navGroups().reduce((n, g) => n + g.items.length, 0), 12, 'every destination is in exactly one group');
 });
@@ -314,8 +314,8 @@ test('Home tells the truth about zero, by scope, and maps every area with its av
   assert.match(some, /3 service engagements in delivery/);
   assert.match(some, /1 client with onboarding still open/);
   const map = render(AreaMap);
-  assert.equal((map.match(/Available now/g) || []).length, 7, 'Clients, Onboarding, Work, Social, Systems, Team, Settings');
-  assert.equal((map.match(/Not available yet/g) || []).length, 3, 'Ads, Pages, Finance');
+  assert.equal((map.match(/Available now/g) || []).length, 8, 'Clients, Onboarding, Work, Social, Systems, Pages, Team, Settings');
+  assert.equal((map.match(/Not available yet/g) || []).length, 2, 'Ads, Finance');
   assert.doesNotMatch(map, /Welcome back/i);
 });
 
@@ -359,9 +359,9 @@ test('the Team rows offer only the actions the server would accept, and never a 
   assert.match(form, /type="email"/);
 });
 
-test('the signed-out frame is BloomOps and keeps the anchors the deploy verifier reads', () => {
+test('the signed-out frame is Bloomsi and keeps the anchors the deploy verifier reads', () => {
   const html = render(AuthShell, { title: 'Sign in', lead: 'Lead', footer: 'Foot' }, 'BODY');
-  assert.ok(html.includes('BloomOps') && html.includes('<h1 class="bo-display">Sign in</h1>') && html.includes('BODY') && html.includes('Foot'));
+  assert.ok(html.includes('alt="Bloomsi"') && html.includes('<h1 class="bo-display">Sign in</h1>') && html.includes('BODY') && html.includes('Foot'));
   assert.doesNotMatch(html, /glass-panel|font-logo|Leads That Bloom/);
   assert.match(src('app/sign-in/SignInForm.jsx'), /id: 'sign-in-email'/, 'the verifier looks for the sign-in field by id');
   assert.match(src('app/sign-in/page.jsx'), /Sign-in is not set up/);
@@ -390,8 +390,8 @@ test('the inherited application is no longer the root, and every shell page re-c
   };
   walk(new URL('app/(internal)', root).pathname, 'internal');
   walk(new URL('app/portal', root).pathname, 'portal');
-  assert.equal(pages.filter(([, a]) => a === 'internal').length, 31, 'twelve destinations plus Prospecting list/create/detail/layout alongside, Client and Project create/detail, Action detail, Social Content pages, four Ads creative pages, GHL/Kajabi setup and one layout');
-  assert.equal(pages.filter(([, a]) => a === 'portal').length, 6, 'C6 adds the Content list and detail pages');
+  assert.equal(pages.filter(([, a]) => a === 'internal').length, 49, 'shell routes include mailbox review and workspace Pages');
+  assert.equal(pages.filter(([, a]) => a === 'portal').length, 9, 'P4C adds the shared Pages list, layout and document');
   for (const [file, area] of pages) {
     const text = readFileSync(file, 'utf8');
     assert.match(text, new RegExp(`requireShell\\('${area}'\\)`), `${file} resolves the ${area} shell itself`);

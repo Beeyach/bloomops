@@ -98,7 +98,7 @@ export default async function DesignGalleryPage({ searchParams }) {
   return (
     <div className="bo-root">
       <main id="main" className="bo-page">
-        <PageHeader title="Design gallery" subtitle="The BloomOps primitives introduced in A5, in every state, for review at 1440, 1024, 768, 390, and 320." />
+        <PageHeader title="Design gallery" subtitle="The Bloomsi primitives introduced in A5, in every state, for review at 1440, 1024, 768, 390, and 320." />
         <nav className="bo-gallery-nav" aria-label="Sections">
           <a href="/design" aria-current={only ? undefined : 'page'}>
             All

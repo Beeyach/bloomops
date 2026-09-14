@@ -332,27 +332,35 @@ html:has(.bo-root) {
   max-width: 760px;
 }
 
-/* Workspace identity in the sidebar head: a small mark, then the name. */
-.bo-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--bo-r-md);
-  background: var(--bo-ink);
-  color: var(--bo-snow);
-  font-family: var(--bo-font-display);
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+/* The owner's original PNG has a large transparent canvas. This viewport
+   retains 34+ source pixels of clear space around the complete artwork;
+   the image itself is never cropped, recoloured or replaced. */
+.bo-brand-logo {
+  display: block;
+  position: relative;
+  width: 160px;
+  max-width: 100%;
+  aspect-ratio: 1800 / 610;
+  overflow: hidden;
   flex-shrink: 0;
 }
-.bo-mark-lg {
-  width: 44px;
-  height: 44px;
-  font-size: 21px;
-  border-radius: var(--bo-r-lg);
+.bo-brand-logo img {
+  position: absolute;
+  width: 120.666667%;
+  max-width: none;
+  height: auto;
+  left: -10.5%;
+  top: -58.852459%;
 }
+.bo-brand-logo-large { width: 220px; }
+.bo-sidebar-head {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--bo-s2);
+  padding: var(--bo-s4);
+}
+.bo-sidebar-head .bo-workspace-text { width: 100%; min-width: 0; }
+.bo-topbar-title .bo-brand-logo { width: 112px; }
 .bo-workspace-name {
   font-family: var(--bo-font-display);
   font-size: 16px;
@@ -550,10 +558,8 @@ html:has(.bo-root) {
   .bo-shell {
     grid-template-columns: var(--bo-rail) minmax(0, 1fr);
   }
-  .bo-sidebar-head {
-    justify-content: center;
-    padding: var(--bo-s3) var(--bo-s2) var(--bo-s2);
-  }
+  .bo-sidebar-head { display: none; }
+  .bo-topbar-internal { display: flex; }
   .bo-sidebar-head .bo-workspace-text {
     display: none;
   }
@@ -619,11 +625,11 @@ html:has(.bo-root) {
   }
 }
 
+@media (min-width: 1024px) {
+  .bo-topbar-internal { display: none; }
+}
 @media (min-width: 768px) {
-  .bo-topbar-internal,
-  .bo-tabbar {
-    display: none;
-  }
+  .bo-tabbar { display: none; }
 }
 
 /* ── Account menu ───────────────────────────────────────────────────── */

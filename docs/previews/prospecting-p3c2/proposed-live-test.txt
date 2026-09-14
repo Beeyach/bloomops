@@ -1,0 +1,8 @@
+OWNER AUTHORIZED — Google accepted once on 2026-09-13T08:06:31.349Z; owner confirmed receipt
+From: Ary <hello@bloomwired.io>
+To: aryannelombres@gmail.com
+Subject: Bloomsi controlled delivery check
+
+This is a controlled test of Bloomsi email delivery. No reply or action is needed.
+
+Ary

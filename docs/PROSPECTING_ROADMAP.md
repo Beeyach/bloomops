@@ -1,6 +1,6 @@
 # Prospecting and Pages build roadmap
 
-Owner direction recorded 13 September 2026. **Scope and phase contracts.** P0/P1 is implemented, locally verified and independently reviewed on the implementation branch; it has not been merged or deployed. P2 onward remains planned. [BUILD_STATE.md](BUILD_STATE.md) owns the current delivery state.
+Owner direction recorded 13 September 2026. **Scope and phase contracts.** P0/P1 is implemented, locally verified and independently reviewed on the implementation branch; it has not been merged or deployed. P2A source eligibility and all P2B selected export/preview/import receipts are implemented and accepted locally; P2C manual skills, structured result round trip and controlled journey acceptance are also accepted locally. P3A sender identity/content review and a saved-draft Overview are implemented locally; P3B connection/timing preview is implemented locally with real local consent verified and P3C1 refresh/revocation checks accepted locally. P3C2 controlled introduction receipts, guarded local sending and exact-message recovery are accepted with synthetic tests; Google accepted two separately owner-authorized tests to aryannelombres@gmail.com; the owner confirmed receipt and visible compact sign-off, but requested restored paragraph spacing. The subsequently authorized spaced test was accepted once and the owner replied perfect; sender presentation is accepted. Test sending is disabled again. P3C3A is accepted; P3C3B saved thread checks, conservative holds, human stop evidence and Overview conversations are implemented and locally verified, with independent review accepted. Normal preview checks are disabled; the owner-authorized live check returned unresolved and saved a hold. The separately authorized diagnostic identified a returned/submitted RFC-ID mismatch; a local compatibility fix is verified and independently reviewed; live verification remains pending. Live verification now succeeds with one reply observation and durable hold. P3C3C recipient protection across duplicate prospects and P3C3D1 immutable verified provider identity registration are locally verified and independently reviewed. P3C3D2 bounded metadata discovery against registered identities is also locally verified and independently reviewed. P3C3D3 saved discovery runs, immutable snapshots and conservative coverage holds are locally verified and independently reviewed. Startup saves an unverified baseline. P3C3D4A bounded historical metadata collection is locally verified and independently reviewed, with matched observations and separate unassigned proposals. P3C3D4B guarded recovery evidence and explicit history catch-up results are locally verified and independently reviewed. P3C3D4C current-account mailbox review is locally verified and independently reviewed, including empty-workspace navigation and final read-authority/account guards. The three existing test conversations now have live-verified identities under P3C3D4D; the separately owner-approved broader mailbox collection is now verified (4 messages,1 matched reply,0 unassigned,catch-up complete). P3C3E1 bounded delivery-status fields, P3C3E2 MIME extraction/exact-message association, P3C3E3 bounded exact-candidate provider retrieval P3C3E4 guarded durable report evidence and P3C3E5 current-account report review and P3C3E6 report-linked human stop review are locally verified and independently reviewed; P3C3F1 reviewed monitoring checkpoint is also locally accepted. The owner has paused further email work and moved the active phase to P4 Pages. P4A workspace page creation, rich editing, serial autosave and tab-local recovery are now locally accepted and independently reviewed; P4B nested navigation, child creation, safe independent movement/reordering and title search are also locally accepted and independently reviewed. P4C inline SVG icons and named page/subpage sharing are locally accepted and independently reviewed. P4D document discussions and comment-only access are also locally accepted and independently reviewed. P4E authenticated reader formatting, inline raster images and bounded equations are locally accepted after focused review fixes. P4F keyboard/touch block movement is locally accepted after a focused gap-cursor fix and re-review. P4G native authorized page links is locally accepted and independently reviewed. P4H retained file-link/compatibility and controlled navigation acceptance is complete locally and independently reviewed. P4I canonical linked Work views is now locally accepted. Mailbox coverage/hold resolution remains unfinished. Verified historical coverage remains unfinished. No ongoing live broad-mailbox access is enabled. See BUILD_STATE. Full P3 delivery/replies/Results and P4/P5 remain unfinished. [BUILD_STATE.md](BUILD_STATE.md) owns the current delivery state. P4I canonical read-only linked Work views are now locally accepted with independent review; P4 core acceptance is recorded below; P5A read-only conversion preflight and P5B durable conversion are also locally accepted with independent review. P5C explicit onboarding initiation and repair is next. The Prospecting table/filter/status redesign awaits the owner's separate plan.
 
 BloomOps will combine internal prospecting, client operations and Pages in one application. It supplies the design, shell, identity and permission model. Reuse useful Leads That Bloom functionality selectively; do not embed its entire application or reproduce its crowded interface.
 
@@ -122,29 +122,31 @@ The conversation's fictional profile concept is a direction for hierarchy, not a
 
 ### Import
 
-- [ ] Preview source eligibility from actual recorded activity. A “New” label alone does not establish that a prospect is untouched. Put ambiguous records aside for review; do not relabel contacted prospects to make them eligible.
-- [ ] Export the selected raw fields without modifying source records. Record source workspace/record IDs as provenance, not as permission to access the old workspace.
-- [ ] Preview field mapping, duplicates and invalid records before committing an import. Reconcile selected/imported/rejected counts and explain individual failures.
-- [ ] Use duplicate-safe source mappings and durable import receipts. A repeat import does not recreate people or events. Never copy audits, send history, old qualification, scheduled work or suppression-bypassing state.
+- [x] Preview source eligibility from actual recorded activity. A “New” label alone does not establish that a prospect is untouched. Put ambiguous records aside for review; do not relabel contacted prospects to make them eligible.
+- [x] Export the selected raw fields without modifying source records. Record source workspace/record IDs as provenance, not as permission to access the old workspace.
+- [x] Preview field mapping, duplicates and invalid records before committing an import. Reconcile selected/imported/rejected counts and explain individual failures.
+- [x] Use duplicate-safe source mappings and durable import receipts. A repeat import does not recreate people or events. Never copy audits, send history, old qualification, scheduled work or suppression-bypassing state.
 
 ### Skills and audit output
 
-- [ ] Manual ChatGPT use remains fully functional without a paid API audit. Provide versioned audit, outreach and follow-up skills with clear inputs, output schemas and context copy/export actions.
-- [ ] Map an audit result into profile fields, observations, unknowns, assessment, proposed offer and drafts. Preserve the full report separately and handle conflicts with manual edits explicitly.
-- [ ] Verify visible interactions: popups, new tabs, direct downloads, calendars, iframes and delayed content. Hidden code-only placeholder text is not a visitor-visible defect. Failed inspection is uncertainty, not proof something is broken.
-- [ ] Never infer missing backend emails, reminders, lost leads or delivery from a website alone. Existing GHL is eligible for repairs/extensions. Direct messages, link-in-bio pages and open downloads can be deliberate choices.
-- [ ] Check current public business activity when relevant; an old footer alone does not establish abandonment. Keep website observations separate from business viability.
-- [ ] Record public contact source and confidence. An email found online is not delivery-verified. Keep contact research bounded and offer an unresolved-contact state.
-- [ ] Match a meaningful offer: website fixes, funnels, nurture, GHL work or custom setup. Preserve affordable entry/custom work; do not force all prospects into booking repairs. Prices and claims need their own approved offer source.
-- [ ] For suitable prospects, draft a specific intro plus two follow-ups using the actual business/programme/resource and a simple reply CTA. Tone is warm, polite and natural, without invented pain or forced filler. No PDF audit deliverable.
+- [x] Manual ChatGPT use remains fully functional without a paid API audit. Provide versioned audit, outreach and follow-up skills with clear inputs, output schemas and context copy/export actions.
+- [x] Map an audit result into profile fields, observations, unknowns, assessment, proposed offer and drafts. Preserve the full report separately and handle conflicts with manual edits explicitly.
+- [x] Verify visible interactions: popups, new tabs, direct downloads, calendars, iframes and delayed content. Hidden code-only placeholder text is not a visitor-visible defect. Failed inspection is uncertainty, not proof something is broken.
+- [x] Never infer missing backend emails, reminders, lost leads or delivery from a website alone. Existing GHL is eligible for repairs/extensions. Direct messages, link-in-bio pages and open downloads can be deliberate choices.
+- [x] Check current public business activity when relevant; an old footer alone does not establish abandonment. Keep website observations separate from business viability.
+- [x] Record public contact source and confidence. An email found online is not delivery-verified. Keep contact research bounded and offer an unresolved-contact state.
+- [x] Match a meaningful offer: website fixes, funnels, nurture, GHL work or custom setup. Preserve affordable entry/custom work; do not force all prospects into booking repairs. Prices and claims need their own approved offer source.
+- [x] For suitable prospects, draft a specific intro plus two follow-ups using the actual business/programme/resource and a simple reply CTA. Tone is warm, polite and natural, without invented pain or forced filler. No PDF audit deliverable.
 
 ### Done when
 
-- [ ] A selected untouched export can be imported and re-imported without duplicate prospects or events. Old data remains unchanged and new records have no sent messages or running automation.
-- [ ] One complete skill round trip populates the correct sections and preserves uncertainty/manual edits. AI-readable context is built from the same canonical fields the user sees.
-- [ ] Existing-GHL, direct-PDF, popup/calendar and hidden-text examples do not trigger the old automatic skip/false-defect assumptions.
+- [x] A selected untouched export can be imported and re-imported without duplicate prospects or events. Old data remains unchanged and new records have no sent messages or running automation.
+- [x] One complete skill round trip populates the correct sections and preserves uncertainty/manual edits. AI-readable context is built from the same canonical fields the user sees.
+- [x] Existing-GHL, direct-PDF, popup/calendar and hidden-text examples do not trigger the old automatic skip/false-defect assumptions.
 
 ## P3 — outreach, automation overview and Results
+
+P3A locally verifies sender identity, three-message draft review, revision-bound content approval and an honest saved-draft Overview. P3B adds a dedicated Google connection flow and read-only recipient-local timing preview, with real local consent verified; P3C1 explicit refresh/revocation checks are also accepted locally. The broader automation/reply/Results items below remain open. See [P3 contract](phases/P3.md) and [preview](previews/prospecting-p3a/README.md).
 
 ### Work
 
@@ -154,7 +156,7 @@ The conversation's fictional profile concept is a direction for hierarchy, not a
 - [ ] Keep follow-ups in the actual original thread using provider message/thread references. A matching subject alone is insufficient.
 - [ ] Start with recipient-local weekdays at 9–11 a.m. and explicit timezone handling for Oceania, North America and the UK, including DST. Unresolved timezone requires a clear scheduling decision rather than a silent guess.
 - [ ] Pause cold outreach on any reply. Stop on opt-out, decline or hard bounce. Recheck stop state immediately before send and use durable idempotency to handle retries, concurrent workers and reply/send races.
-- [ ] Editing an approved draft invalidates the approval for that version. Do not import old schedules or silently enable sending in the fresh workspace.
+- [x] Editing an approved draft invalidates the approval for that version. Do not import old schedules or silently enable sending in the fresh workspace.
 - [ ] Keep sending and AI costs visible without requiring the user to read implementation details. Log manual/external activity with its provenance; do not present it as provider-confirmed.
 
 ### Events before dashboards
@@ -181,32 +183,36 @@ Unknown or untracked is not zero. Keep later bounces visible and define whether 
 
 ## P4 — main Pages and the Notion-like experience
 
+Local core acceptance: P4A–I are implemented, verified and independently reviewed. Named sharing requires existing workspace membership; new anonymous publication/external guests remain separate. Existing public routes are preserved. Work projections are read-only Actions only; larger relations and other data sources remain later scope. No staging or merge claim.
+
 ### Work
 
-- [ ] Reuse the existing rich editor, page tree and compatible block implementations under main BloomOps Pages. Inventory existing capabilities before rebuilding.
-- [ ] Prioritise nested pages, inline names/icons, slash insertion, rich text, block/page drag-and-drop, links, search, dependable autosave and recovery.
-- [ ] Preserve source documents and scope any requested copies to the intended workspace. Verify hierarchy, formatting, embeds, attachments and access rather than automatically merging content.
-- [ ] Keep operational records structured. Embedded views project authorised canonical data; Pages must not become a second database for Clients/Tasks/Content.
-- [ ] Full Notion parity is not the first-release promise. Define larger relations/database behaviours separately after the core editing experience works.
+- [x] Reuse the existing rich editor, page tree and compatible block implementations under main BloomOps Pages. Inventory existing capabilities before rebuilding.
+- [x] Prioritise nested pages, inline names/icons, slash insertion, rich text, block/page drag-and-drop, links, search, dependable autosave and recovery.
+- [x] Preserve source documents and scope any requested copies to the intended workspace. Verify hierarchy, formatting, embeds, attachments and access rather than automatically merging content.
+- [x] Keep operational records structured. Embedded views project authorised canonical data; Pages must not become a second database for Clients/Tasks/Content.
+- [x] Full Notion parity is not the first-release promise. Define larger relations/database behaviours separately after the core editing experience works.
 
 ### Done when
 
-- [ ] Existing supported content round-trips without loss. Reordering/nesting, reload, save failure and conflicting edits have tested recovery.
-- [ ] Keyboard and touch interactions are usable. Searches, embeds, public links and files respect workspace and visibility boundaries.
-- [ ] Editor code loads only in the area that uses it; P0 routes retain their accepted performance characteristics.
+- [x] Existing supported content round-trips without loss. Reordering/nesting, reload, save failure and conflicting edits have tested recovery.
+- [x] Keyboard and touch interactions are usable. Searches, embeds, public links and files respect workspace and visibility boundaries.
+- [x] Editor code loads only in the area that uses it; P0 routes retain their accepted performance characteristics.
 
 ## P5 — convert to client and begin onboarding
+
+**P5A preflight is accepted locally**, with106 focused tests,42 built-browser checks and a focused Sol High re-review resolving live template-read guards and duplicate-name references. [P5 contract](phases/P5.md), [visual preview](previews/prospecting-p5a/README.md). **P5B durable conversion is also accepted locally**, with119 distinct focused tests,14 native D1 checks,45 final conversion browser checks and one Sol High review with no material findings. Migration0042 atomically records the canonical client/service link, sale scope, history and permanent cold-outreach stop; duplicate-safe retries preserve existing records and portal identity. [Conversion preview](previews/prospecting-p5b/README.md). P5C explicit onboarding initiation and repair is next; activation, invitation delivery and conversion statistics remain unfinished. The combined P5 acceptance gates below remain open where they include those later behaviours.
 
 ### Work
 
 - [ ] Provide an explicit Convert to client action. Link a client in the same workspace or create one once; confirm the purchased service/scope and invoke existing activation/onboarding behaviour.
-- [ ] Keep linked prospect/conversation history. Stop the cold sequence when the sale is recorded even if a later onboarding step needs repair.
+- [x] Keep linked prospect/conversation history. Stop the cold sequence when the sale is recorded even if a later onboarding step needs repair. (P5B accepted locally; onboarding repair follows in P5C.)
 - [ ] Use durable duplicate-safe conversion/activation receipts. Handle retries and partial failure without duplicate clients, engagements, onboarding instances or misleading success.
 - [ ] Keep invitations/client messages as explicit authorised sending actions, not a hidden consequence of importing or inspecting a prospect.
 
 ### Done when
 
-- [ ] New-client and existing-client cases both use canonical same-workspace records.
+- [x] New-client and existing-client cases both use canonical same-workspace records. (P5B accepted locally.)
 - [ ] Repeated/concurrent conversion, partial activation failure and retry are recoverable; cold outreach cannot resume accidentally.
 - [ ] Portal visibility and existing operational lifecycle rules remain intact. Client conversion statistics reflect the recorded conversion event, not completed onboarding tasks.
 

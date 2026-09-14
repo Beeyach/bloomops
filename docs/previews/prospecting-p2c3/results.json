@@ -1,0 +1,29 @@
+{
+  "checks": [
+    "Delayed course information is visibly rendered",
+    "Hidden placeholder exists in code but is not visitor-visible",
+    "Direct PDF download returns a valid complete PDF",
+    "About opens in a new tab with dated current activity",
+    "Calendar popup and iframe are visible without booking",
+    "Contact research uses the linked contact page without sending",
+    "Controlled inspection failure is recorded as uncertainty",
+    "Research was bounded to home, two linked research pages and tested resource/calendar targets",
+    "No form, appointment, payment or message was submitted",
+    "Manual audit starts from exported canonical context and instructions",
+    "Actual observed audit saves while preserving a newer manual unknown",
+    "Discovered public email remains unverified after applying audit",
+    "Next manual task receives the applied observations and preserved uncertainty",
+    "Business-specific intro and two unsent follow-ups complete the manual round trip",
+    "Uncertain inspection never maps into observed facts or interaction evidence",
+    "Profile remains readable after the complete manual round trip",
+    "All three full reports are retained separately",
+    "No browser runtime errors"
+  ],
+  "passed": 18,
+  "fixtureOnly": true,
+  "nativeD1": true,
+  "externalProviderCalls": 0,
+  "submissions": 0,
+  "prospectId": "a99d11a0-e928-4520-9e4e-690328cbc54b",
+  "workspaceId": "p2c3-af2f3f65-fresh"
+}

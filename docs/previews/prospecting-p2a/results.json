@@ -1,0 +1,39 @@
+{
+  "checks": [
+    "No source is selected automatically",
+    "Only accessible source choices appear",
+    "Keyboard reaches Review source",
+    "Native D1 returns 50 bounded records and honest counts",
+    "New stage cannot hide recorded sends",
+    "Payload excludes private history",
+    "Raw details retain readable field labels",
+    "No horizontal overflow at 1440px",
+    "No horizontal overflow at 1024px",
+    "No horizontal overflow at 768px",
+    "No horizontal overflow at 390px",
+    "Mobile source control is at least 44px at 390px",
+    "No horizontal overflow at 320px",
+    "Mobile source control is at least 44px at 320px",
+    "Next page shows remaining three records",
+    "First page returns to 50 records",
+    "Empty source has an honest empty state",
+    "Invalid cursor is rejected",
+    "Foreign source is denied",
+    "Preview has no write endpoint",
+    "Revoked source membership is denied",
+    "Revoked source page exposes no records",
+    "Demoted destination membership is denied",
+    "Preview leaves all source rows, send history and destination prospects unchanged",
+    "Existing P1 new profile form remains reachable",
+    "No browser runtime errors"
+  ],
+  "sourcePreserved": true,
+  "nativeD1": true,
+  "widths": [
+    1440,
+    1024,
+    768,
+    390,
+    320
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "baseline": "Accepted P4H current measurements; same synthetic fixture copied for P4I",
+  "newSamples": 42,
+  "retainedSamples": 30,
+  "coldLoads": 6,
+  "comparison": [
+    {
+      "route": "Home",
+      "width": 1440,
+      "beforeMedian": 212,
+      "afterMedian": 211.5,
+      "beforeP95": 228.400146484375,
+      "afterP95": 212,
+      "requests": 1,
+      "statements": 15,
+      "calls": 3
+    },
+    {
+      "route": "Clients",
+      "width": 1440,
+      "beforeMedian": 146.300048828125,
+      "afterMedian": 162.60009765625,
+      "beforeP95": 162.900146484375,
+      "afterP95": 162.900146484375,
+      "requests": 1,
+      "statements": 3,
+      "calls": 2
+    },
+    {
+      "route": "Work",
+      "width": 1440,
+      "beforeMedian": 212.599853515625,
+      "afterMedian": 228.099853515625,
+      "beforeP95": 229.099853515625,
+      "afterP95": 244.900146484375,
+      "requests": 1,
+      "statements": 7,
+      "calls": 2
+    },
+    {
+      "route": "Home",
+      "width": 390,
+      "beforeMedian": 213.10009765625,
+      "afterMedian": 213,
+      "beforeP95": 213.2001953125,
+      "afterP95": 230,
+      "requests": 1,
+      "statements": 15,
+      "calls": 3
+    },
+    {
+      "route": "Clients",
+      "width": 390,
+      "beforeMedian": 146.89990234375,
+      "afterMedian": 146.699951171875,
+      "beforeP95": 163.5,
+      "afterP95": 147,
+      "requests": 1,
+      "statements": 3,
+      "calls": 2
+    },
+    {
+      "route": "Work",
+      "width": 390,
+      "beforeMedian": 212.5,
+      "afterMedian": 212.39990234375,
+      "beforeP95": 229.099853515625,
+      "afterP95": 229,
+      "requests": 1,
+      "statements": 7,
+      "calls": 2
+    }
+  ],
+  "beforeScriptBytes": 388810,
+  "afterScriptBytes": 388963,
+  "scriptRequestCount": 10,
+  "note": "Median and p95 changes include one or two display frames. Five retained observations per route/width do not establish a statistically significant timing difference. No new Pages queries or editor runtime on unrelated routes."
+}

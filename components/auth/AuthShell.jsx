@@ -1,4 +1,6 @@
-// The one frame every signed-out screen shares: the BloomOps mark, a
+import BrandLogo from '../bloomops/BrandLogo';
+
+// The one frame every signed-out screen shares: the Bloomsi logo, a
 // title, a short line of context, and a panel. Server-renderable, no
 // state. Also frames the not-found page, since a person there may not be
 // signed in either.
@@ -8,13 +10,8 @@ export default function AuthShell({ title, lead, children, footer = null }) {
       <main className="bo-auth">
         <div className="bo-auth-card">
           <div className="bo-auth-head">
-            <span className="bo-mark bo-mark-lg" aria-hidden="true">
-              B
-            </span>
+            <BrandLogo large />
             <div>
-              <p className="bo-small" style={{ marginBottom: 4 }}>
-                BloomOps
-              </p>
               <h1 className="bo-display">{title}</h1>
               {lead && (
                 <p className="bo-lede" style={{ marginTop: 8 }}>
