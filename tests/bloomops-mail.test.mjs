@@ -81,11 +81,13 @@ test('templates are plain, escape names, and carry the link exactly once in text
   assert.equal(magic.subject, 'Your Bloomsi sign-in link');
   assert.equal(magic.text.match(/https:\/\/app\.example\S+/g).length, 1);
   assert.match(magic.text, /15 minutes/);
+  assert.match(magic.html, /<img src="https:\/\/app\.example\/brand\/bloomsi-lockup-charcoal\.png" alt="Bloomsi" width="156"/);
   assert.match(magic.html, /href="https:\/\/app\.example\/api\/auth\/magic-link\/verify\?token=abc&amp;callbackURL=%2F"/);
   const invite = invitationEmail({ url: 'https://app.example/invite/tok', workspaceName: 'Ellen <script>', roleLabel: 'Team Member', inviterName: 'Ary & Co' });
   assert.match(invite.subject, /Ellen <script>/, 'subjects are plain text');
   assert.match(invite.html, /Ellen &lt;script&gt;/);
   assert.match(invite.html, /Ary &amp; Co has invited you/);
+  assert.match(invite.html, /src="https:\/\/app\.example\/brand\/bloomsi-lockup-charcoal\.png"/);
   assert.doesNotMatch(invite.html, /<script>/);
   assert.match(invite.text, /Ary & Co has invited you to join Ellen <script> on Bloomsi as Team Member/);
 });

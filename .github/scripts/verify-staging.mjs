@@ -22,12 +22,18 @@ const arg = (name, fallback = '') => {
 const expectEnv = arg('--expect-env', 'staging');
 const expectSha = arg('--expect-sha', '').slice(0, 7);
 let base = arg('--url') || process.env.STAGING_URL || '';
+if (!base && expectEnv === 'staging') {
+  try {
+    const config = JSON.parse(readFileSync('wrangler.jsonc', 'utf8').replace(/^\s*\/\/.*$/gm, ''));
+    base = String(config?.env?.staging?.vars?.BLOOMOPS_APP_URL || '');
+  } catch {}
+}
 if (!base && arg('--log')) {
   const log = readFileSync(arg('--log'), 'utf8');
   base = (log.match(/https:\/\/bloomops-staging[\w.-]*\.workers\.dev/) || [])[0] || '';
 }
 if (!base) {
-  console.error('::error::No Worker URL. Pass --url, set STAGING_URL, or point --log at the deploy output.');
+  console.error('::error::No Worker URL. Pass --url, set STAGING_URL, configure the staging app URL, or point --log at the deploy output.');
   process.exit(1);
 }
 base = base.replace(/\/+$/, '');
