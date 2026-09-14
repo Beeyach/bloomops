@@ -75,6 +75,8 @@ test('staging workflow invokes only staging deploy/bootstrap/migrations and zero
   const zero = readFileSync('.github/scripts/verify-zero-remote.mjs', 'utf8');
   assert.match(zero, /assertDisposableIdentity\(info, createdId, DB_NAME\)/);
   assert.match(zero, /sameDatabaseInventory\(before, after\)/);
+  const staging = readFileSync('.github/scripts/verify-staging.mjs', 'utf8');
+  assert.match(staging, /env\?\.staging\?\.vars\?\.BLOOMOPS_APP_URL/);
 });
 
 test('resolved Worker configurations cannot persist invitation URLs in invocation logs or traces', async () => {
