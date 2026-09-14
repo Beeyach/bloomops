@@ -1,3 +1,4 @@
+import ProspectClientOrigin from '@/components/bloomops/ProspectClientOrigin';
 import Onboarding from '@/components/bloomops/Onboarding';
 import { onboardingView } from '@/lib/bloomops/onboarding-views.mjs';
 import ClientActivation from '@/components/bloomops/ClientActivation';
@@ -70,6 +71,7 @@ export default async function ClientDetailPage({ params, searchParams }) {
   return (
     <>
       <ClientDetailHeader client={client} />
+      {access.workspace.purpose==='prospecting'&&<ProspectClientOrigin db={access.db} actor={actor} clientId={client.id}/>}
       {mayActivate && <ClientActivation clientId={client.id} draft={client.relationshipStatus === 'draft'} activation={activation} />}
       <ClientTabs clientId={client.id} active={tab} hasProjects={hasProjects} />
       {tab === 'projects' && <Section id="projects" title="Projects"><ProjectList projects={projects.items} hasMore={projects.hasMore} /></Section>}

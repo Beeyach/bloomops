@@ -4,6 +4,13 @@
 // on the server and in tests alike.
 
 const PATHS = {
+  send: <><path d="m22 2-7 20-4-9L2 9zM22 2 11 13"/></>,
+  search: <><circle cx="10" cy="10" r="6.5"/><path d="m15 15 6 6"/></>,
+  filter: <path d="M3 4h18l-7 8v7l-4 2v-9z"/>,
+  sort: <><path d="M7 3v18m-4-4 4 4 4-4M17 21V3m-4 4 4-4 4 4"/></>,
+  edit: <><path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 14z"/></>,
+  close: <path d="m6 6 12 12M6 18 18 6"/>,
+
   table: <><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M10 4v16"/></>,
   message: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
   overview: <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><path d="M14 15h7M14 20h5"/></>,

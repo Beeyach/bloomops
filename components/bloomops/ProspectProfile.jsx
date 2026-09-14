@@ -5,6 +5,7 @@ import {ProspectIdentity,ProspectAssessment,ProspectSocialLinks,ProfileIcon} fro
 import {verifiedProspectSocials} from '@/lib/bloomops/prospect-socials.mjs';
 import ProspectAvatar from './ProspectAvatar';
 import ProspectConversionReceipt from './ProspectConversionReceipt';
+import ProspectContactFacts from './ProspectContactFacts';
 import {PROSPECT_FIELDS,PROSPECT_FIT,safeProspectUrl} from '@/lib/bloomops/prospect-values.mjs';
 const entries=section=>Object.entries(PROSPECT_FIELDS).filter(([,v])=>v.section===section);
 const time=value=>value?new Date(value).toLocaleString('en-US',{timeZone:'UTC',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}):'Not checked';
@@ -79,8 +80,10 @@ export default function ProspectProfile({initial}){
  </details>;
  return <article className="bo-prospect-page bo-prospect-profile">
   <Button href="/prospecting" variant="ghost" icon="chevron-left">Back to prospects</Button>
-  <header className="bo-profile-header"><div className="bo-profile-heading"><ProspectAvatar id={profile.id} website={profile.website}/><div><h1 className="bo-display">{profile.businessName}</h1>{profile.niche&&<p className="bo-profile-subtitle">{profile.niche}</p>}<div className="bo-profile-fit"><Status tone={tone(profile.fit)} label={profile.fit==='strong'?'Strong fit':PROSPECT_FIT[profile.fit]}/><Status tone="neutral" label="No contact recorded"/></div></div></div><div className="bo-profile-actions"><Button href={'/prospecting/'+profile.id+'/conversion'} icon="clients">Review client handoff</Button><Button href={'/prospecting/skills?prospect='+encodeURIComponent(profile.id)} icon="skills">Use a skill</Button>{website&&<Button href={website} target="_blank" rel="noreferrer" icon="external-link">Open website</Button>}<ProspectSocialLinks links={socials}/></div></header>
+  <header className="bo-profile-header"><div className="bo-profile-heading"><ProspectAvatar id={profile.id} website={profile.website}/><div><h1 className="bo-display">{profile.businessName}</h1>{profile.niche&&<p className="bo-profile-subtitle">{profile.niche}</p>}<div className="bo-profile-fit"><Status tone={tone(profile.fit)} label={profile.fit==='strong'?'Strong fit':PROSPECT_FIT[profile.fit]}/><Status tone="neutral" label={initial.sheetFacts?.outreach||'Not contacted'}/></div></div></div><div className="bo-profile-actions"><Button href={'/prospecting/'+profile.id+'/conversion'} icon="clients">Review client handoff</Button><Button href={'/prospecting/skills?prospect='+encodeURIComponent(profile.id)} icon="skills">Use a skill</Button>{website&&<Button href={website} target="_blank" rel="noreferrer" icon="external-link">Open website</Button>}<ProspectSocialLinks links={socials}/></div></header>
   <ProspectConversionReceipt receipt={initial.conversion} compact/>
+  <ProspectContactFacts profile={profile} facts={initial.sheetFacts}/>
+  {initial.csvSource&&<details className="bo-prospect-evidence"><summary>CSV import source</summary><p>{initial.csvSource.fileName}</p><Button href={'/prospecting?batch='+initial.csvSource.batchId}>Open import batch</Button>{['instagram','linkedin'].map(k=>safeProspectUrl(initial.csvSource.raw[k])?<p key={k}><a href={safeProspectUrl(initial.csvSource.raw[k])} target="_blank" rel="noreferrer">{k==='instagram'?'Instagram':'LinkedIn'} source</a> (unverified)</p>:null)}</details>}
   <div className="bo-profile-layout">
    <div className="bo-profile-main">
     <EditableSection section="assessment" title="Assessment" displayTitle="Opportunity" icon="opportunity" data={data} onSave={save} footer={<div className="bo-profile-section-links"><a href="#evidence" className="bo-btn bo-btn-ghost" onClick={()=>{if(evidence.current)evidence.current.open=true;}}>View audit evidence</a><Button href="#draft" variant="ghost">View draft</Button></div>}/>
@@ -100,6 +103,6 @@ export default function ProspectProfile({initial}){
  </article>;
 }
 
-function Activity({event}){return <li><div><strong>{activityLabel(event.eventType)}</strong><p>{event.actorName||'Workspace member'}</p>{event.metadata?.fields?.length>0&&<details><summary>Changed fields</summary><ul>{event.metadata.fields.map(key=><li key={key}>{PROSPECT_FIELDS[key]?.label||'Profile field'}</li>)}</ul></details>}</div><time dateTime={event.occurredAt}>{time(event.occurredAt)}</time></li>;}
+function Activity({event}){return <li><div><strong>{activityLabel(event.eventType)}</strong><p>{event.actorName||'Workspace member'}</p>{event.metadata?.note&&<p className="bo-profile-history-note bo-result-prose">{event.metadata.note}</p>}{event.metadata?.fields?.length>0&&<details><summary>Changed fields</summary><ul>{event.metadata.fields.map(key=><li key={key}>{PROSPECT_FIELDS[key]?.label||'Profile field'}</li>)}</ul></details>}</div><time dateTime={event.occurredAt}>{time(event.occurredAt)}</time></li>;}
 
-function activityLabel(type){return ({PROSPECT_CONVERTED:'Converted to client',PROSPECT_OUTREACH_STOPPED:'Cold outreach stopped',PROSPECT_CREATED:'Prospect added',PROSPECT_SKILL_RESULT_SAVED:'Skill result saved',PROSPECT_DRAFT_SAVED:'Outreach draft saved',PROSPECT_DRAFT_APPROVED:'Outreach content approved'})[type]||'Profile updated';}
+function activityLabel(type){return ({PROSPECT_MANUAL_CONTACT:'Manual contact logged',PROSPECT_INTEREST_RECORDED:'Interest recorded',PROSPECT_REPLY_RESOLVED:'Reply resolved',PROSPECT_CONVERTED:'Converted to client',PROSPECT_OUTREACH_STOPPED:'Cold outreach stopped',PROSPECT_CREATED:'Prospect added',PROSPECT_SKILL_RESULT_SAVED:'Skill result saved',PROSPECT_DRAFT_SAVED:'Outreach draft saved',PROSPECT_DRAFT_APPROVED:'Outreach content approved'})[type]||'Profile updated';}

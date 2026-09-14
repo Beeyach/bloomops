@@ -153,3 +153,9 @@ Prospecting has a route-based contextual sidebar and clear return path; main Pag
 Dot-separated UI metadata chains are banned. Do not replace dots with pipes/slashes or make every field a pill. Use labelled properties, clear identity/role hierarchy, readable typography and separate spacing for headings, labels, controls and help. Prefer full-page substantial records and inline editing; avoid stacked drawers/tab layers. Profiles separate structured identity, assessment, evidence and outreach. Optional detail belongs in named disclosures. Apply docs/DESIGN_CHECKLIST.md.
 
 For Prospecting profile edits, inspect [the committed visual reference and owner corrections](docs/design-references/README.md). The favicon/garden SVG before the business name and conditional icon-only social links are explicit requirements; written corrections override the mockup.
+
+## Future owner direction added to PR58
+
+After the active Prospecting sheet work, follow [docs/NEXT_PHASES.md](docs/NEXT_PHASES.md) for save/recovery, search, client overview/preview, structured reporting and reusable work. [docs/CLIENT_REPORTING.md](docs/CLIENT_REPORTING.md) defines client reports with manual entry/import, charts, immutable publication snapshots and portal/PDF output. Pages supply narrative and authorized links, not the metric database. These are future phases, not permission to interrupt or expand the active task.
+
+N2 includes profile pictures, record-linked comments and basic in-app mentions/replies/assignment notifications, following [docs/COLLABORATION_NOTIFICATIONS.md](docs/COLLABORATION_NOTIFICATIONS.md). Resend remains the existing provider; @bloomsi.app is the owner's intended sender domain. Collaboration email and inbound processing remain later work after domain verification, visibility checks and user preferences. This documentation does not authorize DNS changes or email sending.

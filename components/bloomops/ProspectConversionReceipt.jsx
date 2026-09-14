@@ -7,8 +7,9 @@ export default function ProspectConversionReceipt({receipt,compact=false}){
    <dl className="bo-handoff-facts"><div><dt>Client</dt><dd>{receipt.clientName}</dd></div><div><dt>Client record</dt><dd>{receipt.clientCreated?'Created as Draft':'Existing client linked'}</dd></div><div><dt>Purchased service</dt><dd>{receipt.serviceName}</dd></div><div><dt>Service engagement</dt><dd>{receipt.serviceCreated?'Created as Planned':'Existing engagement retained'}</dd></div>{receipt.packageName&&<div><dt>Package</dt><dd>{receipt.packageName}</dd></div>}<div><dt>Recorded sale scope</dt><dd>{receipt.scopeNotes}</dd></div><div><dt>Recorded date</dt><dd><time dateTime={receipt.convertedAt}>{new Date(receipt.convertedAt).toLocaleDateString('en-US',{timeZone:'UTC',month:'short',day:'numeric',year:'numeric'})}</time></dd></div></dl>
    <p>Cold outreach is permanently stopped for this prospect and its recorded email addresses. Prospect and conversation history remain available.</p>
    {!receipt.serviceCreated&&<p>The existing engagement keeps its original scope. This sale’s scope is recorded separately above.</p>}
-   <p>This conversion did not start onboarding or send an invitation.</p>
+   <p>Review the client’s onboarding separately. Invitations are not sent by this handoff.</p>
   </>}
   <Button href={'/clients/'+receipt.clientId} icon="clients">Open client</Button>
+  <Button href={'/prospecting/'+receipt.prospectId+'/conversion/onboarding'} icon="onboarding">Review onboarding</Button>
  </section>;
 }

@@ -1,1 +1,2 @@
-export default function LoadingProspecting(){return <div className="bo-prospect-page" role="status" aria-live="polite"><p className="bo-body">Loading prospects…</p></div>;}
+import {SheetSkeleton} from '@/components/bloomops/ProspectSheet';
+export default function Loading(){return <div className="bo-prospect-page"><h1>Prospects</h1><SheetSkeleton/></div>;}

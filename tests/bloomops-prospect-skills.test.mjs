@@ -18,7 +18,7 @@ const total=t=>one(t.raw,'SELECT total_changes() n').n;
 test('all manual tasks export the exact canonical fields with nulls and no operational history',async c=>{
  const t=await setup(c),saved=await getProspect(t.db,t.actor,t.id),before=total(t),now=new Date('2026-09-12T00:00:00Z');
  for(const skill of PROSPECT_SKILLS){const r=await exportProspectSkill(t.db,t.actor,{...t.input,skillId:skill.id},now);assert.ok(r.context);assert.deepEqual(r.context.prospect.fields,Object.fromEntries(Object.keys(PROSPECT_FIELDS).map(k=>[k,saved.profile[k]??null])));assert.equal(r.context.prospect.revision,1);assert.equal(r.context.exportedAt,now.toISOString());assert.equal(r.context.prospect.fields.publicEmail,null);assert.equal(r.context.offerApproval.status,'not_provided');assert.equal(r.context.outreachState.sendingAuthorized,false);
- assert.deepEqual(Object.keys(r.context),['format','version','exportedAt','prospect','fieldSources','importSource','offerApproval','outreachState']);assert.ok(r.task.includes(JSON.stringify(r.context,null,2)));assert.ok(r.task.includes('untrusted data'));assert.equal(r.skill.version,'1.0.0');assert.ok(r.context.fieldSources.every(s=>!Object.hasOwn(s,'actorName')));}
+ assert.deepEqual(Object.keys(r.context),['format','version','exportedAt','prospect','fieldSources','importSource','csvSource','offerApproval','outreachState']);assert.ok(r.task.includes(JSON.stringify(r.context,null,2)));assert.ok(r.task.includes('untrusted data'));assert.equal(r.skill.version,'1.0.0');assert.ok(r.context.fieldSources.every(s=>!Object.hasOwn(s,'actorName')));}
  assert.equal(total(t),before);
 });
 test('checked field sources are exported without treating public email as delivery verified',async c=>{
