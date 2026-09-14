@@ -1,0 +1,17 @@
+{
+  "checks": [
+    "Recovery handoff preserves a concurrently changed original copy",
+    "Failed handoff retains the original copy and mounted input",
+    "Successful replacement stores input before removing its verified source",
+    "Ten-copy limit retains the recoverable source while allowing review",
+    "Creation at the copy limit retires only the verified source",
+    "Real workspace switch hides old input but retains its scoped copy",
+    "Returning to the original workspace recovers through a fresh check",
+    "Revoked current membership cannot create from a stale form",
+    "Revoked recovery hides input and clears this new-form scope",
+    "Real logout removes new-form copies and invalidates other tabs",
+    "Signed-out new-form route requires sign-in",
+    "No disposed writer recreates a new-form copy",
+    "No provider requests"
+  ]
+}

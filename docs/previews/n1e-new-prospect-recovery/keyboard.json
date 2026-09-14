@@ -1,0 +1,9 @@
+{
+  "checks": [
+    "Keyboard reaches labelled fields in reading order and retains typed input",
+    "Recovery button shows a visible keyboard focus outline",
+    "Tab and Enter explicitly recover fields after the authority read",
+    "Keyboard submission opens the real saved profile with exactly one creation request",
+    "Keyboard path makes no provider request"
+  ]
+}

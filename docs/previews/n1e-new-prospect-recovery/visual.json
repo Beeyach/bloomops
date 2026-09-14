@@ -1,0 +1,8 @@
+{
+  "checks": [
+    "Final receipt layout fits 1440",
+    "Final receipt layout fits 390",
+    "Final receipt layout fits 320",
+    "Receipt heading has readable hierarchy"
+  ]
+}

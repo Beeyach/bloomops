@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "Delayed save shows Saving and disables inputs",
+    "Repeated submission while busy writes once",
+    "Native recovery stays below D1 binding limits",
+    "Real workspace switch invalidates another open profile",
+    "Switch retains the original workspace recovery copy",
+    "Original recovery cannot be opened under the other selected workspace",
+    "Returning to original workspace allows explicit authorized recovery",
+    "Idle edited tabs do not rewrite each other\u2019s recovery copies",
+    "Late recovery response cannot reopen an invalidated editor",
+    "Closing recovered editor preserves a subsequently changed source copy",
+    "Ten-copy cap reports failure without erasing existing drafts",
+    "Recovery list fits 1440",
+    "Recovery list fits 390",
+    "Recovery list fits 320",
+    "Real logout clears profile copies and invalidates other tabs",
+    "Signed-out profile reload requires sign-in",
+    "No disposed writer recreates copies"
+  ]
+}
