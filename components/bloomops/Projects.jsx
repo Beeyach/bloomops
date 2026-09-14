@@ -52,7 +52,7 @@ export function ProjectFacts({ project, clientHref = null }) {
 
 // Only the dedicated portal DTO is accepted here. No internal record props
 // are forwarded into a Client component or serialized into its page.
-export function PortalProjects({ projects = [], milestones = {}, deliverables = {}, files = {} }) {
+export function PortalProjects({ projects = [], milestones = {}, deliverables = {}, files = {}, downloadBase = null }) {
   if (!projects.length) return null;
   return <ul className="bo-rows" aria-label="Your projects">
     {projects.map(project => <li key={project.id} className="bo-row bo-portal-project">
@@ -62,7 +62,7 @@ export function PortalProjects({ projects = [], milestones = {}, deliverables = 
       <Status label={project.statusLabel} />
       <PortalMilestones summary={milestones[project.id]} />
       <PortalDeliverables summary={deliverables[project.id]} />
-      <PortalFiles summary={files[project.id]} />
+      <PortalFiles summary={files[project.id]} downloadBase={downloadBase} />
     </li>)}
   </ul>;
 }

@@ -30,7 +30,7 @@ const instanceStates = {
   complete: "Complete",
 };
 
-export default function Onboarding({ clientId, onboarding, portal = false }) {
+export default function Onboarding({ clientId, onboarding, portal = false, readOnly = false }) {
   if (!onboarding || onboarding.state === "not_created")
     return (
       <p className="bo-body">
@@ -44,10 +44,11 @@ export default function Onboarding({ clientId, onboarding, portal = false }) {
       clientId={clientId}
       onboarding={onboarding}
       portal={portal}
+      readOnly={readOnly}
     />
   );
 }
-function OnboardingProgress({ clientId, onboarding, portal }) {
+function OnboardingProgress({ clientId, onboarding, portal, readOnly }) {
   const router = useRouter();
   const [busy, setBusy] = useState(null);
   const [refreshing, startTransition] = useTransition();
@@ -175,10 +176,10 @@ function OnboardingProgress({ clientId, onboarding, portal }) {
               </p>
             )}
             <div className="bo-onboarding-controls">
-              {item.guidanceReady && item.actionUrl && <Button href={item.actionUrl} icon="external-link" target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">{ONBOARDING_ACTIONS[item.actionType]?.label} <span className="sr-only">(opens in a new tab)</span></Button>}
+              {!readOnly && item.guidanceReady && item.actionUrl && <Button href={item.actionUrl} icon="external-link" target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">{ONBOARDING_ACTIONS[item.actionType]?.label} <span className="sr-only">(opens in a new tab)</span></Button>}
               {!portal && item.actions.configure && <OnboardingGuidance item={item} clientId={clientId} disabled={Boolean(busy) || refreshing} onSaved={() => startTransition(() => router.refresh())} />}
 
-              {portal && item.canAct && (
+              {portal && !readOnly && item.canAct && (
                 <Button
                   icon="check"
                   onClick={() => act(item, "submit")}

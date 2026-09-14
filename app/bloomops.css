@@ -2299,3 +2299,10 @@ select.bo-control {
 .bo-client-recovery-row { display:flex; align-items:center; flex-wrap:wrap; gap:12px; padding:12px 0; }
 .bo-client-recovery-row>div { margin-right:auto; }
 .bo-client-recovery time { display:block; margin-top:4px; color:var(--bo-text-soft); font-size:14px; }
+
+/* Compact, labelled file properties; never a metadata separator chain. */
+.bo-file-properties { display:flex; flex-wrap:wrap; gap:12px 24px; margin:8px 0; font-size:14px; }
+.bo-file-properties div { display:grid; gap:4px; }
+.bo-file-properties dt { color:var(--bo-ink-soft); }
+.bo-file-properties dd { margin:0; }
+@media(max-width:767px) { .bo-file-properties { font-size:16px; } }

@@ -1,3 +1,4 @@
+import { Button } from '@/components/bloomops/Primitives';
 import { Suspense } from 'react';
 import { clientOverview } from '@/lib/bloomops/client-overview.mjs';
 import ClientWorkOverview, { ClientWorkLoading, ClientWorkError } from '@/components/bloomops/ClientWorkOverview';
@@ -74,6 +75,7 @@ export default async function ClientDetailPage({ params, searchParams }) {
   return (
     <>
       <ClientDetailHeader client={client} />
+      <Button href={`/clients/${client.id}/preview`} icon="eye" variant="ghost">Preview as client</Button>
       {access.workspace.purpose==='prospecting'&&<ProspectClientOrigin db={access.db} actor={actor} clientId={client.id}/>}
       {mayActivate && <ClientActivation clientId={client.id} draft={client.relationshipStatus === 'draft'} activation={activation} />}
       <ClientTabs clientId={client.id} active={tab} hasProjects={hasProjects} />

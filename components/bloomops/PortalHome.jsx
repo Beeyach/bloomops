@@ -9,7 +9,7 @@ function firstName(user) {
   return name ? name.split(/\s+/)[0] : '';
 }
 
-export function PortalHome({ workspaceName, user, clients = [], milestones = {}, deliverables = {}, files = {}, recordings = [], approvals = {items:[],hasMore:false} }) {
+export function PortalHome({ workspaceName, user, clients = [], milestones = {}, deliverables = {}, files = {}, recordings = [], approvals = {items:[],hasMore:false}, preview = null }) {
   const first = firstName(user);
   if (clients.length === 0) {
     return (
@@ -37,24 +37,24 @@ export function PortalHome({ workspaceName, user, clients = [], milestones = {},
     <>
       <h1 className="bo-display bo-display-lg">{first ? `Hello, ${first}` : 'Hello'}</h1>
       <p className="bo-lede" style={{ marginTop: 12 }}>
-        {single ? `${single.name} · Your work with ${workspaceName}.` : `Your work with ${workspaceName}, across ${clients.length} accounts.`}
+        {single ? `Your work with ${workspaceName}.` : `Your work with ${workspaceName}, across ${clients.length} accounts.`}
       </p>
       {clients.map(client => <section key={client.id} className="bo-section" aria-labelledby={`onboarding-${client.id}`}>
-        <h2 id={`onboarding-${client.id}`} className="bo-h2">{single ? 'Your onboarding' : `${client.name} · Onboarding`}</h2>
-        <Onboarding clientId={client.id} onboarding={client.onboarding} portal />
+        <h2 id={`onboarding-${client.id}`} className="bo-h2">{single ? 'Your onboarding' : `Onboarding for ${client.name}`}</h2>
+        <Onboarding clientId={client.id} onboarding={client.onboarding} portal readOnly={Boolean(preview)} />
       </section>)}
       {approvals.items.length>0&&<section className="bo-section" aria-labelledby="approvals-needed"><h2 id="approvals-needed" className="bo-h2">Approval needed</h2>
         <p className="bo-body">Your team has work ready for your review.</p>
-        <ul className="bo-content-list">{approvals.items.map(item=><li key={item.id}><a className="bo-content-title" href={`/portal/approvals/${item.id}`}>{item.title}</a></li>)}</ul>
+        <ul className="bo-content-list">{approvals.items.map(item=><li key={item.id}><a className="bo-content-title" href={`${preview?.base || "/portal"}/approvals/${item.id}`}>{item.title}</a></li>)}</ul>
         {approvals.hasMore&&<p className="bo-hint">Showing the first 200 requests. More will appear as you respond.</p>}
       </section>}
-      {recordings.length > 0 && <section className="bo-section" aria-labelledby="recordings-needed"><h2 id="recordings-needed" className="bo-h2">Recording needed</h2>
+      {!preview && recordings.length > 0 && <section className="bo-section" aria-labelledby="recordings-needed"><h2 id="recordings-needed" className="bo-h2">Recording needed</h2>
         <p className="bo-body">Your team is ready for your short recordings.</p>
         <ul className="bo-content-list">{recordings.map(item => <li key={item.id}><a className="bo-content-title" href={`/portal/recordings/${item.id}`}>{item.title}</a></li>)}</ul>
       </section>}
       {clients.filter(client => client.projects?.length).map(client => <section key={`projects-${client.id}`} className="bo-section" aria-labelledby={`projects-${client.id}`}>
-        <h2 id={`projects-${client.id}`} className="bo-h2">{single ? 'Your projects' : `${client.name} · Projects`}</h2>
-        <PortalProjects projects={client.projects} milestones={milestones} deliverables={deliverables} files={files} />
+        <h2 id={`projects-${client.id}`} className="bo-h2">{single ? 'Your projects' : `Projects for ${client.name}`}</h2>
+        <PortalProjects projects={client.projects} milestones={milestones} deliverables={deliverables} files={files} downloadBase={preview?.apiBase} />
       </section>)}
     </>
   );

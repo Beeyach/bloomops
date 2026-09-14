@@ -1,6 +1,18 @@
 # Bloomsi Build State
 
-## Current direction — N2A client overview accepted in staging
+## Current direction — N2B client preview in progress
+
+N2A is merged through [PR74](https://github.com/Bloomwired/bloomops/pull/74) as `a339085d26e512a70dfd39d3438ee4b7ce8aa4e9`. The merge tree exactly matches reviewed head76321b4. [Deploy staging34904284887](https://github.com/Bloomwired/bloomops/actions/runs/34904284887) and [zero-to-current34904284830](https://github.com/Bloomwired/bloomops/actions/runs/34904284830) both passed, including the disposable database second pass and cleanup. Public version confirms a339085; authenticated QA client reload confirms schema45, all four overview sections and no desktop overflow. No record writes were needed for this release checkpoint.
+
+Active worktree `/home/ary/Developer/bloomops-n2-client-preview`, branch `feat/n2-client-preview`, starts from a339085. [N2B contract](phases/N2.md) now follows the actual portal authority paths, including person-specific Page shares. N2B is implemented and locally verified. The contact picker opens read-only Home/Content/approval snapshots/Pages/subpages/discussions and preview-scoped downloads, retaining the staff session and live selected-client/contact authority. Preview actors deny writes even when copied/refreshed; Page edit/comment grants do not enable controls or mutations. Connected contacts are real durable Client memberships. Home is paginated at ten projects; the ongoing access check uses one bounded domain query, including with250 extra contacts.
+
+219 focused Node checks, the final OpenNext build and41 actual built-Worker browser checks pass. Coverage includes five widths, compact Page glyphs, keyboard focus, loading/empty/invalid-filter states, contact switching, actual shared-file downloads, private and revoked destinations, blocked writes, unchanged cookies and removing content after a failed access check. Real workerd QA found a D1 expression-depth limit; omitting the unreachable internal Ads predicate for Client file reads fixes it. Reusing the existing Page stylesheet fixes oversized glyphs. Unrelated first-load bundle estimates remain unchanged. [Evidence and visual previews](previews/client-preview/README.md).
+
+One fresh Sol High read-only review found no material findings; no re-review was needed. **First unfinished task: create the draft PR and verify the authorized staging deployment.** N2B is locally verified and independently reviewed, but not yet merged or deployed. Server checks are per request and post-storage; open-screen revocation is checked on focus/pageshow and every10 seconds, not pushed. External authored actions are inert; inline raster and recognized Bloomsi files are the preview image paths. No staging records have been changed for N2B.
+
+No new migration. Root D2 edits, other worktrees, original LTB records/voices, production/DNS, real imports/outreach and paid/video work remain preserved. N2C–E, N3/N4 and the broader save/recovery inventory remain unfinished; optional integrations and collaboration email retain their separate gates.
+
+## Previous checkpoint — N2A client overview accepted in staging
 
 N2A is implemented, locally verified, independently reviewed and deployed on `e0ed7a16e973cb1d5d33daa0ec2f7334c5286fa9` through [staging workflow34903134066](https://github.com/Bloomwired/bloomops/actions/runs/34903134066). [Draft PR74](https://github.com/Bloomwired/bloomops/pull/74) remains unmerged. Active worktree `/home/ary/Developer/bloomops-n2-client-overview`, branch `feat/n2-client-overview`, based on main6ab4d11. Later commits contain documentation/evidence only.
 
