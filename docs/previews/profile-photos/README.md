@@ -17,7 +17,7 @@ Photos appear in Account, the existing authorized Team directory and Page discus
 
 Logs are under `/home/ary/Developer/` with the filenames above; the repeatable harness is `scripts/profile-photos-browser-local.mjs`. All mutations and mail capture use fictional task-only local accounts. Initial harness-only corrections waited for profile metadata and scoped alerts past Next's route announcer. Staging photo mutations on the owner's identity are deliberately not used as QA.
 
-One fresh Sol High read-only review found no material findings. No re-review was needed. Draft PR and staging acceptance are pending. This does not close N2D/E or broader recovery. Paid/video work, original LTB records/voices, production/DNS, imports/outreach and collaboration email remain paused.
+One fresh Sol High read-only review found no material findings. No re-review was needed. [Draft PR76](https://github.com/Bloomwired/bloomops/pull/76) is open. Staging acceptance passed; merge and merged-main release gates remain pending. This does not close N2D/E or broader recovery. Paid/video work, original LTB records/voices, production/DNS, imports/outreach and collaboration email remain paused.
 
 Runtime references checked14 September2026: [Worker compression streams](https://developers.cloudflare.com/workers/runtime-apis/web-standards/#compression-streams) and [conditional R2 writes/checksums](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/). No configuration was changed.
 
@@ -30,3 +30,26 @@ Fictional local accounts and a geometric test photo; no real identity photo chan
 ![Saved profile photo](saved-desktop.png)
 ![Profile phone fallback](profile-phone.png)
 ![Preview discussion author](discussion-desktop.png)
+
+## Local reproduction
+
+The task used its own stopped copy of N2B's fictional development D1/R2 and `.task-tmp/preview-fixture.json`, plus a fresh local auth secret and `r2-dev` mail. The photo harness adds synthetic Page comments and leaves the test account with its photo removed. It expects the N2B guide/Client fixture, not an arbitrary existing workspace. See `scripts/client-preview-fixture-local.mjs` and the [N2B local setup](../client-preview/README.md). Keep these local fixtures separate from real records.
+
+```sh
+node --test tests/bloomops-profile-photos.test.mjs tests/bloomops-auth.test.mjs tests/bloomops-authorization.test.mjs tests/bloomops-page-sharing.test.mjs tests/bloomops-client-preview.test.mjs
+npm run cf:build
+npx --no-install wrangler dev --port 8811 --inspector-port 9234
+TMPDIR="$PWD/.task-tmp" LD_LIBRARY_PATH=/tmp/bloomops-pilot-tools/libs/usr/lib/x86_64-linux-gnu BLOOMOPS_BROWSER_BASE=http://localhost:8811 BLOOMOPS_BROWSER_EVIDENCE_DIR=/home/ary/Developer/bloomops-n2-photos-evidence node scripts/profile-photos-browser-local.mjs
+```
+
+The final task Worker8811 is stopped. There is no standalone lint/typecheck script; the OpenNext build runs the configured Next validation.
+
+## Staging acceptance
+
+[Workflow34910073830](https://github.com/Bloomwired/bloomops/actions/runs/34910073830) passed on runtime `f13bb8f231e6f9e3f46828d53315fa6f87f69adf`. [Ten live checks](staging-checks.json) confirm the runtime/schema45, Account navigation, own-profile fallback, desktop/mobile layout, temporary local crop, Cancel preserving the saved version and unavailable author404. No staging profile or other record was written. Mobile emulation reloads the document, so the crop was selected again after the viewport change before Cancel/readback. Real upload/replacement/removal and populated author permissions retain the local evidence above.
+
+[Open Your profile in staging](https://staging.ops.gobloomwired.com/profile).
+
+![Staging profile](staging-desktop.jpg)
+![Staging phone](staging-phone.jpg)
+![Temporary phone crop, cancelled without saving](staging-crop-phone.jpg)

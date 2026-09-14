@@ -1,0 +1,18 @@
+{
+  "runtime": "f13bb8f231e6f9e3f46828d53315fa6f87f69adf",
+  "workflow": 34910073830,
+  "checks": [
+    "Successful workflow and exact live runtime f13bb8f",
+    "Healthy staging environment/schema45",
+    "Authenticated Your profile with enabled Upload photo",
+    "Account menu links to Your profile",
+    "Desktop1440 no overflow and garden fallback",
+    "Temporary local PNG opens256px crop with three labelled controls",
+    "Phone390 crop no overflow and44px controls",
+    "Cancel is reachable and preserves the saved photo version",
+    "Missing Page/comment photo returns404",
+    "Desktop1440 restored with no selected crop"
+  ],
+  "recordWrites": 0,
+  "coverage": "Live own-profile fallback, client-side crop and Cancel only; real upload/replacement/removal and populated author permission tests use fictional local Worker/R2 accounts. Mobile emulation reloads the page; the temporary crop was selected after emulation before Cancel/readback."
+}
