@@ -1,0 +1,126 @@
+{
+  "routes": [
+    {
+      "route": "Home",
+      "width": 1440,
+      "requests": [
+        1
+      ],
+      "statements": [
+        11
+      ],
+      "invocations": [
+        2
+      ]
+    },
+    {
+      "route": "Clients",
+      "width": 1440,
+      "requests": [
+        1
+      ],
+      "statements": [
+        3
+      ],
+      "invocations": [
+        2
+      ]
+    },
+    {
+      "route": "Work",
+      "width": 1440,
+      "requests": [
+        1
+      ],
+      "statements": [
+        7
+      ],
+      "invocations": [
+        2
+      ]
+    },
+    {
+      "route": "Home",
+      "width": 390,
+      "requests": [
+        1
+      ],
+      "statements": [
+        11
+      ],
+      "invocations": [
+        2
+      ]
+    },
+    {
+      "route": "Clients",
+      "width": 390,
+      "requests": [
+        1
+      ],
+      "statements": [
+        3
+      ],
+      "invocations": [
+        2
+      ]
+    },
+    {
+      "route": "Work",
+      "width": 390,
+      "requests": [
+        1
+      ],
+      "statements": [
+        7
+      ],
+      "invocations": [
+        2
+      ]
+    }
+  ],
+  "bundles": [
+    {
+      "route": "Home",
+      "width": 1440,
+      "scripts": 10,
+      "bytes": 390118,
+      "beforeBytes": 390118
+    },
+    {
+      "route": "Clients",
+      "width": 1440,
+      "scripts": 10,
+      "bytes": 390118,
+      "beforeBytes": 390118
+    },
+    {
+      "route": "Work",
+      "width": 1440,
+      "scripts": 10,
+      "bytes": 390118,
+      "beforeBytes": 390118
+    },
+    {
+      "route": "Home",
+      "width": 390,
+      "scripts": 10,
+      "bytes": 390118,
+      "beforeBytes": 390118
+    },
+    {
+      "route": "Clients",
+      "width": 390,
+      "scripts": 10,
+      "bytes": 390118,
+      "beforeBytes": 390118
+    },
+    {
+      "route": "Work",
+      "width": 390,
+      "scripts": 10,
+      "bytes": 390118,
+      "beforeBytes": 390118
+    }
+  ]
+}

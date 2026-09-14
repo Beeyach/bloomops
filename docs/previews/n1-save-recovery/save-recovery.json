@@ -1,0 +1,29 @@
+{
+  "checks": [
+    "Mixed save retains only the failed field",
+    "Failed preview retains intended value and individual error",
+    "Partial success is saved once",
+    "Retry stays readable without document overflow at 1440",
+    "Retry stays readable without document overflow at 390",
+    "Retry stays readable without document overflow at 320",
+    "Cancelling replacement keeps the failed review",
+    "Cancelling a query change keeps review and page size",
+    "Dismissing reload keeps the pending review",
+    "Cancelling navigation keeps the pending values",
+    "Retry writes only the remaining field",
+    "Undo receipts survive the partial retry",
+    "Pending save has a visible status and disabled submit",
+    "Delayed save has one write",
+    "Lost response keeps the review although the server committed",
+    "Retry confirms existing value without another write",
+    "Network failure preserves the pending value",
+    "Retry refuses a concurrent field without writing",
+    "Denied access cannot retry a write",
+    "Explicit discard allows the query change",
+    "Deleting an inactive view retains the pending review without a discard prompt",
+    "Cancelling active-view deletion preserves its query and pending values",
+    "Confirmed active-view deletion discards the review before resetting query",
+    "No provider egress"
+  ],
+  "scope": "Isolated copied synthetic local D1; no staging mutations."
+}

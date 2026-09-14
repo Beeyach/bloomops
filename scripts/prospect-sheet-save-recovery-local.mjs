@@ -1,0 +1,60 @@
+// N1A acceptance against a separately copied synthetic local Worker fixture.
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import {join} from 'node:path';
+const root=process.argv[2],base='http://localhost:8790';
+assert.ok(root,'Pass the isolated N1 evidence directory');
+const health=await(await fetch(base+'/api/health')).json();assert.equal(health.environment,'development');assert.equal(health.auth.mail,'r2-dev');
+const {chromium}=createRequire('/tmp/bloomops-pilot-tools/package.json')('playwright'),browser=await chromium.launch({headless:true,args:['--no-sandbox']}),checks=[];
+const check=(name,value)=>{assert.ok(value,name);checks.push(name);console.log('ok '+name);};
+mkdirSync(join(root,'browser'),{recursive:true});
+try{
+ const ctx=await browser.newContext({storageState:join(root,'storage-state.json'),viewport:{width:1440,height:1000}}),page=await ctx.newPage();
+ await ctx.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());
+ const response=await ctx.request.get(base+'/api/bloomops/prospecting/sheet?q=Garden%20Studio%2005'),rows=(await response.json()).rows.slice(0,2);assert.equal(rows.length,2);
+ const read=async id=>{const res=await ctx.request.get(base+'/api/bloomops/prospecting/'+id);assert.equal(res.status(),200);return (await res.json()).profile;};
+ const patch=async(id,value)=>{const p=await read(id);const res=await ctx.request.patch(base+'/api/bloomops/prospecting/'+id,{data:{workspaceId:p.workspaceId,expectedRevision:p.revision,fields:{location:value}}});assert.equal(res.status(),200);};
+ for(const row of rows)await patch(row.id,'Original region');
+ const reset=base+'/prospecting?view=all&q=Garden%20Studio%2005&batch=&region=&platform=&fit=&never=';
+ await page.goto(reset,{waitUntil:'networkidle'});await page.locator('tbody tr').first().waitFor();
+ const review=page.getByRole('region',{name:'Preview field changes'}),retry=page.getByRole('button',{name:'Retry failed changes',exact:true});
+ const edit=async(value)=>{await page.getByRole('button',{name:'Edit Region for '+rows[0].businessName,exact:true}).click();await page.getByLabel('Edit Region',{exact:true}).fill(value);await page.getByRole('button',{name:'Preview edit',exact:true}).click();};
+ // Ensure Region is visible through the existing column picker.
+ await page.getByRole('button',{name:'Columns',exact:true}).click();await page.getByLabel('Region',{exact:true}).check();await page.getByRole('button',{name:'Done',exact:true}).click();
+ let writes=0;
+ await page.route('**/sheet-edit',async r=>{writes++;if(r.request().postDataJSON().id===rows[1].id)await r.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Temporarily unavailable'})});else await r.continue();});
+ for(const row of rows)await page.getByLabel('Select '+row.businessName,{exact:true}).check();
+ await page.getByRole('button',{name:'Edit fields',exact:true}).click();await page.getByLabel('Field',{exact:true}).selectOption('location');await page.getByLabel('New value',{exact:true}).fill('Reviewed region');await page.getByRole('button',{name:'Preview changes',exact:true}).click();await page.getByRole('button',{name:'Save changes',exact:true}).click();await retry.waitFor();
+ check('Mixed save retains only the failed field',await review.locator('.bo-sheet-change-list p').count()===1&&(await review.textContent()).includes(rows[1].businessName));
+ check('Failed preview retains intended value and individual error',(await review.textContent()).includes('Reviewed region')&&(await review.textContent()).includes('Temporarily unavailable'));
+ check('Partial success is saved once',(await read(rows[0].id)).location==='Reviewed region'&&(await read(rows[1].id)).location==='Original region'&&writes===2);
+ for(const width of [1440,390,320]){await page.setViewportSize({width,height:1000});await retry.scrollIntoViewIfNeeded();await page.screenshot({path:join(root,'browser/retry-'+width+'.png')});check('Retry stays readable without document overflow at '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}
+ await page.setViewportSize({width:1440,height:1000});
+ page.once('dialog',d=>d.dismiss());await page.getByRole('button',{name:'Edit Region for '+rows[0].businessName,exact:true}).click();check('Cancelling replacement keeps the failed review',await retry.isVisible());
+ page.once('dialog',d=>d.dismiss());await page.getByRole('combobox',{name:'Rows per page',exact:true}).selectOption('50');check('Cancelling a query change keeps review and page size',await retry.isVisible()&&await page.getByRole('combobox',{name:'Rows per page',exact:true}).inputValue()==='25');
+ let reloadWarned=false;page.once('dialog',async d=>{reloadWarned=d.type()==='beforeunload';await d.dismiss();});await page.reload({waitUntil:'domcontentloaded',timeout:3000}).catch(error=>{assert.ok(reloadWarned);assert.match(error.message,/ERR_ABORTED|interrupted|aborted|Timeout/i);});check('Dismissing reload keeps the pending review',reloadWarned&&await retry.isVisible());
+ const beforeUrl=page.url();page.once('dialog',d=>d.dismiss());await page.locator('tbody a').filter({hasText:rows[0].businessName}).first().click();check('Cancelling navigation keeps the pending values',page.url()===beforeUrl&&await retry.isVisible());
+ await page.unroute('**/sheet-edit');let retryWrites=0;await page.route('**/sheet-edit',async r=>{retryWrites++;await r.continue();});await retry.click();await review.waitFor({state:'hidden'});await page.getByText('2 saved changes can be undone.',{exact:true}).waitFor();
+ check('Retry writes only the remaining field',retryWrites===1&&(await read(rows[1].id)).location==='Reviewed region');await page.getByRole('button',{name:'Undo edits',exact:true}).click();await page.getByText('2 field changes undone.',{exact:true}).waitFor();check('Undo receipts survive the partial retry',(await read(rows[0].id)).location==='Original region'&&(await read(rows[1].id)).location==='Original region');
+ await page.unroute('**/sheet-edit');
+ // A delayed request cannot be submitted a second time.
+ await edit('Delayed region');let release,started;const gate=new Promise(r=>release=r),seen=new Promise(r=>started=r);let delayedWrites=0;
+ await page.route('**/sheet-edit',async r=>{delayedWrites++;started();await gate;await r.continue();});await page.getByRole('button',{name:'Save changes',exact:true}).click();await seen;check('Pending save has a visible status and disabled submit',await page.getByRole('button',{name:'Save changes',exact:true}).isDisabled()&&(await page.locator('.bo-sheet-progress').textContent()).includes('Saving 1 of 1'));await page.getByRole('button',{name:'Save changes',exact:true}).evaluate(n=>n.click());release();await review.waitFor({state:'hidden'});check('Delayed save has one write',delayedWrites===1);await page.unroute('**/sheet-edit');
+ // Lose a response after the server has committed. Retry reads before considering a write.
+ await edit('Committed region');let committedWrites=0;await page.route('**/sheet-edit',async r=>{committedWrites++;const res=await r.fetch();assert.equal(res.status(),200);await r.abort('failed');});await page.getByRole('button',{name:'Save changes',exact:true}).click();await retry.waitFor();check('Lost response keeps the review although the server committed',(await read(rows[0].id)).location==='Committed region');await retry.click();await review.waitFor({state:'hidden'});await page.getByText('0 field changes saved. 1 already saved; no additional write.',{exact:true}).waitFor();check('Retry confirms existing value without another write',committedWrites===1&&(await page.locator('.bo-sheet-progress').textContent()).includes('already saved; no additional write'));await page.unroute('**/sheet-edit');
+ // A disconnected save retains both the original comparison and intended value.
+ await edit('Offline region');await page.route('**/sheet-edit',r=>r.abort('internetdisconnected'));await page.getByRole('button',{name:'Save changes',exact:true}).click();await retry.waitFor();check('Network failure preserves the pending value',(await review.textContent()).includes('Offline region'));await patch(rows[0].id,'Concurrent region');await page.unroute('**/sheet-edit');let conflictingWrites=0;await page.route('**/sheet-edit',async r=>{conflictingWrites++;await r.continue();});await retry.click();await review.getByText('Field changed since preview. Cancel this edit and review the latest value.',{exact:true}).waitFor();check('Retry refuses a concurrent field without writing',conflictingWrites===0&&(await read(rows[0].id)).location==='Concurrent region');
+ await page.route('**/api/bloomops/prospecting/'+rows[0].id,r=>r.fulfill({status:403,contentType:'application/json',body:'{"error":"Access unavailable"}'}));await retry.click();await review.getByText('Access unavailable',{exact:true}).waitFor();check('Denied access cannot retry a write',conflictingWrites===0);
+ await page.unroute('**/api/bloomops/prospecting/'+rows[0].id);await page.unroute('**/sheet-edit');
+ page.once('dialog',d=>d.accept());await page.getByRole('combobox',{name:'Rows per page',exact:true}).selectOption('50');await review.waitFor({state:'hidden'});check('Explicit discard allows the query change',await page.getByRole('combobox',{name:'Rows per page',exact:true}).inputValue()==='50');
+ // Deleting an active saved view changes the query and must use the same discard gate.
+ await page.getByRole('button',{name:'All prospects',exact:true}).click();await page.getByLabel('Name this view',{exact:true}).fill('N1 inactive');await page.getByRole('button',{name:'Save current view',exact:true}).click();
+ await page.getByRole('button',{name:'N1 inactive',exact:true}).click();await page.getByLabel('Name this view',{exact:true}).fill('N1 recovery');await page.getByRole('button',{name:'Save current view',exact:true}).click();
+ await edit('Pending view value');await page.route('**/sheet-edit',r=>r.fulfill({status:503,contentType:'application/json',body:'{"error":"Synthetic save unavailable"}'}));await page.getByRole('button',{name:'Save changes',exact:true}).click();await retry.waitFor();
+ await page.getByRole('button',{name:'N1 recovery',exact:true}).click();let unexpectedDialog=false;const dismissUnexpected=async d=>{unexpectedDialog=true;await d.dismiss();};page.on('dialog',dismissUnexpected);await page.getByRole('button',{name:'Delete view N1 inactive',exact:true}).click();page.off('dialog',dismissUnexpected);check('Deleting an inactive view retains the pending review without a discard prompt',!unexpectedDialog&&await retry.isVisible()&&await page.getByRole('button',{name:'Delete view N1 inactive',exact:true}).count()===0);
+ page.once('dialog',d=>d.dismiss());await page.getByRole('button',{name:'Delete view N1 recovery',exact:true}).click();check('Cancelling active-view deletion preserves its query and pending values',await retry.isVisible()&&await page.getByRole('button',{name:'Delete view N1 recovery',exact:true}).count()===1&&await page.getByRole('searchbox',{name:'Search prospects',exact:true}).inputValue()==='Garden Studio 05');
+ page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'Delete view N1 recovery',exact:true}).click();await review.waitFor({state:'hidden'});await page.getByRole('button',{name:'All prospects',exact:true}).waitFor();check('Confirmed active-view deletion discards the review before resetting query',await page.getByRole('searchbox',{name:'Search prospects',exact:true}).inputValue()==='');await page.unroute('**/sheet-edit');
+ check('No provider egress',JSON.parse(readFileSync(join(root,'provider-log.json'))).length===0);
+ writeFileSync(join(root,'browser/save-recovery.json'),JSON.stringify({checks,scope:'Isolated copied synthetic local D1; no staging mutations.'},null,2)+'\n');console.log('PASS '+checks.length+' N1A browser checks');
+}catch(error){for(const ctx of browser.contexts())await ctx.pages()[0]?.screenshot({path:join(root,'browser/failure.png'),fullPage:true});throw error;}finally{await browser.close();}
