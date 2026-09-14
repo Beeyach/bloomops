@@ -432,3 +432,5 @@
 .bo-sheet-filter-value{display:inline-block;margin:4px 12px 4px 0}
 
 .bo-sheet-save-error{display:block;margin-top:6px;color:#963e46;overflow-wrap:anywhere}
+
+.bo-sheet-recovery{margin-bottom:20px;padding:20px;background:var(--bo-snow,#fff);border:1px solid var(--bo-border,#dce0ec);border-radius:12px}.bo-sheet-recovery h2{font-size:20px;margin:0 0 16px}.bo-sheet-recovery>div{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0}.bo-sheet-recovery time{display:block;color:var(--bo-muted,#64708b)}.bo-sheet-recovery p{margin-top:16px}.bo-sheet-recovered-value{display:block;margin-top:12px;font-weight:500}.bo-sheet-recovered-value input{display:block;margin-top:8px;width:100%;max-width:540px}.bo-sheet-change-list p{overflow-wrap:anywhere}

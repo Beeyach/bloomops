@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { VERSION, versionLine } from '@/lib/version.mjs';
+import {changeDraftContext} from '@/lib/bloomops/draft-context.mjs';
 import useTheme from './useTheme';
 import EmojiPicker from './EmojiPicker';
 import { buildPageTree, ancestorsOf } from '../lib/page-tree.mjs';
@@ -825,6 +826,7 @@ export default function GlassRail({
               </a>
               <button
                 onClick={async () => {
+                  changeDraftContext({logout:true});
                   try {
                     await fetch('/api/auth/sign-out', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
                   } catch {}
