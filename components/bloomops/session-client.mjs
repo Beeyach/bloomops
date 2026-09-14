@@ -1,7 +1,9 @@
+import {changeDraftContext} from '@/lib/bloomops/draft-context.mjs';
 // Sign out from the browser: end the Better Auth session, then go to the
 // sign-in screen. Shared by the account menus and the sign-out buttons so
 // there is one way to leave.
 export async function signOutAndLeave(next = '/sign-in') {
+  changeDraftContext({logout:true});
   try {
     await fetch('/api/auth/sign-out', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
   } catch {}

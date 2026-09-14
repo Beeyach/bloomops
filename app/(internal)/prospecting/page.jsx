@@ -8,5 +8,5 @@ export const metadata={title:'Prospects'};
 export default async function ProspectsPage({searchParams}){
  const {access,actor}=await requireShell('internal');if(!evaluate(actor,{action:'prospecting.view'}).allowed)notFound();
  if(access.workspace.purpose!=='prospecting')return <div className="bo-prospect-page"><PageHeader title="Prospecting"/><p>Choose your fresh prospecting workspace to begin.</p><Button href="/workspaces">Choose workspace</Button></div>;
- return <ProspectSheet workspaceId={actor.workspaceId} userId={actor.userId} workspaceName={access.workspace.name} initialQuery={await searchParams}/>;
+ return <ProspectSheet key={JSON.stringify([actor.userId,actor.workspaceId])} workspaceId={actor.workspaceId} userId={actor.userId} workspaceName={access.workspace.name} initialQuery={await searchParams}/>;
 }

@@ -1,5 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';
+import {changeDraftContext} from '@/lib/bloomops/draft-context.mjs';
 import {signOutAndLeave} from './session-client.mjs';
 import {Button,Field,Status} from './Primitives';
 export default function WorkspaceChooser({workspaces,currentId,canCreate}){
@@ -8,6 +9,7 @@ export default function WorkspaceChooser({workspaces,currentId,canCreate}){
  async function select(id){
   const response=await fetch('/api/bloomops/workspaces/select',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({workspaceId:id})});
   const body=await response.json();if(!response.ok)throw new Error(body.error||'Workspace is unavailable.');
+  changeDraftContext();
   window.location.assign(body.redirect);
  }
  async function choose(id){setBusy(id);setError('');try{await select(id);}catch(e){setError(e.message);setBusy(null);}}
