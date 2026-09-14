@@ -1,12 +1,12 @@
 # Bloomsi Build State
 
-## Current direction — compact prospect sheet and clear links; staging refinement pending
+## Current direction — compact prospect sheet and clear links accepted in staging
 
 Owner requested smaller prospect-sheet fonts, website icons beside their URLs and a clearly clickable Next Action. The existing isolated PR73 worktree now changes only sheet CSS and presentation markup: desktop table/toolbar text is14px with tighter row spacing, phones retain16px text and44px action targets, website text/icon share one flex link, and Next Action has a tinted border, chevron, hover and keyboard focus. Its canonical profile destination is unchanged. The accepted full-screen sheet remains in place.
 
 Final `npm run cf:build`, patch hygiene and13 candidate checks pass across1920/1440/1024/768/390/320 widths. Candidate previews use exact CSS and matching markup on synthetic staging records; they are not deployed-build evidence. Desktop and phone captures were visually inspected. One fresh Sol High deployment review found no material findings; no re-review was needed. [Evidence](previews/sheet-fluid/README.md). No schema, query, dependency, authorization or workflow change; no new data writes, broad test suite or migration run is needed for this presentation refinement.
 
-PR73 remains draft/unmerged. Existing staging remains43374cc until this refinement passes review and its authorized staging workflow completes. N2 is not started. Original LTB/voices, production/DNS, real imports/outreach, paid/video work and unrelated worktrees remain unchanged.
+**Live in [staging](https://staging.ops.gobloomwired.com/prospecting)** on runtime `54dd8aec44c13ae4540018abaf2d1a484d60f31f`; [workflow34874879661](https://github.com/Bloomwired/bloomops/actions/runs/34874879661) succeeded. **17 actual deployed checks pass without injected markup/CSS**, covering version/health45, six widths, inline icon geometry, typography, touch targets, keyboard focus/Enter into the canonical profile and return to the saved sheet view. Desktop and phone captures, including the phone Next Action, were visually inspected. PR73 remains draft/unmerged; main remains85ab496. Next bounded task is PR73 readiness/merge before N2. N2 is not started. Original LTB/voices, production/DNS, real imports/outreach, paid/video work and unrelated worktrees remain unchanged.
 
 ## Previous accepted direction — fluid prospect sheet accepted in staging; N2 not started
 

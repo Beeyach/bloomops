@@ -4,13 +4,23 @@
 
 The owner requested smaller table text, an external-link icon beside each URL and a visibly clickable Next Action. Desktop sheet text is now14px with tighter row spacing; phone text remains16px and action targets remain44px. Website text/icon share a flex link. Next Action uses a quiet tinted border, chevron and hover/focus treatment while preserving its canonical profile destination. Full-screen sizing stays in place. Only sheet CSS and presentation JSX change; no business logic, query, authorization, schema or workflow change.
 
-The final production OpenNext build and [13 candidate checks](density-candidate-checks.json) pass, covering six widths and actual keyboard focus. These previews use exact candidate CSS and matching presentation markup on existing synthetic staging records. Viewport changes can refresh React rows; checks wait for loaded records before applying the candidate markup. This evidence is distinct from final deployed acceptance, which remains pending.
+The final production OpenNext build and [13 candidate checks](density-candidate-checks.json) pass, covering six widths and actual keyboard focus. These previews use exact candidate CSS and matching presentation markup on existing synthetic staging records. Viewport changes can refresh React rows; checks wait for loaded records before applying the candidate markup. This evidence is distinct from the final deployed acceptance recorded below.
 
 - [Compact desktop candidate](density-candidate-1440.jpg)
 - [Phone candidate](density-candidate-390.jpg)
 - [Phone Next Action](density-candidate-390-action.jpg)
 
-One fresh Sol High deployment review found no material findings; no re-review was needed. Staging is still the previous accepted fluid-sheet runtime below. No record edits or external audits were started.
+One fresh Sol High deployment review found no material findings; no re-review was needed. The refinement is now accepted in staging as recorded below. No record edits or external audits were started.
+
+## Compact-sheet staging result
+
+[Open staging](https://staging.ops.gobloomwired.com/prospecting). [Workflow34874879661](https://github.com/Bloomwired/bloomops/actions/runs/34874879661) succeeded on `54dd8aec44c13ae4540018abaf2d1a484d60f31f`. [17 live checks](density-staging-checks.json) verify the actual deployed CSS/JSX with no injection: runtime/staging health with45 migrations, six widths, compact desktop/readable phone type, no horizontal overflow, inline website-icon geometry, safe website link attributes, bordered Next Action,44px phone targets and visible keyboard focus. Actual keyboard Enter opens the canonical profile; back restores the saved sheet view and two synthetic results. No record writes or audit execution occurred.
+
+- [Deployed desktop](density-staging-1440.jpg)
+- [Deployed phone](density-staging-390.jpg)
+- [Deployed phone Next Action](density-staging-390-action.jpg)
+
+All three captures were visually inspected. No new migration, broad suite or fresh-database run was needed for this presentation-only follow-up. PR73 remains draft/unmerged; N2 remains unstarted. Main remains85ab496 and production/DNS are unchanged. The earlier evidence below describes the preceding fluid-height release.
 
 ## Earlier fluid-height correction
 
