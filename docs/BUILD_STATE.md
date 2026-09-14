@@ -1,5 +1,9 @@
 # Bloomsi Build State
 
+## Next phases and client reporting planned 2026-09-14
+
+Added [NEXT_PHASES.md](NEXT_PHASES.md) for N1 save/recovery and search, N2 client overview and read-only client preview, N3 reporting, N4 reusable work and main Pages improvements, and N5 optional reporting connections. Added [CLIENT_REPORTING.md](CLIENT_REPORTING.md) for manual GHL/social templates, reviewed CSV input, typed metrics, source/period rules, charts, client portal publication snapshots and PDF export. Updated the roadmap, product specification and agent entry points. Active Prospecting work stays first. This is documentation only, with no report generation, runtime change, account connection, delivery, migration or deployment. Validation: relative links and whitespace checks. Existing release evidence below remains historical and must be checked against the current application before implementation.
+
 ## Prospect sheet handoff recorded 2026-09-14
 
 Added [PROSPECTING_SHEET.md](PROSPECTING_SHEET.md) and three visual references. The owner requires a real prospect sheet with editable fields, bulk selection/manual audit packages, saved views and filters, date sorting, 25/50/100/200 rows per page, website links, coloured view icons, a parser-matched Sample CSV download, import preview/duplicate checks, loading skeletons and a linked client/onboarding handoff. Updated AGENTS, the design checklist and the roadmap so P1 cannot be satisfied by a small list plus a profile. Current implementation must be inspected before continuing. Existing build evidence below remains historical. Optional paid audits and video stay later. Documentation and image changes only. Validation: image-copy hashes, local relative links and whitespace checks. Runtime tests and deployment are not applicable to this handoff.

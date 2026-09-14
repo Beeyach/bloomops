@@ -339,6 +339,10 @@ Useful categories:
 
 Pages may embed live structured database views where useful.
 
+## Client reports
+
+The owner has requested client-facing GHL and social reporting as a next phase. Follow [CLIENT_REPORTING.md](CLIENT_REPORTING.md) and [NEXT_PHASES.md](NEXT_PHASES.md). Reports belong to canonical client/service records, with structured metric observations, source definitions, periods and reviewed publication snapshots. Reuse existing performance records where appropriate. Reports are not finance ledger entries and should not introduce a second financial model. Pages may provide narrative and authorized links to reports. Start with numeric entry and reviewed CSV imports, with charts and portal/PDF output. Automatic source collection and delivery remain later work.
+
 ## Finance
 
 Finance is intentionally lightweight.

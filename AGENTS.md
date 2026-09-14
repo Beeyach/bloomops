@@ -4,6 +4,8 @@ The owner selected **Bloomsi** as the platform name and **bloomsi.app** as its d
 
 The 14 September 2026 owner direction requires a spreadsheet-style Prospects screen alongside full-page profiles. Read [docs/PROSPECTING_SHEET.md](docs/PROSPECTING_SHEET.md) and its three committed visuals before Prospecting UI work. It supplies the current sheet, view, sorting, pagination, import, bulk-action, loading and CRM/onboarding handoff requirements. A small list leading to a profile is insufficient. Inspect current implementation and preserve completed work. Paid audits and video stay in their later phases.
 
+After the active Prospecting work, follow [docs/NEXT_PHASES.md](docs/NEXT_PHASES.md) for save/recovery, search, client overview/preview, reporting and reusable work. [docs/CLIENT_REPORTING.md](docs/CLIENT_REPORTING.md) defines structured client reports with manual entry/import, charts, publication snapshots and portal/PDF output. Pages can supply narrative and authorized links but are not the metric database. These are future phases, not permission to interrupt or expand a current implementation task.
+
 `AGENTS.md` is the canonical repository instruction file for coding agents. Read and follow it before implementation work.
 
 BloomOps is an agency operations and client portal system. The owner-approved target also includes internal prospecting in a fresh workspace; see [the Prospecting and Pages roadmap](docs/PROSPECTING_ROADMAP.md). That roadmap is planned work, not a statement that the features have shipped.
