@@ -1,6 +1,6 @@
 # Bloomsi prospect sheet preview
 
-Local built-Worker captures using fictional records in an isolated workspace. These are working application screens, not the generated concepts. Staging deployment remains pending GitHub access; see [build state](../../BUILD_STATE.md).
+Local built-Worker captures using fictional records in an isolated workspace. These are working application screens, not the generated concepts. [Open live staging](https://staging.ops.gobloomwired.com/prospecting). See [build state](../../BUILD_STATE.md) and [draft PR64](https://github.com/Bloomwired/bloomops/pull/64).
 
 | Screen | Preview |
 | --- | --- |
@@ -24,10 +24,16 @@ Limits: personal settings do not sync between devices; explicit all-filtered sel
 
 ## Verification evidence
 
-The evidence directory is `/home/ary/Developer/bloomops-prospect-sheet-evidence/`. It contains focused test, native D1, actual built-Worker browser, migration, source-preservation and performance results. Private local browser sessions and synthetic sign-in captures stay outside the repository. 173 focused Node tests,20 native D1 checks and93 distinct browser checks pass (46 main,35 supplemental,12 focused review checks). The main run precedes the Shift-click and review fixes; the supplemental/focused runs cover those changes. Undo restores original source verification and survives a committed-but-lost response; manual evidence notes remain readable internally. Successful favicon rendering uses a fixture-only query suffix because Playwright automatically aborts intercepted URLs ending /favicon.ico. Runtime icon URLs and styling remain unchanged. One fresh Sol High review found three issues; the single focused re-review accepts their fixes with no remaining material findings. Staging still awaits GitHub access; BUILD_STATE owns that gate.
+The evidence directory is `/home/ary/Developer/bloomops-prospect-sheet-evidence/`. It contains focused test, native D1, actual built-Worker browser, migration, source-preservation and performance results. Private local browser sessions and synthetic sign-in captures stay outside the repository. 173 focused Node tests,20 native D1 checks and93 distinct browser checks pass (46 main,35 supplemental,12 focused review checks). The main run precedes the Shift-click and review fixes; the supplemental/focused runs cover those changes. Undo restores original source verification and survives a committed-but-lost response; manual evidence notes remain readable internally. Successful favicon rendering uses a fixture-only query suffix because Playwright automatically aborts intercepted URLs ending /favicon.ico. Runtime icon URLs and styling remain unchanged. One fresh Sol High review found three issues; the single focused re-review accepts their fixes with no remaining material findings. Staging is deployed; the live checks and their limits are recorded below.
 
 Compared with the accepted P5B application, Home/Clients/Work retain one navigation request,11/3/7 SQL statements and two D1 calls, respectively. All three retain10 scripts. Decoded shared JavaScript is388963 before and390118 after (+1155 bytes,0.3%). No sheet, prospect evidence, editor or video runtime is added to those routes. The original84-sample comparison retains60 measured navigations and12 cold loads. A final42-sample/six-cold-load recheck confirms query/bundle counts after the final sheet interaction correction. It ran alongside supplemental UI checks, so its timing is not an isolated benchmark. Small synthetic fixtures and frame timing provide no production speed guarantee.
 
 Migration0043 is additive. Fresh migration/idempotency and a populated-copy check preserve113 previous tables and existing rows/schema. Normal development and original Leads That Bloom data are unchanged. Production and DNS were not touched.
 
 The performance runs precede the review fixes to sheet undo, conversation filtering and internal profile history. Those fixes add no calls or client imports to Home/Clients/Work; no new timing claim is made.
+
+## Live staging verification
+
+The existing [staging workflow](https://github.com/Bloomwired/bloomops/actions/runs/34812410187) deployed runtime `bbe828b` successfully, with44 healthy domain migrations and22 passing live checks. A further20 public browser checks verify the version, health, exact official logo, sign-in at1440/390/320, anonymous access denial and redirects. [Check results](staging-checks.json), [desktop sign-in](staging-sign-in-desktop.png), [phone sign-in](staging-sign-in-mobile.png).
+
+These live captures show the public sign-in screen. Authenticated sheet behavior is covered by the isolated application captures and acceptance above; the owner's actual staging account/workspace walkthrough remains unverified. No real prospect import, conversion or outreach was used for live acceptance. The six-file integration preserving main's staging-origin/auth-logo fixes passed20 focused tests, the OpenNext build and a bounded independent Sol High review with no material findings. PR64 remains draft with merge conflicts; deployment does not imply merge acceptance.
