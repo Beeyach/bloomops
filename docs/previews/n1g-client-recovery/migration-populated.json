@@ -1,0 +1,8 @@
+{
+  "preservedApplicationTables": 112,
+  "existingSchemaPreserved": true,
+  "newReceiptRows": 0,
+  "foreignKeyViolations": 0,
+  "migrations": 45,
+  "excluded": "Wrangler _cf_METADATA migration metadata"
+}

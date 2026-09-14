@@ -309,6 +309,13 @@
       "when": 1789360878755,
       "tag": "0043_prospect_sheet",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "6",
+      "when": 1789393398068,
+      "tag": "0044_client_creation_recovery",
+      "breakpoints": true
     }
   ]
 }

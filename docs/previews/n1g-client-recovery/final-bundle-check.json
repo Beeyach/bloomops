@@ -1,0 +1,38 @@
+[
+  {
+    "width": 1440,
+    "route": "Home",
+    "scripts": 10,
+    "bytes": 391049
+  },
+  {
+    "width": 1440,
+    "route": "Clients",
+    "scripts": 10,
+    "bytes": 391049
+  },
+  {
+    "width": 1440,
+    "route": "Work",
+    "scripts": 10,
+    "bytes": 391049
+  },
+  {
+    "width": 390,
+    "route": "Home",
+    "scripts": 10,
+    "bytes": 391049
+  },
+  {
+    "width": 390,
+    "route": "Clients",
+    "scripts": 10,
+    "bytes": 391049
+  },
+  {
+    "width": 390,
+    "route": "Work",
+    "scripts": 10,
+    "bytes": 391049
+  }
+]

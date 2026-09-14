@@ -21,6 +21,9 @@ async function handlePOST(req) {
   if (response) return response;
   const body = await readBody(req);
   const input = pick(body, ['name', 'company', 'website', 'timezone', 'startDate', 'ownerMembershipId', 'contactName', 'contactEmail']);
+  // Older callers supplied only fields; recovery requests explicitly opt into
+  // the complete initiating context through their durable request ID.
+  if (Object.hasOwn(body, 'requestId')) Object.assign(input, pick(body, ['userId', 'workspaceId', 'requestId']));
   const result = await createClient(access.db, {
     workspaceId: access.workspace.id,
     input,

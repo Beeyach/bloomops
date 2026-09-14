@@ -2,6 +2,12 @@
 
 This is sequencing guidance, not permission to pre-build future work.
 
+## Current checkpoint — release accepted N1 work
+
+Reconcile and release PRs67–72: search, the prospect sheet screen fit and profile/new-prospect/Pages/client-creation recovery. Combined acceptance, safe ordered merges and final authenticated staging verification are required; see [BUILD_STATE](BUILD_STATE.md) for exact results. The current checkpoint does not claim the remaining all-app form inventory is complete.
+
+After the checkpoint, define the first N2 client overview slice from canonical services, work, deadlines and requests. Keep collaboration and authorized client preview under their separate N2 acceptance, and do not begin N2 during this release.
+
 ## Current owner priority — Prospecting and Pages
 
 Use [PROSPECTING_ROADMAP.md](PROSPECTING_ROADMAP.md) for the new workspace, internal prospecting area, structured profiles, Skills Library, outreach/results, main Pages and client-onboarding handoff. It supersedes earlier exclusions of prospecting and brings Pages forward from the general Operations Layer backlog. The first useful slice is the Prospecting shell and one full-page structured profile.
