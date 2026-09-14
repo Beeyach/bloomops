@@ -1,6 +1,6 @@
 # BloomOps Documentation Index
 
-Current owner priority: [Prospect sheet](PROSPECTING_SHEET.md), with [visual preview and staging evidence](previews/prospect-sheet/README.md). [BUILD_STATE](BUILD_STATE.md) records verification and the next task. Preserve [Bloomsi branding](BRANDING.md); older release directions below are historical.
+Current owner priority: [N2 client overview](phases/N2.md). PR73 is merged; [BUILD_STATE](BUILD_STATE.md) records exact release gates and the next implementation task. Preserve the accepted [prospect sheet](PROSPECTING_SHEET.md) and [Bloomsi branding](BRANDING.md). Earlier release entries below are historical.
 
 This repository uses selective context so coding agents do not need the entire product plan in every session.
 
@@ -30,7 +30,9 @@ For every implementation session:
 
 Do not automatically load every planning document into context.
 
-## Current Build
+## Earlier build records
+
+These entries are historical. Use BUILD_STATE and the N2 contract above for current work.
 
 **Active owner-directed phase: P3**, following locally accepted P2 on `feat/prospecting-p2-eligibility`. [P3](phases/P3.md) records confirmed Google Workspace/hello@bloomwired.io, P3A sender/draft/content approval/Overview and P3B connection/timing preview. [Google setup](GOOGLE_CONNECTION_SETUP.md) records verified local consent/refresh and the still-disabled controlled test gate. [P3C2 preview](previews/prospecting-p3c2/README.md) records accepted local delivery/recovery verification; Google accepted two separately authorized tests; the owner confirmed receipt and visible compact sign-off but requested restored paragraph spacing. The subsequently authorized spaced test was accepted once and the owner replied perfect; presentation is accepted and test sending remains disabled. [P3A preview](previews/prospecting-p3a/README.md) records actual local captures and verification; [BUILD_STATE](BUILD_STATE.md) owns current review acceptance. P1 remains draft PR #60 at `67b94eb`; subsequent work is local/uncommitted and undeployed. Full P3–P5 remain unfinished; Ads E3B is deferred. The following entries retain accepted release history.
 P3C3B live reply acceptance now passes: one exact-thread incoming observation and durable hold. [P3C3C preview](previews/prospecting-p3c3c/README.md) records recipient protection across duplicate prospects, with52 focused,20 native and51 browser checks passing; independent Sol High review is accepted. The owner’s standing direction removes repeated approval prompts for necessary current test-conversation checks. Broader discovery/recovery and scheduling/Results remain unfinished; see BUILD_STATE.

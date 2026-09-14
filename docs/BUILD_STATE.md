@@ -1,6 +1,16 @@
 # Bloomsi Build State
 
-## Current direction — compact text editing and clear Save
+## Current direction — PR73 merged; N2 client overview contract prepared
+
+The prospect-sheet follow-up is merged through [PR73](https://github.com/Bloomwired/bloomops/pull/73) as `6ab4d1167dd3f3bcf7cf40fcc1bbf9091443175f`. Latest main was85ab496 and PR head509b114; the merge tree exactly matches the reviewed branch. Only documentation/evidence followed accepted runtime03331fc. No new runtime change or repeated broad review was needed for this release checkpoint. The existing112 browser/35 Node checks, bounded Sol High review/re-review and seven live checks remain the implementation evidence.
+
+[Deploy staging34898874655](https://github.com/Bloomwired/bloomops/actions/runs/34898874655) passed on the merge SHA. Public version/health confirm runtime6ab4d11 on the staging Worker with45 migrations, and a read-only authenticated reload confirms the sheet renders without overflow, an open editor or the old recovery banner. No prospect/client data was written during this checkpoint. [Zero-to-current34898874650](https://github.com/Bloomwired/bloomops/actions/runs/34898874650) also passed on that exact merge SHA, including its disposable database migration, second pass and cleanup. **PR73 release checkpoint is closed.**
+
+The first N2 task from ROADMAP — define the client overview slice — is prepared in [phases/N2.md](phases/N2.md), based on the actual client route and existing services/projects/actions/onboarding/milestone/deliverable paths. Its scope is purchased services, current work, a correct next deadline and unresolved onboarding requests, with explicit bounded-query and permission acceptance. Preview, photos, comments and notifications have separate later slices. **N2 runtime implementation is not started.** **First unfinished task: implement N2A's server read model and overview UI.** Both merged-release gates have passed.
+
+Active next-phase workspace: `/home/ary/Developer/bloomops-n2-client-overview`, branch `feat/n2-client-overview`, based on6ab4d11. The existing sheet worktree is clean and preserved, as are root D2 changes and all other worktrees. This preparation changes documentation only; no new migration, dependency, build or deployment is needed. Original LTB/voices, production/DNS, real imports/outreach and paid/video work remain untouched. Broad all-app save recovery remains the separately recorded inventory, not an inferred completed feature.
+
+## Previous direction — compact text editing and clear Save
 
 Owner requested removal of the Current platform source-detail control, less movement when editing Contact, and clearer saving without the earlier-visit recovery banner. The active PR73 worktree preserves existing save/recovery behavior. Text cells now use a compact editor with labelled Save, over the existing cell footprint; earlier copies move to a Drafts toolbar menu. The platform source control is omitted without deleting stored provenance. No server/schema/workflow/dependency changes or migrations.
 
