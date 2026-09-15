@@ -1,5 +1,19 @@
 # Bloomsi Build State
 
+## Current bounded correction — N3A creation retries
+
+The independent PR81 audit found one P2 at `68340df`: equivalent normalized creation
+requests could conflict when JSON properties were reordered. The [focused correction](previews/reports/CORRECTION.md)
+uses an explicit fixed-order intent tuple and real-writer/native-D1 regressions.
+Earlier N3A evidence below remains historical. Local source `d4e1670` passes reporting29,
+native20, full7264/7264, completed build and reporting browser54 with zero runtime
+errors. Remote receipts accompany the external addendum after normal PR validation;
+focused re-review remains pending. No schema change, merge or deployment is part of this correction.
+
+## Current task decision — N3A internal manual report drafts
+
+The owner selects [N3A](phases/N3.md) as a new bounded implementation task from main `2c0e649`. Internal manual drafts and private preview only; N3 as a whole is not authorized in full. N2E, PR79 and the five baseline failures are closed per owner release evidence. E3B, paused Prospecting/email/video and PERF3 remain separate. Earlier current-task headings below are historical checkpoints. Implementation and local verification are complete at `44eac7d`: full7260/7260, report25/25, native16, completed build and report browser54 pass. [Evidence](previews/reports/README.md). Draft PR remote validation and the external independent audit remain handoff gates; no audit acceptance, merge or deployment is claimed.
+
 ## Current bounded correction — PR79 parent keys
 
 Independent review of `d60abaa` found one P2 in the new workspace-FK test helper: declared composite paths were accepted without validating their parent keys. [Focused correction](previews/baseline-maintenance/CORRECTION.md) adds full key metadata validation and nonexecuting SQLite FK preparation, plus malformed/valid SQLite and local native-D1 fixtures. The original schema, portal and follow-up changes remain untouched. Local/remote receipts accompany the external addendum; completion and independent acceptance remain pending that evidence and focused re-review. No merge or deployment is authorized. The earlier maintenance checkpoint below is historical.

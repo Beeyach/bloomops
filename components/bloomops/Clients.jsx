@@ -136,6 +136,7 @@ export function ClientTabs({ clientId, active, hasProjects = false }) {
   return (
     <nav className="bo-tabs" aria-label="Client sections">
       <ul className="bo-tab-strip">
+        <li><a className="bo-client-tab" href={`/clients/${clientId}/reports`}>Reports</a></li>
         {tabs.map(([key, label]) => (
           <li key={key}>
             <a
