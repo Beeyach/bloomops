@@ -38,9 +38,13 @@ def run():
     output.parent.mkdir(parents=True, exist_ok=True)
     command = sys.argv[3:]
     started = datetime.datetime.now(datetime.timezone.utc).isoformat()
-    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-    text = sanitize(result.stdout)
-    output.with_suffix('.log').write_text(text)
+    # Node process.exit() can discard buffered pipe output. A regular file makes
+    # child stdout synchronous; sanitize it before printing or uploading it.
+    log = output.with_suffix('.log')
+    with log.open('w') as stream:
+        result = subprocess.run(command, stdout=stream, stderr=subprocess.STDOUT, text=True)
+    text = sanitize(log.read_text())
+    log.write_text(text)
     receipt = {
         "command": command, "cwd": str(pathlib.Path.cwd()),
         "revision": capture(['git', 'rev-parse', 'HEAD']),
