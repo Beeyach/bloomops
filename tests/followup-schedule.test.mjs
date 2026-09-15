@@ -34,13 +34,13 @@ test('the spacing is the app\'s own, not restated here', () => {
 });
 
 test('P1 email 2 is due four days after the first email', () => {
-  const s = sched({ rating: GREEN, emails_sent: 1, last_contact_date: '2026-08-01' });
+  const s = sched({ rating: GREEN, emails_sent: 1, last_contact_date: '2026-08-01' }, { now: new Date('2026-08-06T12:00:00Z') });
   assert.equal(s.step, 2);
   assert.equal(s.dueAt, '2026-08-05');
 });
 
 test('P2 email 2 is due five days after the first email', () => {
-  const s = sched({ rating: BLUE, emails_sent: 1, last_contact_date: '2026-08-01' });
+  const s = sched({ rating: BLUE, emails_sent: 1, last_contact_date: '2026-08-01' }, { now: new Date('2026-08-06T12:00:00Z') });
   assert.equal(s.dueAt, '2026-08-06');
   assert.equal(s.isFinalStep, false, 'P2 has three touches, so email 2 is not the last one');
 });
@@ -194,6 +194,36 @@ test('there is exactly one stale threshold', () => {
   assert.ok(lib.includes('STALE_CUTOVER_DAYS'), 'imported by name');
   assert.ok(!/=\s*45\b/.test(lib), 'and never re-typed as a number');
 });
+
+// Deliberately span a leap day and different calendar years. These are clock
+// inputs, not dates moved forward to postpone an expiring fixture.
+for (const dates of [
+  { first: '2024-02-25', now: '2024-03-02', p1: '2024-02-29', p2: '2024-03-01' },
+  { first: '2026-09-09', now: '2026-09-15', p1: '2026-09-13', p2: '2026-09-14' },
+  { first: '2034-01-14', now: '2034-01-20', p1: '2034-01-18', p2: '2034-01-19' },
+]) for (const [label, rating, expected] of [['P1', GREEN, dates.p1], ['P2', BLUE, dates.p2]]) {
+  test(`${label} timing, fresh evidence and exact stale boundary at controlled ${dates.now}`, () => {
+    const prospect = { rating, emails_sent: 1, last_contact_date: dates.first };
+    const now = new Date(dates.now+'T12:00:00Z');
+    const fresh = sched(prospect, { now, evidenceFresh: true });
+    assert.equal(fresh.step, 2);
+    assert.equal(fresh.dueAt, expected);
+    assert.equal(fresh.status, DUE.OVERDUE);
+    assert.equal(sched(prospect, { now, evidenceFresh: false }).status, DUE.HOLD_EVIDENCE);
+    const boundary = Date.parse(dates.first) + 45 * 86400000;
+    for (const offset of [-1, 0]) {
+      const at = sched(prospect, { now: new Date(boundary + offset) });
+      assert.equal(at.status, DUE.OVERDUE);
+      assert.equal(at.step, 2);
+      assert.equal(at.dueAt, expected);
+    }
+    const stale = sched(prospect, { now: new Date(boundary + 1) });
+    assert.equal(stale.status, DUE.HOLD_EVIDENCE);
+    assert.equal(stale.decision, NEXT.HOLD_STALE_EVIDENCE);
+    assert.equal(stale.step, null);
+    assert.equal(stale.dueAt, null);
+  });
+}
 
 // ── Parity with the policy it must not contradict ────────────────────────
 

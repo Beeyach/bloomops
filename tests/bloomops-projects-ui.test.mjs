@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { parseHTML } from 'zeed-dom';
 import { setup } from './_projects.mjs';
 import { portalProjects } from '../lib/bloomops/projects.mjs';
 const { ProjectList, ProjectFacts } = await import('../components/bloomops/Projects.jsx');
@@ -43,5 +44,13 @@ test('portal renders only the dedicated projection and suppresses irrelevant Pro
 });
 test('multi-client portal keeps each Project under its own named account', () => {
   const html = render(PortalHome, { workspaceName: 'Agency', user: { name: 'James' }, clients: ['James', 'Lawrence'].map(name => ({ id: name, name, onboarding: null, projects: [{ id: name, label: `${name} delivery`, statusLabel: 'Planned' }] })) });
-  for (const name of ['James', 'Lawrence']) assert.match(html, new RegExp(`${name} · Projects[\\s\\S]*?${name} delivery`));
+  const dom = parseHTML(html);
+  for (const name of ['James', 'Lawrence']) {
+    const section = dom.querySelector(`section[aria-labelledby="projects-${name}"]`);
+    assert.ok(section, `Projects section for ${name}`);
+    assert.equal(section.querySelector('h2').textContent, `Projects for ${name}`);
+    assert.match(section.textContent, new RegExp(`${name} delivery`));
+    const other = name === 'James' ? 'Lawrence' : 'James';
+    assert.doesNotMatch(section.textContent, new RegExp(`${other} delivery`));
+  }
 });
