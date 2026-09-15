@@ -93,3 +93,7 @@ Document-navigation measurements at1440/390 are also exported; their browser ela
 ## Stop line
 
 Next is an independent Sol High audit of the complete base-to-head packet. No independent audit, push, PR, merge, deployment, production/DNS/shared-data action, outreach, N3/N4, prospecting or external notification transport occurred. Full milestone acceptance remains pending audit and any separately authorized external gates.
+
+## Subsequent independent audit and bounded correction
+
+The initial audit returned CHANGES REQUIRED for a preferences-loading request race. [The correction and fresh artifact-bound verification](CORRECTION.md) supersede this report's audit-readiness status. This earlier evidence remains historical: the exact runtime-to-reviewed delta includes three added browser assertions, and its original browser/build artifact binding was unverified. No old log or result was rewritten.

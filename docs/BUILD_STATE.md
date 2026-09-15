@@ -1,6 +1,12 @@
 # Bloomsi Build State
 
-## Current direction — N2E ready for independent audit
+## Current direction — N2E correction ready for focused re-review
+
+The initial independent audit of259bb59 required one P2 correction: inbox refreshes could strand preference loading. Tested source `83c4cf18611253bd90a6a1841d8143ed25ab0ed0` separates request generations/loading/errors and invalidates obsolete scope/panel responses. The reviewed build reproduces the failure; corrected focused browser23/23 and complete notification browser60/60 pass against the completed, stamped, hashed Worker. Focused Node22/22 and build exit0 pass; full suite7193/7198 retains exactly the five audited baseline failures. [Correction commands, artifact identity, historical delta and limitations](previews/notifications/CORRECTION.md). Only documentation/evidence follows tested source.
+
+Next is focused independent re-review; no independent acceptance, push, PR, merge or deployment is claimed. No server/domain/schema/migration change. Prior native-D1/migration/performance evidence is retained, not rerun; LIVE PERFORMANCE NOT VERIFIED. Original D2, other worktrees and excluded `.task-tmp/` remain untouched.
+
+## Previous checkpoint — N2E prepared for initial independent audit
 
 [PR77](https://github.com/Bloomwired/bloomops/pull/77) merged as `f989428ccc6150befb457860b21c468b2ba656ab`. Its tree exactly matches accepted head `c031f24`; only documentation/evidence followed reviewed runtime `6d60828`. [Merged-main staging34914830027](https://github.com/Bloomwired/bloomops/actions/runs/34914830027) passed. Live read-only checks confirm runtime `f989428`, healthy staging schema46 and the QA client's empty discussion200. [Zero-to-current34914829997](https://github.com/Bloomwired/bloomops/actions/runs/34914829997) passed, including the second migration pass and cleanup. Both merged-main gates are closed; N2D is released. The accepted79 focused Node/43 Worker-browser/11 visual checks, clean Sol High review and ten feature-staging checks remain the implementation evidence. No new staging records were written.
 
