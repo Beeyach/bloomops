@@ -8,6 +8,7 @@ import {all,migrationFiles} from '../tests/_bloomops-db.mjs';
 import {bloomOpsDb} from '../lib/bloomops/db.mjs';
 import {input,draft,observation} from '../tests/_client-report-fixture.mjs';
 import {saveClientReport as save,getClientReport as get} from '../lib/bloomops/client-reports.mjs';
+import {checkEquivalentRetries,checkConcurrentRetries} from '../tests/_client-report-retry.mjs';
 const require=createRequire(import.meta.url),{Miniflare,convertV4MiniflareOptions}=require(require.resolve('miniflare',{paths:[dirname(require.resolve('wrangler/package.json'))]}));
 const mf=new Miniflare(convertV4MiniflareOptions({modules:true,script:'export default {fetch(){return new Response("local")}}',compatibilityDate:'2025-05-01',cf:false,d1Databases:{DB:'n3a-upgrade',FRESH:'n3a-fresh'}}));
 const t=await setup(),checks=[];const check=(name,ok)=>{assert.ok(ok,name);checks.push(name);console.log('ok '+name);};
@@ -31,6 +32,10 @@ try{
  for(const [name,patch] of [['wrong Client Service tuple',{service_engagement_id:'kajabi-service'}],['foreign workspace',{workspace_id:'b'}],['foreign creator membership',{creator_membership_id:'m-foreign'}]]){await assert.rejects(copy(patch),/FOREIGN KEY/);check('native FK rejects '+name,true);}
  await assert.rejects(binding.prepare('UPDATE client_report_drafts SET template_id=? WHERE id=?').bind('social',id).run(),/immutable/);check('native template and parent identity immutable',true);
  await assert.rejects(binding.prepare("UPDATE client_report_metrics SET state='value',value=-1 WHERE report_id=?").bind(id).run(),/CHECK/);check('native negative counts rejected',true);
+ for(const template of ['ghl_campaign','social']) {
+  await checkEquivalentRetries(db,t.owner,template);check(template+' native reordered retries, changed-intent conflicts and separate UUIDs',true);
+  await checkConcurrentRetries(db,t.owner,template);check(template+' native concurrent reordered retries persist exactly one draft',true);
+ }
  await binding.prepare("UPDATE workspace_memberships SET status='suspended' WHERE id='m-ellen'").run();check('native revocation hides report from old actor',await get(db,t.owner,'james',id)===null);check('native revocation refuses save',!(await save(db,t.owner,'james',id,{...v,expectedRevision:saved.revision})).ok);
  check('native final FK integrity',(await binding.prepare('PRAGMA foreign_key_check').all()).results.length===0);
  console.log(JSON.stringify({checks:checks.length,names:checks,exitCode:0}));
