@@ -49,7 +49,7 @@ try{
  // state only in this disposable database; every subsequent setup uses the UI.
  await binding.prepare("DELETE FROM template_versions WHERE workspace_id='a' AND template_id IN (SELECT id FROM templates WHERE workspace_id='a' AND kind='onboarding' AND slug IN ('common','ghl'))").run();
  check('isolated built Worker is healthy', (await(await fetch(base+'/api/health')).json()).ok);
- browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-gpu']});
  async function login(user){const ctx=await browser.newContext({viewport:{width:1440,height:1000}});await ctx.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());const email=user+'@example.com';assert.equal((await ctx.request.post(base+'/api/auth/sign-in/magic-link',{headers:{origin:base},data:{email,callbackURL:'/'}})).status(),200);
   const mail=await bucket.get('dev-mail/'+createHash('sha256').update(email).digest('hex')+'.json');assert.ok(mail);const url=JSON.parse(await mail.text()).text.match(/https?:\/\/\S+/)[0];const parsed=new URL(url);assert.ok(parsed.origin===base&&parsed.pathname==='/api/auth/magic-link/verify',`local auth host/path: ${parsed.host} ${parsed.pathname}`);
   const page=await ctx.newPage();page.on('pageerror',e=>errors.push(reportBrowserError(e)));await page.goto(url,{waitUntil:'networkidle'});return {ctx,page};}
@@ -57,6 +57,7 @@ try{
  identity.servedAssets=[];for(const url of await owner.page.locator('script[src]').evaluateAll(nodes=>nodes.map(n=>n.src))){const path=new URL(url).pathname,file=artifacts.find(f=>f.path==='.open-next/assets'+decodeURIComponent(path));assert.ok(file,'served script belongs to completed build');const response=await owner.ctx.request.get(url);assert.equal(response.status(),200);const sha256=hash(await response.body());assert.equal(sha256,file.sha256);identity.servedAssets.push({path,sha256});}
  assert.ok(identity.servedAssets.length);writeFileSync(out+'/artifact-identity.json',JSON.stringify(identity,null,2));
  const admin=await login('ary'),foreign=await login('foreign');
+ await owner.page.bringToFront();
  await owner.page.goto(base+'/settings/onboarding',{waitUntil:'networkidle'});
  await owner.page.getByText('Review Common default instructions',{exact:true}).click();check('canonical onboarding instructions can be reviewed',await owner.page.getByText('Brand assets',{exact:true}).count()===1);
  await owner.page.getByLabel('Install missing Common defaults',{exact:true}).check();await owner.page.getByLabel('Install missing GHL defaults',{exact:true}).check();
