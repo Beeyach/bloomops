@@ -45,6 +45,9 @@ try{
  for(const entry of journal.entries){for(const stmt of readFileSync(join(root,`drizzle/${entry.tag}.sql`),'utf8').split('--> statement-breakpoint').map(x=>x.trim()).filter(Boolean))await binding.prepare(stmt).run();await binding.prepare('INSERT INTO d1_migrations(name) VALUES(?)').bind(entry.tag+'.sql').run();}
  await runBootstrap(binding,{workspaceName:'N3A Synthetic QA',workspaceSlug:'n3a-qa',owner:{email:'ellen@example.com',name:'QA Owner'},admin:{email:'ary@example.com',name:'QA Admin'}},{ids:{workspaceId:'a',ownerUserId:'ellen',ownerMembershipId:'m-ellen',adminUserId:'ary',adminMembershipId:'m-ary'}});
  await runBootstrap(binding,{workspaceName:'N3A Other QA',workspaceSlug:'n3a-other',owner:{email:'foreign@example.com',name:'Other Owner'},admin:{email:'other-admin@example.com',name:'Other Admin'}},{ids:{workspaceId:'b',ownerUserId:'foreign',ownerMembershipId:'m-foreign'}});
+ // The legacy QA workspace lacks common/GHL versions. Reproduce that initial
+ // state only in this disposable database; every subsequent setup uses the UI.
+ await binding.prepare("DELETE FROM template_versions WHERE workspace_id='a' AND template_id IN (SELECT id FROM templates WHERE workspace_id='a' AND kind='onboarding' AND slug IN ('common','ghl'))").run();
  check('isolated built Worker is healthy', (await(await fetch(base+'/api/health')).json()).ok);
  browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  async function login(user){const ctx=await browser.newContext({viewport:{width:1440,height:1000}});await ctx.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());const email=user+'@example.com';assert.equal((await ctx.request.post(base+'/api/auth/sign-in/magic-link',{headers:{origin:base},data:{email,callbackURL:'/'}})).status(),200);
@@ -57,7 +60,7 @@ try{
  await owner.page.goto(base+'/settings/onboarding',{waitUntil:'networkidle'});
  await owner.page.getByText('Review Common default instructions',{exact:true}).click();check('canonical onboarding instructions can be reviewed',await owner.page.getByText('Brand assets',{exact:true}).count()===1);
  await owner.page.getByLabel('Install missing Common defaults',{exact:true}).check();await owner.page.getByLabel('Install missing GHL defaults',{exact:true}).check();
- await owner.page.getByRole('button',{name:'Install selected defaults',exact:true}).click();await owner.page.getByRole('status').filter({hasText:'Selected onboarding categories are ready'}).waitFor();check('supported setup installs selected onboarding categories',await owner.page.getByText('Published version 1',{exact:true}).count()===2);
+ await owner.page.getByRole('button',{name:'Install selected defaults',exact:true}).click();await owner.page.getByRole('status').filter({hasText:'Selected onboarding categories are ready'}).waitFor();check('supported setup installs selected onboarding categories and preserves other defaults',await owner.page.getByText('Published version 1',{exact:true}).count()===5);
  await owner.page.reload({waitUntil:'networkidle'});check('onboarding publication persists on reload',await owner.page.getByLabel('Install missing Common defaults',{exact:true}).isDisabled());
  await owner.page.setViewportSize({width:320,height:1000});check('onboarding setup at320 has no overflow',await owner.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await owner.page.screenshot({path:out+'/onboarding-setup-320.png',fullPage:true});await owner.page.setViewportSize({width:1440,height:1000});
  const get=async(ctx,path)=>{const r=await ctx.request.get(base+path);return {status:r.status(),data:await r.json()};};
