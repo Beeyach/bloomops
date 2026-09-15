@@ -75,7 +75,7 @@ try{
  check('supported Client and purchased Service writers create fixture',!!ghl&&!!social);
  // Exercise the supported contact-specific activation path, not an injected
  // contact association. The invitation and magic link remain only in memory.
- const activation=await post(owner.ctx,`/api/bloomops/clients/${otherClient}/activate`,{});
+ const activation=await post(owner.ctx,`/api/bloomops/clients/${clientId}/activate`,{});
  check('published defaults enable real Client activation',activation.status===200&&activation.data.activated&&activation.data.deliveryStatus==='sent');
  const contactEmail='contact@example.test';
  const invitationMail=JSON.parse(await(await bucket.get('dev-mail/'+createHash('sha256').update(contactEmail).digest('hex')+'.json')).text());
@@ -92,10 +92,10 @@ try{
  check('genuine portal identity authenticates independently',(await get(portalContext,'/api/auth/get-session')).data.user.id!=='ellen');
  await portalPage.getByRole('heading',{name:'Your onboarding',exact:true}).waitFor();
  const portalAccounts=await get(portalContext,'/api/bloomops/portal/onboarding');
- check('activation contact link exposes only its Client',portalAccounts.status===200&&portalAccounts.data.clients.length===1&&portalAccounts.data.clients[0].id===otherClient&&await portalPage.locator(`a[href="/portal/discussions/client/${otherClient}"]`).count()===1&&await portalPage.locator(`a[href="/portal/discussions/client/${clientId}"]`).count()===0);
+ check('activation contact link exposes only its Client',portalAccounts.status===200&&portalAccounts.data.clients.length===1&&portalAccounts.data.clients[0].id===clientId&&await portalPage.locator(`a[href="/portal/discussions/client/${clientId}"]`).count()===1&&await portalPage.locator(`a[href="/portal/discussions/client/${otherClient}"]`).count()===0);
  check('portal identity cannot administer onboarding defaults',(await get(portalContext,'/api/bloomops/onboarding/setup')).status===404);
  check('portal identity cannot read internal report drafts',(await get(portalContext,`/api/bloomops/clients/${otherClient}/reports`)).status===404);
- await portalPage.screenshot({path:out+'/supported-portal-activation.png',fullPage:true});await portalContext.close();
+ await portalPage.screenshot({path:out+'/supported-portal-activation.png',fullPage:true});
  const path=`/clients/${clientId}/reports`,api=`/api/bloomops/clients/${clientId}/reports`;
  await owner.page.goto(base+`/clients/${clientId}`,{waitUntil:'networkidle'});await owner.page.getByRole('link',{name:'Reports',exact:true}).click();await owner.page.getByText('No report drafts yet.',{exact:true}).waitFor();check('Client Reports destination and empty state',true);
  const metric=async(page,label,value)=>{await page.getByLabel(label+' availability').selectOption('value');await page.getByLabel(label+' count').fill(String(value));};
@@ -154,5 +154,29 @@ try{
  assert.equal((await post(owner.ctx,'/api/bloomops/members/m-ary',{status:'suspended'},'PATCH')).status,200);await admin.page.evaluate(()=>window.dispatchEvent(new Event('focus')));await admin.page.getByRole('alert').filter({hasText:'no longer available'}).waitFor();check('revocation removes mounted private preview',await admin.page.getByRole('heading',{name:'N3A GHL persisted draft',exact:true}).count()===0);check('revocation denies guessed API',[403,404].includes((await get(admin.ctx,api+'/'+id)).status));
  assert.equal((await post(owner.ctx,'/api/bloomops/members/m-ary',{status:'active'},'PATCH')).status,200);
  await owner.page.emulateMedia({reducedMotion:'reduce'});await owner.page.goto(base+path+'/'+id+'/preview',{waitUntil:'networkidle'});check('reduced motion preview healthy',await owner.page.getByRole('heading',{name:'N3A GHL persisted draft',exact:true}).count()===1);
+ const published=[];
+ for(const reportId of created){
+  await owner.page.bringToFront();await owner.page.goto(base+path+'/'+reportId,{waitUntil:'networkidle'});
+  await owner.page.getByLabel('Client summary',{exact:true}).fill('Client-safe summary for '+reportId);await owner.page.getByLabel('Work completed',{exact:true}).fill('Synthetic work completed');await owner.page.getByLabel('Limits and context',{exact:true}).fill('Manual observations, not provider verified');await owner.page.getByLabel('Next actions',{exact:true}).fill('Review next reporting period');
+  await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Save draft',exact:true}).click()]);
+  await owner.page.getByRole('link',{name:'Review publication and history',exact:true}).click();await owner.page.getByRole('heading',{name:'Publication review',exact:true}).waitFor();
+  check('publication review excludes private source text '+reportId,!((await owner.page.locator('main').innerText()).includes('synthetic source')));
+  await owner.page.getByRole('checkbox').check();await owner.page.getByRole('button',{name:'Publish reviewed report',exact:true}).focus();await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.keyboard.press('Enter')]);
+  const release=(await get(owner.ctx,api+'/'+reportId+'/publications')).data.review.current;published.push(release.id);check('explicit publish creates version one '+reportId,release.sequence===1&&release.kind==='publish');
+  await portalPage.bringToFront();await portalPage.goto(base+'/portal/reports',{waitUntil:'networkidle'});const entry=(await get(portalContext,'/api/bloomops/portal/reports/'+release.id)).data.report;
+  await portalPage.getByRole('link',{name:entry.snapshot.title,exact:true}).click();await portalPage.getByText('Client-safe summary for '+reportId,{exact:true}).waitFor();
+  check('portal renders frozen calculations '+reportId,await portalPage.getByText(entry.snapshot.templateId==='social'?'-5':'3.13%',{exact:true}).count()===1);
+  const download=portalPage.waitForEvent('download');await portalPage.getByRole('button',{name:'Download this published PDF',exact:true}).click();const pdf=await download;await pdf.saveAs(out+'/'+entry.snapshot.templateId+'-published-v1.pdf');check('real authorized published PDF downloaded '+reportId,readFileSync(out+'/'+entry.snapshot.templateId+'-published-v1.pdf').subarray(0,5).toString()==='%PDF-');
+  const pdfResponse=await portalContext.request.get(base+'/api/bloomops/portal/reports/'+release.id+'/pdf');check('PDF identifies exact snapshot '+reportId,pdfResponse.status()===200&&pdfResponse.headers()['x-bloomsi-snapshot-hash']===entry.snapshotHash&&pdfResponse.headers()['x-bloomsi-published-version']==='1');
+  await portalPage.setViewportSize({width:320,height:1000});check('published client report narrow layout '+reportId,await portalPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await portalPage.screenshot({path:out+'/'+entry.snapshot.templateId+'-published-320.png',fullPage:true});await portalPage.setViewportSize({width:1440,height:1000});
+  await owner.page.bringToFront();await owner.page.goto(base+path+'/'+reportId,{waitUntil:'networkidle'});await owner.page.getByLabel('Client summary',{exact:true}).fill('Revised client-safe summary');await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Save draft',exact:true}).click()]);
+  check('draft edit leaves released snapshot unchanged '+reportId,(await get(portalContext,'/api/bloomops/portal/reports/'+release.id)).data.report.snapshot.clientSummary==='Client-safe summary for '+reportId);
+  await owner.page.getByRole('link',{name:'Review publication and history',exact:true}).click();await owner.page.getByRole('checkbox').check();await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Publish reviewed revision',exact:true}).click()]);
+  const revised=(await get(owner.ctx,api+'/'+reportId+'/publications')).data.review.current;check('revision preserves earlier internal history '+reportId,(await get(owner.ctx,api+'/'+reportId+'/versions/'+release.id)).data.report.snapshot.clientSummary==='Client-safe summary for '+reportId&&revised.sequence===2);
+  check('replaced client link and PDF are denied '+reportId,(await get(portalContext,'/api/bloomops/portal/reports/'+release.id)).status===404&&(await portalContext.request.get(base+'/api/bloomops/portal/reports/'+release.id+'/pdf')).status()===404);
+  await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Withdraw client access',exact:true}).click()]);check('withdrawal denies latest portal/PDF while retaining history '+reportId,(await get(portalContext,'/api/bloomops/portal/reports/'+revised.id)).status===404&&(await portalContext.request.get(base+'/api/bloomops/portal/reports/'+revised.id+'/pdf')).status()===404&&(await get(owner.ctx,api+'/'+reportId+'/versions/'+revised.id)).status===200);
+ }
+ check('withdrawn reports disappear from client list',(await get(portalContext,'/api/bloomops/portal/reports')).data.items.length===0);
+ await portalContext.close();
  check('browser has no runtime errors',errors.length===0);writeFileSync(out+'/results.json',JSON.stringify({checks,errors,fixtures:{clientId,otherClient,ghl,social,reports:created},sourceRevision:identity.expectedRevision},null,2));
 }catch(error){if(browser){let i=0;for(const ctx of browser.contexts())for(const page of ctx.pages())await page.screenshot({path:out+'/failure-'+(++i)+'.png',fullPage:true}).catch(()=>{});}writeFileSync(out+'/results.json',JSON.stringify({checks,errors,failure:reportBrowserError(error)},null,2));console.error(reportBrowserError(error));process.exitCode=1;}finally{identity.finishedAt=new Date().toISOString();identity.artifactsUnchanged=hash(JSON.stringify(buildArtifacts(root)))===identity.artifactDigest;writeFileSync(out+'/artifact-identity.json',JSON.stringify(identity,null,2));if(!identity.artifactsUnchanged)process.exitCode=1;await browser?.close();await mf.dispose();rmSync(tmp,{recursive:true,force:true});}

@@ -1,10 +1,10 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import {PageHeader,Button} from './Primitives';
-import {REPORT_TEMPLATES,reportTemplate} from '@/lib/bloomops/client-report-values.mjs';
+import {REPORT_TEMPLATES,reportTemplate,CLIENT_NARRATIVE_FIELDS} from '@/lib/bloomops/client-report-values.mjs';
 import ClientReportCsv from './ClientReportCsv';
 const emptyMetric=()=>({state:'missing',value:null,sourceNote:'',collectedAt:null});
-const draftFields=r=>Object.fromEntries(['title','periodStart','periodEnd','timezone','channel','accountLabel','scopeLabel','commentary','metrics'].map(k=>[k,r[k]]));
+const draftFields=r=>Object.fromEntries(['title','periodStart','periodEnd','timezone','channel','accountLabel','scopeLabel','commentary','metrics',...CLIENT_NARRATIVE_FIELDS].map(k=>[k,r[k]??'']));
 export default function ClientReportEditor({client,initial=null,services=null,scope}){
  const [templateId,setTemplate]=useState(initial?.templateId||''),[serviceId,setService]=useState(initial?.serviceEngagementId||'');
  const template=reportTemplate(templateId,initial?.templateVersion||1),[data,setData]=useState(initial?draftFields(initial):{title:'',periodStart:'',periodEnd:'',timezone:'UTC',channel:'',accountLabel:'',scopeLabel:'',commentary:'',metrics:{}});
@@ -30,6 +30,7 @@ export default function ClientReportEditor({client,initial=null,services=null,sc
  if(denied)return <p role="alert">{error}</p>;
  return <div className="bo-report"><PageHeader title={initial?'Edit report draft':'New report draft'} subtitle={`Private manual reporting for ${client.name}`}/>
  <div className="bo-form-actions"><Button variant="ghost" href={`/clients/${client.id}/reports`}>All reports</Button>{initial&&<Button variant="ghost" href={`/clients/${client.id}/reports/${initial.id}/preview`}>Preview saved draft</Button>}</div>
+ {initial&&<Button variant="ghost" href={`/clients/${client.id}/reports/${initial.id}/publication`}>Review publication and history</Button>}
  {!editable&&<p>Read-only access. A workspace Owner, Admin or Project Manager can edit.</p>}
  {error&&<div role="alert"><p>{error}</p>{isConflict&&<Button variant="ghost" href={`/clients/${client.id}/reports/${initial?.id||''}`}>Reopen saved draft</Button>}</div>}
  <p role="status">{status|| (dirty?'Unsaved changes.':'Private draft. Nothing is published.')}</p>
@@ -43,6 +44,8 @@ export default function ClientReportEditor({client,initial=null,services=null,sc
  <label>Timezone<input required maxLength={80} value={data.timezone} onChange={e=>change('timezone',e.target.value)} aria-describedby="report-timezone-help"/><span id="report-timezone-help">IANA name, for example Australia/Sydney or UTC.</span></label><label>Account<input maxLength={180} value={data.accountLabel} onChange={e=>change('accountLabel',e.target.value)}/></label><label>Campaign or content scope<input maxLength={300} value={data.scopeLabel} onChange={e=>change('scopeLabel',e.target.value)}/></label></>}
  </div>{template&&<><h2>Manual metrics</h2><p>Leave unknown numbers missing. All entered values remain unverified; use source notes to explain their origin and definition.</p>
  {template.metrics.map(m=>{const v=data.metrics[m.key]||emptyMetric();return <fieldset className="bo-report-metric" key={m.key}><legend>{m.label}</legend><p>{m.definition}</p><div className="bo-report-grid"><label>{m.label} availability<select value={v.state} onChange={e=>metric(m.key,{state:e.target.value,value:null})}><option value="missing">Not supplied</option><option value="value">Enter value</option><option value="unavailable">Unavailable</option><option value="not_tracked">Not tracked</option></select></label>{v.state==='value'&&<label>{m.label} count<input type="number" min="0" max={m.max} step="1" required value={v.value??''} onChange={e=>metric(m.key,{value:e.target.value===''?null:Number(e.target.value)})}/></label>}<label>{m.label} source note<textarea maxLength={1000} value={v.sourceNote} onChange={e=>metric(m.key,{sourceNote:e.target.value})}/></label><label>{m.label} collection time (UTC)<input type="datetime-local" step="1" value={v.collectedAt?.slice(0,19)||''} onChange={e=>metric(m.key,{collectedAt:e.target.value?new Date(e.target.value+'Z').toISOString():null})}/></label></div></fieldset>;})}
- <label>Report commentary<textarea rows="7" maxLength={8000} value={data.commentary} onChange={e=>change('commentary',e.target.value)}/></label></>}
+ <label>Report commentary<textarea rows="7" maxLength={8000} value={data.commentary} onChange={e=>change('commentary',e.target.value)}/><span>Internal only. Commentary and metric source notes never appear in a published report.</span></label>
+ <h2>Client-facing narrative</h2><p>These saved fields are included only when you explicitly publish a reviewed version.</p>
+ {[["clientSummary","Client summary"],["workCompleted","Work completed"],["limitations","Limits and context"],["nextActions","Next actions"]].map(([key,label])=><label key={key}>{label}<textarea rows="4" maxLength={8000} value={data[key]||''} onChange={e=>change(key,e.target.value)}/></label>)}</>}
  </fieldset>{editable&&<Button variant="primary" type="submit" disabled={busy||isConflict||!template}>{busy?'Saving…':pending.current?'Retry save':'Save draft'}</Button>}</form></div>;
 }

@@ -12,7 +12,7 @@ import SearchLink from './SearchLink';
 // person; the page underneath is calm and short. Portal destinations
 // (Content, Projects, Files) join here only when the features behind them
 // exist and apply to this client.
-export default function PortalShell({ workspace, user, hasContent = false, hasPages = false, children }) {
+export default function PortalShell({ workspace, user, hasContent = false, hasPages = false, hasReports = false, children }) {
   return (
     <div className="bo-root bo-portal">
       <a className="bo-skip" href="#main">
@@ -28,7 +28,7 @@ export default function PortalShell({ workspace, user, hasContent = false, hasPa
         </div>
         <div className="bo-topbar-tools"><NotificationLink portal compact/><SearchLink portal compact/><AccountMenu name={user.name} email={user.email} roleLabel="Client" workspaceName={workspace.name} placement="down" compact /></div>
       </header>
-      {(hasContent||hasPages)&&<PortalContentNav hasContent={hasContent} hasPages={hasPages}/>}
+      {(hasContent||hasPages||hasReports)&&<PortalContentNav hasContent={hasContent} hasPages={hasPages} hasReports={hasReports}/>}
       <main id="main" className="bo-portal-page" tabIndex={-1}>
         {children}
       </main>

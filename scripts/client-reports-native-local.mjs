@@ -10,16 +10,17 @@ import {input,draft,observation} from '../tests/_client-report-fixture.mjs';
 import {saveClientReport as save,getClientReport as get} from '../lib/bloomops/client-reports.mjs';
 import {checkEquivalentRetries,checkConcurrentRetries} from '../tests/_client-report-retry.mjs';
 import {checkReportCsv} from '../tests/_client-report-csv.mjs';
+import {checkReportPublications} from '../tests/_client-report-publications.mjs';
 const require=createRequire(import.meta.url),{Miniflare,convertV4MiniflareOptions}=require(require.resolve('miniflare',{paths:[dirname(require.resolve('wrangler/package.json'))]}));
 const mf=new Miniflare(convertV4MiniflareOptions({modules:true,script:'export default {fetch(){return new Response("local")}}',compatibilityDate:'2025-05-01',cf:false,d1Databases:{DB:'n3a-upgrade',FRESH:'n3a-fresh'}}));
 const t=await setup(),checks=[];const check=(name,ok)=>{assert.ok(ok,name);checks.push(name);console.log('ok '+name);};
 try{
- const binding=await mf.getD1Database('DB'),fresh=await mf.getD1Database('FRESH');const files=migrationFiles();assert.equal(files.at(-1).tag,'0048_clumsy_nekra');
+ const binding=await mf.getD1Database('DB'),fresh=await mf.getD1Database('FRESH');const files=migrationFiles();assert.equal(files.at(-1).tag,'0049_easy_groot');
  const migrate=async(db,files)=>{for(const file of files)for(const stmt of readFileSync(file.url,'utf8').split('--> statement-breakpoint').map(s=>s.trim()).filter(Boolean))await db.prepare(stmt).run();};
  await migrate(binding,files.slice(0,-1));
  await save(t.db,t.owner,'james',null,input({draft:draft({metrics:{sent:observation(19)}})}));
  const tables=['workspaces','user','workspace_memberships','departments','service_types','bloomops_clients','client_contacts','service_engagements','projects','client_report_drafts','client_report_metrics'];
- for(const table of tables)for(const row of all(t.raw,`SELECT * FROM ${table}`)){if(table==='client_report_metrics'){delete row.source_kind;delete row.import_id;}await binding.prepare(`INSERT INTO ${table}(${Object.keys(row).join(',')}) VALUES(${Object.keys(row).map(()=>'?').join(',')})`).bind(...Object.values(row)).run();}
+ for(const table of tables)for(const row of all(t.raw,`SELECT * FROM ${table}`)){if(table==='client_report_drafts')for(const key of ['client_summary','work_completed','limitations','next_actions'])delete row[key];await binding.prepare(`INSERT INTO ${table}(${Object.keys(row).join(',')}) VALUES(${Object.keys(row).map(()=>'?').join(',')})`).bind(...Object.values(row)).run();}
  const before=await Promise.all(tables.map(async table=>(await binding.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all()).results));
  await migrate(binding,files.slice(-1));await migrate(fresh,files);
  const after=await Promise.all(tables.map(async(table,i)=>(await binding.prepare(`SELECT ${Object.keys(before[i][0]).join(',')} FROM ${table} ORDER BY rowid`).all()).results));check('populated base upgrade preserves every prior fixture row',JSON.stringify(before)===JSON.stringify(after));
@@ -41,6 +42,11 @@ try{
   await checkConcurrentRetries(db,t.owner,template);check(template+' native concurrent reordered retries persist exactly one draft',true);
  }
  await assert.rejects(binding.prepare("UPDATE client_report_metrics SET source_kind='csv',import_id=NULL").run(),/CHECK/);check('native CSV requires import provenance',true);
+ check('populated upgrade never publishes historical drafts',(await binding.prepare('SELECT count(*) n FROM client_report_publications').first()).n===0);
+ check('populated upgrade leaves client narrative empty',(await binding.prepare("SELECT count(*) n FROM client_report_drafts WHERE client_summary<>'' OR work_completed<>'' OR limitations<>'' OR next_actions<>''").first()).n===0);
+ const releases=await checkReportPublications(db,t.owner,await t.actor('james'));check('native publication retries, concurrent revision, immutable saved snapshots and withdrawal',!!releases.firstId);
+ await assert.rejects(binding.prepare("UPDATE client_report_publications SET snapshot_json='{}'").run(),/immutable/);check('native publication content cannot be updated',true);
+ await assert.rejects(binding.prepare('DELETE FROM client_report_publications').run(),/immutable/);check('native publication history cannot be deleted',true);
  await binding.prepare("UPDATE workspace_memberships SET status='suspended' WHERE id='m-ellen'").run();check('native revocation hides report from old actor',await get(db,t.owner,'james',id)===null);check('native revocation refuses save',!(await save(db,t.owner,'james',id,{...v,expectedRevision:saved.revision})).ok);
  check('native final FK integrity',(await binding.prepare('PRAGMA foreign_key_check').all()).results.length===0);
  console.log(JSON.stringify({checks:checks.length,names:checks,exitCode:0}));
