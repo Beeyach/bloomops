@@ -69,6 +69,28 @@ try{
  const addService=async(client,slug)=>{const r=await post(owner.ctx,`/api/bloomops/clients/${client}/services`,{serviceTypeId:types.find(t=>t.slug===slug).id,packageName:'Synthetic QA service'});assert.equal(r.status,201,JSON.stringify(r.data));return r.data.service.id;};
  const ghl=await addService(clientId,'ghl'),social=await addService(clientId,'social-media-management'),foreignService=await addService(otherClient,'ghl');
  check('supported Client and purchased Service writers create fixture',!!ghl&&!!social);
+ // Exercise the supported contact-specific activation path, not an injected
+ // contact association. The invitation and magic link remain only in memory.
+ const activation=await post(owner.ctx,`/api/bloomops/clients/${otherClient}/activate`,{});
+ check('published defaults enable real Client activation',activation.status===200&&activation.data.activated&&activation.data.deliveryStatus==='sent');
+ const contactEmail='contact@example.test';
+ const invitationMail=JSON.parse(await(await bucket.get('dev-mail/'+createHash('sha256').update(contactEmail).digest('hex')+'.json')).text());
+ const invitationUrl=invitationMail.text.match(/https?:\/\/\S+/)[0];
+ assert.equal(new URL(invitationUrl).origin,base);assert.ok(new URL(invitationUrl).pathname.startsWith('/invite/'));
+ const portalContext=await browser.newContext({viewport:{width:1440,height:1000}});
+ await portalContext.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());
+ const portalPage=await portalContext.newPage();portalPage.on('pageerror',e=>errors.push(reportBrowserError(e)));
+ await portalPage.goto(invitationUrl,{waitUntil:'networkidle'});
+ const signIn=await portalContext.request.post(base+'/api/auth/sign-in/magic-link',{headers:{origin:base},data:{email:contactEmail,callbackURL:new URL(invitationUrl).pathname}});assert.equal(signIn.status(),200);
+ const loginMail=JSON.parse(await(await bucket.get('dev-mail/'+createHash('sha256').update(contactEmail).digest('hex')+'.json')).text());
+ await portalPage.goto(loginMail.text.match(/https?:\/\/\S+/)[0],{waitUntil:'networkidle'});
+ await portalPage.getByRole('button',{name:'Accept and continue',exact:true}).click();await portalPage.waitForURL('**/portal');
+ check('genuine portal identity authenticates independently',(await get(portalContext,'/api/auth/get-session')).data.user.id!=='ellen');
+ await portalPage.getByRole('heading',{name:'N3A Different Client',exact:true}).waitFor();
+ check('activation contact link exposes only its Client',await portalPage.getByRole('heading',{name:'N3A Synthetic Reports',exact:true}).count()===0);
+ check('portal identity cannot administer onboarding defaults',(await get(portalContext,'/api/bloomops/onboarding/setup')).status===404);
+ check('portal identity cannot read internal report drafts',(await get(portalContext,`/api/bloomops/clients/${otherClient}/reports`)).status===404);
+ await portalPage.screenshot({path:out+'/supported-portal-activation.png',fullPage:true});await portalContext.close();
  const path=`/clients/${clientId}/reports`,api=`/api/bloomops/clients/${clientId}/reports`;
  await owner.page.goto(base+`/clients/${clientId}`,{waitUntil:'networkidle'});await owner.page.getByRole('link',{name:'Reports',exact:true}).click();await owner.page.getByText('No report drafts yet.',{exact:true}).waitFor();check('Client Reports destination and empty state',true);
  const metric=async(page,label,value)=>{await page.getByLabel(label+' availability').selectOption('value');await page.getByLabel(label+' count').fill(String(value));};
