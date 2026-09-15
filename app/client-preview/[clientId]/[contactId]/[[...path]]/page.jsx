@@ -1,3 +1,5 @@
+import RecordDiscussion from '@/components/bloomops/RecordDiscussion';
+import {getRecordDiscussions} from '@/lib/bloomops/record-discussions.mjs';
 import UserAvatar from '@/components/bloomops/UserAvatar';
 import { notFound } from 'next/navigation';
 import { sql } from 'drizzle-orm';
@@ -27,7 +29,7 @@ export const metadata = { title: 'Client preview' };
 export default async function ClientPreviewPage({ params, searchParams }) {
   const { access, actor: viewer } = await requireShell('internal');
   const { clientId, contactId, path = [] } = await params, query = await searchParams || {};
-  if (path.length > 2 || path.length && !['content','approvals','pages'].includes(path[0])) notFound();
+  if (path[0]==='discussions' ? path.length!==3 : path.length>2 || path.length&&!['content','approvals','pages'].includes(path[0])) notFound();
   const selection = await createClientPreview(access.db, viewer, clientId, contactId);
   if (!selection) notFound();
   const { actor, contact } = selection, db = access.db;
@@ -48,6 +50,9 @@ export default async function ClientPreviewPage({ params, searchParams }) {
         {projectPage>1&&<Button href={`${base}?projectPage=${projectPage-1}`}>Previous projects</Button>}
         {projectRows.length>10&&<Button href={`${base}?projectPage=${projectPage+1}`}>More projects</Button>}
       </nav>}</>;
+  } else if(path[0]==='discussions'){
+    const parent={type:path[1],id:path[2]},data=await getRecordDiscussions(db,actor,parent,{threadId:query.threadId||null,page:query.page?Number(query.page):1,resolved:query.resolved==='true'});if(!data)notFound();
+    body=<RecordDiscussion initial={data} workspaceId={actor.workspaceId} api={`${apiBase}/discussions/${parent.type}/${parent.id}`} returnHref={base} portal readOnly/>;
   } else if (path[0]==='content') {
     if (path[1]) {
       const item = await getPortalContent(db,actor,path[1]);if(!item)notFound();

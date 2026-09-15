@@ -4,6 +4,7 @@
 // on the server and in tests alike.
 
 const PATHS = {
+  trash: <><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></>,
   send: <><path d="m22 2-7 20-4-9L2 9zM22 2 11 13"/></>,
   search: <><circle cx="10" cy="10" r="6.5"/><path d="m15 15 6 6"/></>,
   filter: <path d="M3 4h18l-7 8v7l-4 2v-9z"/>,

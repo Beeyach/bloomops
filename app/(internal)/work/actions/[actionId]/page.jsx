@@ -31,7 +31,7 @@ export default async function ActionPage({ params }) {
   if (!action || !dependencies.ok) notFound();
   return <>
     <Button href="/work" variant="ghost" size="sm">Back to Actions</Button>
-    <PageHeader title={action.title} subtitle={`${action.clientName} · ${action.projectName}`} actions={action.projectHref && <Button href={action.projectHref}>Open Project</Button>} />
+    <PageHeader title={action.title} subtitle={action.projectName} actions={<><Button href={`/discussions/action/${action.id}`} icon="message">Discussion</Button>{action.projectHref && <Button href={action.projectHref}>Open Project</Button>}</>} />
     <Section id="action-details" title="Details"><ActionFacts action={action} /></Section>
     <ActionControls action={action} projectId={action.projectId} members={options?.members || []} milestones={(milestones?.items || []).map(({ id, name }) => ({ id, name }))}
       mayManage={mayManage} mayProgress={mayProgress} canRestrict={options?.canRestrict || authorized.resource.restrictedToMembershipIds.includes(actor.membershipId)}

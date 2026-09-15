@@ -1,3 +1,4 @@
+import { discussionGet } from '@/lib/bloomops/discussion-http.mjs';
 import { withApiErrors } from '@/lib/bloomops/api-handler.mjs';
 import { getActor, json, requireAccess } from '@/lib/bloomops/access.mjs';
 import { createClientPreview } from '@/lib/bloomops/client-preview.mjs';
@@ -10,10 +11,12 @@ export const GET = withApiErrors(async (req, context) => {
   const { access, response } = await requireAccess(req);if(response)return response;
   const { clientId, contactId, path=[] } = await context.params;
   const photoPath=path.length===4&&path[0]==='pages'&&path[2]==='photos';
-  if(path.length && !photoPath && (path.length!==2 || path[0]!=='files'))return json({error:'Not found.'},404);
+  const discussionPath=path[0]==='discussions'&&(path.length===3||path.length===5&&path[3]==='photos');
+  if(path.length && !discussionPath && !photoPath && (path.length!==2 || path[0]!=='files'))return json({error:'Not found.'},404);
   const preview = await createClientPreview(access.db,await getActor(access),clientId,contactId);
   if(!preview)return json({error:'Not found.'},404);
   if(!path.length)return json({ok:true});
+  if(discussionPath){const parent={type:path[1],id:path[2]};if(path.length===3)return discussionGet(req,access.db,preview.actor,parent);return profilePhotoResponse(await downloadProfilePhoto(access.db,{bucket:access.env.FILES,actor:preview.actor,context:{kind:'record-comment',parent,commentId:path[4]}}))||json({error:'Not found.'},404);}
   if(photoPath)return profilePhotoResponse(await downloadProfilePhoto(access.db,{bucket:access.env.FILES,actor:preview.actor,context:{kind:'comment',pageId:path[1],commentId:path[3]}}))||json({error:'Not found.'},404);
   const options={bucket:access.env.FILES,actor:preview.actor,fileId:path[1]};
   const file=await downloadFile(access.db,options)||await downloadContentFile(access.db,options);

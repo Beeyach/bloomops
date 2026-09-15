@@ -1,0 +1,16 @@
+{
+  "checks": [
+    "heading 1440: Bloomsi font and no overflow",
+    "heading 1440: reply target remains reachable",
+    "heading 1024: Bloomsi font and no overflow",
+    "heading 1024: reply target remains reachable",
+    "heading 768: Bloomsi font and no overflow",
+    "heading 768: reply target remains reachable",
+    "heading 390: Bloomsi font and no overflow",
+    "heading 390: reply target remains reachable",
+    "heading 320: Bloomsi font and no overflow",
+    "heading 320: reply target remains reachable",
+    "typography pass has no runtime errors"
+  ],
+  "errors": []
+}

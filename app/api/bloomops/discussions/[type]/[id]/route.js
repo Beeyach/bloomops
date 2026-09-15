@@ -1,0 +1,11 @@
+import {requireAccess,getActor,json,notFound} from '@/lib/bloomops/access.mjs';
+import {withApiErrors} from '@/lib/bloomops/api-handler.mjs';
+import {readStructuredBody} from '@/lib/bloomops/structured-body.mjs';
+import {postRecordDiscussion,editRecordDiscussion,resolveRecordDiscussion} from '@/lib/bloomops/record-discussions.mjs';
+import {discussionGet} from '@/lib/bloomops/discussion-http.mjs';
+export const dynamic='force-dynamic';
+export const GET=withApiErrors(async(req,{params})=>{const {access,response}=await requireAccess(req);if(response)return response;return discussionGet(req,access.db,await getActor(access),await params);});
+const mutate=command=>withApiErrors(async(req,{params})=>{const {access,response}=await requireAccess(req);if(response)return response;const result=await command(access.db,await getActor(access),await params,await readStructuredBody(req,{maxBytes:12000}));return result.reason==='not_found'?notFound():json(result,result.ok?200:result.reason==='conflict'?409:400);});
+export const POST=mutate(postRecordDiscussion);
+export const PATCH=mutate(editRecordDiscussion);
+export const PUT=mutate(resolveRecordDiscussion);

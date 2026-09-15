@@ -1,3 +1,4 @@
+import {Button} from './Primitives';
 import { formatDate } from '@/lib/bloomops/format.mjs';
 import { PROJECT_HEALTH_LABELS, PROJECT_STATUS_LABELS, PROJECT_STATUS_TONES, PROJECT_VISIBILITY_LABELS } from '@/lib/bloomops/project-values.mjs';
 import { EmptyState, Facts, Status } from './Primitives';
@@ -52,7 +53,7 @@ export function ProjectFacts({ project, clientHref = null }) {
 
 // Only the dedicated portal DTO is accepted here. No internal record props
 // are forwarded into a Client component or serialized into its page.
-export function PortalProjects({ projects = [], milestones = {}, deliverables = {}, files = {}, downloadBase = null }) {
+export function PortalProjects({ projects = [], milestones = {}, deliverables = {}, files = {}, downloadBase = null, discussionBase="/portal" }) {
   if (!projects.length) return null;
   return <ul className="bo-rows" aria-label="Your projects">
     {projects.map(project => <li key={project.id} className="bo-row bo-portal-project">
@@ -60,8 +61,9 @@ export function PortalProjects({ projects = [], milestones = {}, deliverables = 
         {(project.completedAt || project.targetDate) && <span className="bo-row-meta">{project.completedAt ? `Completed ${formatDate(project.completedAt)}` : `Target ${formatDate(project.targetDate)}`}</span>}
       </span>
       <Status label={project.statusLabel} />
+      <Button href={`${discussionBase}/discussions/project/${project.id}`} icon="message" variant="ghost" size="sm">Discuss project</Button>
       <PortalMilestones summary={milestones[project.id]} />
-      <PortalDeliverables summary={deliverables[project.id]} />
+      <PortalDeliverables summary={deliverables[project.id]} discussionBase={discussionBase} />
       <PortalFiles summary={files[project.id]} downloadBase={downloadBase} />
     </li>)}
   </ul>;

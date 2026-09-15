@@ -1,0 +1,60 @@
+{
+  "checks": [
+    "full-page parent identity and return link",
+    "mention control opens from the keyboard",
+    "mention picker uses actual permitted people",
+    "lost response preserves body and selected mentions",
+    "same request retry posts once with a real stored mention",
+    "reply appears without shell navigation",
+    "thread 1440: no horizontal overflow",
+    "thread 1440: Post target reachable",
+    "thread 1024: no horizontal overflow",
+    "thread 1024: Post target reachable",
+    "thread 768: no horizontal overflow",
+    "thread 768: Post target reachable",
+    "thread 390: no horizontal overflow",
+    "thread 390: Post target reachable",
+    "thread 320: no horizontal overflow",
+    "thread 320: Post target reachable",
+    "refresh keeps visible messages and exposes a loading state",
+    "failed edit preserves writing and explicit Save",
+    "own edit persists and shows Edited",
+    "edit conflict retains writing and displays the newer saved comment",
+    "explicit conflict save uses the displayed newer revision",
+    "resolved discussion disables new replies",
+    "removal keeps replies and a placeholder",
+    "client-visible thread stores selected contact mention",
+    "real local author thumbnail is saved",
+    "client cannot read internal thread",
+    "client can read the shared discussion and reply",
+    "authorized author thumbnail renders visibly",
+    "client mention search does not expose a staff directory",
+    "client phone layout fits",
+    "preview preserves readable thread with no editor",
+    "preview route has no mutation method",
+    "preview author photo uses contact authority",
+    "client: canonical parent write and full page",
+    "action: canonical parent write and full page",
+    "deliverable: canonical parent write and full page",
+    "client cannot open task discussion",
+    "cross-origin mutation is refused",
+    "anonymous direct read is refused",
+    "failed access check clears displayed identity and comments",
+    "real touch opens the mention picker",
+    "missing parent is unavailable",
+    "no browser runtime errors"
+  ],
+  "errors": [],
+  "health": {
+    "ok": true,
+    "environment": "development",
+    "auth": {
+      "configured": true,
+      "mail": "r2-dev"
+    },
+    "schema": {
+      "migrations": 46,
+      "ok": true
+    }
+  }
+}
