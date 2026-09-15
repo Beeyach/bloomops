@@ -33,7 +33,7 @@ export default function ClientReportEditor({client,initial=null,services=null,sc
  {initial&&<Button variant="ghost" href={`/clients/${client.id}/reports/${initial.id}/publication`}>Review publication and history</Button>}
  {!editable&&<p>Read-only access. A workspace Owner, Admin or Project Manager can edit.</p>}
  {error&&<div role="alert"><p>{error}</p>{isConflict&&<Button variant="ghost" href={`/clients/${client.id}/reports/${initial?.id||''}`}>Reopen saved draft</Button>}</div>}
- <p role="status">{status|| (dirty?'Unsaved changes.':'Private draft. Nothing is published.')}</p>
+ <p role="status">{status|| (dirty?'Unsaved changes.':'Draft changes stay private until explicitly published. Published versions remain separate.')}</p>
  {!initial&&<div className="bo-report-service"><label>Find a purchased service<input value={search} onChange={e=>setSearch(e.target.value)} disabled={locked}/></label><Button type="button" onClick={()=>loadServices()} disabled={locked||optionsBusy}>Find services</Button>{options?.page>1&&<Button type="button" onClick={()=>loadServices(options.page-1)} disabled={optionsBusy}>Previous services</Button>}{options?.more&&<Button type="button" onClick={()=>loadServices(options.page+1)} disabled={optionsBusy}>More services</Button>}{optionsBusy&&<p role="status">Loading services…</p>}</div>}
  {initial&&editable&&template&&<ClientReportCsv report={{...data,templateId,templateVersion:template.version}} disabled={locked} onApply={metrics=>change('metrics',metrics)}/>}
  <form onSubmit={save}><fieldset disabled={locked}><div className="bo-report-grid">
