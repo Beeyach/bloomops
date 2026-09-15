@@ -13,6 +13,8 @@ const PATHS = {
   close: <path d="m6 6 12 12M6 18 18 6"/>,
 
   table: <><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M10 4v16"/></>,
+  bell: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></>,
+  'at-sign': <><circle cx="12" cy="12" r="4"/><path d="M16 8v7c0 3 6 3 6-3a10 10 0 1 0-5 8"/></>,
   message: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
   overview: <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><path d="M14 15h7M14 20h5"/></>,
   history: <><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 6v6l4 2"/></>,

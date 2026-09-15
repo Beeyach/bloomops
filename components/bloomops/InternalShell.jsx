@@ -1,3 +1,4 @@
+import NotificationLink from './NotificationLink';
 import BrandLogo from './BrandLogo';
 import { INTERNAL_NAV } from '@/lib/bloomops/navigation.mjs';
 import InternalNav from './InternalNav';
@@ -33,7 +34,7 @@ export default function InternalShell({ workspace, user, roleLabel, children }) 
             </div>
           </div>
           <div className="bo-sidebar-scroll">
-            <SearchLink />
+            <SearchLink /><NotificationLink />
             <InternalNav items={INTERNAL_NAV} />
           </div>
           <div className="bo-sidebar-foot">
@@ -48,7 +49,7 @@ export default function InternalShell({ workspace, user, roleLabel, children }) 
                 <div className="bo-workspace-name">{workspace.name}</div>
               </div>
             </div>
-            <div className="bo-topbar-tools"><SearchLink compact/><AccountMenu {...account} placement="down" compact settingsHref="/settings" /></div>
+            <div className="bo-topbar-tools"><NotificationLink compact/><SearchLink compact/><AccountMenu {...account} placement="down" compact settingsHref="/settings" /></div>
           </header>
           <main id="main" className="bo-page" tabIndex={-1}>
             {children}
