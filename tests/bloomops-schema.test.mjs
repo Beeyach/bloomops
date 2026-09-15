@@ -65,8 +65,8 @@ test('a fresh database reaches the A2 schema from the committed migrations alone
 
 test('migrations are additive and ordered, so applying them is deterministic', () => {
   const files = migrationFiles();
-  assert.equal(files.length, 48);
-  assert.equal(files[47].tag, '0047_gigantic_famine');
+  assert.equal(files.length, 49);
+  assert.equal(files[48].tag, '0048_clumsy_nekra');
   assert.equal(files[45].tag, '0045_record_discussions');
   assert.equal(files[46].tag, '0046_in_app_notifications');
   assert.equal(files[43].tag,'0043_prospect_sheet');

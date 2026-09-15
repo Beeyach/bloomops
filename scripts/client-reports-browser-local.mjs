@@ -13,6 +13,7 @@ import {createHash,randomUUID} from 'node:crypto';
 import {unstable_getMiniflareWorkerOptions} from 'wrangler';
 import {runBootstrap} from '../lib/bloomops/bootstrap.mjs';
 import {reportBrowserError} from './client-reports-evidence.mjs';
+import {reportCsv} from '../lib/bloomops/client-report-csv.mjs';
 const root=resolve(fileURLToPath(new URL('../',import.meta.url)));
 const out=resolve(process.env.BLOOMOPS_BROWSER_EVIDENCE_DIR||'/tmp/bloomops-n3a-verification/browser');mkdirSync(out,{recursive:true});
 const port=await new Promise((resolve,reject)=>{const socket=createServer();socket.once('error',reject);socket.listen(0,'127.0.0.1',()=>{const port=socket.address().port;socket.close(()=>resolve(port));});});
@@ -74,6 +75,19 @@ try{
   await owner.page.getByRole('button',{name:'Save draft',exact:true}).focus();await owner.page.keyboard.press('Enter');await owner.page.waitForURL(new RegExp('/reports/[a-z0-9-]+$'));await owner.page.getByRole('heading',{name:'Edit report draft',exact:true}).waitFor();const id=new URL(owner.page.url()).pathname.split('/').at(-1);created.push(id);
   const persisted=await get(owner.ctx,api+'/'+id);check(template+' real API persists typed observations',persisted.status===200&&persisted.data.report.title===title&&persisted.data.report.templateVersion===1);
   check(template+' saved form reopens',await owner.page.getByLabel('Report title').inputValue()===title);
+  const csvKey=template==='social'?'published':'failed',csvLabel=template==='social'?'Published content':'Failed messages';
+  const csvSource={...persisted.data.report,metrics:{...persisted.data.report.metrics,[csvKey]:{state:'value',value:17,sourceNote:'Synthetic reviewed CSV source',collectedAt:null}}};
+  const csv=reportCsv(csvSource),upload=()=>owner.page.getByLabel('Choose report CSV').setInputFiles({name:'synthetic-report.csv',mimeType:'text/csv',buffer:Buffer.from(csv)});
+  const downloadWait=owner.page.waitForEvent('download');await owner.page.getByRole('button',{name:'Download report CSV',exact:true}).click();const downloaded=await downloadWait;await downloaded.saveAs(out+'/'+template+'-download.csv');check(template+' downloads real generic report CSV',readFileSync(out+'/'+template+'-download.csv','utf8').includes('text_encoding'));
+  await owner.page.getByLabel('Choose report CSV').setInputFiles({name:'bad.csv',mimeType:'text/csv',buffer:Buffer.from('bad,header\n1,2')});await owner.page.getByRole('alert').filter({hasText:'generic CSV headings'}).waitFor();check(template+' invalid CSV gives recoverable error',true);
+  await upload();await owner.page.getByRole('button',{name:'Apply selected CSV rows',exact:true}).waitFor();check(template+' CSV review leaves persisted data unchanged',(await get(owner.ctx,api+'/'+id)).data.report.metrics[csvKey].state==='missing');
+  await owner.page.getByRole('button',{name:'Apply selected CSV rows',exact:true}).focus();await owner.page.keyboard.press('Enter');check(template+' keyboard applies reviewed row to form',await owner.page.getByLabel(csvLabel+' count').inputValue()==='17');
+  await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Save draft',exact:true}).click()]);
+  const imported=(await get(owner.ctx,api+'/'+id)).data.report.metrics[csvKey];check(template+' imported value and provenance persist',imported.value===17&&imported.sourceKind==='csv'&&!!imported.importId);
+  await upload();await owner.page.getByText('Unchanged — no replacement needed.',{exact:true}).first().waitFor();check(template+' identical reimport makes no replacements',await owner.page.getByRole('button',{name:'Apply selected CSV rows',exact:true}).isDisabled());await owner.page.getByRole('button',{name:'Cancel import review',exact:true}).click();
+  await owner.page.getByLabel(csvLabel+' count').fill('18');await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Save draft',exact:true}).click()]);
+  await upload();await owner.page.getByLabel('Import '+csvLabel,{exact:true}).waitFor();check(template+' reimport flags manual correction without selecting it',!await owner.page.getByLabel('Import '+csvLabel,{exact:true}).isChecked()&&(await get(owner.ctx,api+'/'+id)).data.report.metrics[csvKey].value===18);
+  await owner.page.getByLabel('Report commentary').fill('Edit invalidates review');check(template+' editing invalidates pending CSV review',await owner.page.getByRole('button',{name:'Apply selected CSV rows',exact:true}).count()===0);
   await owner.page.getByLabel('Report commentary').fill('Updated synthetic narrative <script>window.n3aUnsafe=true</script>');await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Save draft',exact:true}).click()]);await owner.page.getByRole('link',{name:'Preview saved draft',exact:true}).waitFor();
   for(const width of [1440,1024,768,390,320]){await owner.page.setViewportSize({width,height:1000});check(`${template} editor ${width} no overflow`,await owner.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await owner.page.screenshot({path:out+`/${template}-editor-${width}.png`,fullPage:true});}
   await owner.page.getByRole('link',{name:'Preview saved draft',exact:true}).click();await owner.page.getByRole('heading',{name:title,exact:true}).waitFor();

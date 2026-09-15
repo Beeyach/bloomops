@@ -1,5 +1,33 @@
 # Bloomsi Build State
 
+## Owner execution decision and finite completion list — 15 September 2026
+
+The owner now directs integrated completion of the agreed product scope. Independent
+audits and nonblocking cleanup move to one consolidated stabilization stage. Normal
+validated merges/staging releases are authorized; production, destructive operations,
+DNS, billing and real outreach are not. Earlier handoff/checkpoint headings below are
+historical and do not impose a new stop after each slice. This is the single current
+feature-completion list; detailed contracts remain in their existing documents.
+
+| Workflow | Current state / remaining agreed functionality |
+| --- | --- |
+| Core Clients/Services/onboarding, Work Core, Social, Systems | Existing A–D foundations usable on main; supported onboarding-template administration is still missing from the portal QA path (issue80). Preserve existing engines. |
+| Save/recovery, search, overview/client preview, photos/discussions/notifications | Merged N1/N2 implementations and N2E staging acceptance retained. Remaining all-form recovery inventory in phases/N1.md is not silently closed. |
+| Baseline test protection repairs | PR79 merged and release verified; all five former failures resolved. |
+| Reporting drafts | N3A and creation-retry correction merged in PR81 as ba83c2d; full7264 and feature CI pass on equivalent tree; staging verification in progress. |
+| Reporting completion (current) | Reviewed generic CSV import; honest compatible comparisons/charts and reuse for a new period; explicit publication, immutable versions, revisions/withdrawal; supported portal setup/access and matching PDF. CLIENT_REPORTING.md and phases/N3.md own details. |
+| Prospecting | Existing shell/profiles/import/skills, P3 and P4 implementations remain preserved. P5C activation/recovery and Results/remaining agreed P3 workflow gaps must be reconciled against code when reached; protect other session ownership. No real sending, provider activation, video or paid audits. |
+| Ads | E1/E2/E3A foundation exists; E3B approval workflow and remaining lightweight performance/release-E requirements remain. Existing execution worktree is not owned by this session. |
+| Reusable Work and Pages / Operations | N4 saved setup preview/duplicate-safe generation and remaining Pages recovery/links; preserve implemented P4A–I. Remaining release-F workload/department/finance/template-management acceptance stays open until verified against its contract. |
+| Stabilization and final integration | One consolidated feature/security/recovery/browser pass and independent review after integration. PERF3 overall live acceptance remains open; record cosmetic/secondary issues below without new per-slice audit archives. |
+| Optional/deferred or unresolved | N5 provider connectors, paid bulk audits, video/voice, inbound email, push/SMS, commercialization and real outreach remain excluded. Release-G expansion beyond agreed existing workflow contracts needs its own resolved scope; do not invent payment/provider behavior. |
+
+### Stabilization backlog
+
+- Reconcile stale historical phase prose only when its workflow is integrated; do not repeat broad snapshots.
+- PERF3 representative live measurement remains unclosed; sparse-workspace measurements are limited evidence.
+- Issue80: supported onboarding template publication/activation setup is required before reporting portal acceptance; same-workspace multi-account provisioning is not assumed.
+
 ## Current bounded correction — N3A creation retries
 
 The independent PR81 audit found one P2 at `68340df`: equivalent normalized creation

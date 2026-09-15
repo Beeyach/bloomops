@@ -2,6 +2,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {PageHeader,Button} from './Primitives';
 import {REPORT_TEMPLATES,reportTemplate} from '@/lib/bloomops/client-report-values.mjs';
+import ClientReportCsv from './ClientReportCsv';
 const emptyMetric=()=>({state:'missing',value:null,sourceNote:'',collectedAt:null});
 const draftFields=r=>Object.fromEntries(['title','periodStart','periodEnd','timezone','channel','accountLabel','scopeLabel','commentary','metrics'].map(k=>[k,r[k]]));
 export default function ClientReportEditor({client,initial=null,services=null,scope}){
@@ -16,7 +17,7 @@ export default function ClientReportEditor({client,initial=null,services=null,sc
  useEffect(()=>{async function refresh(){const g=++readGeneration.current;try{const res=await fetch(`/api/bloomops/clients/${client.id}/reports${initial?'/'+initial.id:''}`,{cache:'no-store'});const body=await res.json();if(!live.current||g!==readGeneration.current)return;if(!res.ok||body.scope?.userId!==scope.userId||body.scope?.workspaceId!==scope.workspaceId){saveGeneration.current++;setDenied(true);dirtyRef.current=false;setDirty(false);setError('Report access changed. Reopen it in the correct workspace.');}}catch{/* Save rechecks authority; a read failure does not discard unsaved input. */}}
  window.addEventListener('focus',refresh);window.addEventListener('pageshow',refresh);return()=>{readGeneration.current++;window.removeEventListener('focus',refresh);window.removeEventListener('pageshow',refresh);};},[client.id,initial?.id,scope.userId,scope.workspaceId]);
  function change(key,value){dirtyRef.current=true;setDirty(true);setStatus('');setData(d=>({...d,[key]:value}));}
- function metric(key,patch){change('metrics',{...data.metrics,[key]:{...(data.metrics[key]||emptyMetric()),...patch}});}
+ function metric(key,patch){change('metrics',{...data.metrics,[key]:{...(data.metrics[key]||emptyMetric()),...patch,sourceKind:'manual'}});}
  async function loadServices(page=1){setOptionsBusy(true);setError('');const g=++serviceGeneration.current;try{const res=await fetch(`/api/bloomops/clients/${client.id}/reports?services=true&search=${encodeURIComponent(search)}&page=${page}`,{cache:'no-store'}),body=await res.json();if(!live.current||g!==serviceGeneration.current)return;if(!res.ok||body.scope?.userId!==scope.userId||body.scope?.workspaceId!==scope.workspaceId)throw Error('Could not load authorized services.');setOptions(body);}catch(e){if(live.current&&g===serviceGeneration.current)setError(e.message);}finally{if(live.current&&g===serviceGeneration.current)setOptionsBusy(false);}}
  async function save(e){e.preventDefault();if(busy||denied||isConflict||!editable)return;setBusy(true);setError('');setStatus('Saving…');const g=++saveGeneration.current;
  if(!request.current)request.current=crypto.randomUUID();
@@ -33,6 +34,7 @@ export default function ClientReportEditor({client,initial=null,services=null,sc
  {error&&<div role="alert"><p>{error}</p>{isConflict&&<Button variant="ghost" href={`/clients/${client.id}/reports/${initial?.id||''}`}>Reopen saved draft</Button>}</div>}
  <p role="status">{status|| (dirty?'Unsaved changes.':'Private draft. Nothing is published.')}</p>
  {!initial&&<div className="bo-report-service"><label>Find a purchased service<input value={search} onChange={e=>setSearch(e.target.value)} disabled={locked}/></label><Button type="button" onClick={()=>loadServices()} disabled={locked||optionsBusy}>Find services</Button>{options?.page>1&&<Button type="button" onClick={()=>loadServices(options.page-1)} disabled={optionsBusy}>Previous services</Button>}{options?.more&&<Button type="button" onClick={()=>loadServices(options.page+1)} disabled={optionsBusy}>More services</Button>}{optionsBusy&&<p role="status">Loading services…</p>}</div>}
+ {initial&&editable&&template&&<ClientReportCsv report={{...data,templateId,templateVersion:template.version}} disabled={locked} onApply={metrics=>change('metrics',metrics)}/>}
  <form onSubmit={save}><fieldset disabled={locked}><div className="bo-report-grid">
  <label>Purchased service{initial?<input value={`${initial.serviceName}${initial.packageName?' — '+initial.packageName:''}`} readOnly/>:<select required value={serviceId} onChange={e=>{setService(e.target.value);change('title',data.title);}}><option value="">Choose a service</option>{options?.items.map(s=><option key={s.id} value={s.id}>{s.name}{s.packageName?' — '+s.packageName:''} — {s.status}{s.startDate?` · ${s.startDate}`:''}</option>)}</select>}</label>
  <label>Report template<select required disabled={!!initial} value={templateId} onChange={e=>{setTemplate(e.target.value);change('metrics',{});setData(d=>({...d,channel:''}));}}><option value="">Choose a template</option>{REPORT_TEMPLATES.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}</select></label>
