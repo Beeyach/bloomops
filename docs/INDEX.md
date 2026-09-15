@@ -1,6 +1,6 @@
 # BloomOps Documentation Index
 
-Current owner priority: [N2 client overview](phases/N2.md). PR73 is merged; [BUILD_STATE](BUILD_STATE.md) records exact release gates and the next bounded task. Preserve the accepted [prospect sheet](PROSPECTING_SHEET.md) and [Bloomsi branding](BRANDING.md). Earlier release entries below are historical.
+Current owner priority: [N2E in-app notifications](phases/N2.md#n2e-bounded-contract--useful-in-app-notifications). [Local evidence](previews/notifications/README.md) records the independent-audit handoff; PR77/N2D is merged; [BUILD_STATE](BUILD_STATE.md) records exact release gates and the next bounded task. Preserve the accepted [prospect sheet](PROSPECTING_SHEET.md) and [Bloomsi branding](BRANDING.md). Earlier release entries below are historical.
 
 This repository uses selective context so coding agents do not need the entire product plan in every session.
 
