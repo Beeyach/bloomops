@@ -323,6 +323,13 @@
       "when": 1789430547046,
       "tag": "0045_record_discussions",
       "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "6",
+      "when": 1789453779151,
+      "tag": "0046_in_app_notifications",
+      "breakpoints": true
     }
   ]
 }

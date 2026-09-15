@@ -1,0 +1,106 @@
+{
+  "base": "f989428ccc6150befb457860b21c468b2ba656ab",
+  "runtime": "1754750705af9175825a4467af5c1673b748c197",
+  "warmups": 2,
+  "rounds": 7,
+  "viewport": [
+    1440,
+    1000
+  ],
+  "noInjectedLatency": true,
+  "comparisons": [
+    {
+      "route": "Home",
+      "base": {
+        "samples": 5,
+        "visibleMedianMs": 62.4,
+        "serverMedianMs": 18,
+        "statements": [
+          11
+        ],
+        "invocations": [
+          2
+        ],
+        "depth": [
+          2
+        ]
+      },
+      "candidate": {
+        "samples": 5,
+        "visibleMedianMs": 62.8,
+        "serverMedianMs": 18,
+        "statements": [
+          11
+        ],
+        "invocations": [
+          2
+        ],
+        "depth": [
+          2
+        ]
+      }
+    },
+    {
+      "route": "Clients",
+      "base": {
+        "samples": 5,
+        "visibleMedianMs": 62.4,
+        "serverMedianMs": 9,
+        "statements": [
+          3
+        ],
+        "invocations": [
+          2
+        ],
+        "depth": [
+          2
+        ]
+      },
+      "candidate": {
+        "samples": 5,
+        "visibleMedianMs": 62.4,
+        "serverMedianMs": 11,
+        "statements": [
+          3
+        ],
+        "invocations": [
+          2
+        ],
+        "depth": [
+          2
+        ]
+      }
+    },
+    {
+      "route": "Work",
+      "base": {
+        "samples": 5,
+        "visibleMedianMs": 62.4,
+        "serverMedianMs": 12,
+        "statements": [
+          7
+        ],
+        "invocations": [
+          2
+        ],
+        "depth": [
+          2
+        ]
+      },
+      "candidate": {
+        "samples": 5,
+        "visibleMedianMs": 62.2,
+        "serverMedianMs": 13,
+        "statements": [
+          7
+        ],
+        "invocations": [
+          2
+        ],
+        "depth": [
+          2
+        ]
+      }
+    }
+  ]
+}

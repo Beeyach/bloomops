@@ -1,3 +1,4 @@
+import NotificationLink from './NotificationLink';
 import BrandLogo from './BrandLogo';
 import AccountMenu from './AccountMenu';
 import ShellHosts from './ShellHosts';
@@ -25,7 +26,7 @@ export default function PortalShell({ workspace, user, hasContent = false, hasPa
             <div className="bo-workspace-sub">Client portal</div>
           </div>
         </div>
-        <div className="bo-topbar-tools"><SearchLink portal compact/><AccountMenu name={user.name} email={user.email} roleLabel="Client" workspaceName={workspace.name} placement="down" compact /></div>
+        <div className="bo-topbar-tools"><NotificationLink portal compact/><SearchLink portal compact/><AccountMenu name={user.name} email={user.email} roleLabel="Client" workspaceName={workspace.name} placement="down" compact /></div>
       </header>
       {(hasContent||hasPages)&&<PortalContentNav hasContent={hasContent} hasPages={hasPages}/>}
       <main id="main" className="bo-portal-page" tabIndex={-1}>

@@ -2,6 +2,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {Button} from './Primitives';
 import {Icon} from './Icons';
+import ThreadMute from './ThreadMute';
 import UserAvatar from './UserAvatar';
 import styles from './RecordDiscussion.module.css';
 const typeLabels={client:'Client',project:'Project',action:'Task',deliverable:'Deliverable'};
@@ -53,7 +54,7 @@ export default function RecordDiscussion({initial,workspaceId,api,returnHref,por
       {!data.threads.length&&<div className={styles.empty}><Icon name="message" size={25}/><div><h2>{resolved?'No resolved discussions':'Start a discussion'}</h2><p>{resolved?'Resolved threads will appear here.':readOnly?'No shared discussions yet.':'Ask a question or leave an update about this record.'}</p></div></div>}
     </>}
     {data&&threadId&&<>
-      <div className={styles.threadState}><div className={styles.audienceGroup}>{!portal&&<Audience value={data.thread.audience}/>}<span className={data.thread.resolved?styles.resolved:styles.open}><Icon name={data.thread.resolved?'check':'message'} size={15}/>{data.thread.resolved?'Resolved':'Open'}</span></div>
+      <div className={styles.threadState}>{!readOnly&&<ThreadMute key={threadId} threadId={threadId} workspaceId={workspaceId}/>}<div className={styles.audienceGroup}>{!portal&&<Audience value={data.thread.audience}/>}<span className={data.thread.resolved?styles.resolved:styles.open}><Icon name={data.thread.resolved?'check':'message'} size={15}/>{data.thread.resolved?'Resolved':'Open'}</span></div>
         {!readOnly&&Boolean(data.thread.canResolve)&&<Button variant="ghost" icon={data.thread.resolved?'refresh':'check'} disabled={busy||loading||!ready} onClick={toggle}>{data.thread.resolved?'Reopen':'Resolve'}</Button>}
       </div>
       <ol className={styles.messages}>{data.messages.map(message=><li key={message.id} className={styles.message}>

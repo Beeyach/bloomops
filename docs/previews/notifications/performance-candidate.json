@@ -1,0 +1,597 @@
+{
+  "root": "/home/ary/Developer/bloomops-n2-notifications",
+  "warmups": 2,
+  "method": "matching built Worker; document navigation/networkidle and desktop navigation-perf completedContent SPA clicks; no injected latency",
+  "performance": [
+    {
+      "route": "/",
+      "width": 1440,
+      "warmups": 2,
+      "samples": [
+        {
+          "elapsedMs": 663,
+          "completeMs": 30,
+          "statements": 11,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 29152
+        },
+        {
+          "elapsedMs": 663,
+          "completeMs": 32,
+          "statements": 11,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 29152
+        },
+        {
+          "elapsedMs": 648,
+          "completeMs": 28,
+          "statements": 11,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 29152
+        },
+        {
+          "elapsedMs": 652,
+          "completeMs": 26,
+          "statements": 11,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 29152
+        },
+        {
+          "elapsedMs": 652,
+          "completeMs": 26,
+          "statements": 11,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 29152
+        },
+        {
+          "elapsedMs": 636,
+          "completeMs": 25,
+          "statements": 11,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 29152
+        },
+        {
+          "elapsedMs": 631,
+          "completeMs": 26,
+          "statements": 11,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 29152
+        }
+      ]
+    },
+    {
+      "route": "/clients",
+      "width": 1440,
+      "warmups": 2,
+      "samples": [
+        {
+          "elapsedMs": 664,
+          "completeMs": 29,
+          "statements": 3,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 37877
+        },
+        {
+          "elapsedMs": 626,
+          "completeMs": 17,
+          "statements": 3,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 37877
+        },
+        {
+          "elapsedMs": 639,
+          "completeMs": 17,
+          "statements": 3,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 37877
+        },
+        {
+          "elapsedMs": 636,
+          "completeMs": 14,
+          "statements": 3,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 37877
+        },
+        {
+          "elapsedMs": 651,
+          "completeMs": 20,
+          "statements": 3,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 37877
+        },
+        {
+          "elapsedMs": 625,
+          "completeMs": 15,
+          "statements": 3,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 37877
+        },
+        {
+          "elapsedMs": 625,
+          "completeMs": 16,
+          "statements": 3,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 37877
+        }
+      ]
+    },
+    {
+      "route": "/work",
+      "width": 1440,
+      "warmups": 2,
+      "samples": [
+        {
+          "elapsedMs": 661,
+          "completeMs": 20,
+          "statements": 7,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 38741
+        },
+        {
+          "elapsedMs": 635,
+          "completeMs": 17,
+          "statements": 7,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 38741
+        },
+        {
+          "elapsedMs": 626,
+          "completeMs": 18,
+          "statements": 7,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 38741
+        },
+        {
+          "elapsedMs": 640,
+          "completeMs": 18,
+          "statements": 7,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 38741
+        },
+        {
+          "elapsedMs": 627,
+          "completeMs": 18,
+          "statements": 7,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 38741
+        },
+        {
+          "elapsedMs": 641,
+          "completeMs": 19,
+          "statements": 7,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 38741
+        },
+        {
+          "elapsedMs": 636,
+          "completeMs": 23,
+          "statements": 7,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 38741
+        }
+      ]
+    },
+    {
+      "route": "/",
+      "width": 390,
+      "warmups": 2,
+      "samples": [
+        {
+          "elapsedMs": 628,
+          "completeMs": 25,
+          "statements": 11,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 29152
+        },
+        {
+          "elapsedMs": 638,
+          "completeMs": 34,
+          "statements": 11,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 29152
+        },
+        {
+          "elapsedMs": 634,
+          "completeMs": 27,
+          "statements": 11,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 29152
+        },
+        {
+          "elapsedMs": 606,
+          "completeMs": 23,
+          "statements": 11,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 29152
+        },
+        {
+          "elapsedMs": 622,
+          "completeMs": 22,
+          "statements": 11,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 29152
+        },
+        {
+          "elapsedMs": 617,
+          "completeMs": 24,
+          "statements": 11,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 29152
+        },
+        {
+          "elapsedMs": 612,
+          "completeMs": 24,
+          "statements": 11,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 29152
+        }
+      ]
+    },
+    {
+      "route": "/clients",
+      "width": 390,
+      "warmups": 2,
+      "samples": [
+        {
+          "elapsedMs": 608,
+          "completeMs": 18,
+          "statements": 3,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 37877
+        },
+        {
+          "elapsedMs": 614,
+          "completeMs": 14,
+          "statements": 3,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 37877
+        },
+        {
+          "elapsedMs": 602,
+          "completeMs": 15,
+          "statements": 3,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 37877
+        },
+        {
+          "elapsedMs": 603,
+          "completeMs": 14,
+          "statements": 3,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 37877
+        },
+        {
+          "elapsedMs": 611,
+          "completeMs": 15,
+          "statements": 3,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 37877
+        },
+        {
+          "elapsedMs": 599,
+          "completeMs": 14,
+          "statements": 3,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 37877
+        },
+        {
+          "elapsedMs": 620,
+          "completeMs": 18,
+          "statements": 3,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 37877
+        }
+      ]
+    },
+    {
+      "route": "/work",
+      "width": 390,
+      "warmups": 2,
+      "samples": [
+        {
+          "elapsedMs": 617,
+          "completeMs": 17,
+          "statements": 7,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 38741
+        },
+        {
+          "elapsedMs": 616,
+          "completeMs": 17,
+          "statements": 7,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 38741
+        },
+        {
+          "elapsedMs": 619,
+          "completeMs": 17,
+          "statements": 7,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 38741
+        },
+        {
+          "elapsedMs": 601,
+          "completeMs": 18,
+          "statements": 7,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 38741
+        },
+        {
+          "elapsedMs": 613,
+          "completeMs": 20,
+          "statements": 7,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 38741
+        },
+        {
+          "elapsedMs": 617,
+          "completeMs": 16,
+          "statements": 7,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 38741
+        },
+        {
+          "elapsedMs": 611,
+          "completeMs": 17,
+          "statements": 7,
+          "invocations": 2,
+          "depth": 2,
+          "bytes": 38741
+        }
+      ]
+    }
+  ],
+  "clicks": [
+    {
+      "round": 0,
+      "route": "Home",
+      "visibleMs": 126.60009765625,
+      "renderedRows": 0,
+      "completeMs": 68,
+      "statements": 11,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 0,
+      "route": "Clients",
+      "visibleMs": 61.39990234375,
+      "renderedRows": 9,
+      "completeMs": 9,
+      "statements": 3,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 0,
+      "route": "Work",
+      "visibleMs": 62.199951171875,
+      "renderedRows": 2,
+      "completeMs": 12,
+      "statements": 7,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 1,
+      "route": "Home",
+      "visibleMs": 62.099853515625,
+      "renderedRows": 0,
+      "completeMs": 18,
+      "statements": 11,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 1,
+      "route": "Clients",
+      "visibleMs": 62.099853515625,
+      "renderedRows": 9,
+      "completeMs": 9,
+      "statements": 3,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 1,
+      "route": "Work",
+      "visibleMs": 62.400146484375,
+      "renderedRows": 2,
+      "completeMs": 14,
+      "statements": 7,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 2,
+      "route": "Home",
+      "visibleMs": 62,
+      "renderedRows": 0,
+      "completeMs": 18,
+      "statements": 11,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 2,
+      "route": "Clients",
+      "visibleMs": 62.099853515625,
+      "renderedRows": 9,
+      "completeMs": 9,
+      "statements": 3,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 2,
+      "route": "Work",
+      "visibleMs": 62.10009765625,
+      "renderedRows": 2,
+      "completeMs": 11,
+      "statements": 7,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 3,
+      "route": "Home",
+      "visibleMs": 78.39990234375,
+      "renderedRows": 0,
+      "completeMs": 25,
+      "statements": 11,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 3,
+      "route": "Clients",
+      "visibleMs": 62,
+      "renderedRows": 9,
+      "completeMs": 11,
+      "statements": 3,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 3,
+      "route": "Work",
+      "visibleMs": 62,
+      "renderedRows": 2,
+      "completeMs": 13,
+      "statements": 7,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 4,
+      "route": "Home",
+      "visibleMs": 79.300048828125,
+      "renderedRows": 0,
+      "completeMs": 23,
+      "statements": 11,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 4,
+      "route": "Clients",
+      "visibleMs": 62.400146484375,
+      "renderedRows": 9,
+      "completeMs": 14,
+      "statements": 3,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 4,
+      "route": "Work",
+      "visibleMs": 62.199951171875,
+      "renderedRows": 2,
+      "completeMs": 15,
+      "statements": 7,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 5,
+      "route": "Home",
+      "visibleMs": 62.800048828125,
+      "renderedRows": 0,
+      "completeMs": 18,
+      "statements": 11,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 5,
+      "route": "Clients",
+      "visibleMs": 62.39990234375,
+      "renderedRows": 9,
+      "completeMs": 10,
+      "statements": 3,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 5,
+      "route": "Work",
+      "visibleMs": 62.39990234375,
+      "renderedRows": 2,
+      "completeMs": 10,
+      "statements": 7,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 6,
+      "route": "Home",
+      "visibleMs": 61.7001953125,
+      "renderedRows": 0,
+      "completeMs": 17,
+      "statements": 11,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 6,
+      "route": "Clients",
+      "visibleMs": 78.199951171875,
+      "renderedRows": 9,
+      "completeMs": 22,
+      "statements": 3,
+      "invocations": 2,
+      "depth": 2
+    },
+    {
+      "round": 6,
+      "route": "Work",
+      "visibleMs": 77.800048828125,
+      "renderedRows": 2,
+      "completeMs": 18,
+      "statements": 7,
+      "invocations": 2,
+      "depth": 2
+    }
+  ]
+}
