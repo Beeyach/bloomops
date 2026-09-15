@@ -99,7 +99,7 @@ try{
  }
  await owner.page.setViewportSize({width:1440,height:1000});
  const id=created[0];let current=(await get(owner.ctx,api+'/'+id)).data.report;
- check('editing increments persisted revision',current.revision===2);
+ check('CSV import, manual correction and commentary each increment persisted revision',current.revision===4);
  const draft=r=>Object.fromEntries(['title','periodStart','periodEnd','timezone','channel','accountLabel','scopeLabel','commentary','metrics'].map(k=>[k,r[k]]));
  const body=r=>({workspaceId:'a',userId:'ellen',serviceEngagementId:r.serviceEngagementId,templateId:r.templateId,templateVersion:r.templateVersion,expectedRevision:r.revision,draft:draft(r)});
  check('other workspace guessed draft denied',(await get(foreign.ctx,api+'/'+id)).status===404);
