@@ -5,8 +5,10 @@
 The independent PR81 audit found one P2 at `68340df`: equivalent normalized creation
 requests could conflict when JSON properties were reordered. The [focused correction](previews/reports/CORRECTION.md)
 uses an explicit fixed-order intent tuple and real-writer/native-D1 regressions.
-Earlier N3A evidence below remains historical. Final local/remote receipts and focused
-re-review are pending; no schema change, merge or deployment is part of this correction.
+Earlier N3A evidence below remains historical. Local source `d4e1670` passes reporting29,
+native20, full7264/7264, completed build and reporting browser54 with zero runtime
+errors. Remote receipts accompany the external addendum after normal PR validation;
+focused re-review remains pending. No schema change, merge or deployment is part of this correction.
 
 ## Current task decision — N3A internal manual report drafts
 

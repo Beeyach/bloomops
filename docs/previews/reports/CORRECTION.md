@@ -33,5 +33,28 @@ git diff --check
 The browser uses the existing README environment variables and isolated installed
 tooling, after a completed revision-stamped build. No unrelated browser suite is
 manually repeated. The unchanged PR workflow runs its configured complete checks.
-Full-suite/build/browser and remote completion remain pending until the addendum
-records their actual results. No merge, deployment or independent acceptance is claimed.
+## Completed local verification
+
+Tested source: `d4e16707ab8d9ebe26dbe198ad56b9aac8071ff1`, tracked-clean before
+the build. Reporting tests passed 29/29, native D1 passed 20 named checks, and
+`npm test` passed 7264/7264 with no failures, skips or cancellations. Each command
+exited 0. The full suite used Node22.23.2, npm10.9.8, TZ=UTC and the existing
+isolated Python3 PATH alias. The build exited 0 at 2026-09-15T18:46:54Z.
+
+The reporting browser then passed all 54 checks with zero runtime errors, exit 0.
+Its fresh local Worker served version `d4e1670` on port35633, controller PID167152.
+The receipt records source/configuration/artifact hashes, process identity and
+served JavaScript hashes; artifacts remained unchanged through the browser run.
+No rebuild ran during browser verification. Disposable fixtures were removed by
+the existing harness. No shared browser cache or database was changed.
+
+The required selective Sol High internal review found no material findings. It
+inspected the focused diff and supplied stateful-test evidence, without rerunning
+those tests. This does not substitute for the requested external focused re-review.
+
+The exact tested-source-to-final delta contains documentation/evidence only; the
+addendum exports it. Remote completion is recorded separately in retrieved run
+receipts and PR evidence after the normal push-triggered validation. Original
+migration and unrelated local browser evidence is retained for unchanged inputs;
+the PR workflow reruns its configured checks. No merge, deployment or independent
+acceptance is claimed.
