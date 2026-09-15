@@ -45,8 +45,11 @@ try{
  for(const entry of journal.entries){for(const stmt of readFileSync(join(root,`drizzle/${entry.tag}.sql`),'utf8').split('--> statement-breakpoint').map(x=>x.trim()).filter(Boolean))await binding.prepare(stmt).run();await binding.prepare('INSERT INTO d1_migrations(name) VALUES(?)').bind(entry.tag+'.sql').run();}
  await runBootstrap(binding,{workspaceName:'N3A Synthetic QA',workspaceSlug:'n3a-qa',owner:{email:'ellen@example.com',name:'QA Owner'},admin:{email:'ary@example.com',name:'QA Admin'}},{ids:{workspaceId:'a',ownerUserId:'ellen',ownerMembershipId:'m-ellen',adminUserId:'ary',adminMembershipId:'m-ary'}});
  await runBootstrap(binding,{workspaceName:'N3A Other QA',workspaceSlug:'n3a-other',owner:{email:'foreign@example.com',name:'Other Owner'},admin:{email:'other-admin@example.com',name:'Other Admin'}},{ids:{workspaceId:'b',ownerUserId:'foreign',ownerMembershipId:'m-foreign'}});
+ // The legacy QA workspace lacks common/GHL versions. Reproduce that initial
+ // state only in this disposable database; every subsequent setup uses the UI.
+ await binding.prepare("DELETE FROM template_versions WHERE workspace_id='a' AND template_id IN (SELECT id FROM templates WHERE workspace_id='a' AND kind='onboarding' AND slug IN ('common','ghl'))").run();
  check('isolated built Worker is healthy', (await(await fetch(base+'/api/health')).json()).ok);
- browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-gpu']});
  async function login(user){const ctx=await browser.newContext({viewport:{width:1440,height:1000}});await ctx.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());const email=user+'@example.com';assert.equal((await ctx.request.post(base+'/api/auth/sign-in/magic-link',{headers:{origin:base},data:{email,callbackURL:'/'}})).status(),200);
   const mail=await bucket.get('dev-mail/'+createHash('sha256').update(email).digest('hex')+'.json');assert.ok(mail);const url=JSON.parse(await mail.text()).text.match(/https?:\/\/\S+/)[0];const parsed=new URL(url);assert.ok(parsed.origin===base&&parsed.pathname==='/api/auth/magic-link/verify',`local auth host/path: ${parsed.host} ${parsed.pathname}`);
   const page=await ctx.newPage();page.on('pageerror',e=>errors.push(reportBrowserError(e)));await page.goto(url,{waitUntil:'networkidle'});return {ctx,page};}
@@ -54,6 +57,13 @@ try{
  identity.servedAssets=[];for(const url of await owner.page.locator('script[src]').evaluateAll(nodes=>nodes.map(n=>n.src))){const path=new URL(url).pathname,file=artifacts.find(f=>f.path==='.open-next/assets'+decodeURIComponent(path));assert.ok(file,'served script belongs to completed build');const response=await owner.ctx.request.get(url);assert.equal(response.status(),200);const sha256=hash(await response.body());assert.equal(sha256,file.sha256);identity.servedAssets.push({path,sha256});}
  assert.ok(identity.servedAssets.length);writeFileSync(out+'/artifact-identity.json',JSON.stringify(identity,null,2));
  const admin=await login('ary'),foreign=await login('foreign');
+ await owner.page.bringToFront();
+ await owner.page.goto(base+'/settings/onboarding',{waitUntil:'networkidle'});
+ await owner.page.getByText('Review Common default instructions',{exact:true}).click();check('canonical onboarding instructions can be reviewed',await owner.page.getByText('Brand assets',{exact:true}).count()===1);
+ await owner.page.getByLabel('Install missing Common defaults',{exact:true}).check();await owner.page.getByLabel('Install missing GHL defaults',{exact:true}).check();
+ await owner.page.getByRole('button',{name:'Install selected defaults',exact:true}).click();await owner.page.getByRole('status').filter({hasText:'Selected onboarding categories are ready'}).waitFor();check('supported setup installs selected onboarding categories and preserves other defaults',await owner.page.getByText('Published version 1',{exact:true}).count()===5);
+ await owner.page.reload({waitUntil:'networkidle'});check('onboarding publication persists on reload',await owner.page.getByLabel('Install missing Common defaults',{exact:true}).isDisabled());
+ await owner.page.setViewportSize({width:320,height:1000});check('onboarding setup at320 has no overflow',await owner.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await owner.page.screenshot({path:out+'/onboarding-setup-320.png',fullPage:true});await owner.page.setViewportSize({width:1440,height:1000});
  const get=async(ctx,path)=>{const r=await ctx.request.get(base+path);return {status:r.status(),data:await r.json()};};
  const post=async(ctx,path,data,method='POST')=>{const r=await ctx.request.fetch(base+path,{method,headers:{origin:base},data});return {status:r.status(),data:await r.json()};};
  const ownerSession=await get(owner.ctx,'/api/auth/get-session'),adminSession=await get(admin.ctx,'/api/auth/get-session');check('independent actual owner/admin identities',ownerSession.data.user.id==='ellen'&&adminSession.data.user.id==='ary');
@@ -63,6 +73,29 @@ try{
  const addService=async(client,slug)=>{const r=await post(owner.ctx,`/api/bloomops/clients/${client}/services`,{serviceTypeId:types.find(t=>t.slug===slug).id,packageName:'Synthetic QA service'});assert.equal(r.status,201,JSON.stringify(r.data));return r.data.service.id;};
  const ghl=await addService(clientId,'ghl'),social=await addService(clientId,'social-media-management'),foreignService=await addService(otherClient,'ghl');
  check('supported Client and purchased Service writers create fixture',!!ghl&&!!social);
+ // Exercise the supported contact-specific activation path, not an injected
+ // contact association. The invitation and magic link remain only in memory.
+ const activation=await post(owner.ctx,`/api/bloomops/clients/${otherClient}/activate`,{});
+ check('published defaults enable real Client activation',activation.status===200&&activation.data.activated&&activation.data.deliveryStatus==='sent');
+ const contactEmail='contact@example.test';
+ const invitationMail=JSON.parse(await(await bucket.get('dev-mail/'+createHash('sha256').update(contactEmail).digest('hex')+'.json')).text());
+ const invitationUrl=invitationMail.text.match(/https?:\/\/\S+/)[0];
+ assert.equal(new URL(invitationUrl).origin,base);assert.ok(new URL(invitationUrl).pathname.startsWith('/invite/'));
+ const portalContext=await browser.newContext({viewport:{width:1440,height:1000}});
+ await portalContext.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());
+ const portalPage=await portalContext.newPage();portalPage.on('pageerror',e=>errors.push(reportBrowserError(e)));
+ await portalPage.goto(invitationUrl,{waitUntil:'networkidle'});
+ const signIn=await portalContext.request.post(base+'/api/auth/sign-in/magic-link',{headers:{origin:base},data:{email:contactEmail,callbackURL:new URL(invitationUrl).pathname}});assert.equal(signIn.status(),200);
+ const loginMail=JSON.parse(await(await bucket.get('dev-mail/'+createHash('sha256').update(contactEmail).digest('hex')+'.json')).text());
+ await portalPage.goto(loginMail.text.match(/https?:\/\/\S+/)[0],{waitUntil:'networkidle'});
+ await portalPage.getByRole('button',{name:'Accept and continue',exact:true}).click();await portalPage.waitForURL('**/portal');
+ check('genuine portal identity authenticates independently',(await get(portalContext,'/api/auth/get-session')).data.user.id!=='ellen');
+ await portalPage.getByRole('heading',{name:'Your onboarding',exact:true}).waitFor();
+ const portalAccounts=await get(portalContext,'/api/bloomops/portal/onboarding');
+ check('activation contact link exposes only its Client',portalAccounts.status===200&&portalAccounts.data.clients.length===1&&portalAccounts.data.clients[0].id===otherClient&&await portalPage.locator(`a[href="/portal/discussions/client/${otherClient}"]`).count()===1&&await portalPage.locator(`a[href="/portal/discussions/client/${clientId}"]`).count()===0);
+ check('portal identity cannot administer onboarding defaults',(await get(portalContext,'/api/bloomops/onboarding/setup')).status===404);
+ check('portal identity cannot read internal report drafts',(await get(portalContext,`/api/bloomops/clients/${otherClient}/reports`)).status===404);
+ await portalPage.screenshot({path:out+'/supported-portal-activation.png',fullPage:true});await portalContext.close();
  const path=`/clients/${clientId}/reports`,api=`/api/bloomops/clients/${clientId}/reports`;
  await owner.page.goto(base+`/clients/${clientId}`,{waitUntil:'networkidle'});await owner.page.getByRole('link',{name:'Reports',exact:true}).click();await owner.page.getByText('No report drafts yet.',{exact:true}).waitFor();check('Client Reports destination and empty state',true);
  const metric=async(page,label,value)=>{await page.getByLabel(label+' availability').selectOption('value');await page.getByLabel(label+' count').fill(String(value));};
