@@ -6,7 +6,7 @@ This records implementation verification, not independent acceptance or an N3 re
 ## Revisions and storage
 
 Base: `2c0e649303f5c9a28a09e9c442f9478fefd07258`.
-Completed locally tested source: `62fb5355603359678e2a60cf71fcd1169ed26fa7`.
+Completed locally tested source: `44eac7d7d518399d48e82d066f807fe3f2e41786`.
 Later handoff edits are documentation only; the review packet exports the exact delta.
 Additive generated migration: `0047_gigantic_famine.sql` (48 domain migrations).
 `client_report_drafts` and `client_report_metrics` use real Client/Service composite
@@ -17,10 +17,10 @@ D1 batches. No shared database is touched. No prospect report storage is reused.
 
 | Check | Result |
 | --- | --- |
-| `node --test tests/bloomops-client-reports*.test.mjs` | 23/23, exit 0 |
+| `node --test tests/bloomops-client-reports*.test.mjs` | 25/25, exit 0 |
 | `node scripts/client-reports-native-local.mjs` | 16 checks, exit 0; populated base upgrade and fresh schema, rollback, zero-row updates, concurrent saves, FK checks |
-| `npm test` | 7258/7258, exit 0; no failures, skips or waivers |
-| `npm run cf:build` | exit 0, completed 16:15:37Z before final browser start |
+| `npm test` | 7260/7260, exit 0; no failures, skips or waivers |
+| `npm run cf:build` | exit 0, completed 17:26:22Z before final browser start |
 | `node scripts/client-reports-browser-local.mjs` | 54 checks, exit 0; zero runtime errors |
 | `node .github/scripts/verify-zero-remote.mjs --local` | PASS on identical migration inputs; empty-to-current and idempotent second run |
 | `node scripts/notifications-native-local.mjs` | 29 retained checks pass; now upgrades its exact N2E fixture before advancing to current schema |
@@ -32,6 +32,9 @@ where available, preserving raw command exit codes and sanitized logs/receipts.
 Runtime: Linux, Node22.23.2, npm10.9.8, Next15.5.25, OpenNext Cloudflare1.20.6,
 Playwright1.58.2. Full suite used `TZ=UTC` and an isolated PATH alias from `python`
 to `/usr/bin/python3`, following AI_WORKING_AGREEMENTS. No global configuration change.
+The native16/native29 and zero-verifier results are retained from unchanged schema,
+fixture and native-harness inputs at62fb535; later changes affect browser diagnostic
+redaction and its two pure tests only. The PR workflow reruns the native checks.
 The temporary directory was isolated outside the shared `/tmp` after a diagnostic
 browser crash with `/tmp` at99%; no shared browser cache was modified.
 
@@ -50,9 +53,9 @@ node scripts/client-reports-browser-local.mjs
 
 Local installed browser tooling also used its `PLAYWRIGHT_BROWSERS_PATH` and
 `LD_LIBRARY_PATH`; `TMPDIR` pointed to this task's isolated temporary directory.
-The fresh local Worker served `/api/version.sha=62fb535`, port46139, controller
-PID143278. Its generated bundle, process tree, complete Worker/client artifact
-hashes and seven fetched JavaScript hashes are recorded. Artifacts remained unchanged;
+The fresh local Worker served `/api/version.sha=44eac7d`, port35385, controller
+PID156816. Its generated bundle, process tree, complete Worker/client artifact
+hashes and 5 fetched JavaScript hashes are recorded. Artifacts remained unchanged;
 no build ran during the browser checks. These identifiers describe the completed
 local run, not a persistent server. Fixtures and temporary Worker were disposed.
 
@@ -67,6 +70,14 @@ are exercised. Portal rejection and assigned-Team read-only/revocation use real
 session HTTP tests; no portal associations were created.
 
 ## Corrections and limits
+
+A final evidence scan caught a local magic-link URL in an exploratory failure receipt.
+That diagnostic was redacted before export. The reporting browser now redacts auth
+URLs, token parameters and credential headers in both JSON receipts and console
+errors, with two regressions. Full7260/7260, focused25/25 and the54-check browser
+run above cover this correction. Earlier passing CI at1c7b2be is historical evidence;
+the final branch receives a new normal PR run, without reusing the older result.
+
 
 The required selective Sol High internal review found two P2s: valid multilingual
 input exceeded the original32KiB envelope, and catalogue prose omitted frozen

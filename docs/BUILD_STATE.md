@@ -2,7 +2,7 @@
 
 ## Current task decision — N3A internal manual report drafts
 
-The owner selects [N3A](phases/N3.md) as a new bounded implementation task from main `2c0e649`. Internal manual drafts and private preview only; N3 as a whole is not authorized in full. N2E, PR79 and the five baseline failures are closed per owner release evidence. E3B, paused Prospecting/email/video and PERF3 remain separate. Earlier current-task headings below are historical checkpoints. Implementation and local verification are complete at `62fb535`: full7258/7258, report23/23, native16, completed build and report browser54 pass. [Evidence](previews/reports/README.md). Draft PR remote validation and the external independent audit remain handoff gates; no audit acceptance, merge or deployment is claimed.
+The owner selects [N3A](phases/N3.md) as a new bounded implementation task from main `2c0e649`. Internal manual drafts and private preview only; N3 as a whole is not authorized in full. N2E, PR79 and the five baseline failures are closed per owner release evidence. E3B, paused Prospecting/email/video and PERF3 remain separate. Earlier current-task headings below are historical checkpoints. Implementation and local verification are complete at `44eac7d`: full7260/7260, report25/25, native16, completed build and report browser54 pass. [Evidence](previews/reports/README.md). Draft PR remote validation and the external independent audit remain handoff gates; no audit acceptance, merge or deployment is claimed.
 
 ## Current bounded correction — PR79 parent keys
 
