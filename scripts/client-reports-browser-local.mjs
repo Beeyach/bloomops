@@ -86,8 +86,9 @@ try{
  await portalPage.goto(loginMail.text.match(/https?:\/\/\S+/)[0],{waitUntil:'networkidle'});
  await portalPage.getByRole('button',{name:'Accept and continue',exact:true}).click();await portalPage.waitForURL('**/portal');
  check('genuine portal identity authenticates independently',(await get(portalContext,'/api/auth/get-session')).data.user.id!=='ellen');
- await portalPage.getByRole('heading',{name:'N3A Different Client',exact:true}).waitFor();
- check('activation contact link exposes only its Client',await portalPage.getByRole('heading',{name:'N3A Synthetic Reports',exact:true}).count()===0);
+ await portalPage.getByRole('heading',{name:'Your onboarding',exact:true}).waitFor();
+ const portalAccounts=await get(portalContext,'/api/bloomops/portal/onboarding');
+ check('activation contact link exposes only its Client',portalAccounts.status===200&&portalAccounts.data.clients.length===1&&portalAccounts.data.clients[0].id===otherClient&&await portalPage.locator(`a[href="/portal/discussions/client/${otherClient}"]`).count()===1&&await portalPage.locator(`a[href="/portal/discussions/client/${clientId}"]`).count()===0);
  check('portal identity cannot administer onboarding defaults',(await get(portalContext,'/api/bloomops/onboarding/setup')).status===404);
  check('portal identity cannot read internal report drafts',(await get(portalContext,`/api/bloomops/clients/${otherClient}/reports`)).status===404);
  await portalPage.screenshot({path:out+'/supported-portal-activation.png',fullPage:true});await portalContext.close();
