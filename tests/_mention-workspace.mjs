@@ -18,8 +18,12 @@ export async function verifyMentionWorkspace(binding) {
       await run('INSERT INTO record_discussion_comments(id,workspace_id,thread_id,author_membership_id,author_user_id,body,creation_hash,last_request_id) VALUES(?,?,?,?,?,?,?,?)', id, ws, id, 'm-'+ws, ws, 'Synthetic constraint fixture', id, id);
     }
   }
+  // This recipient authors nothing: deletion must be blocked by the mention
+  // membership FK itself, not by an unrelated thread/comment author FK.
+  await run("INSERT INTO user(id,name,email) VALUES('recipient','Recipient','recipient@example.test')");
+  await run("INSERT INTO workspace_memberships(id,workspace_id,user_id,role,status) VALUES('m-recipient','a','recipient','team_member','active')");
   const insert = 'INSERT INTO record_discussion_mentions(workspace_id,thread_id,comment_id,membership_id,user_id) VALUES(?,?,?,?,?)';
-  const valid = ['a', 'a1', 'a1', 'm-a', 'a'];
+  const valid = ['a', 'a1', 'a1', 'm-recipient', 'recipient'];
   for (const row of [
     ['missing', 'a1', 'a1', 'm-a', 'a'], ['b', 'a1', 'a1', 'm-b', 'b'],
     ['a', 'a1', 'b1', 'm-a', 'a'], ['a', 'a2', 'a1', 'm-a', 'a'],
@@ -34,13 +38,14 @@ export async function verifyMentionWorkspace(binding) {
   await rejects("UPDATE record_discussion_mentions SET workspace_id='missing'");
   await rejects("UPDATE record_discussion_mentions SET membership_id='m-b'");
   await rejects("DELETE FROM record_discussion_comments WHERE id='a1'");
-  await rejects("DELETE FROM workspace_memberships WHERE id='m-a'");
+  await rejects("DELETE FROM workspace_memberships WHERE id='m-recipient'");
   const index = await binding.prepare("SELECT name FROM sqlite_master WHERE type='index' AND name='record_discussion_mentions_recipient_idx'").first();
   assert.ok(index); checks++;
   assert.equal((await binding.prepare('SELECT count(*) n FROM record_discussion_mentions').first()).n, 1); checks++;
   assert.deepEqual((await binding.prepare('PRAGMA foreign_key_check').all()).results, []); checks++;
   // Existing explicit cleanup order is preserved: mentions before comments.
   await run('DELETE FROM record_discussion_mentions');
+  await run("DELETE FROM workspace_memberships WHERE id='m-recipient'"); checks++;
   await run("DELETE FROM record_discussion_comments WHERE id='a1'"); checks++;
   return checks;
 }
