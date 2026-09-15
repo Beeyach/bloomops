@@ -337,6 +337,13 @@
       "when": 1789487306238,
       "tag": "0047_gigantic_famine",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "6",
+      "when": 1789499537915,
+      "tag": "0048_clumsy_nekra",
+      "breakpoints": true
     }
   ]
 }
