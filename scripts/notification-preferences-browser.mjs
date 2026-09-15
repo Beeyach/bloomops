@@ -8,12 +8,13 @@ export async function notificationPreferencesRegression({page,base,check,selectW
  const open=()=>page.getByRole('button',{name:'Preferences',exact:true});
  const mentions=()=>page.getByRole('checkbox',{name:'Mentions',exact:true});
  async function hold(){
-  let captured,release,finished;
-  const pending=new Promise(r=>{captured=r;}),gate=new Promise(r=>{release=r;}),done=new Promise(r=>{finished=r;});
-  const handler=async route=>{const response=await route.fetch();captured();await gate;try{await route.fulfill({response});}finally{finished();}};
-  await page.route(settingsUrl,handler,{times:1});
-  return {pending,release:async()=>{release();await done;await page.unroute(settingsUrl,handler);await settle();}};
+  const id=await page.evaluate(()=>window.__n2eHoldSettings());
+  return {
+   pending:page.waitForFunction(id=>window.__n2eSettingsRequests.get(id).received,id),
+   release:async()=>{await page.evaluate(id=>window.__n2eSettingsRequests.get(id).release(),id);await page.waitForFunction(id=>window.__n2eSettingsRequests.get(id).finished,id);await settle();}
+  };
  }
+
  for(const event of ['focus','pageshow','interval']){
   await page.goto(base+'/notifications',{waitUntil:'networkidle'});
   const held=await hold();await open().click();await held.pending;
@@ -39,7 +40,8 @@ export async function notificationPreferencesRegression({page,base,check,selectW
  await page.goto(base+'/notifications',{waitUntil:'networkidle'});const dismissed=await hold();await open().click();await dismissed.pending;await open().click();
  check('dismissed preferences stay closed',await page.getByRole('region',{name:'Notification preferences'}).count()===0);
  const newer=await hold();await open().click();await newer.pending;await dismissed.release();
- check('obsolete response cannot clear newer loading state',await page.getByText('Loading preferences…',{exact:true}).count()===1&&await mentions().count()===0);
+ const loading=await page.getByText('Loading preferences…',{exact:true}).count(),controls=await mentions().count();
+ assert.equal(controls,0,'obsolete response must not populate new request');assert.equal(loading,1,'new request must retain loading state');check('obsolete response cannot clear newer loading state',true);
  await newer.release();await mentions().waitFor();check('preferences reopen after dismissed request',await mentions().isEnabled());
  // A real selected-workspace change while an old response is held. The refresh
  // observes the new server scope before the old response is released.
@@ -61,6 +63,18 @@ export async function notificationPreferencesRegression({page,base,check,selectW
 }
 
 export function captureNotificationIntervals(){
+ // Hold each fetch promise separately after its real server response arrives.
+ // Concurrent same-URL Chromium requests can share a routed network response;
+ // separate gates keep release ordering deterministic even in that case.
+ const request=window.fetch.bind(window);let serial=0;window.__n2eSettingsRequests=new Map();
+ window.__n2eHoldSettings=()=>{const id=++serial;let release;const gate=new Promise(resolve=>{release=resolve;});window.__n2eSettingsRequests.set(id,{gate,release,claimed:false,received:false,finished:false});return id;};
+ window.fetch=async(input,options)=>{
+  const url=new URL(typeof input==='string'?input:input.url,location.href);
+  const held=url.pathname==='/api/bloomops/notifications'&&url.search==='?settings=true'?[...window.__n2eSettingsRequests.values()].find(entry=>!entry.claimed):null;
+  if(held)held.claimed=true;const response=await request(input,options);
+  if(held){held.received=true;await held.gate;held.finished=true;}return response;
+ };
+
  const schedule=window.setInterval.bind(window),cancel=window.clearInterval.bind(window);window.__n2eIntervals=new Map();
  window.setInterval=(fn,ms,...args)=>{const id=schedule(fn,ms,...args);if(ms===30000)window.__n2eIntervals.set(id,()=>fn(...args));return id;};
  window.clearInterval=id=>{window.__n2eIntervals.delete(id);cancel(id);};
