@@ -1,0 +1,139 @@
+name: PR validation
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-validation-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CI: 'true'
+  TZ: UTC
+  NEXT_TELEMETRY_DISABLED: '1'
+  WRANGLER_SEND_METRICS: 'false'
+
+jobs:
+  feature:
+    name: N2E feature validation (local resources)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22.23.2'
+      - name: Record merge candidate identity
+        env:
+          EVENT_BASE: ${{ github.event.pull_request.base.sha }}
+          EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
+          EVENT_MERGE: ${{ github.sha }}
+        run: |
+          mkdir -p ci-evidence
+          test "$(git rev-parse HEAD)" = "$EVENT_MERGE"
+          python3 -c 'import json,os,subprocess; json.dump({"base":os.environ["EVENT_BASE"],"feature":os.environ["EVENT_HEAD"],"mergeCandidate":os.environ["EVENT_MERGE"],"checkedOut":subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip()},open("ci-evidence/revisions.json","w"),indent=2)'
+          python --version
+      - name: Install lockfile
+        run: python3 .github/scripts/pr-validation.py run ci-evidence/install npm ci
+      - name: Notification Node tests
+        run: python3 .github/scripts/pr-validation.py run ci-evidence/notifications node --test tests/bloomops-notifications.test.mjs
+      - name: Discussion, Page, Action and access regressions
+        run: >-
+          python3 .github/scripts/pr-validation.py run ci-evidence/regressions node --test
+          tests/bloomops-notifications.test.mjs tests/bloomops-record-discussions.test.mjs
+          tests/bloomops-page-comments.test.mjs tests/bloomops-page-sharing.test.mjs
+          tests/bloomops-actions-access.test.mjs tests/bloomops-actions-domain.test.mjs
+          tests/bloomops-actions-http.test.mjs tests/bloomops-actions-schema.test.mjs
+          tests/bloomops-actions-dependencies.test.mjs
+      - name: Disposable native D1
+        run: python3 .github/scripts/pr-validation.py run ci-evidence/native node scripts/notifications-native-local.mjs
+      - name: Disposable local zero-to-current migration
+        run: python3 .github/scripts/pr-validation.py run ci-evidence/zero node .github/scripts/verify-zero-remote.mjs --local
+      - name: Build completed Worker
+        env:
+          WORKERS_CI_COMMIT_SHA: ${{ github.sha }}
+          WORKERS_CI_BRANCH: ${{ github.head_ref }}
+        run: |
+          python3 .github/scripts/pr-validation.py run ci-evidence/build npm run cf:build
+          node scripts/notification-build-evidence.mjs "$GITHUB_WORKSPACE/ci-evidence/build-identity.json"
+      - name: Install isolated browser tooling
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/n2e-browsers
+        run: |
+          npm install --prefix "$RUNNER_TEMP/n2e-browser-tools" --no-audit --no-fund playwright@1.58.2
+          "$RUNNER_TEMP/n2e-browser-tools/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Built Worker notification browser suite and preferences race
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/n2e-browsers
+          BLOOMOPS_PLAYWRIGHT_PACKAGE: ${{ runner.temp }}/n2e-browser-tools/package.json
+          BLOOMOPS_BUILD_IDENTITY: ${{ github.workspace }}/ci-evidence/build-identity.json
+        run: |
+          BLOOMOPS_BROWSER_EVIDENCE_DIR="$GITHUB_WORKSPACE/ci-evidence/browser" python3 .github/scripts/pr-validation.py run ci-evidence/browser-run node scripts/notifications-browser-local.mjs --skip-performance
+          BLOOMOPS_BROWSER_EVIDENCE_DIR="$GITHUB_WORKSPACE/ci-evidence/preferences" python3 .github/scripts/pr-validation.py run ci-evidence/preferences-run node scripts/notifications-browser-local.mjs --preferences-only
+          git diff --exit-code
+      - name: Upload synthetic feature evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: n2e-feature-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ci-evidence/
+          retention-days: 5
+          if-no-files-found: error
+
+  full-suite:
+    name: Full suite (failures remain failures)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22.23.2'
+      - name: Install candidate lockfile
+        run: python3 .github/scripts/pr-validation.py run ci-evidence/candidate-install npm ci
+      - name: Candidate npm test
+        id: candidate
+        run: python3 .github/scripts/pr-validation.py run ci-evidence/candidate npm test
+      - name: Checkout exact event base separately after candidate failure
+        if: ${{ failure() && steps.candidate.outcome == 'failure' }}
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: ci-base
+          persist-credentials: false
+      - name: Install base lockfile
+        id: base_install
+        if: ${{ failure() && steps.candidate.outcome == 'failure' }}
+        working-directory: ci-base
+        run: python3 ../.github/scripts/pr-validation.py run ../ci-evidence/base-install npm ci
+      - name: Base npm test under the same runner, runtime and UTC clock
+        id: base
+        if: ${{ failure() && steps.candidate.outcome == 'failure' && steps.base_install.outcome == 'success' }}
+        working-directory: ci-base
+        run: python3 ../.github/scripts/pr-validation.py run ../ci-evidence/base npm test
+      - name: Compare individual diagnostics without waiving failures
+        if: ${{ always() && (steps.base.outcome == 'success' || steps.base.outcome == 'failure') }}
+        run: python3 .github/scripts/pr-validation.py compare ci-evidence/candidate.json ci-evidence/base.json ci-evidence/comparison.json
+      - name: Upload sanitized full-suite receipts and diagnostics
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: n2e-full-suite-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ci-evidence/
+          retention-days: 5
+          if-no-files-found: error

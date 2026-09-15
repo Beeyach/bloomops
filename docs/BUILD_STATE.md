@@ -1,5 +1,9 @@
 # Bloomsi Build State
 
+## Current bounded task — N2E PR validation
+
+The owner supplied independent AUDIT PASS for `9dbd2f609d8502f5e850fb2c1701dda1a8a392a6`; the earlier correction verdict is superseded for that application revision. [Draft PR78](https://github.com/Bloomwired/bloomops/pull/78) publishes it against main `f989428ccc6150befb457860b21c468b2ba656ab`. The added [isolated pre-merge workflow](previews/notifications/PR_VALIDATION.md) validates the actual PR merge candidate, with feature checks and an honestly failing full-suite job plus exact-base comparison. The application audit does not cover these CI files. Remote results remain pending until the PR run completes; no merge/deployment/shared-data action or live acceptance is claimed. Original worktrees and `.task-tmp/` remain preserved. LIVE PERFORMANCE NOT VERIFIED.
+
 ## Current direction — N2E correction ready for focused re-review
 
 The initial independent audit of259bb59 required one P2 correction: inbox refreshes could strand preference loading. Tested source `83c4cf18611253bd90a6a1841d8143ed25ab0ed0` separates request generations/loading/errors and invalidates obsolete scope/panel responses. The reviewed build reproduces the failure; corrected focused browser23/23 and complete notification browser60/60 pass against the completed, stamped, hashed Worker. Focused Node22/22 and build exit0 pass; full suite7193/7198 retains exactly the five audited baseline failures. [Correction commands, artifact identity, historical delta and limitations](previews/notifications/CORRECTION.md). Only documentation/evidence follows tested source.
