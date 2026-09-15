@@ -78,3 +78,13 @@ test('thumbnail reads stay two bounded domain queries with a large member direct
   for(let i=0;i<250;i++){run(t.raw,"INSERT INTO user(id,name,email) VALUES(?,?,?)",'photo-extra-'+i,'Other member','photo-extra-'+i+'@example.invalid');run(t.raw,"INSERT INTO workspace_memberships(id,workspace_id,user_id,role,status) VALUES(?,'a',?,'team_member','active')",'photo-member-'+i,'photo-extra-'+i);}
   count=0;assert.ok(await read());assert.equal(count,2);
 });
+test('record discussion photos require the current parent, audience and nonremoved comment, including after storage',async ctx=>{
+ const t=await setup();ctx.after(()=>t.raw.close());const b=bucket();await save(t,b);
+ const {postRecordDiscussion,editRecordDiscussion}=await import('../lib/bloomops/record-discussions.mjs');const parent={type:'project',id:'website'},id=crypto.randomUUID();
+ assert.equal((await postRecordDiscussion(t.db,t.owner,parent,{workspaceId:'a',requestId:id,threadId:null,audience:'client',body:'Shared record discussion',mentions:[]})).ok,true);
+ const context={kind:'record-comment',parent,commentId:id},james=await t.actor('james');assert.ok(await download(t,b,james,context));
+ assert.equal(await download(t,b,await t.actor('lawrence'),context),null);assert.equal(await download(t,b,james,{...context,parent:{type:'client',id:'james'}}),null);
+ const {actor}=await createClientPreview(t.db,t.owner,'james','c-james');assert.ok(await download(t,b,actor,context));
+ const get=b.get;b.get=async key=>{const result=await get(key);run(t.raw,"UPDATE projects SET visibility='internal' WHERE id='website'");return result;};assert.equal(await download(t,b,james,context),null);b.get=get;
+ run(t.raw,"UPDATE projects SET visibility='client' WHERE id='website'");await editRecordDiscussion(t.db,t.owner,parent,{workspaceId:'a',requestId:crypto.randomUUID(),threadId:id,commentId:id,expectedRevision:1,remove:true});assert.equal(await download(t,b,t.owner,context),null);
+});

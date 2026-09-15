@@ -316,6 +316,13 @@
       "when": 1789393398068,
       "tag": "0044_client_creation_recovery",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "6",
+      "when": 1789430547046,
+      "tag": "0045_record_discussions",
+      "breakpoints": true
     }
   ]
 }

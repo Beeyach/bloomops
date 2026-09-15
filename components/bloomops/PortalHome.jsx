@@ -1,5 +1,5 @@
 import Onboarding from './Onboarding';
-import { Surface } from './Primitives';
+import { Surface, Button } from './Primitives';
 import { PortalProjects } from './Projects';
 
 // The server supplies only the dedicated Client-safe onboarding projection.
@@ -41,6 +41,7 @@ export function PortalHome({ workspaceName, user, clients = [], milestones = {},
       </p>
       {clients.map(client => <section key={client.id} className="bo-section" aria-labelledby={`onboarding-${client.id}`}>
         <h2 id={`onboarding-${client.id}`} className="bo-h2">{single ? 'Your onboarding' : `Onboarding for ${client.name}`}</h2>
+        <Button href={`${preview?.base||"/portal"}/discussions/client/${client.id}`} icon="message" variant="ghost">Discussion</Button>
         <Onboarding clientId={client.id} onboarding={client.onboarding} portal readOnly={Boolean(preview)} />
       </section>)}
       {approvals.items.length>0&&<section className="bo-section" aria-labelledby="approvals-needed"><h2 id="approvals-needed" className="bo-h2">Approval needed</h2>
@@ -54,7 +55,7 @@ export function PortalHome({ workspaceName, user, clients = [], milestones = {},
       </section>}
       {clients.filter(client => client.projects?.length).map(client => <section key={`projects-${client.id}`} className="bo-section" aria-labelledby={`projects-${client.id}`}>
         <h2 id={`projects-${client.id}`} className="bo-h2">{single ? 'Your projects' : `Projects for ${client.name}`}</h2>
-        <PortalProjects projects={client.projects} milestones={milestones} deliverables={deliverables} files={files} downloadBase={preview?.apiBase} />
+        <PortalProjects projects={client.projects} milestones={milestones} deliverables={deliverables} files={files} downloadBase={preview?.apiBase} discussionBase={preview?.base||"/portal"} />
       </section>)}
     </>
   );
