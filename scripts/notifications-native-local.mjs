@@ -21,7 +21,7 @@ const input=patch=>({workspaceId:'a',requestId:crypto.randomUUID(),threadId:null
 const command=(actor,patch)=>({workspaceId:actor.workspaceId,userId:actor.userId,membershipId:actor.membershipId,...patch});
 try{
  const binding=await mf.getD1Database('DB'),fresh=await mf.getD1Database('FRESH');
- const files=migrationFiles(),latest=files.at(-1);assert.equal(latest.tag,'0046_in_app_notifications');
+ const allFiles=migrationFiles(),files=allFiles.slice(0,47),latest=files.at(-1);assert.equal(latest.tag,'0046_in_app_notifications');
  const migrate=async(target,files)=>{for(const file of files)for(const chunk of readFileSync(file.url,'utf8').split('--> statement-breakpoint').map(x=>x.trim()).filter(Boolean))await target.prepare(chunk).run();};
  await migrate(binding,files.slice(0,-1));
  t.action('upgrade-action');await postRecordDiscussion(t.db,t.owner,{type:'project',id:'website'},input());
@@ -34,6 +34,7 @@ try{
  check('populated main project, Action, record and Page fixtures survive upgrade unchanged',before===await dataSnapshot());
  check('migration does not backfill historical activity',(await binding.prepare('SELECT count(*) n FROM notifications').first()).n===0);
  await migrate(fresh,files);check('fresh and upgraded schema match',JSON.stringify((await fresh.prepare("SELECT name,sql FROM sqlite_master WHERE sql IS NOT NULL ORDER BY name").all()).results)===JSON.stringify((await binding.prepare("SELECT name,sql FROM sqlite_master WHERE sql IS NOT NULL ORDER BY name").all()).results));
+ await migrate(binding,allFiles.slice(47));await migrate(fresh,allFiles.slice(47));
  let maxBinds=0,maxBytes=0,queries=0,batches=0;
  const db=bloomOpsDb({prepare(query){queries++;maxBytes=Math.max(maxBytes,Buffer.byteLength(query));const statement=binding.prepare(query);return new Proxy(statement,{get(target,key){if(key==='bind')return(...args)=>{maxBinds=Math.max(maxBinds,args.length);return target.bind(...args);};return typeof target[key]==='function'?target[key].bind(target):target[key];}});},batch(statements){batches++;return binding.batch(statements);}});
  const ary=await t.actor('ary'),sam=await t.actor('sam'),owner=t.owner,parent={type:'project',id:'website'},root=input({mentions:['m-ary']});

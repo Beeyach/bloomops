@@ -58,14 +58,15 @@ test('a fresh database reaches the A2 schema from the committed migrations alone
   const expected = schema.BLOOMOPS_TABLES.map(getTableName).sort();
   const present = tableNames(db);
   for (const name of expected) assert.ok(present.includes(name), `missing table ${name}`);
-  assert.equal(expected.length, 85, 'N2D adds three discussion tables; N2E adds inbox, preferences and mutes');
+  assert.equal(expected.length, 87, 'N3A adds private report drafts and manual observations');
   const extra = present.filter((n) => !expected.includes(n) && n !== 'sqlite_sequence');
   assert.deepEqual(extra, [], 'no unplanned tables');
 });
 
 test('migrations are additive and ordered, so applying them is deterministic', () => {
   const files = migrationFiles();
-  assert.equal(files.length, 47);
+  assert.equal(files.length, 48);
+  assert.equal(files[47].tag, '0047_gigantic_famine');
   assert.equal(files[45].tag, '0045_record_discussions');
   assert.equal(files[46].tag, '0046_in_app_notifications');
   assert.equal(files[43].tag,'0043_prospect_sheet');

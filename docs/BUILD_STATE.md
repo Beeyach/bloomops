@@ -1,5 +1,9 @@
 # Bloomsi Build State
 
+## Current task decision — N3A internal manual report drafts
+
+The owner selects [N3A](phases/N3.md) as a new bounded implementation task from main `2c0e649`. Internal manual drafts and private preview only; N3 as a whole is not authorized in full. N2E, PR79 and the five baseline failures are closed per owner release evidence. E3B, paused Prospecting/email/video and PERF3 remain separate. Earlier current-task headings below are historical checkpoints. Implementation and verification are in progress; no audit acceptance, merge or deployment is claimed.
+
 ## Current bounded correction — PR79 parent keys
 
 Independent review of `d60abaa` found one P2 in the new workspace-FK test helper: declared composite paths were accepted without validating their parent keys. [Focused correction](previews/baseline-maintenance/CORRECTION.md) adds full key metadata validation and nonexecuting SQLite FK preparation, plus malformed/valid SQLite and local native-D1 fixtures. The original schema, portal and follow-up changes remain untouched. Local/remote receipts accompany the external addendum; completion and independent acceptance remain pending that evidence and focused re-review. No merge or deployment is authorized. The earlier maintenance checkpoint below is historical.

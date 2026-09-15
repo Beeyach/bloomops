@@ -1,0 +1,3 @@
+export const draft=(patch={})=>({title:'Synthetic monthly report',periodStart:'2026-08-01',periodEnd:'2026-08-31',timezone:'Australia/Sydney',channel:'email',accountLabel:'Synthetic account',scopeLabel:'Synthetic campaign',commentary:'Manual report',metrics:{},...patch});
+export const input=(patch={})=>({workspaceId:'a',userId:'ellen',requestId:crypto.randomUUID(),expectedRevision:null,serviceEngagementId:'ghl-service',templateId:'ghl_campaign',templateVersion:1,draft:draft(),...patch});
+export const observation=(value,patch={})=>({state:'value',value,sourceNote:'Synthetic source, not provider verified',collectedAt:'2026-09-01T00:00:00.000Z',...patch});

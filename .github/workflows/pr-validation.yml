@@ -24,7 +24,7 @@ env:
 
 jobs:
   feature:
-    name: N2E feature validation (local resources)
+    name: Feature validation (local resources)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -57,6 +57,10 @@ jobs:
           tests/bloomops-actions-access.test.mjs tests/bloomops-actions-domain.test.mjs
           tests/bloomops-actions-http.test.mjs tests/bloomops-actions-schema.test.mjs
           tests/bloomops-actions-dependencies.test.mjs
+      - name: N3A report tests and native D1
+        run: |
+          python3 .github/scripts/pr-validation.py run ci-evidence/n3a-tests node --test tests/bloomops-client-reports*.test.mjs
+          python3 .github/scripts/pr-validation.py run ci-evidence/n3a-native node scripts/client-reports-native-local.mjs
       - name: Disposable native D1
         run: python3 .github/scripts/pr-validation.py run ci-evidence/native node scripts/notifications-native-local.mjs
       - name: Disposable local zero-to-current migration
@@ -82,6 +86,7 @@ jobs:
         run: |
           BLOOMOPS_BROWSER_EVIDENCE_DIR="$GITHUB_WORKSPACE/ci-evidence/browser" python3 .github/scripts/pr-validation.py run ci-evidence/browser-run node scripts/notifications-browser-local.mjs --skip-performance
           BLOOMOPS_BROWSER_EVIDENCE_DIR="$GITHUB_WORKSPACE/ci-evidence/preferences" python3 .github/scripts/pr-validation.py run ci-evidence/preferences-run node scripts/notifications-browser-local.mjs --preferences-only
+          BLOOMOPS_BROWSER_EVIDENCE_DIR="$GITHUB_WORKSPACE/ci-evidence/n3a-browser" python3 .github/scripts/pr-validation.py run ci-evidence/n3a-browser-run node scripts/client-reports-browser-local.mjs
           git diff --exit-code
       - name: Upload synthetic feature evidence
         if: ${{ always() }}
