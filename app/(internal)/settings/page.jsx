@@ -41,6 +41,7 @@ export default async function SettingsPage() {
           <p className="bo-body">Choose which Systems service types can start GHL or Kajabi builds.</p>
           <div className="bo-dialog-actions"><Button href="/settings/ghl-builds">Manage GHL build setup</Button><Button href="/settings/kajabi-builds">Manage Kajabi build setup</Button></div>
         </Section>}
+        {evaluate(actor, { action: 'templates.manage' }).allowed && <Section id="onboarding-setup" title="Onboarding templates"><p>Review and install missing default onboarding instructions. Existing versions remain unchanged.</p><Button href="/settings/onboarding">Review onboarding setup</Button></Section>}
         <Section id="access" title="Your access">
           <Surface padding="lg">
             {capabilities.length === 0 ? (
