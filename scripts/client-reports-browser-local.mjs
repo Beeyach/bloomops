@@ -54,6 +54,12 @@ try{
  identity.servedAssets=[];for(const url of await owner.page.locator('script[src]').evaluateAll(nodes=>nodes.map(n=>n.src))){const path=new URL(url).pathname,file=artifacts.find(f=>f.path==='.open-next/assets'+decodeURIComponent(path));assert.ok(file,'served script belongs to completed build');const response=await owner.ctx.request.get(url);assert.equal(response.status(),200);const sha256=hash(await response.body());assert.equal(sha256,file.sha256);identity.servedAssets.push({path,sha256});}
  assert.ok(identity.servedAssets.length);writeFileSync(out+'/artifact-identity.json',JSON.stringify(identity,null,2));
  const admin=await login('ary'),foreign=await login('foreign');
+ await owner.page.goto(base+'/settings/onboarding',{waitUntil:'networkidle'});
+ await owner.page.getByText('Review Common default instructions',{exact:true}).click();check('canonical onboarding instructions can be reviewed',await owner.page.getByText('Brand assets',{exact:true}).count()===1);
+ await owner.page.getByLabel('Install missing Common defaults',{exact:true}).check();await owner.page.getByLabel('Install missing GHL defaults',{exact:true}).check();
+ await owner.page.getByRole('button',{name:'Install selected defaults',exact:true}).click();await owner.page.getByRole('status').filter({hasText:'Selected onboarding categories are ready'}).waitFor();check('supported setup installs selected onboarding categories',await owner.page.getByText('Published version 1',{exact:true}).count()===2);
+ await owner.page.reload({waitUntil:'networkidle'});check('onboarding publication persists on reload',await owner.page.getByLabel('Install missing Common defaults',{exact:true}).isDisabled());
+ await owner.page.setViewportSize({width:320,height:1000});check('onboarding setup at320 has no overflow',await owner.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await owner.page.screenshot({path:out+'/onboarding-setup-320.png',fullPage:true});await owner.page.setViewportSize({width:1440,height:1000});
  const get=async(ctx,path)=>{const r=await ctx.request.get(base+path);return {status:r.status(),data:await r.json()};};
  const post=async(ctx,path,data,method='POST')=>{const r=await ctx.request.fetch(base+path,{method,headers:{origin:base},data});return {status:r.status(),data:await r.json()};};
  const ownerSession=await get(owner.ctx,'/api/auth/get-session'),adminSession=await get(admin.ctx,'/api/auth/get-session');check('independent actual owner/admin identities',ownerSession.data.user.id==='ellen'&&adminSession.data.user.id==='ary');
