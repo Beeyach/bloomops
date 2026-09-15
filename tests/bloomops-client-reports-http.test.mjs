@@ -33,3 +33,13 @@ test('report HTTP: assigned Team is read-only; issued session loses access on ac
  run(t.raw,"DELETE FROM client_assignments WHERE membership_id='m-sam'");assert.equal((await t.call('GET',{user:'sam'})).status,404);
  assert.equal((await t.call()).status,200);run(t.raw,"UPDATE workspace_memberships SET role='client' WHERE id='m-ellen'");assert.equal((await t.call()).status,404);
 });
+test('report HTTP: maximum valid multibyte commentary and provenance save, oversized envelopes fail',async ctx=>{
+ const t=await fixture(ctx),v=input({templateId:'social'});v.draft.channel='instagram';v.draft.commentary='界'.repeat(8000);
+ v.draft.metrics=Object.fromEntries(['published','views','reach','interactions','link_clicks','followers_start','followers_end'].map(key=>[key,{state:'value',value:0,sourceNote:'界'.repeat(1000),collectedAt:null}]));
+ assert.ok(Buffer.byteLength(JSON.stringify(v))>32768);
+ const created=await t.call('POST',{list:true,body:v});assert.equal(created.status,201);const id=(await created.json()).id;
+ const edited=await t.call('PUT',{reportId:id,body:{...v,expectedRevision:1}});assert.equal(edited.status,200);
+ const saved=(await(await t.call('GET',{reportId:id})).json()).report;assert.equal(saved.commentary,v.draft.commentary);assert.equal(saved.metrics.views.sourceNote,v.draft.metrics.views.sourceNote);
+ assert.equal((await t.call('PUT',{reportId:id,raw:' '.repeat(65537)})).status,400);
+ assert.equal((await(await t.call('GET',{reportId:id})).json()).report.revision,2);
+});

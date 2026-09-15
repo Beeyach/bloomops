@@ -64,3 +64,87 @@ test('period, timezone, catalogue and typed metric validation',()=>{
 });
 for(const [sent,delivered,expected] of [[3,1,'33.33%'],[3,2,'66.67%'],[32,1,'3.13%'],[10,0,'0.00%'],[0,0,'Not available'],[null,0,'Not available']])test(`delivery calculation ${delivered}/${sent}: ${expected}`,()=>{const r={...draft({metrics:{sent:sent===null?{state:'missing'}:observation(sent),delivered:observation(delivered)}}),templateId:'ghl_campaign'};assert.equal(reportCalculations(r)[0].display,expected);assert.equal(reportCalculations({...r,accountLabel:''})[0].display,'Not available');});
 test('social missing and zero stay distinct, signed follower change has no invented rate',()=>{const r={...draft({metrics:{followers_start:observation(100),followers_end:observation(95)}}),templateId:'social'};assert.equal(reportCalculations(r)[0].display,'-5');r.metrics.followers_start={state:'unavailable',value:null};assert.equal(reportCalculations(r)[0].display,'Not available');});
+
+test('version 1 metric labels and definitions preserve the frozen manual catalogue',()=>{
+ const expected=[
+ [
+  "ghl_campaign",
+  "sent",
+  "Sent messages",
+  "messages submitted in this report's channel, account, campaign and period; not recipient count"
+ ],
+ [
+  "ghl_campaign",
+  "delivered",
+  "Delivered messages",
+  "the subset of those submitted messages recorded as delivered"
+ ],
+ [
+  "ghl_campaign",
+  "failed",
+  "Failed messages",
+  "messages recorded as failed; source note must explain whether bounces are included; never added to delivered to infer sent"
+ ],
+ [
+  "ghl_campaign",
+  "clicked",
+  "Messages with clicks",
+  "submitted messages with at least one recorded click, not total click events or unique people"
+ ],
+ [
+  "ghl_campaign",
+  "replied",
+  "Messages with replies",
+  "submitted messages with at least one recorded reply"
+ ],
+ [
+  "ghl_campaign",
+  "opt_outs",
+  "Opt-outs",
+  "source-recorded opt-out events in the scoped period; not inferred from replies"
+ ],
+ [
+  "social",
+  "published",
+  "Published content",
+  "source-recorded posts/content published for this account/channel/period"
+ ],
+ [
+  "social",
+  "views",
+  "Views",
+  "source-native view count; source note describes its definition; not reach"
+ ],
+ [
+  "social",
+  "reach",
+  "Reach",
+  "source-native reach for the whole account/scope/period, never a sum of overlapping post reach"
+ ],
+ [
+  "social",
+  "interactions",
+  "Interactions",
+  "source-native interaction count; definition recorded in source note; no inferred engagement rate"
+ ],
+ [
+  "social",
+  "link_clicks",
+  "Link clicks",
+  "source-native click events, not unique people"
+ ],
+ [
+  "social",
+  "followers_start",
+  "Followers at period start",
+  "account follower count at beginning of period"
+ ],
+ [
+  "social",
+  "followers_end",
+  "Followers at period end",
+  "same-account follower count at end of period"
+ ]
+];
+ for(const [template,key,label,definition] of expected){const m=reportTemplate(template,1).metrics.find(m=>m.key===key);assert.equal(m.label,label);assert.equal(m.definition,definition);}
+});

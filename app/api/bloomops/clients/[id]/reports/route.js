@@ -12,6 +12,6 @@ export const GET=withApiErrors(async(req,{params})=>{
 });
 export const POST=withApiErrors(async(req,{params})=>{
  const {access,response}=await requireAccess(req);if(response)return response;
- const result=await saveClientReport(access.db,await getActor(access),(await params).id,null,await readStructuredBody(req,{maxBytes:32768}));
+ const result=await saveClientReport(access.db,await getActor(access),(await params).id,null,await readStructuredBody(req,{maxBytes:65536}));
  return result.reason==='not_found'?notFound():json(result,result.ok?201:result.reason==='conflict'?409:400);
 });
