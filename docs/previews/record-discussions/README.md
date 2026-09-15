@@ -1,6 +1,6 @@
 # Record discussions — N2D
 
-Implemented in `feat/n2-record-discussion`, based on merged main `0c9bcc9`. One fresh Sol High read-only review found no material issues; no re-review was needed. Staging acceptance is pending. A subsequent CSS-only correction uses the existing Bloomsi heading-font token; its11 focused visual checks pass at all five widths, with no runtime errors. The final OpenNext build also passes.
+Implemented in `feat/n2-record-discussion`, based on merged main `0c9bcc9`. One fresh Sol High read-only review found no material issues; no re-review was needed. Accepted in staging on `6d608286d0978f0ca99a29369186014dbe122246` through successful [workflow34914352231](https://github.com/Bloomwired/bloomops/actions/runs/34914352231). A subsequent CSS-only correction uses the existing Bloomsi heading-font token; its11 focused visual checks pass at all five widths, with no runtime errors. The final OpenNext build also passes.
 
 Clients, Projects, Tasks and Deliverables now link to full-page discussion. Threads have a fixed internal/client audience, readable plain-text replies, selected permitted mentions, own edit/removal, resolve/reopen and protected author photos. Client portal and staff preview reuse current parent authority. Preview has no writes. Existing Page discussion remains unchanged. In-app notification delivery is N2E; this slice sends no collaboration email.
 
@@ -30,3 +30,10 @@ A thread list uses3 domain SELECTs, a message page5 (30 comments), a people pick
 Rounded first-load JS estimates: new discussion112kB; Portal112, Pages118, Prospecting123 and Work108 remain unchanged. Clients161→162kB for shared small controls; client preview118→123kB includes the discussion UI. No rich-text editor, dependency, cache, provider or infrastructure configuration was added. Access is checked per request and after storage; open screens verify on focus/pageshow and every10 seconds, not via pushed events.
 
 N2E notifications, report-version linkage, broader recovery, collaboration email, paid/video work, production/DNS and original LTB records remain outside this slice.
+
+## Live staging acceptance
+
+[Open the QA client discussion](https://staging.ops.gobloomwired.com/discussions/client/097f94a802a8426cb017aa94fcc72d20). [Ten live checks](staging-checks.json) pass: exact runtime/schema46, client entry, empty real read, internal default/disabled empty Post, permitted-person lookup, missing-parent404, phone sizing, live Mention picker, resolved-view/return navigation and restored desktop. No staging record or photo writes were made. Populated conversations, real storage writes and the permission matrix remain local evidence. PR77 remains draft/unmerged at this checkpoint.
+
+![Staging desktop](staging-desktop.jpg)
+![Staging phone](staging-phone.jpg)

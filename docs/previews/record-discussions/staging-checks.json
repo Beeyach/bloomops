@@ -1,0 +1,19 @@
+{
+  "sha": "6d608286d0978f0ca99a29369186014dbe122246",
+  "workflow": 34914352231,
+  "url": "https://staging.ops.gobloomwired.com/discussions/client/097f94a802a8426cb017aa94fcc72d20",
+  "checks": [
+    "Exact deployed runtime6d60828 and healthy staging schema46",
+    "Existing QA client exposes the new Discussion link without desktop overflow",
+    "Discussion route returns the real QA parent, empty threads and Bloomsi heading font",
+    "Audience defaults to internal; empty Post is disabled",
+    "Permitted-person GET succeeds with the actual current member",
+    "Missing parent returns404",
+    "Phone390 fits with16px input and44px controls",
+    "Live Mention picker opens without submitting a comment",
+    "Resolved empty view and Back to client work",
+    "Desktop restored; canonical read still has zero threads and empty editor"
+  ],
+  "recordWrites": false,
+  "limitation": "Live QA is the empty designated QA client. Populated discussions, storage mutations and permission matrix are verified locally."
+}
