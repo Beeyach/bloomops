@@ -1,2 +1,3 @@
 import '@/app/reports.css';
-export default function Layout({children}){return children;}
+import {requireShell} from '@/lib/bloomops/shell-server.mjs';
+export default async function Layout({children}){await requireShell('portal');return children;}
