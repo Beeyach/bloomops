@@ -22,3 +22,23 @@ test('workspace invariant accepts anchored composites and rejects bypassable or 
     }
   } finally { db.close(); }
 });
+
+import { workspaceKeyCases, representativeWrite, keyWriteError } from './_workspace-key-cases.mjs';
+import { freshSqlite } from './_bloomops-db.mjs';
+for (const fixture of workspaceKeyCases) {
+  test(`workspace parent key: ${fixture.name}`, () => {
+    const db = new DatabaseSync(':memory:');
+    try {
+      db.exec('PRAGMA foreign_keys=ON');
+      assert.equal(db.prepare('PRAGMA foreign_keys').get().foreign_keys, 1);
+      for (const sql of fixture.ddl) assert.doesNotThrow(() => db.exec(sql), 'DDL is accepted');
+      assert.throws(() => db.prepare(representativeWrite(fixture)).run(), keyWriteError(fixture));
+      assert.equal(hasWorkspaceForeignKey(db, 'child'), fixture.valid);
+    } finally { db.close(); }
+  });
+}
+test('shipped mentions mandatory parent keys remain valid', () => {
+  const db = freshSqlite();
+  try { assert.equal(hasWorkspaceForeignKey(db, 'record_discussion_mentions'), true); }
+  finally { db.close(); }
+});

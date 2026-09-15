@@ -1,5 +1,9 @@
 # Bloomsi Build State
 
+## Current bounded correction — PR79 parent keys
+
+Independent review of `d60abaa` found one P2 in the new workspace-FK test helper: declared composite paths were accepted without validating their parent keys. [Focused correction](previews/baseline-maintenance/CORRECTION.md) adds full key metadata validation and nonexecuting SQLite FK preparation, plus malformed/valid SQLite and local native-D1 fixtures. The original schema, portal and follow-up changes remain untouched. Local/remote receipts accompany the external addendum; completion and independent acceptance remain pending that evidence and focused re-review. No merge or deployment is authorized. The earlier maintenance checkpoint below is historical.
+
 ## Current bounded task — five baseline test failures
 
 N2E was accepted on staging at `c333707` through PR78 and its recorded two-actor release acceptance. Owner-authorized maintenance starts from exact main `c33370772d444d140f7c21761b498fc769e87840` in a separate `fix/baseline-test-maintenance-20260915` worktree. [Maintenance evidence and schema decision](previews/baseline-maintenance/README.md): correct portal copy/vocabulary assertions, prove the existing mandatory composite workspace FK paths without a migration, and control P1/P2 fixture clocks while retaining the 45-day cutoff. Tested source `d988071`: focused98/98, related regressions386/386, full7218/7218, native-D1 mentions22 and Cloudflare build pass. A bounded Sol review and its single fixture re-review found no remaining material issue. Only documentation follows tested source; remote validation receipts accompany the separate draft maintenance PR/review packet. Merge remains unauthorized. This does not reopen N2E, authorize deployment or close PERF3. Earlier checkpoint sections below remain historical.
