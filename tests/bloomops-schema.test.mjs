@@ -11,6 +11,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { readFileSync } from 'node:fs';
 import { getTableName } from 'drizzle-orm';
 import * as schema from '../lib/bloomops/schema.mjs';
+import { hasWorkspaceForeignKey } from './_workspace-fk.mjs';
 
 function migrationFiles() {
   const journal = JSON.parse(readFileSync(new URL('../drizzle/meta/_journal.json', import.meta.url), 'utf8'));
@@ -155,8 +156,7 @@ test('every business table carries workspace_id and a workspace foreign key', ()
   for (const table of schema.BLOOMOPS_TABLES.map(getTableName)) {
     if (table === 'workspaces' || authTables.includes(table)) continue;
     assert.ok(columnsOf(db, table).includes('workspace_id'), `${table} lacks workspace_id`);
-    const fks = all(db, `PRAGMA foreign_key_list("${table}")`);
-    assert.ok(fks.some((fk) => fk.table === 'workspaces' && fk.from === 'workspace_id'), `${table} lacks a workspaces foreign key`);
+    assert.ok(hasWorkspaceForeignKey(db, table), `${table} lacks a mandatory direct or composite foreign-key path to workspaces`);
   }
 });
 

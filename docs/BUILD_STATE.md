@@ -1,5 +1,9 @@
 # Bloomsi Build State
 
+## Current bounded task — five baseline test failures
+
+N2E was accepted on staging at `c333707` through PR78 and its recorded two-actor release acceptance. Owner-authorized maintenance now starts from exact main `c33370772d444d140f7c21761b498fc769e87840` in a separate `fix/baseline-test-maintenance-20260915` worktree. [Maintenance evidence and schema decision](previews/baseline-maintenance/README.md): correct portal copy/vocabulary assertions, prove the existing mandatory composite workspace FK paths without a migration, and control P1/P2 fixture clocks while retaining the 45-day cutoff. Focused97/97 and native-D1 mentions21 checks pass; broad verification and a separate draft PR are pending. This does not reopen N2E, authorize deployment or close PERF3. Earlier checkpoint sections below remain historical.
+
 ## Current bounded task — N2E PR validation
 
 The owner supplied independent AUDIT PASS for `9dbd2f609d8502f5e850fb2c1701dda1a8a392a6`; the earlier correction verdict is superseded for that application revision. [Draft PR78](https://github.com/Bloomwired/bloomops/pull/78) publishes it against main `f989428ccc6150befb457860b21c468b2ba656ab`. The added [isolated pre-merge workflow](previews/notifications/PR_VALIDATION.md) validates the actual PR merge candidate, with feature checks and an honestly failing full-suite job plus exact-base comparison. The application audit does not cover these CI files. Remote results remain pending until the PR run completes; no merge/deployment/shared-data action or live acceptance is claimed. Original worktrees and `.task-tmp/` remain preserved. LIVE PERFORMANCE NOT VERIFIED.

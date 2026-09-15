@@ -11,6 +11,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { assertPortalVocabulary } from './_portal-visible.mjs';
 import { testAuth, run, one, APP_URL } from './_bloomops-db.mjs';
 import { runBootstrap } from '../lib/bloomops/bootstrap.mjs';
 import { resolveWorkspaceAccess, setMembershipStatus } from '../lib/bloomops/membership.mjs';
@@ -284,7 +285,7 @@ test('the portal shell is not the internal shell with parts hidden: no navigatio
   assert.ok(html.includes('PAGE') && html.includes('Agency A') && html.includes('Client portal'));
   assert.equal(html.includes('<nav'), false, 'no navigation element at all');
   for (const item of INTERNAL_NAV.filter((i) => i.href !== '/')) assert.equal(html.includes(`href="${item.href}"`), false, `${item.label} is not in the portal`);
-  assert.doesNotMatch(html, /Onboarding|Finance|Settings|Team|Prospect|legacy|workload|internal/i);
+  assertPortalVocabulary(html);
   assert.ok(html.includes('Sign out') || html.includes('Account:'), 'the way out is there');
 
   const unlinked = render(PortalHome, { workspaceName: 'Agency A', user: { name: 'James Client', email: 'client@example.com' }, clients: [] });
@@ -292,7 +293,9 @@ test('the portal shell is not the internal shell with parts hidden: no navigatio
   assert.match(unlinked, /Hello, James/);
   assert.doesNotMatch(unlinked, /client_contacts|user_id|scope|A4|A9|linked/i, 'plain words, no implementation detail');
   const linked = render(PortalHome, { workspaceName: 'Agency A', user: { name: 'James Client', email: 'client@example.com' }, clients: [{ id: 'c', name: 'James Ltd', statusLabel: 'Active' }] });
-  assert.match(linked, /James Ltd/);
+  assert.match(linked, /Your work with Agency A\./);
+  assert.match(linked, /aria-labelledby="onboarding-c"/);
+  assert.match(linked, /href="\/portal\/discussions\/client\/c"/);
   assert.match(linked, /Your onboarding/);
   assert.match(linked, /Your onboarding steps will appear here when the agency is ready/);
   // No requests, approvals, or deliverables exist yet to read, so the portal
