@@ -60,11 +60,31 @@ git diff --check
 ```
 
 Original focused reproduction: 73/78, exit 1, exactly the five recorded failures.
-Corrected focused run: 97/97, exit 0. Native mentions: 21 checks, exit 0.
-Full-suite/build, bounded review and remote validation results are pending at
-this implementation checkpoint. CI is unchanged: a clean candidate skips the
-failure-only base rerun; historical base failures remain in reproduction and
-previous accepted-release evidence, not represented as a candidate waiver.
+Final tested source: `d9880712f2dd19ab7960ae9120c9890d111eccb4`.
+
+- Focused: 98/98, exit 0, including six controlled P1/P2 calendar/boundary cases.
+- Related portal/discussion/Page/notification/follow-up regressions: 386/386,
+  exit 0 (before the isolated fixture correction; all rerun by the final suite).
+- Native mentions: 22 checks on 47 existing migrations, exit 0.
+- `npm test`: 7,218/7,218, zero failures/skips/cancellations, exit 0; twenty tests
+  added relative to main. Temporary Python alias points to Python 3.14.4.
+- `npm run cf:build`: exit 0 on the same exact tested source.
+- Syntax and `git diff --check`: exit 0.
+
+One Sol High bounded read-only review found a test-fixture gap: the mentioned
+membership also authored comments, so unrelated author FKs could mask a deletion
+regression. A recipient-only membership now isolates the actual FK. A disposable
+SQLite mutation changes only its delete action to CASCADE and proves the verifier
+fails. The single focused re-review confirmed the finding resolved with no
+material issue remaining. Final runs above followed the committed fix. This
+review concerns only maintenance, not the accepted N2E application.
+
+Only documentation follows the tested source. Actual remote receipts accompany
+the separate draft PR/review packet; this document records the local checkpoint.
+CI is unchanged: a clean candidate skips the failure-only base rerun; historical
+base failures remain in reproduction and previous accepted-release evidence,
+not represented as a candidate waiver. No failing-base comparison is forced onto
+a clean candidate.
 
 No deployment or shared database is used. The new maintenance draft PR and its
 existing local-resource PR workflow are the only authorized remote writes.
