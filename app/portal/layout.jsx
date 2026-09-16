@@ -2,6 +2,7 @@ import { requireShell } from '@/lib/bloomops/shell-server.mjs';
 import {hasSharedPages} from '@/lib/bloomops/pages.mjs';
 import PortalShell from '@/components/bloomops/PortalShell';
 import { hasPortalContent } from '@/lib/bloomops/portal-content.mjs';
+import {hasPublishedReports} from '@/lib/bloomops/client-report-publications.mjs';
 
 // The client portal: its own route tree and its own chrome, for Client
 // members only. requireShell('portal') sends an internal person back to
@@ -11,9 +12,9 @@ export const dynamic = 'force-dynamic';
 
 export default async function PortalLayout({ children }) {
   const { access, actor } = await requireShell('portal');
-  const [hasContent,hasPages]=await Promise.all([hasPortalContent(access.db,actor),hasSharedPages(access.db,actor)]);
+  const [hasContent,hasPages,hasReports]=await Promise.all([hasPortalContent(access.db,actor),hasSharedPages(access.db,actor),hasPublishedReports(access.db,actor)]);
   return (
-    <PortalShell workspace={access.workspace} user={access.user} hasContent={hasContent} hasPages={hasPages}>
+    <PortalShell workspace={access.workspace} user={access.user} hasContent={hasContent} hasPages={hasPages} hasReports={hasReports}>
       {children}
     </PortalShell>
   );

@@ -49,7 +49,9 @@ try{
  // state only in this disposable database; every subsequent setup uses the UI.
  await binding.prepare("DELETE FROM template_versions WHERE workspace_id='a' AND template_id IN (SELECT id FROM templates WHERE workspace_id='a' AND kind='onboarding' AND slug IN ('common','ghl'))").run();
  check('isolated built Worker is healthy', (await(await fetch(base+'/api/health')).json()).ok);
- browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-gpu']});
+ // WSL hosts with a failing software GL process can disable that optional
+ // rasterizer. DOM interaction, actionability and screenshot assertions remain.
+ browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-gpu',...(process.env.BLOOMOPS_DISABLE_SOFTWARE_RASTERIZER==='1'?['--disable-software-rasterizer']:[])]});
  async function login(user){const ctx=await browser.newContext({viewport:{width:1440,height:1000}});await ctx.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());const email=user+'@example.com';assert.equal((await ctx.request.post(base+'/api/auth/sign-in/magic-link',{headers:{origin:base},data:{email,callbackURL:'/'}})).status(),200);
   const mail=await bucket.get('dev-mail/'+createHash('sha256').update(email).digest('hex')+'.json');assert.ok(mail);const url=JSON.parse(await mail.text()).text.match(/https?:\/\/\S+/)[0];const parsed=new URL(url);assert.ok(parsed.origin===base&&parsed.pathname==='/api/auth/magic-link/verify',`local auth host/path: ${parsed.host} ${parsed.pathname}`);
   const page=await ctx.newPage();page.on('pageerror',e=>errors.push(reportBrowserError(e)));await page.goto(url,{waitUntil:'networkidle'});return {ctx,page};}
@@ -75,7 +77,7 @@ try{
  check('supported Client and purchased Service writers create fixture',!!ghl&&!!social);
  // Exercise the supported contact-specific activation path, not an injected
  // contact association. The invitation and magic link remain only in memory.
- const activation=await post(owner.ctx,`/api/bloomops/clients/${otherClient}/activate`,{});
+ const activation=await post(owner.ctx,`/api/bloomops/clients/${clientId}/activate`,{});
  check('published defaults enable real Client activation',activation.status===200&&activation.data.activated&&activation.data.deliveryStatus==='sent');
  const contactEmail='contact@example.test';
  const invitationMail=JSON.parse(await(await bucket.get('dev-mail/'+createHash('sha256').update(contactEmail).digest('hex')+'.json')).text());
@@ -92,10 +94,10 @@ try{
  check('genuine portal identity authenticates independently',(await get(portalContext,'/api/auth/get-session')).data.user.id!=='ellen');
  await portalPage.getByRole('heading',{name:'Your onboarding',exact:true}).waitFor();
  const portalAccounts=await get(portalContext,'/api/bloomops/portal/onboarding');
- check('activation contact link exposes only its Client',portalAccounts.status===200&&portalAccounts.data.clients.length===1&&portalAccounts.data.clients[0].id===otherClient&&await portalPage.locator(`a[href="/portal/discussions/client/${otherClient}"]`).count()===1&&await portalPage.locator(`a[href="/portal/discussions/client/${clientId}"]`).count()===0);
+ check('activation contact link exposes only its Client',portalAccounts.status===200&&portalAccounts.data.clients.length===1&&portalAccounts.data.clients[0].id===clientId&&await portalPage.locator(`a[href="/portal/discussions/client/${clientId}"]`).count()===1&&await portalPage.locator(`a[href="/portal/discussions/client/${otherClient}"]`).count()===0);
  check('portal identity cannot administer onboarding defaults',(await get(portalContext,'/api/bloomops/onboarding/setup')).status===404);
  check('portal identity cannot read internal report drafts',(await get(portalContext,`/api/bloomops/clients/${otherClient}/reports`)).status===404);
- await portalPage.screenshot({path:out+'/supported-portal-activation.png',fullPage:true});await portalContext.close();
+ await portalPage.screenshot({path:out+'/supported-portal-activation.png',fullPage:true});
  const path=`/clients/${clientId}/reports`,api=`/api/bloomops/clients/${clientId}/reports`;
  await owner.page.goto(base+`/clients/${clientId}`,{waitUntil:'networkidle'});await owner.page.getByRole('link',{name:'Reports',exact:true}).click();await owner.page.getByText('No report drafts yet.',{exact:true}).waitFor();check('Client Reports destination and empty state',true);
  const metric=async(page,label,value)=>{await page.getByLabel(label+' availability').selectOption('value');await page.getByLabel(label+' count').fill(String(value));};
@@ -154,5 +156,69 @@ try{
  assert.equal((await post(owner.ctx,'/api/bloomops/members/m-ary',{status:'suspended'},'PATCH')).status,200);await admin.page.evaluate(()=>window.dispatchEvent(new Event('focus')));await admin.page.getByRole('alert').filter({hasText:'no longer available'}).waitFor();check('revocation removes mounted private preview',await admin.page.getByRole('heading',{name:'N3A GHL persisted draft',exact:true}).count()===0);check('revocation denies guessed API',[403,404].includes((await get(admin.ctx,api+'/'+id)).status));
  assert.equal((await post(owner.ctx,'/api/bloomops/members/m-ary',{status:'active'},'PATCH')).status,200);
  await owner.page.emulateMedia({reducedMotion:'reduce'});await owner.page.goto(base+path+'/'+id+'/preview',{waitUntil:'networkidle'});check('reduced motion preview healthy',await owner.page.getByRole('heading',{name:'N3A GHL persisted draft',exact:true}).count()===1);
+ // Explicitly hold application scripts: SSR controls must not accept lost clicks.
+ async function openWithScriptsHeld(page,link,control,assertion){
+  let release;const gate=new Promise(resolve=>{release=resolve;});
+  const scripts=url=>url.pathname.startsWith('/_next/static/')&&url.pathname.endsWith('.js');
+  await page.route(scripts,async route=>{await gate;await route.continue();});
+  const navigation=link.click();
+  try{await control.waitFor({state:'attached'});check(assertion,await control.isDisabled());}
+  finally{release();}
+  await navigation;await page.waitForLoadState('networkidle');await page.unroute(scripts);
+ }
+ // Wait for the actual publication mutation, not a preceding route navigation.
+ async function publishAction(label,{keyboard=false}={}){
+  const button=owner.page.getByRole('button',{name:label,exact:true});
+  await owner.page.waitForFunction(name=>Array.from(document.querySelectorAll('button')).some(b=>b.textContent.trim()===name&&!b.disabled),label);
+  const response=owner.page.waitForResponse(r=>r.url().endsWith('/publications')&&r.request().method()==='POST');
+  const navigation=owner.page.waitForNavigation({waitUntil:'networkidle'});
+  if(keyboard){await button.focus();await owner.page.keyboard.press('Enter');}else await button.click();
+  const result=await response;assert.equal(result.status(),200,'publication mutation succeeds');await navigation;
+ }
+ const published=[];
+ for(const reportId of created){
+  await owner.page.bringToFront();await owner.page.goto(base+path+'/'+reportId,{waitUntil:'networkidle'});
+  await owner.page.getByRole('textbox',{name:'Client summary',exact:true}).fill('Client-safe summary for '+reportId);await owner.page.getByRole('textbox',{name:'Work completed',exact:true}).fill('Synthetic work completed');await owner.page.getByRole('textbox',{name:'Limits and context',exact:true}).fill('Manual observations, not provider verified');await owner.page.getByRole('textbox',{name:'Next actions',exact:true}).fill('Review next reporting period');
+  await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Save draft',exact:true}).click()]);
+  await openWithScriptsHeld(owner.page,owner.page.getByRole('link',{name:'Review publication and history',exact:true}),owner.page.getByRole('checkbox'),'publication review waits for hydration '+reportId);await owner.page.getByRole('heading',{name:'Publication review',exact:true}).waitFor();
+  check('publication review excludes private source text '+reportId,!((await owner.page.locator('main').innerText()).includes('synthetic source')));
+  await owner.page.getByRole('checkbox').check();await publishAction('Publish reviewed report',{keyboard:true});
+  const release=(await get(owner.ctx,api+'/'+reportId+'/publications')).data.review.current;published.push(release.id);check('explicit publish creates version one '+reportId,release.sequence===1&&release.kind==='publish');
+  await portalPage.bringToFront();await portalPage.goto(base+'/portal/reports',{waitUntil:'networkidle'});const entry=(await get(portalContext,'/api/bloomops/portal/reports/'+release.id)).data.report;
+  await openWithScriptsHeld(portalPage,portalPage.getByRole('link',{name:entry.snapshot.title,exact:true}),portalPage.getByRole('button',{name:'Download this published PDF',exact:true}),'PDF control waits for hydration '+reportId);await portalPage.getByText('Client-safe summary for '+reportId,{exact:true}).waitFor();
+  check('portal renders frozen calculations '+reportId,await portalPage.getByText(entry.snapshot.templateId==='social'?'-5':'3.13%',{exact:true}).count()===1);
+  const download=portalPage.waitForEvent('download');await portalPage.getByRole('button',{name:'Download this published PDF',exact:true}).click();const pdf=await download;await pdf.saveAs(out+'/'+entry.snapshot.templateId+'-published-v1.pdf');check('real authorized published PDF downloaded '+reportId,readFileSync(out+'/'+entry.snapshot.templateId+'-published-v1.pdf').subarray(0,5).toString()==='%PDF-');
+  const pdfResponse=await portalContext.request.get(base+'/api/bloomops/portal/reports/'+release.id+'/pdf');check('PDF identifies exact snapshot '+reportId,pdfResponse.status()===200&&pdfResponse.headers()['x-bloomsi-snapshot-hash']===entry.snapshotHash&&pdfResponse.headers()['x-bloomsi-published-version']==='1');
+  await portalPage.setViewportSize({width:320,height:1000});check('published client report narrow layout '+reportId,await portalPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await portalPage.screenshot({path:out+'/'+entry.snapshot.templateId+'-published-320.png',fullPage:true});await portalPage.setViewportSize({width:1440,height:1000});
+  await owner.page.bringToFront();await owner.page.goto(base+path+'/'+reportId,{waitUntil:'networkidle'});await owner.page.getByRole('textbox',{name:'Client summary',exact:true}).fill('Revised client-safe summary');await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Save draft',exact:true}).click()]);
+  check('editor keeps draft and publication status distinct '+reportId,await owner.page.getByRole('status').filter({hasText:'Published versions remain separate.'}).count()===1);
+  check('draft edit leaves released snapshot unchanged '+reportId,(await get(portalContext,'/api/bloomops/portal/reports/'+release.id)).data.report.snapshot.clientSummary==='Client-safe summary for '+reportId);
+  await owner.page.getByRole('link',{name:'Review publication and history',exact:true}).click();await owner.page.getByRole('checkbox').check();await publishAction('Publish reviewed revision');
+  const revised=(await get(owner.ctx,api+'/'+reportId+'/publications')).data.review.current;check('revision preserves earlier internal history '+reportId,(await get(owner.ctx,api+'/'+reportId+'/versions/'+release.id)).data.report.snapshot.clientSummary==='Client-safe summary for '+reportId&&revised.sequence===2);
+  check('replaced client link and PDF are denied '+reportId,(await get(portalContext,'/api/bloomops/portal/reports/'+release.id)).status===404&&(await portalContext.request.get(base+'/api/bloomops/portal/reports/'+release.id+'/pdf')).status()===404);
+  await publishAction('Withdraw client access');check('withdrawal denies latest portal/PDF while retaining history '+reportId,(await get(portalContext,'/api/bloomops/portal/reports/'+revised.id)).status===404&&(await portalContext.request.get(base+'/api/bloomops/portal/reports/'+revised.id+'/pdf')).status()===404&&(await get(owner.ctx,api+'/'+reportId+'/versions/'+revised.id)).status===200);
+ }
+ check('withdrawn reports disappear from client list',(await get(portalContext,'/api/bloomops/portal/reports')).data.items.length===0);
+ // Supported new-period UI creates a separate private draft with blank results.
+ for(const reportId of created){
+  const original=(await get(owner.ctx,api+'/'+reportId)).data.report;
+  await owner.page.bringToFront();await owner.page.goto(base+path+'/'+reportId,{waitUntil:'networkidle'});
+  await owner.page.getByRole('link',{name:'Use setup for a new period',exact:true}).click();await owner.page.getByRole('heading',{name:'New report draft',exact:true}).waitFor();
+  check('new period pins template and service '+reportId,await owner.page.getByRole('combobox',{name:'Report template',exact:true}).isDisabled()&&(await owner.page.getByRole('textbox',{name:'Purchased service',exact:true}).inputValue()).includes(original.serviceName));
+  check('new period starts without dates or old observations '+reportId,await owner.page.getByLabel('Period start',{exact:true}).inputValue()===''&&await owner.page.getByLabel('Period end',{exact:true}).inputValue()===''&&await owner.page.locator('input[type="number"]').count()===0&&await owner.page.getByRole('textbox',{name:'Client summary',exact:true}).inputValue()==='');
+  await owner.page.getByLabel('Period start',{exact:true}).fill('2026-09-01');await owner.page.getByLabel('Period end',{exact:true}).fill('2026-09-30');
+  await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Save draft',exact:true}).click()]);const nextId=owner.page.url().split('/').at(-1);const next=(await get(owner.ctx,api+'/'+nextId)).data.report;
+  check('new period persists separately with no copied provenance '+reportId,next.id!==reportId&&next.templateVersion===original.templateVersion&&next.revision===1&&Object.values(next.metrics).every(m=>m.state==='missing'&&m.value===null&&m.sourceNote===''&&m.collectedAt===null&&m.importId===null));
+  check('new period leaves original draft untouched '+reportId,JSON.stringify((await get(owner.ctx,api+'/'+reportId)).data.report)===JSON.stringify(original));
+  await owner.page.getByRole('link',{name:'Preview saved draft',exact:true}).click();await owner.page.getByRole('heading',{name:next.title,exact:true}).waitFor();check('new period saved preview has no fabricated calculation '+reportId,await owner.page.getByText('Not available',{exact:true}).count()>0);
+  check('new period remains private '+reportId,(await get(owner.ctx,api+'/'+nextId+'/publications')).data.review.current===null);
+ }
+ // Next may stream the shell before notFound(), leaving HTTP 200. Assert the
+ // actual denied UI and API authority, rather than treating that transport as access.
+ const denied=await owner.page.goto(base+`/clients/${otherClient}/reports/new?source=${created[0]}`,{waitUntil:'networkidle'});
+ await owner.page.getByRole('heading',{name:'There is nothing here',exact:true}).waitFor();
+ check('new-period source cannot cross Client boundaries',[200,404].includes(denied.status())&&await owner.page.getByRole('heading',{name:'New report draft',exact:true}).count()===0&&await owner.page.getByRole('button',{name:'Save draft',exact:true}).count()===0&&(await get(owner.ctx,`/api/bloomops/clients/${otherClient}/reports/${created[0]}`)).status===404);
+
+ await portalContext.close();
  check('browser has no runtime errors',errors.length===0);writeFileSync(out+'/results.json',JSON.stringify({checks,errors,fixtures:{clientId,otherClient,ghl,social,reports:created},sourceRevision:identity.expectedRevision},null,2));
 }catch(error){if(browser){let i=0;for(const ctx of browser.contexts())for(const page of ctx.pages())await page.screenshot({path:out+'/failure-'+(++i)+'.png',fullPage:true}).catch(()=>{});}writeFileSync(out+'/results.json',JSON.stringify({checks,errors,failure:reportBrowserError(error)},null,2));console.error(reportBrowserError(error));process.exitCode=1;}finally{identity.finishedAt=new Date().toISOString();identity.artifactsUnchanged=hash(JSON.stringify(buildArtifacts(root)))===identity.artifactDigest;writeFileSync(out+'/artifact-identity.json',JSON.stringify(identity,null,2));if(!identity.artifactsUnchanged)process.exitCode=1;await browser?.close();await mf.dispose();rmSync(tmp,{recursive:true,force:true});}
