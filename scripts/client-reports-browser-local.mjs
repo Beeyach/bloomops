@@ -242,7 +242,10 @@ try{
   const openNewPeriod=owner.page.getByRole('link',{name:'Use setup for a new period',exact:true}).click();
   await requestedEditor;await owner.page.getByRole('heading',{name:'New report draft',exact:true}).waitFor();
   check('new-period input waits for its handlers '+reportId,await owner.page.getByLabel('Period start',{exact:true}).isDisabled());
-  releaseEditor();await openNewPeriod;await owner.page.unroute(newEditorChunk);
+  // Wait for every released chunk handler before retiring interception. A click
+  // can finish at SSR before route.continue has finished; unroute() does not drain.
+  releaseEditor();await openNewPeriod;await owner.page.unrouteAll({behavior:'wait'});
+  await owner.page.waitForLoadState('networkidle');
   check('new period pins template and service '+reportId,await owner.page.getByRole('combobox',{name:'Report template',exact:true}).isDisabled()&&(await owner.page.getByRole('textbox',{name:'Purchased service',exact:true}).inputValue()).includes(original.serviceName));
   check('new period starts without dates or old observations '+reportId,await owner.page.getByLabel('Period start',{exact:true}).inputValue()===''&&await owner.page.getByLabel('Period end',{exact:true}).inputValue()===''&&await owner.page.locator('input[type="number"]').count()===0&&await owner.page.getByRole('textbox',{name:'Client summary',exact:true}).inputValue()==='');
   await owner.page.getByLabel('Period start',{exact:true}).fill('2026-09-01');await owner.page.getByLabel('Period end',{exact:true}).fill('2026-09-30');
