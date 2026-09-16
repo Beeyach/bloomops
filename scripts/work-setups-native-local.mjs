@@ -14,16 +14,16 @@ const require=createRequire(import.meta.url),{Miniflare,convertV4MiniflareOption
 const mf=new Miniflare(convertV4MiniflareOptions({modules:true,script:'export default {fetch(){return new Response("local")}}',compatibilityDate:'2025-05-01',cf:false,d1Databases:{DB:'work-setups-populated-upgrade',FRESH:'work-setups-fresh'}}));
 const t=await setup(),checks=[];function check(name,value){assert.ok(value,name);checks.push(name);console.log('PASS '+name);}
 try{
- const binding=await mf.getD1Database('DB'),fresh=await mf.getD1Database('FRESH'),db=bloomOpsDb(binding),files=migrationFiles();assert.equal(files.at(-1).tag,'0052_colorful_norrin_radd');
+ const binding=await mf.getD1Database('DB'),fresh=await mf.getD1Database('FRESH'),db=bloomOpsDb(binding),files=migrationFiles(),boundary=files.findIndex(f=>f.tag==='0052_colorful_norrin_radd');assert.ok(boundary>=0);
  const migrate=async(b,list)=>{for(const f of list)for(const statement of readFileSync(f.url,'utf8').split('--> statement-breakpoint').map(s=>s.trim()).filter(Boolean))await b.prepare(statement).run();};
  const rows=async(table,b=binding)=>(await b.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all()).results;
  const beforeProject=await t.create({name:'Existing Client project',serviceEngagementId:'social-service'});assert.ok(beforeProject.ok);
  assert.ok((await createAction(t.db,{actor:t.owner,projectId:beforeProject.projectId,requestId:crypto.randomUUID(),input:{title:'Existing private task',description:'Must remain untouched',assigneeMembershipId:'m-sam'}})).ok);
- await migrate(binding,files.slice(0,-1));
+ await migrate(binding,files.slice(0,boundary));
  const oldTables=['workspaces','user','workspace_memberships','departments','service_types','bloomops_clients','client_contacts','service_engagements','projects','actions','activity_events'];
  for(const table of oldTables)for(const row of all(t.raw,`SELECT * FROM ${table}`))await binding.prepare(`INSERT INTO ${table}(${Object.keys(row).join(',')}) VALUES(${Object.keys(row).map(()=>'?').join(',')})`).bind(...Object.values(row)).run();
  const before=await Promise.all(oldTables.map(table=>rows(table)));assert.ok(before[oldTables.indexOf('actions')].some(r=>r.assignee_membership_id==='m-sam'));
- await migrate(binding,files.slice(-1));await migrate(fresh,files);
+ await migrate(binding,files.slice(boundary));await migrate(fresh,files);
  assert.deepEqual(await Promise.all(oldTables.map(table=>rows(table))),before);check('populated previous-main upgrade preserves every existing fixture row and assignment',true);
  const schema=async b=>(await b.prepare("SELECT name,sql FROM sqlite_master WHERE sql IS NOT NULL ORDER BY name").all()).results;assert.deepEqual(await schema(binding),await schema(fresh));check('fresh and populated-upgrade schemas match',true);
  const initial=setupInput(),saves=await Promise.all([saveWorkSetup(db,t.owner,initial),saveWorkSetup(db,t.owner,{...initial,definition:Object.fromEntries(Object.entries(initial.definition).reverse())})]);assert.ok(saves.every(s=>s.ok));assert.equal(saves[0].id,saves[1].id);const saved=saves[0];check('native concurrent reordered creation produces one setup and version',(await rows('work_setup_saves')).length===1&&(await rows('template_versions')).length===1);

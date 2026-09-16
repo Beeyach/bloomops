@@ -54,7 +54,7 @@ export default async function ProjectPage({ params }) {
   const clientHref = clientResource && evaluate(actor, { action: 'client.view', resource: clientResource }).allowed ? `/clients/${project.clientId}` : null;
   return <>
     <Button href="/work?tab=projects" variant="ghost" size="sm">Back to projects</Button>
-    <PageHeader title={project.name} subtitle={project.clientName} actions={<Button href={`/discussions/project/${project.id}`} icon="message">Discussion</Button>} />
+    <PageHeader title={project.name} subtitle={project.clientName} actions={<div className="bo-form-actions"><Button href={`/discussions/project/${project.id}`} icon="message">Discussion</Button><Button href={`/pages/records/project/${project.id}`}>Linked Pages</Button></div>} />
     {mayManage ? <ProjectControls key={project.revision} project={project} options={{ ...options, canRestrict: options.canRestrict || assignments.some(a => a.membershipId === actor.membershipId) }} clientHref={clientHref} /> : <Section id="project-details" title="Details"><ProjectFacts project={project} clientHref={clientHref} />{project.statusReason && <p className="bo-body bo-project-reason">{project.statusReason}</p>}</Section>}
     {mayManage && <SystemsBuildControls key={JSON.stringify([actor.workspaceId, actor.membershipId, project.id])} projectId={project.id} retryScope={JSON.stringify([actor.workspaceId, actor.membershipId])} options={blueprint?.ok ? blueprint : null} />}
     <MilestoneControls projectId={project.id} summary={milestones} mayManage={mayManage} canRestrict={options?.canRestrict || assignments.some(a => a.membershipId === actor.membershipId)} />

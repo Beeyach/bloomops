@@ -75,7 +75,7 @@ export default async function ClientDetailPage({ params, searchParams }) {
   return (
     <>
       <ClientDetailHeader client={client} />
-      <div className="bo-form-actions"><Button href={`/clients/${client.id}/preview`} icon="eye" variant="ghost">Preview as client</Button><Button href={`/discussions/client/${client.id}`} icon="message" variant="ghost">Discussion</Button></div>
+      <div className="bo-form-actions"><Button href={`/clients/${client.id}/preview`} icon="eye" variant="ghost">Preview as client</Button><Button href={`/discussions/client/${client.id}`} icon="message" variant="ghost">Discussion</Button><Button href={`/pages/records/client/${client.id}`} variant="ghost">Linked Pages</Button></div>
       {access.workspace.purpose==='prospecting'&&<ProspectClientOrigin db={access.db} actor={actor} clientId={client.id}/>}
       {mayActivate && <ClientActivation clientId={client.id} draft={client.relationshipStatus === 'draft'} activation={activation} />}
       <ClientTabs clientId={client.id} active={tab} hasProjects={hasProjects} />

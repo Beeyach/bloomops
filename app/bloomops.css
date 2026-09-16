@@ -2350,3 +2350,13 @@ select.bo-control {
 .bo-work-setup li { margin-bottom:20px; overflow-wrap:anywhere; }
 .bo-work-setup li p { white-space:pre-wrap; }
 @media(max-width:600px) { .bo-work-setup-grid { grid-template-columns:minmax(0,1fr); } .bo-work-setup label { font-size:16px; } }
+
+/* N4 Page context uses the existing form controls; writing stays independent. */
+.bo-page-record-context {margin-top:2rem;padding-top:1.25rem;border-top:1px solid var(--bo-border);}
+.bo-page-record-context h2 {font-size:1rem;}
+.bo-page-record-context form {max-width:42rem;}
+.bo-page-record-picker {min-width:0;margin:1rem 0;padding:1rem;border:1px solid var(--bo-border);border-radius:.75rem;}
+.bo-page-record-picker label {display:block;margin:.6rem 0;}
+.bo-page-record-picker input,.bo-page-record-picker select {display:block;width:100%;max-width:100%;min-height:44px;margin-top:.35rem;}
+.bo-record-pages {padding-left:1.25rem;}
+.bo-record-pages li {padding:.6rem 0;overflow-wrap:anywhere;}
