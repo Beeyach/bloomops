@@ -35,7 +35,7 @@ writeFileSync(configPath,JSON.stringify(config));
 execFileSync(process.execPath,[join(wranglerRoot,'bin/wrangler.js'),'deploy','--dry-run','--no-autoconfig','--config',configPath,'--outdir',join(tmp,'bundle')],{cwd:root,env:{...process.env,WRANGLER_LOG:'error'},stdio:'pipe',maxBuffer:32*1024*1024});
 const options=unstable_getMiniflareWorkerOptions(configPath).workerOptions;delete options.modulesRules;
 const mf=new Miniflare(convertV4MiniflareOptions({...options,modules:true,script:readFileSync(join(tmp,'bundle/navigation-perf-worker.js'),'utf8'),host:'127.0.0.1',port,cf:false,logRequests:false}));
-let browser;const checks=[],errors=[];const check=(name,ok)=>{assert.ok(ok,name);checks.push(name);console.log('ok '+name);};
+let browser,zoomBrowser;const checks=[],errors=[];const check=(name,ok)=>{assert.ok(ok,name);checks.push(name);console.log('ok '+name);};
 try{
  await mf.ready;identity.readyAt=new Date().toISOString();identity.processes=localProcesses();identity.bundle={path:join(tmp,'bundle/navigation-perf-worker.js'),sha256:hash(readFileSync(join(tmp,'bundle/navigation-perf-worker.js')))};identity.configuration=config;identity.version=await(await fetch(base+'/api/version')).json();if(expected)assert.equal(identity.version.sha,expected.revision.slice(0,7),'Served build revision');writeFileSync(out+'/artifact-identity.json',JSON.stringify(identity,null,2));
  const binding=await mf.getD1Database('DB'),bucket=await mf.getR2Bucket('FILES');
@@ -47,7 +47,7 @@ try{
  // WSL hosts with a failing software GL process can disable that optional
  // rasterizer. DOM interaction, actionability and screenshot assertions remain.
  browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-gpu',...(process.env.BLOOMOPS_DISABLE_SOFTWARE_RASTERIZER==='1'?['--disable-software-rasterizer']:[])]});
- async function login(user){const ctx=await browser.newContext({viewport:{width:1440,height:1000}});await ctx.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());const email=user+'@example.com';assert.equal((await ctx.request.post(base+'/api/auth/sign-in/magic-link',{headers:{origin:base},data:{email,callbackURL:'/'}})).status(),200);
+ async function login(user,suppliedContext=null){const ctx=suppliedContext||await browser.newContext({viewport:{width:1440,height:1000}});await ctx.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());const email=user+'@example.com';assert.equal((await ctx.request.post(base+'/api/auth/sign-in/magic-link',{headers:{origin:base},data:{email,callbackURL:'/'}})).status(),200);
   const mail=await bucket.get('dev-mail/'+createHash('sha256').update(email).digest('hex')+'.json');assert.ok(mail);const url=JSON.parse(await mail.text()).text.match(/https?:\/\/\S+/)[0];const parsed=new URL(url);assert.ok(parsed.origin===base&&parsed.pathname==='/api/auth/magic-link/verify',`local auth host/path: ${parsed.host} ${parsed.pathname}`);
   const page=await ctx.newPage();page.on('pageerror',e=>errors.push(reportBrowserError(e)));await page.goto(url,{waitUntil:'networkidle'});return {ctx,page};}
  const owner=await login('ellen');
@@ -96,13 +96,22 @@ try{
    check(route+' no page overflow at '+width,dimensions.documentWidth<=width);check(route+' no vertical tab overflow at '+width,dimensions.tabs.every(t=>t.scrollHeight<=t.height));layouts.push({route,width,...dimensions});
    await page.screenshot({path:out+'/'+(route===pagePath?'page-editor':route.slice(1).replaceAll('?','-').replaceAll('=','-'))+'-'+width+'.png',fullPage:true});
   }
-  // Browser zoom reflows a 1440px window to 720 CSS pixels. CSS zoom alone
-  // keeps desktop media queries and is not a browser-zoom substitute.
-  await page.setViewportSize({width:720,height:500});
-  check(route+' 200% equivalent browser reflow retains bounded document',await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
-  await page.keyboard.press('Tab');check(route+' zoomed keyboard target is visible',await page.evaluate(()=>{const e=document.activeElement,r=e.getBoundingClientRect();return e!==document.body&&r.width>0&&r.height>0;}));
-  await page.screenshot({path:out+'/'+(route===pagePath?'page-editor':route.slice(1).replaceAll('?','-').replaceAll('=','-'))+'-zoom200.png',fullPage:true});await page.setViewportSize({width:1440,height:1000});
  }
+ // Real browser zoom in a disposable profile, not CSS zoom or a resized
+ // screenshot. This cannot change the owner's browser/profile settings.
+ zoomBrowser=await chromium.launchPersistentContext(join(tmp,'zoom-profile'),{channel:'chromium',headless:true,viewport:{width:1440,height:1000},args:['--no-sandbox','--disable-gpu',...(process.env.BLOOMOPS_DISABLE_SOFTWARE_RASTERIZER==='1'?['--disable-software-rasterizer']:[])]});
+ const settings=await zoomBrowser.newPage();await settings.goto('chrome://settings/appearance');await settings.locator('select#zoomLevel').selectOption({label:'200%'});await settings.close();
+ const zoomActor=await login('ellen',zoomBrowser);assert.equal((await zoomActor.ctx.request.post(base+'/api/bloomops/workspaces/select',{headers:{origin:base},data:{workspaceId:'a'}})).status(),200);
+ const zoomChecks=[];
+ for(const route of ['/work?tab=projects','/systems','/social','/ads','/team','/finance','/settings',pagePath]){
+  const page=zoomActor.page;await page.goto(base+route,{waitUntil:'networkidle'});
+  const dimensions=await page.evaluate(()=>({width:innerWidth,dpr:devicePixelRatio,cssZoom:getComputedStyle(document.documentElement).zoom,scrollWidth:document.documentElement.scrollWidth}));
+  check(route+' native 200% browser zoom is active',dimensions.width===720&&dimensions.dpr===2&&dimensions.cssZoom==='1');
+  check(route+' native zoom has no page overflow',dimensions.scrollWidth<=dimensions.width);
+  await page.keyboard.press('Tab');check(route+' zoomed keyboard target is visible',await page.evaluate(()=>{const e=document.activeElement,r=e.getBoundingClientRect();return e!==document.body&&r.width>0&&r.height>0;}));
+  zoomChecks.push({route,...dimensions});await page.screenshot({path:out+'/'+(route===pagePath?'page-editor':route.slice(1).replaceAll('?','-').replaceAll('=','-'))+'-zoom200.png',fullPage:true});
+ }
+ writeFileSync(out+'/zoom.json',JSON.stringify({method:'Chromium appearance settings: 200%; fresh disposable profile; genuine local QA authentication',checks:zoomChecks},null,2));
  writeFileSync(out+'/layouts.json',JSON.stringify(layouts,null,2));
  check('no browser runtime errors',errors.length===0);writeFileSync(out+'/results.json',JSON.stringify({checks,errors,timings},null,2));
-}catch(error){console.error(reportBrowserError(error));writeFileSync(out+'/failure.json',JSON.stringify({checks,errors,failure:reportBrowserError(error)},null,2));process.exitCode=1;}finally{identity.finishedAt=new Date().toISOString();identity.artifactsUnchanged=hash(JSON.stringify(buildArtifacts(root)))===identity.artifactDigest;writeFileSync(out+'/artifact-identity.json',JSON.stringify(identity,null,2));if(!identity.artifactsUnchanged)process.exitCode=1;await browser?.close();await mf.dispose();rmSync(tmp,{recursive:true,force:true});}
+}catch(error){console.error(reportBrowserError(error));writeFileSync(out+'/failure.json',JSON.stringify({checks,errors,failure:reportBrowserError(error)},null,2));process.exitCode=1;}finally{identity.finishedAt=new Date().toISOString();identity.artifactsUnchanged=hash(JSON.stringify(buildArtifacts(root)))===identity.artifactDigest;writeFileSync(out+'/artifact-identity.json',JSON.stringify(identity,null,2));if(!identity.artifactsUnchanged)process.exitCode=1;await zoomBrowser?.close();await browser?.close();await mf.dispose();rmSync(tmp,{recursive:true,force:true});}

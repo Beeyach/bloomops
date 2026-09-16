@@ -8,13 +8,18 @@ remains safely committed at `ebfae0f` in its own unchanged worktree; both jobs i
 run35084403671 passed. It remains unmerged, with staging acceptance pending.
 The finite product-completion list below is retained; this pass adds no product milestone.
 
-Screenshot checklist (implementation in progress; rendered acceptance pending):
-- [ ] Shared hierarchy, spacing, controls, compact identity and workspace utility.
-- [ ] Work/Systems aligned records, truthful status, shortcut hierarchy and tab overflow.
-- [ ] Bell panel with current scope/read behavior; Prospecting empty/filter states and measured navigation.
-- [ ] Fluid Pages writing area, named tools/Move, preserved editing and recovery.
-- [ ] Skills, Social, Ads, Team, Finance and Settings use the same visual system.
+Screenshot checklist (implemented; final integration/staging acceptance pending):
+- [x] Shared hierarchy, spacing, controls, compact identity and workspace utility.
+- [x] Work/Systems aligned records, truthful status, shortcut hierarchy and tab overflow.
+- [x] Bell panel with current scope/read behavior; Prospecting empty/filter states and measured navigation.
+- [x] Fluid Pages writing area, named tools/Move, preserved editing and recovery.
+- [x] Skills, Social, Ads, Team, Finance and Settings use the same visual system.
 - [ ] Completed-build responsive/keyboard/zoom/Windows checks, full suite, CI and staging comparison.
+
+[Implementation and repeatable checks](previews/ui-cleanup/README.md): full7384/7384
+passes at `8e7166c`; final artifact-bound browsers and remote/staging verification
+remain pending. Prior rendered checks cover all five widths, notification72, Page
+context/template and Finance workflows; final native browser zoom coverage is added.
 
 Baseline Windows staging `52dacbf`: Bricolage and Inter load. Work tab strip is
 43px high with44px scroll content; removing the tab's -1px bottom margin yields
