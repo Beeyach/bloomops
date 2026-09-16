@@ -22,7 +22,7 @@ export default async function TeamPage() {
   if (teamViewFor(actor) !== 'manage') {
     return (
       <>
-        <PageHeader title="Team" subtitle={navItem('team').purpose} actions={<Button href="/team/workload">Action workload</Button>} />
+        <PageHeader title="Team" subtitle={navItem('team').purpose} actions={<><Button href="/team/workload">Action workload</Button><Button href="/team/departments">Department work</Button></>} />
         <Surface padding="lg" className="bo-page-narrow">
           <h2 className="bo-h2" style={{ marginBottom: 12 }}>
             Your place in {access.workspace.name}
@@ -38,5 +38,5 @@ export default async function TeamPage() {
 
   const [rows, invitations] = await readTogether(access.db, db => Promise.all([listWorkspaceMembers(db, access.workspace.id), listInvitations(db, access.workspace.id)]));
   const members = rows.map((m) => ({ ...m, roleLabel: ROLE_LABELS[m.role] || m.role }));
-  return <><Button href="/team/workload">Action workload</Button><TeamManager members={members} invitations={invitations.map((i) => ({ ...i, roleLabel: ROLE_LABELS[i.role] || i.role }))} selfMembershipId={access.membership.id} workspaceName={access.workspace.name} /></>;
+  return <><div className="bo-form-actions"><Button href="/team/workload">Action workload</Button><Button href="/team/departments">Department work</Button></div><TeamManager members={members} invitations={invitations.map((i) => ({ ...i, roleLabel: ROLE_LABELS[i.role] || i.role }))} selfMembershipId={access.membership.id} workspaceName={access.workspace.name} /></>;
 }
