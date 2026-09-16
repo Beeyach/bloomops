@@ -1,0 +1,23 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import './_jsx.mjs';
+import {setup} from './_work-projections.mjs';
+import {APP_URL,run} from './_bloomops-db.mjs';
+import {saveClientReport,getClientReport} from '../lib/bloomops/client-reports.mjs';
+import {changeReportPublication} from '../lib/bloomops/client-report-publications.mjs';
+import {input,draft} from './_client-report-fixture.mjs';
+import {archiveInput,releaseInput} from './_client-report-archive.mjs';
+test('archive API uses actual identity/Origin and portal PDFs stay denied after restore',async ctx=>{
+ const t=await setup({auth:true});ctx.after(()=>t.raw.close());globalThis[Symbol.for('__cloudflare-context__')]={env:t.env,cf:{},ctx:{}};
+ const report=await saveClientReport(t.db,t.owner,'james',null,input({draft:draft({clientSummary:'Archive HTTP'})})),publication=await changeReportPublication(t.db,t.owner,'james',report.id,releaseInput());
+ const route=await import('../app/api/bloomops/clients/[id]/reports/[reportId]/archive/route.js'),pdf=await import('../app/api/bloomops/portal/reports/[publicationId]/pdf/route.js');
+ const cookies={};for(const name of ['ellen','james'])cookies[name]=(await t.signIn(name+'@example.com')).cookie;
+ const params={params:Promise.resolve({id:'james',reportId:report.id})};
+ const request=(name,body=archiveInput(),origin=APP_URL)=>new Request(APP_URL+'/api/bloomops/clients/james/reports/'+report.id+'/archive',{method:'POST',headers:{...(name?{cookie:cookies[name]}:{}),origin,'content-type':'application/json'},body:JSON.stringify(body)});
+ assert.equal((await route.POST(request(null),params)).status,401);assert.equal((await route.POST(request('james'),params)).status,404);assert.equal((await route.POST(request('ellen',archiveInput(),'https://foreign.invalid'),params)).status,403);
+ assert.equal((await route.POST(request('ellen',archiveInput({workspaceId:'b'})),params)).status,404);assert.equal((await route.POST(request('ellen'),params)).status,200);
+ const pdfRead=()=>pdf.GET(new Request(APP_URL+'/api/bloomops/portal/reports/'+publication.id+'/pdf',{headers:{cookie:cookies.james}}),{params:Promise.resolve({publicationId:publication.id})});
+ let fonts=0;t.env.ASSETS={fetch:async()=>{fonts++;throw Error('denied PDF must not render');}};assert.equal((await pdfRead()).status,404);assert.equal(fonts,0);
+ assert.equal((await route.POST(request('ellen',archiveInput({expectedRevision:2,archived:false})),params)).status,200);assert.equal((await pdfRead()).status,404);assert.equal(fonts,0);
+ run(t.raw,"UPDATE workspace_memberships SET status='suspended' WHERE id='m-ellen'");assert.equal((await route.POST(request('ellen',archiveInput({expectedRevision:3})),params)).status,403);assert.equal(await getClientReport(t.db,t.owner,'james',report.id),null);
+});

@@ -3,6 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import {PageHeader,Button} from './Primitives';
 import {REPORT_TEMPLATES,reportTemplate,CLIENT_NARRATIVE_FIELDS} from '@/lib/bloomops/client-report-values.mjs';
 import ClientReportCsv from './ClientReportCsv';
+import ReportArchive from './ReportArchive';
 const emptyMetric=()=>({state:'missing',value:null,sourceNote:'',collectedAt:null});
 const draftFields=r=>Object.fromEntries(['title','periodStart','periodEnd','timezone','channel','accountLabel','scopeLabel','commentary','metrics',...CLIENT_NARRATIVE_FIELDS].map(k=>[k,r[k]??'']));
 export default function ClientReportEditor({client,initial=null,services=null,reuse=null,scope}){
@@ -32,7 +33,9 @@ export default function ClientReportEditor({client,initial=null,services=null,re
  return <div className="bo-report"><PageHeader title={initial?'Edit report draft':'New report draft'} subtitle={`Private manual reporting for ${client.name}`}/>
  <div className="bo-form-actions"><Button variant="ghost" href={`/clients/${client.id}/reports`}>All reports</Button>{initial&&<Button variant="ghost" href={`/clients/${client.id}/reports/${initial.id}/preview`}>Preview saved draft</Button>}</div>
  {initial&&<Button variant="ghost" href={`/clients/${client.id}/reports/${initial.id}/publication`}>Review publication and history</Button>}
- {initial&&editable&&<Button variant="ghost" href={`/clients/${client.id}/reports/new?source=${initial.id}`}>Use setup for a new period</Button>}
+ {initial&&initial.canManageArchive&&<Button variant="ghost" href={`/clients/${client.id}/reports/new?source=${initial.id}`}>Use setup for a new period</Button>}
+ {initial?.canManageArchive&&<ReportArchive report={initial} clientId={client.id} scope={scope} disabled={dirty||busy||!!pending.current||isConflict}/>}
+ {initial?.archivedAt&&<p role="status">Archived. Client access is removed. Restore privately before editing or publishing a new version.</p>}
  {reuse&&<p role="note">Reusing template version {reuse.templateVersion} and account setup. Choose a new period. Previous values, provenance, commentary and client narrative have not been copied.</p>}
  {!editable&&<p>Read-only access. A workspace Owner, Admin or Project Manager can edit.</p>}
  {error&&<div role="alert"><p>{error}</p>{isConflict&&<Button variant="ghost" href={`/clients/${client.id}/reports/${initial?.id||''}`}>Reopen saved draft</Button>}</div>}
