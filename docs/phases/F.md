@@ -141,3 +141,19 @@ Commands: `node --test tests/bloomops-finance.test.mjs`,
 `node .github/scripts/verify-zero-remote.mjs --local`, `npm test`,
 `npm run cf:build`, `git diff --check`. New harness commands become evidence only
 when implemented and executed; their declaration is not a passing result.
+
+F3 integration verification adjustment: the combined inherited/domain schema now
+exceeds Workerd's per-statement VM allocation budget for global `quick_check`
+(`SQLITE_NOMEM`), reproduced on a fresh disposable database; removing only the
+new empty Finance table makes that same check run. Native SQLite verifies the
+same actual local file successfully. Local zero verification therefore opens its
+sole disposable D1 file with `PRAGMA query_only=ON` and runs the **whole-database**
+check, preserving cross-table page/freelist and CHECK coverage. File-readonly mode
+is deliberately not used: a negative fixture proved it omits CHECK validation.
+Tests retain invalid-CHECK and WAL visibility failures, identity/symlink rejection,
+and unchanged bytes for valid inspection. Remote D1 keeps its original full check;
+its result remains a release gate, not presumed from local success. No per-table
+fallback, ignored failure, dependency update or application storage workaround.
+Runtime source: https://github.com/cloudflare/workerd/blob/main/src/workerd/util/sqlite.c++
+(`SQLITE_LIMIT_VDBE_OP`). `node --test tests/zero-local-integrity.test.mjs` tests the
+CI-only adapter. The original failed replay/browser logs remain external evidence.
