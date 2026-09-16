@@ -189,6 +189,21 @@ try{
   await publishAction('Withdraw client access');check('withdrawal denies latest portal/PDF while retaining history '+reportId,(await get(portalContext,'/api/bloomops/portal/reports/'+revised.id)).status===404&&(await portalContext.request.get(base+'/api/bloomops/portal/reports/'+revised.id+'/pdf')).status()===404&&(await get(owner.ctx,api+'/'+reportId+'/versions/'+revised.id)).status===200);
  }
  check('withdrawn reports disappear from client list',(await get(portalContext,'/api/bloomops/portal/reports')).data.items.length===0);
+ // Supported new-period UI creates a separate private draft with blank results.
+ for(const reportId of created){
+  const original=(await get(owner.ctx,api+'/'+reportId)).data.report;
+  await owner.page.bringToFront();await owner.page.goto(base+path+'/'+reportId,{waitUntil:'networkidle'});
+  await owner.page.getByRole('link',{name:'Use setup for a new period',exact:true}).click();await owner.page.getByRole('heading',{name:'New report draft',exact:true}).waitFor();
+  check('new period pins template and service '+reportId,await owner.page.getByLabel('Report template',{exact:true}).isDisabled()&&(await owner.page.getByLabel('Purchased service',{exact:true}).inputValue()).includes(original.serviceName));
+  check('new period starts without dates or old observations '+reportId,await owner.page.getByLabel('Period start',{exact:true}).inputValue()===''&&await owner.page.getByLabel('Period end',{exact:true}).inputValue()===''&&await owner.page.locator('input[type="number"]').count()===0&&await owner.page.getByRole('textbox',{name:'Client summary',exact:true}).inputValue()==='');
+  await owner.page.getByLabel('Period start',{exact:true}).fill('2026-09-01');await owner.page.getByLabel('Period end',{exact:true}).fill('2026-09-30');
+  await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Save draft',exact:true}).click()]);const nextId=owner.page.url().split('/').at(-1);const next=(await get(owner.ctx,api+'/'+nextId)).data.report;
+  check('new period persists separately with no copied provenance '+reportId,next.id!==reportId&&next.templateVersion===original.templateVersion&&next.revision===1&&Object.values(next.metrics).every(m=>m.state==='missing'&&m.value===null&&m.sourceNote===''&&m.collectedAt===null&&m.importId===null));
+  check('new period leaves original draft untouched '+reportId,JSON.stringify((await get(owner.ctx,api+'/'+reportId)).data.report)===JSON.stringify(original));
+  await owner.page.getByRole('link',{name:'Preview saved draft',exact:true}).click();await owner.page.getByRole('heading',{name:next.title,exact:true}).waitFor();check('new period saved preview has no fabricated calculation '+reportId,await owner.page.getByText('Not available',{exact:true}).count()>0);
+  check('new period remains private '+reportId,(await get(owner.ctx,api+'/'+nextId+'/publications')).data.review.current===null);
+ }
+ check('new-period source cannot cross Client boundaries',(await owner.ctx.request.get(base+`/clients/${otherClient}/reports/new?source=${created[0]}`)).status()===404);
  await portalContext.close();
  check('browser has no runtime errors',errors.length===0);writeFileSync(out+'/results.json',JSON.stringify({checks,errors,fixtures:{clientId,otherClient,ghl,social,reports:created},sourceRevision:identity.expectedRevision},null,2));
 }catch(error){if(browser){let i=0;for(const ctx of browser.contexts())for(const page of ctx.pages())await page.screenshot({path:out+'/failure-'+(++i)+'.png',fullPage:true}).catch(()=>{});}writeFileSync(out+'/results.json',JSON.stringify({checks,errors,failure:reportBrowserError(error)},null,2));console.error(reportBrowserError(error));process.exitCode=1;}finally{identity.finishedAt=new Date().toISOString();identity.artifactsUnchanged=hash(JSON.stringify(buildArtifacts(root)))===identity.artifactDigest;writeFileSync(out+'/artifact-identity.json',JSON.stringify(identity,null,2));if(!identity.artifactsUnchanged)process.exitCode=1;await browser?.close();await mf.dispose();rmSync(tmp,{recursive:true,force:true});}

@@ -10,6 +10,7 @@ import {input,draft,observation} from '../tests/_client-report-fixture.mjs';
 import {saveClientReport as save,getClientReport as get} from '../lib/bloomops/client-reports.mjs';
 import {checkEquivalentRetries,checkConcurrentRetries} from '../tests/_client-report-retry.mjs';
 import {checkReportCsv} from '../tests/_client-report-csv.mjs';
+import {checkNewPeriodReport} from '../tests/_client-report-period-reuse.mjs';
 import {checkReportPublications} from '../tests/_client-report-publications.mjs';
 const require=createRequire(import.meta.url),{Miniflare,convertV4MiniflareOptions}=require(require.resolve('miniflare',{paths:[dirname(require.resolve('wrangler/package.json'))]}));
 const mf=new Miniflare(convertV4MiniflareOptions({modules:true,script:'export default {fetch(){return new Response("local")}}',compatibilityDate:'2025-05-01',cf:false,d1Databases:{DB:'n3a-upgrade',FRESH:'n3a-fresh'}}));
@@ -44,6 +45,7 @@ try{
  await assert.rejects(binding.prepare("UPDATE client_report_metrics SET source_kind='csv',import_id=NULL").run(),/CHECK/);check('native CSV requires import provenance',true);
  check('populated upgrade never publishes historical drafts',(await binding.prepare('SELECT count(*) n FROM client_report_publications').first()).n===0);
  check('populated upgrade leaves client narrative empty',(await binding.prepare("SELECT count(*) n FROM client_report_drafts WHERE client_summary<>'' OR work_completed<>'' OR limitations<>'' OR next_actions<>''").first()).n===0);
+ for(const template of ['ghl_campaign','social']){await checkNewPeriodReport(db,t.owner,template);check(template+' native new period starts empty and preserves its source',true);}
  const releases=await checkReportPublications(db,t.owner,await t.actor('james'));check('native publication retries, concurrent revision, immutable saved snapshots and withdrawal',!!releases.firstId);
  await assert.rejects(binding.prepare("UPDATE client_report_publications SET snapshot_json='{}'").run(),/immutable/);check('native publication content cannot be updated',true);
  await assert.rejects(binding.prepare('DELETE FROM client_report_publications').run(),/immutable/);check('native publication history cannot be deleted',true);
