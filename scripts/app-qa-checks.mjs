@@ -33,7 +33,8 @@ export async function qaRestrictedSidebar({browser,base,bucket,owner,check,hashE
   check('restricted sidebar explains the denied role',await page.getByText('Your current role does not include access.',{exact:false}).count()===1);
   check('restricted sidebar preserves shell with explicit denial rather than missing page',await page.getByRole('heading',{name:'Prospecting',exact:true}).count()===1&&await page.getByRole('link',{name:'Choose workspace',exact:true}).count()===1);
   check('restricted sidebar never mounts or reveals prospect data',await page.locator('.bo-sheet').count()===0);
-  check('direct sheet API retains denial',(await ctx.request.get(base+'/api/bloomops/prospecting/sheet')).status()===404);
+  const denied=await ctx.request.get(base+'/api/bloomops/prospecting/sheet');
+  check('direct sheet API retains explicit permission denial',denied.status()===403&&(await denied.json()).error==='You do not have permission to do that.');
   await page.reload({waitUntil:'networkidle'});check('restricted reload retains explicit denial',await page.getByText('Your current role does not include access.',{exact:false}).count()===1);
  }finally{await ctx.close();}
 }

@@ -9,11 +9,11 @@ real staging interaction, local regression checks and missing coverage.
 
 | Route / scenario | Observed defect | Correction | Retest / limitation |
 | --- | --- | --- | --- |
-| Sidebar → Prospecting | Team Member reaches generic not-found despite RSC200; fresh Admin in operations workspace reaches supported chooser | Explicit restricted-role explanation and workspace recovery; data authorization unchanged | Owner/Admin navigation works on d2947b2; restricted sidebar regression reproduced against completed old build, corrected-build check pending |
-| Social / Ads / Systems lists | Windows1920: main1688px vs canvas1120px, empty640px, view/filter gap0px, description/results gap0px | Fluid internal working column, centered full-width empty region, view/section gaps, active view, truthful pagination | Four pre-fix assertions fail; focused48/48 pass; built/live retest pending |
+| Sidebar → Prospecting | Team Member reaches generic not-found despite RSC200; fresh Admin in operations workspace reaches supported chooser | Explicit restricted-role explanation and workspace recovery; data authorization unchanged | Owner/Admin navigation works on d2947b2; restricted sidebar regression reproduced against completed old build, corrected completed-build sidebar checks PASS (explicit denial, API403, reload); live retest pending |
+| Social / Ads / Systems lists | Windows1920: main1688px vs canvas1120px, empty640px, view/filter gap0px, description/results gap0px | Fluid internal working column, centered full-width empty region, view/section gaps, active view, truthful pagination | Four pre-fix assertions fail; focused48/48 pass; built geometry and native200% checks PASS; live retest pending |
 | Action detail / status / dependencies | Windows detail/action gap0px; dependency help/result gap0px |20px action region and16px help gap | Live reproduction confirmed; retest pending |
 | Shell / workspace / search / notifications | Prior acceptance retained, new sweep pending | None yet | NOT RUN |
-| Prospect records / Skills / supported import | Genuine create/edit/filter/reopen and instruction workflow pending | None yet | NOT RUN |
+| Prospect records / Skills / supported import | Supported workflow exercised with isolated synthetic records | None needed | Staging d2947b2 PASS: invalid timezone, create/edit/reload, search/views/Clear, CSV preview/import/profile, Skills task/context downloads |
 | Clients / Services / Onboarding / Work / templates | Supported create/edit/status/dependency sweep pending; PR93 remains separately owned | None yet | NOT RUN |
 | Social content / calendar / stage controls | Saved workflow and empty/filter recovery pending | None yet | NOT RUN |
 | Ads / Systems detail and setup | Only shipped operations in scope; no provider actions | None yet | NOT RUN |
@@ -23,6 +23,19 @@ real staging interaction, local regression checks and missing coverage.
 | Reporting drafts / CSV / publication / portal / PDF | Existing synthetic actors and fixtures only | None yet | NOT RUN |
 | Settings / validation / persistence | Restore every temporary setting | None yet | NOT RUN |
 
+Local checkpoint: source `5999bca`, full7388/7388 exit0 (no skips), focused48/48,
+completed Cloudflare build exit0, browser293 checks with zero runtime errors.
+The first browser attempt exposed an isolated build setup problem: symlinked
+external node_modules prevented OpenNext patching its resolved Next paths.
+The worktree now has its own unchanged-lockfile installation; the rebuilt Worker
+passes. The new denial assertion was corrected from404 to the existing explicit
+403 contract, with exact error-body verification. No application input changed
+after the successful build. Evidence: `/home/ary/Developer/bloomops-app-qa-evidence`.
+Current staging remains d2947b2; these fixes are not yet deployed.
+The live Action check created only a named synthetic Action, verified status
+save/reload, and added then removed a dependency on an existing synthetic Action.
+The CSV importer has a nonblocking singular-copy issue ("Review 1 rows"); retain
+it in this same stabilization list. Other workflow rows remain genuinely pending.
 
 ## Owner UI cleanup release checkpoint - 16 September 2026
 
