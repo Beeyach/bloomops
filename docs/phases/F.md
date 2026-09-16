@@ -94,7 +94,8 @@ New implementation decisions resolving the intentionally lightweight specificati
   after creation; correct a mistaken parent by archiving and creating a new record.
 - Required title, exact nonnegative amount and supported ISO currency. Store integer
   minor units and currency precision, never binary floating point. Currency precision
-  follows the runtime's ISO catalogue at creation and is pinned on that record.
+  uses the fixed catalogue in finance-values.mjs (frozen from Node22's ISO currency
+  metadata), shared identically with the browser, and is pinned on that record.
   Reject extra decimal places, exponent notation, blanks, negatives and amounts above
   1,000,000,000,000 minor units. Zero is valid. No exchange conversion or inferred tax.
 - Manual status, due/paid/renewal calendar dates, provider, reference and notes.
