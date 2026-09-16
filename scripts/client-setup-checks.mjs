@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
+import {clientSetupVisualChecks} from './client-setup-visual-checks.mjs';
 // Real supported UI setup from an empty workspace. Mail remains in local R2.
 export async function clientSetupChecks({page,ctx,base,browser,bucket,check,out}){
  await page.setViewportSize({width:1440,height:900});
@@ -65,4 +66,5 @@ export async function clientSetupChecks({page,ctx,base,browser,bucket,check,out}
  check('Portal cannot access readiness or template management',(await portal.request.get(base+'/api/bloomops/onboarding/setup')).status()===404&&(await portal.request.get(base+'/api/bloomops/clients/'+clientId+'/readiness')).status()===404);await portal.close();
  for(const width of [1920,1440,768,390]){await page.setViewportSize({width,height:width===1920?1080:900});await page.goto(base+'/clients/'+clientId,{waitUntil:'networkidle'});check('Client setup layout fits '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:out+'/client-setup-overview-'+width+'.png'});}
  await page.setViewportSize({width:1440,height:900});
+ await clientSetupVisualChecks({page,ctx,base,clientId,check,out,workspaceId});
 }
