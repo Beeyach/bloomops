@@ -8,19 +8,19 @@ Design direction: existing Cloud #F8FAFF, Snow #FFFFFF, Lilac #EEEAFB, Ink #1815
 
 | Item | Scenario / correction | Verification / remaining |
 | --- | --- | --- |
-| U01 | Per-service scope errors and first-invalid focus; retain entered choices | Implemented; completed-build focused workflow passed; final staging pending |
-| U02 | Typed text controls exclude checkbox/radio | Live d361177 reproduces 26×44 checkbox with12px padding; corrected built browser20×20 and keyboard checks passed; staging pending |
-| U03 | Focused primary contact before services; full research secondary | Implemented with guarded partial profile edits; save failure/retry/cancel and real persistence passed |
-| U04 | Left-aligned workspace identity and trailing chevron | Left alignment and cancelled/confirmed scope-switch checks passed locally |
-| U05 | Systems responsive filter grid and right action group | Desktop aligned actions and responsive geometry passed locally |
-| U06 | Calendar human-readable month and deliberate region spacing | Human month and measured gaps passed1440/1920/768/390; date semantics unchanged |
-| U07 | Work templates Back/status/authorized first-create | Implemented; real route/current-status checks passed locally |
-| U08 | Reports Client header, active/archive links, truthful publication copy | Implemented; real route/current-status checks passed locally |
-| U09 | Metric legend/help/value/provenance spacing | Implemented; calculations and snapshots unchanged; final metric browser retest pending |
-| U10 | Wrong-workspace recovery and action spacing | Implemented; explicit chooser, no automatic selection; final retest pending |
-| U11 | Contacts/details above operational sections; bounded requests with View all | Contacts moved above operational details, bounded requests retained; normal desktop/mobile screenshots inspected; utility wrapping refined |
-| U12 | Canonical read-only readiness; explicit template recovery and activation confirmation | Fresh workspace → contact → two services → template revision/publication → explicit activation → genuine separate portal login passes locally; native9; final staging pending |
-| U13 | Prospect view/count/search alignment | Implemented; geometry/keyboard pending |
+| U01 | Per-service scope errors, first-invalid focus and retained purchases | FIXED AND RETESTED on completed build58603e5, including delayed contact save and post-commit focus |
+| U02 | Typed controls exclude checkbox/radio | FIXED AND RETESTED:20×20 handoff checkbox checked/unchecked/focused/busy; no stretched text-input padding |
+| U03 | Focused primary contact before services; research secondary | FIXED AND RETESTED: missing-contact repair, failure/retry/cancel and real persistence |
+| U04 | Left-aligned workspace identity, trailing chevron and scope guards | FIXED AND RETESTED: desktop/tablet/mobile geometry; cancel/confirm switching preserved |
+| U05 | Systems fields and right-aligned desktop actions | FIXED AND RETESTED:1440/1920 alignment and768/390 responsive fit |
+| U06 | Calendar month, explanation and result spacing | FIXED AND RETESTED: human month and measured gaps at four widths; dates unchanged |
+| U07 | Work templates Back/status/first-create | FIXED AND RETESTED: genuine destination and current-status controls; authorization retained |
+| U08 | Reports Client header, primary action, status and truthful empty copy | FIXED AND RETESTED: real list and New report navigation; publication semantics unchanged |
+| U09 | Metric legends, explanations and aligned value/provenance fields | FIXED AND RETESTED: narrative-only textarea margins no longer shift grid labels; calculations/PDF unchanged |
+| U10 | Wrong-workspace recovery with explicit chooser | FIXED AND RETESTED: supported operations-workspace refusal, real action gap and explicit restore |
+| U11 | Key contact/details before bounded operational requests | FIXED AND RETESTED locally: normal viewport screenshots inspected; mobile utilities wrap; View all retains full work |
+| U12 | Read-only readiness, template recovery and explicit activation | FIXED AND RETESTED locally: fresh UI workspace, two services, no premature mail, immutable template revision/publication, stale-editor conflict, actual separate portal login and denial; native9 covers inactive/rollback/revocation |
+| U13 | Prospect view/count/search alignment and keyboard controls | FIXED AND RETESTED: removed empty save-line count offset; reserved feedback footer and usable view height; no save behavior change |
 
 Live baseline fixture created through normal UI: workspace `Bloomsi QA Client setup UX`, prospect `1b3e1006-aac8-4335-99dc-c8d9b939c626` (QA Client Setup Studio), no contact or conversion yet. No real pilot records changed. Before screenshot: `/home/ary/Developer/bloomops-client-setup-ui-evidence/before-contact-1440.png`. Staging baseline reports d361177. Windows C has108GiB free; Linux860GiB, inodes available, rw and flushed write/read/delete probe passed before dependency setup.
 
@@ -30,6 +30,9 @@ No migration is planned. Existing remote-D1 quick_check SQLITE_NOMEM limitation 
 Verification checkpoint: full7417/7417 exit0 at11a2f8e; focused68/68 after review fixes; native9 checks pass. Completed build6d01065 exit0; focused browser91 checks pass with zero runtime errors and unchanged artifact hashes. Broader sweep passed responsive setup geometry before a new exact-label locator failed on the report template select; corrected to the existing reporting harness locator, not treated as a product failure. One same-session Sol review and focused re-review resolved stale editor review-token reuse and existing-open-onboarding readiness; no material finding remains in that reviewed scope. Normal screenshots were viewed, producing small final Client utility/report header polish. Final build/full/remote/staging checks are still pending. No real pilot records changed.
 
 Final visual inspection also corrected report textarea labels inheriting narrative margins, a post-render error-focus race, and the empty save-status line shifting the Prospecting count by10px (independently measured in Windows staging). Save feedback retains a reserved toolbar footer so actual record positions do not jump. These changes remain under PR99; final verification is recorded in that PR and the compact local release evidence.
+
+
+Final local UI acceptance: completed build58603e5, 58 fresh-workspace/shared-screen checks and zero runtime errors; artifact hashes unchanged. Earlier broad build sweep completed420 assertions and real200% zoom before exposing the corrected Prospecting geometry. Full7419/7419 atd3cd2de, focused68 plus sheet26, native9. The later delta is sheet presentation and these verification notes; PR99 final CI covers the complete current merge candidate. Staging retest follows that validation. Before/after viewport evidence is outside the worktree at `/home/ary/Developer/bloomops-client-setup-ui-evidence`; no large audit archive.
 
 
 ## Owner pilot usability feedback 01 - 16 September 2026
