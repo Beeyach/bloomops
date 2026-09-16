@@ -1,6 +1,7 @@
 'use client';
 import PageComments from './PageComments';
 import PageRecordContext from './PageRecordContext';
+import {PageTemplateTools} from './PageTemplates';
 import dynamic from 'next/dynamic';
 import {useEffect,useRef,useState} from 'react';
 import {usePages,PageBreadcrumbs,PageChildren} from './PagesWorkspace';
@@ -35,6 +36,7 @@ export default function PageEditor({initial,userId}){
   {latest&&<section className="bo-page-latest"><h2>Latest saved version</h2><h3>{latest.title}</h3><p>{latest.text||'This page is empty.'}</p><Button onClick={useLatest} disabled={view.busy}>Use saved version</Button><Button variant="ghost" onClick={()=>setLatest(null)}>Keep editing my draft</Button></section>}
   <div className="bo-page-title"><PageIconPicker id={initial.id} initialIcon={initial.icon} workspaceId={initial.workspaceId} canManage={Boolean(initial.canManage)}/><textarea ref={titleField} rows={1} aria-label="Page title" value={view.draft.title} maxLength={200} disabled={!ready||recovery.checking} onChange={e=>recovery.edit({title:e.target.value.replace(/[\r\n]+/g,' ')})} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();e.currentTarget.closest('.bo-page-editor').querySelector('.ProseMirror')?.focus();}}} placeholder="Untitled"/></div>
   {ready&&!recovery.checking&&<RichEditor key={editorKey} value={view.draft.body} onSave={body=>{if(view.draft.body!==body)recovery.edit({body});recovery.flush();}} onChange={body=>recovery.edit({body})} allowDatabaseViews={false} workViewContext={{pageId:initial.id,workspaceId:initial.workspaceId,canReadWork:initial.canReadWork}} allPages={pages?.tree.rows||[]} pageLinkWorkspaceId={initial.workspaceId} allowBlockMovement placeholder="Start writing, or type / to add a block."/>}
+  {Boolean(initial.canManage)&&<PageTemplateTools pageId={initial.id} workspaceId={initial.workspaceId} userId={userId} disabled={!ready||view.dirty||view.busy||recovery.checking||!!view.error}/> }
   <PageRecordContext key={JSON.stringify([userId,initial.workspaceId,initial.id])} pageId={initial.id} workspaceId={initial.workspaceId} userId={userId}/>
   <PageChildren id={initial.id}/>
  </div>;

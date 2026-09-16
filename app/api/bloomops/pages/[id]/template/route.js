@@ -1,0 +1,10 @@
+import {requireAuthorized,json,notFound} from '@/lib/bloomops/access.mjs';
+import {withApiErrors} from '@/lib/bloomops/api-handler.mjs';
+import {readStructuredBody} from '@/lib/bloomops/structured-body.mjs';
+import {pageTemplateSource,capturePageTemplate,setPageTemplateActive} from '@/lib/bloomops/page-templates.mjs';
+import {renderPageDocument} from '@/lib/bloomops/page-document.mjs';
+export const dynamic='force-dynamic';
+const response=(access,result)=>result?.reason==='not_found'||!result?notFound():json({...result,scope:{userId:access.user.id,workspaceId:access.workspace.id}},result.ok===false?result.reason==='conflict'?409:400:200);
+export const GET=withApiErrors(async(req,{params})=>{const {access,response:denied}=await requireAuthorized(req,{action:'pages.manage'});if(denied)return denied;if(new URL(req.url).search)return json({error:'Unsupported query.'},400);const source=await pageTemplateSource(access.db,access.actor,(await params).id);return source?response(access,{source:{...source,body:renderPageDocument(source.body)}}):notFound();});
+export const POST=withApiErrors(async(req,{params})=>{const {access,response:denied}=await requireAuthorized(req,{action:'pages.manage'});if(denied)return denied;return response(access,await capturePageTemplate(access.db,access.actor,(await params).id,await readStructuredBody(req,{maxBytes:4096})));});
+export const PATCH=withApiErrors(async(req,{params})=>{const {access,response:denied}=await requireAuthorized(req,{action:'pages.manage'});if(denied)return denied;return response(access,await setPageTemplateActive(access.db,access.actor,(await params).id,await readStructuredBody(req,{maxBytes:4096})));});

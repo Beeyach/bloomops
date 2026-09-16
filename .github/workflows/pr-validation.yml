@@ -71,6 +71,8 @@ jobs:
           python3 .github/scripts/pr-validation.py run ci-evidence/work-setups-native node scripts/work-setups-native-local.mjs
           python3 .github/scripts/pr-validation.py run ci-evidence/page-context-tests node --test tests/bloomops-page-record-context*.test.mjs
           python3 .github/scripts/pr-validation.py run ci-evidence/page-context-native node scripts/page-context-native-local.mjs
+          python3 .github/scripts/pr-validation.py run ci-evidence/page-templates-tests node --test tests/bloomops-page-templates*.test.mjs
+          python3 .github/scripts/pr-validation.py run ci-evidence/page-templates-native node scripts/page-templates-native-local.mjs
       - name: Disposable local zero-to-current migration
         run: python3 .github/scripts/pr-validation.py run ci-evidence/zero node .github/scripts/verify-zero-remote.mjs --local
       - name: Build completed Worker
@@ -97,6 +99,7 @@ jobs:
           BLOOMOPS_BROWSER_EVIDENCE_DIR="$GITHUB_WORKSPACE/ci-evidence/n3a-browser" python3 .github/scripts/pr-validation.py run ci-evidence/n3a-browser-run node scripts/client-reports-browser-local.mjs
           BLOOMOPS_BROWSER_EVIDENCE_DIR="$GITHUB_WORKSPACE/ci-evidence/work-setups-browser" python3 .github/scripts/pr-validation.py run ci-evidence/work-setups-browser-run node scripts/work-setups-browser-local.mjs
           BLOOMOPS_BROWSER_EVIDENCE_DIR="$GITHUB_WORKSPACE/ci-evidence/page-context-browser" python3 .github/scripts/pr-validation.py run ci-evidence/page-context-browser-run node scripts/page-context-browser-local.mjs
+          BLOOMOPS_BROWSER_EVIDENCE_DIR="$GITHUB_WORKSPACE/ci-evidence/page-templates-browser" python3 .github/scripts/pr-validation.py run ci-evidence/page-templates-browser-run node scripts/page-templates-browser-local.mjs
           git diff --exit-code
       - name: Upload synthetic feature evidence
         if: ${{ always() }}
