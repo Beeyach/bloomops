@@ -2362,3 +2362,6 @@ select.bo-control {
 .bo-record-pages li {padding:.6rem 0;overflow-wrap:anywhere;}
 .bo-page-template-preview{max-width:920px;margin-inline:auto;min-width:0;overflow-wrap:anywhere}
 .bo-page-template-preview .bo-page-body{margin-top:var(--bo-space-6,24px)}
+
+.bo-workload-list { display: grid; gap: 1.5rem; }
+.bo-workload-person { padding-block: 1rem; border-bottom: 1px solid var(--bo-border, #dedee7); min-width: 0; }

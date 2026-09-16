@@ -22,7 +22,7 @@ export default async function WorkPage({ searchParams }) {
     const [result, options] = await readTogether(access.db, db => Promise.all([listActions(db, actor, { ...filters, view, page }), actionFilterOptions(db, actor)]));
     return <>
       <PageHeader title="Actions" subtitle="Work · The next steps across your clients and projects." />
-      <WorkTabs />
+      <WorkTabs /><Button href="/team/workload" variant="ghost">Action workload</Button>
       {ACTIONS['project.create'].roles.includes(actor.role)&&<Button href="/work/setups" variant="ghost">Reusable Work setups</Button>}
       {!normalized.ok && <Notice tone="warning">Those filters are unavailable. Showing your Actions.</Notice>}
       <ActionFilters view={view} filters={filters} options={options} />
