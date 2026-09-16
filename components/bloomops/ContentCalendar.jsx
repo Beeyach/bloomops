@@ -1,3 +1,4 @@
+import ContentPlatformFilter from './ContentPlatformFilter';
 import { Button,EmptyState,Field,PageHeader,Status } from './Primitives';
 import { CONTENT_STAGE_LABELS,CONTENT_TYPE_LABELS } from '@/lib/bloomops/content-values.mjs';
 import { contentDateLabel } from '@/lib/bloomops/content-calendar-values.mjs';
@@ -11,7 +12,7 @@ export default function ContentCalendar({result,month,query={},options}) {
     <form action="/social/calendar" className="bo-content-filters" aria-label="Filter calendar">
       <Field id="calendar-month" label="Month"><input id="calendar-month" name="month" type="month" min="0100-01" max="9999-12" className="bo-control" defaultValue={month.month} required /></Field>
       <Field id="calendar-client" label="Client"><select id="calendar-client" name="clientId" className="bo-control" defaultValue={query.clientId||''}><option value="">All</option>{query.clientId&&!clients.some(([id])=>id===query.clientId)&&<option value={query.clientId}>Selected Client</option>}{clients.map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></Field>
-      <Field id="calendar-platform" label="Platform"><input id="calendar-platform" name="platform" className="bo-control" maxLength={120} defaultValue={query.platform||''} /></Field>
+      <ContentPlatformFilter key={query.platform||'all'} id="calendar-platform" value={query.platform||''} choices={options.platforms||[]} more={options.platformsOverflow}/>
       <Field id="calendar-stage" label="Stage"><select id="calendar-stage" name="stage" className="bo-control" defaultValue={query.stage||''}><option value="">All</option>{Object.entries(CONTENT_STAGE_LABELS).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></Field>
       <Button type="submit">Apply filters</Button><Button href="/social/calendar" variant="ghost">Clear filters</Button>
     </form>

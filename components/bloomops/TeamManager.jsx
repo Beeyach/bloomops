@@ -1,4 +1,5 @@
 'use client';
+import TeamNavigation from './TeamNavigation';
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -265,7 +266,7 @@ export default function TeamManager({ members, invitations, selfMembershipId, wo
         }
       />
 
-      <nav className="bo-team-navigation" aria-label="Team views"><a href="/team" aria-current="page">People</a><a href="/team/workload">Workload</a><a href="/team/departments">Department work</a><Button href="/team/finance-access" size="sm" icon="settings">Finance access</Button></nav>
+      <TeamNavigation finance/>
 
       <Section id="members" title="People" aside={<span className="bo-small bo-num">{plural(current.length, 'member')}</span>}>
         <ul className="bo-rows" aria-label="Members">

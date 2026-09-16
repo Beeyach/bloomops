@@ -1,5 +1,33 @@
 # Bloomsi Build State
 
+## Owner pilot usability feedback 01 - 16 September 2026
+
+Owner task: `docs/tasks/pilot-usability-feedback-01.md` at `5de7e0b28f5eb9bd5751d0d8347df8efd20bf0a8`, read directly from GitHub. Base `af71130`; branch `fix/pilot-feedback-01-20260916`. This is the single S01-S19 register. Existing completion list and PR93 are preserved. Real pilot prospects are read-only and excluded from tests. All mutations use synthetic QA/local records.
+
+| Item | Scenario | Result / evidence / next check |
+| --- | --- | --- |
+| S01 | Profile actions and sources | NOT RUN |
+| S02 | Niche/Observed facts provenance | NOT RUN |
+| S03 | Email/website provenance | NOT RUN |
+| S04 | Shared labels and values | NOT RUN |
+| S05 | Multiple/custom purchased services | NOT RUN |
+| S06 | Client prospect search/prefill | NOT RUN |
+| S07 | Actionable handoff recovery | NOT RUN (correction in progress). Live synthetic reproduction on af71130: contact missing and Kajabi default warning have no repair action. Reuse guarded profile editor; keep setup in a separate tab so handoff choices remain intact. Pending corrected browser verification. |
+| S08 | Compact Work views | NOT RUN |
+| S09 | Social platform selector | NOT RUN |
+| S10 | Approved compact Social views | APPROVED PATTERN RETAINED. Do not replace compact Social controls with a full-width rail; final rendered regression pending. |
+| S11 | Quiet filters | NOT RUN |
+| S12 | Writing-first Page tools | NOT RUN |
+| S13 | Page movement and pointer controls | NOT RUN |
+| S14 | Workload explanation/refresh | NOT RUN |
+| S15 | Compact Team views | NOT RUN |
+| S16 | Workspace dropdown | NOT RUN |
+| S17 | Friendly empty-state icons | NOT RUN |
+| S18 | Settings purpose/action gaps | NOT RUN |
+| S19 | Workspace chooser identity | NOT RUN |
+
+First correction checkpoint (not deployed): contact repair, template setup return, compact Work/Team controls, actual Social platform choices, Page toolbar tools, and safe workspace dropdown are implemented. The single in-session source review found two races (selection before accepted navigation; contact edit during conversion), corrected before release. Browser verification is still pending. Local full suite:7396/7396, exit0, no skips with a temporary `python` alias to installed Python3. The first execution's five `python ENOENT` tool failures remain recorded outside the worktree; no tests were waived. Old completed-build browser reproduced the missing contact repair action. No real pilot records were mutated; S05/S06 remain unimplemented.
+
 ## Owner app-wide QA and correction - 16 September 2026
 
 New roadmap features remain paused. One active route/scenario checklist follows.

@@ -1,3 +1,4 @@
+import {pilotFeedbackChecks} from './pilot-feedback-checks.mjs';
 // UI refinement: actual layout, navigation timing and editor checks over an isolated completed Worker.
 // Starts its own built Worker, in-memory D1/R2 and synthetic identities. No .dev.vars.
 import assert from 'node:assert/strict';
@@ -176,5 +177,6 @@ try{
  }
  writeFileSync(out+'/zoom.json',JSON.stringify({method:'Chromium appearance settings: 200%; fresh disposable profile; genuine local QA authentication',checks:zoomChecks},null,2));
  writeFileSync(out+'/layouts.json',JSON.stringify(layouts,null,2));
+ await pilotFeedbackChecks({page:owner.page,ctx:owner.ctx,base,check,out});
  check('no browser runtime errors',errors.length===0);writeFileSync(out+'/results.json',JSON.stringify({checks,errors,timings},null,2));
 }catch(error){console.error(reportBrowserError(error));writeFileSync(out+'/failure.json',JSON.stringify({checks,errors,failure:reportBrowserError(error)},null,2));process.exitCode=1;}finally{identity.finishedAt=new Date().toISOString();identity.artifactsUnchanged=hash(JSON.stringify(buildArtifacts(root)))===identity.artifactDigest;writeFileSync(out+'/artifact-identity.json',JSON.stringify(identity,null,2));if(!identity.artifactsUnchanged)process.exitCode=1;await zoomBrowser?.close();await browser?.close();await mf.dispose();rmSync(tmp,{recursive:true,force:true});}

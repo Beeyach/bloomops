@@ -530,7 +530,7 @@ export default function RichEditor({
   }, []);
 
   const insertImage = () => fileInputRef.current?.click();
-  const blockMoves=useEditorState({editor,selector:({editor:current})=>({up:canMoveDocumentBlock(current?.state,-1),down:canMoveDocumentBlock(current?.state,1)})});
+  const blockMoves=useEditorState({editor,selector:({editor:current})=>({count:current?.state.doc.childCount||0,up:canMoveDocumentBlock(current?.state,-1),down:canMoveDocumentBlock(current?.state,1)})});
   function moveBlock(direction){if(editor){moveDocumentBlock(editor.state,direction,tr=>editor.view.dispatch(tr));editor.commands.focus();}}
 
   const insertVideo = async () => {
@@ -587,7 +587,7 @@ export default function RichEditor({
       }} className="relative rich-editor" onBlur={handleBlur}>
       <input type="file" accept="image/*" ref={fileInputRef} onChange={pickImage} className="hidden" />
 
-      {allowBlockMovement&&editor&&<div className="bo-page-block-tools" role="toolbar" aria-label="Move document block"><span>Move block</span><button type="button" aria-label="Move block up" title="Move block up (Ctrl/Cmd+Shift+Up)" disabled={!blockMoves?.up} onMouseDown={e=>e.preventDefault()} onClick={()=>moveBlock(-1)}><Icon name="chevron-up" size={18}/></button><button type="button" aria-label="Move block down" title="Move block down (Ctrl/Cmd+Shift+Down)" disabled={!blockMoves?.down} onMouseDown={e=>e.preventDefault()} onClick={()=>moveBlock(1)}><Icon name="chevron-down" size={18}/></button></div>}
+      {allowBlockMovement&&editor&&blockMoves?.count>1&&<div className="bo-page-block-tools" role="toolbar" aria-label="Move document block"><span>Move block</span><button type="button" aria-label="Move block up" title="Move block up (Ctrl/Cmd+Shift+Up)" disabled={!blockMoves?.up} onMouseDown={e=>e.preventDefault()} onClick={()=>moveBlock(-1)}><Icon name="chevron-up" size={18}/></button><button type="button" aria-label="Move block down" title="Move block down (Ctrl/Cmd+Shift+Down)" disabled={!blockMoves?.down} onMouseDown={e=>e.preventDefault()} onClick={()=>moveBlock(1)}><Icon name="chevron-down" size={18}/></button></div>}
       {/* Slash menu: the gutter's block menu, opened from the keyboard. */}
       {slash && editor && (
         <div className="absolute z-50" style={{ left: slash.left, top: slash.top }}>
@@ -642,7 +642,7 @@ export default function RichEditor({
           <div className="ltb-gutter">
             <button
               type="button"
-              title="Click to add below · Alt-click to add above"
+              title="Add below (Alt-click to add above)"
               aria-label="Add a block"
               onMouseDown={(e) => e.preventDefault()}
               onClick={(e) =>

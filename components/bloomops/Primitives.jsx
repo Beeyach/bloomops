@@ -5,6 +5,7 @@
 // components, and render tests can use the same ones. Styling lives in
 // app/bloomops.css under the matching `bo-` classes.
 import { Icon } from './Icons';
+import Garden from './Garden';
 
 const cx = (...parts) => parts.filter(Boolean).join(' ');
 
@@ -180,9 +181,10 @@ export function Facts({ items, className = '' }) {
 
 // ── States ────────────────────────────────────────────────────────────
 
-export function EmptyState({ title, children, actions = null, className = '' }) {
+export function EmptyState({ title, children, actions = null, className = '', icon = 'garden' }) {
   return (
     <div className={cx('bo-empty', className)}>
+      {icon&&<span className="bo-empty-icon" aria-hidden="true">{icon==='garden'?<Garden variant={0}/>:<Icon name={icon} size={28}/>}</span>}
       <h2 className="bo-h2">{title}</h2>
       <div className="bo-body">{children}</div>
       {actions && <div className="bo-empty-actions">{actions}</div>}

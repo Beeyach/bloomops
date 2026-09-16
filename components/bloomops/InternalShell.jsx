@@ -1,6 +1,6 @@
 import NotificationBell from './NotificationBell';
 import {Icon} from './Icons';
-import Link from 'next/link';
+import WorkspaceSwitcher from './WorkspaceSwitcher';
 import BrandLogo from './BrandLogo';
 import { INTERNAL_NAV } from '@/lib/bloomops/navigation.mjs';
 import InternalNav from './InternalNav';
@@ -44,7 +44,7 @@ export default function InternalShell({ workspace, user, roleLabel, membershipId
         <div className="bo-main">
           <header className="bo-internal-utilities">
             <BrandLogo />
-            <Link href="/workspaces" className="bo-workspace-control" title={workspace.name} aria-label={`Switch workspace: ${workspace.name}`}><Icon name="team" size={18}/><span><small>Workspace</small><strong>{workspace.name}</strong></span><Icon name="chevron-down" size={16}/></Link>
+            <WorkspaceSwitcher workspace={workspace} userId={user.id} membershipId={membershipId}/>
             <NotificationBell scope={{workspaceId:workspace.id,userId:user.id,membershipId}}/>
             <SearchLink compact/>
             <AccountMenu {...account} placement="down" compact settingsHref="/settings" />

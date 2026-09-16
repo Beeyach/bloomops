@@ -37,8 +37,8 @@ export default async function SettingsPage() {
             <Facts items={[['Workspace', access.workspace.name], ['Your role', ROLE_LABELS[role] || role], ['What that means', ROLE_DESCRIPTIONS[role] || '']]} />
           </Surface>
         </Section>
-        {evaluate(actor, { action: 'templates.manage' }).allowed && <Section id="ghl-setup" title="Systems builds">
-          <p className="bo-body">Choose which Systems service types can start GHL or Kajabi builds.</p>
+        {evaluate(actor, { action: 'templates.manage' }).allowed && <Section id="ghl-setup" title="Service delivery setup">
+          <p className="bo-body">Administrators choose which purchased service types can start the existing GHL or Kajabi delivery workflow. This configures available work setup; it does not connect a provider account or run a build.</p>
           <div className="bo-dialog-actions"><Button href="/settings/ghl-builds">Manage GHL build setup</Button><Button href="/settings/kajabi-builds">Manage Kajabi build setup</Button></div>
         </Section>}
         {evaluate(actor, { action: 'templates.manage' }).allowed && <Section id="onboarding-setup" title="Onboarding templates"><p>Review and install missing default onboarding instructions. Existing versions remain unchanged.</p><Button href="/settings/onboarding">Review onboarding setup</Button></Section>}

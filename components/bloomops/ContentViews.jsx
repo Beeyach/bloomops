@@ -1,3 +1,4 @@
+import ContentPlatformFilter from './ContentPlatformFilter';
 import ContentPlatforms from './ContentPlatforms';
 import ContentPipeline from './ContentPipeline';
 import { Button, EmptyState, Facts, Field, Notice, PageHeader, Section, Status } from './Primitives';
@@ -11,7 +12,7 @@ export function ContentList({ result, query = {}, options }) {
     <nav className="bo-view-nav" aria-label="Social views"><Button href="/social" aria-current="page">Content list</Button><Button href="/social/calendar">Calendar</Button></nav>
     <form className="bo-content-filters" action="/social" aria-label="Filter Content">
       {[['clientId', 'Client', choices('clientId', 'clientName')], ['serviceEngagementId', 'Social service', choices('serviceEngagementId', 'serviceName')], ['stage', 'Stage', Object.entries(CONTENT_STAGE_LABELS)], ['type', 'Content type', Object.entries(CONTENT_TYPE_LABELS)], ['ownerMembershipId', 'Owner', [...new Map([...options.members.map(m => [m.membershipId, m.name]), ...result.items.filter(i => i.ownerMembershipId).map(i => [i.ownerMembershipId, i.ownerName])])]]].map(([key, label, rows]) => <Field key={key} id={`filter-${key}`} label={label}><select id={`filter-${key}`} name={key} className="bo-control" defaultValue={query[key] || ''}><option value="">All</option>{query[key] && !rows.some(([id]) => id === query[key]) && <option value={query[key]}>Selected filter</option>}{rows.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></Field>)}
-      <Field id="filter-platform" label="Platform"><input id="filter-platform" name="platform" className="bo-control" maxLength={120} defaultValue={query.platform || ''} /></Field>
+      <ContentPlatformFilter key={query.platform||'all'} id="filter-platform" value={query.platform||''} choices={options.platforms||[]} more={options.platformsOverflow}/>
       <Button type="submit">Apply filters</Button><Button href="/social" variant="ghost">Clear filters</Button>
     </form>
     {(options.parentsOverflow || options.membersOverflow) && <Notice>Filter choices show the first available Clients, services and owners. All accessible Content remains available through the pages below.</Notice>}

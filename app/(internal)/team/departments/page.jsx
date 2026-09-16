@@ -1,3 +1,4 @@
+import TeamNavigation from '@/components/bloomops/TeamNavigation';
 import {requireShell} from '@/lib/bloomops/shell-server.mjs';
 import {teamDepartmentWork} from '@/lib/bloomops/team-departments.mjs';
 import {Button,EmptyState,Field,Notice,PageHeader} from '@/components/bloomops/Primitives';
@@ -9,7 +10,7 @@ const href=(query,patch)=>'/team/departments?'+new URLSearchParams({...query,...
 export default async function TeamDepartmentsPage({searchParams}) {
   const {access,actor}=await requireShell('internal');
   const result=await teamDepartmentWork(access.db,actor,await searchParams||{});
-  return <><PageHeader title="Department work" subtitle="Projects and Actions across your agency." actions={<Button href="/team">Team</Button>}/>
+  return <><PageHeader title="Department work" subtitle="Projects and Actions across your agency."/><TeamNavigation active="departments"/>
     {!result.ok?<Notice tone="warning">This department selection is unavailable. <a className="bo-link" href="/team/departments">Reset department filters</a></Notice>:<>
       <form action="/team/departments" className="bo-action-filters" aria-label="Department work filters">
         <Field id="team-department" label="Department"><select id="team-department" name="department" className="bo-control" defaultValue={result.query.department}>{result.departments.map(d=><option key={d.slug} value={d.slug}>{d.name}{!d.active?' (inactive)':''}</option>)}</select></Field>

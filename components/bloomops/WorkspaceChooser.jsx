@@ -3,7 +3,7 @@ import {useEffect,useState} from 'react';
 import {changeDraftContext} from '@/lib/bloomops/draft-context.mjs';
 import {signOutAndLeave} from './session-client.mjs';
 import {Button,Field,Status} from './Primitives';
-export default function WorkspaceChooser({workspaces,currentId,canCreate}){
+export default function WorkspaceChooser({workspaces,currentId,canCreate,identity}){
  const [ready,setReady]=useState(false),[busy,setBusy]=useState(null),[error,setError]=useState(''),[name,setName]=useState(''),[requestId,setRequestId]=useState('');
  useEffect(()=>{setReady(true);setRequestId(crypto.randomUUID());},[]);
  async function select(id){
@@ -18,7 +18,7 @@ export default function WorkspaceChooser({workspaces,currentId,canCreate}){
   catch(e){setError(e.message);setBusy(null);}
  }
  return <>
-  <Button disabled={!ready||!!busy} variant="ghost" onClick={()=>signOutAndLeave()}>Sign out</Button>
+  <section className="bo-workspace-account" aria-label="Signed-in account">{identity&&<div><span className="bo-label">Signed in as</span><p><strong>{identity.name}</strong></p><p>{identity.email}</p></div>}<Button disabled={!ready||!!busy} variant="ghost" icon="sign-out" onClick={()=>signOutAndLeave()}>Sign out</Button></section>
   {error&&<p className="bo-prospect-notice" role="alert">{error}</p>}
   <ul className="bo-workspace-choices" aria-label="Your workspaces">{workspaces.map(workspace=><li key={workspace.id}>
    <div><h2>{workspace.name}</h2><dl className="bo-workspace-meta"><div><dt>Your role</dt><dd>{workspace.roleLabel}</dd></div><div><dt>Workspace</dt><dd>{workspace.purpose==='prospecting'?'Prospecting':'Agency operations'}</dd></div></dl></div>
