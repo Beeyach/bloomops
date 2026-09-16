@@ -56,7 +56,7 @@ export function ProjectFacts({ project, clientHref = null }) {
 export function PortalProjects({ projects = [], milestones = {}, deliverables = {}, files = {}, downloadBase = null, discussionBase="/portal" }) {
   if (!projects.length) return null;
   return <ul className="bo-rows" aria-label="Your projects">
-    {projects.map(project => <li key={project.id} className="bo-row bo-portal-project">
+    {projects.map(project => <li key={project.id} id={`project-${project.id}`} className="bo-row bo-portal-project">
       <span className="bo-row-text"><span className="bo-row-title">{project.label}</span>
         {(project.completedAt || project.targetDate) && <span className="bo-row-meta">{project.completedAt ? `Completed ${formatDate(project.completedAt)}` : `Target ${formatDate(project.targetDate)}`}</span>}
       </span>
