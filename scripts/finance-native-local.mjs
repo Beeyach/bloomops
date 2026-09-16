@@ -12,14 +12,15 @@ const mf=new Miniflare(convertV4MiniflareOptions({modules:true,script:'export de
 const t=await setup(),checks=[],check=(name,ok)=>{assert.ok(ok,name);checks.push(name);console.log('PASS '+name);};
 const statements=f=>readFileSync(f.url,'utf8').split('--> statement-breakpoint').map(s=>s.trim()).filter(Boolean);
 try{
- const binding=await mf.getD1Database('DB'),fresh=await mf.getD1Database('FRESH'),db=bloomOpsDb(binding),files=migrationFiles(),added=files.findIndex(f=>f.tag.startsWith('0055_'));assert.equal(added,files.length-1);
+ const binding=await mf.getD1Database('DB'),fresh=await mf.getD1Database('FRESH'),db=bloomOpsDb(binding),files=migrationFiles(),added=files.findIndex(f=>f.tag==='0055_chilly_alex_wilder');assert.ok(added>=0,'Finance migration is present');
  for(const f of files)for(const stmt of statements(f))await fresh.prepare(stmt).run();check('fresh installation reaches Finance with enforced FK schema',(await fresh.prepare('PRAGMA foreign_keys').first()).foreign_keys===1);
  for(const f of files.slice(0,added))for(const stmt of statements(f))await binding.prepare(stmt).run();
  const tables=['workspaces','user','workspace_memberships','departments','service_types','bloomops_clients','client_contacts','service_engagements'];
  const before={};for(const table of tables){before[table]=all(t.raw,`SELECT * FROM ${table}`).map(row=>({...row}));for(const row of before[table])await binding.prepare(`INSERT INTO ${table}(${Object.keys(row).join(',')}) VALUES(${Object.keys(row).map(()=>'?').join(',')})`).bind(...Object.values(row)).run();}
  check('upgrade fixtures actually populated before migration',(await binding.prepare('SELECT count(*) n FROM service_engagements').first()).n===4);
- for(const stmt of statements(files[added]))await binding.prepare(stmt).run();
+ for(const f of files.slice(added))for(const stmt of statements(f))await binding.prepare(stmt).run();
  for(const table of tables)assert.deepEqual((await binding.prepare(`SELECT * FROM ${table}`).all()).results,before[table]);check('populated upgrade preserves every existing fixture row',true);
+ const schemaRows=async target=>(await target.prepare("SELECT name,sql FROM sqlite_master WHERE sql IS NOT NULL ORDER BY name").all()).results;check('Finance populated upgrade and current fresh schema agree',JSON.stringify(await schemaRows(binding))===JSON.stringify(await schemaRows(fresh)));
  const input={workspaceId:'a',userId:'ellen',requestId:crypto.randomUUID(),clientId:'james',serviceEngagementId:'ghl-service',kind:'invoice',record:{title:'Native synthetic',amount:'0.10',currency:'USD',status:'sent',dueDate:'2026-01-01',paidDate:null,renewalDate:null,provider:'',reference:'',notes:'Only synthetic',archived:false}};
  const [a,b]=await Promise.all([saveFinanceRecord(db,t.owner,null,input),saveFinanceRecord(db,t.owner,null,{...input,record:Object.fromEntries(Object.entries(input.record).reverse())})]);check('genuinely concurrent native creates share one identity',a.ok&&b.ok&&a.id===b.id&&(await binding.prepare('SELECT count(*) n FROM finance_records').first()).n===1);
  check('changed intent conflicts without altering saved data',(await saveFinanceRecord(db,t.owner,null,{...input,record:{...input.record,amount:'0.20'}})).reason==='conflict'&&(await getFinanceRecord(db,t.owner,a.id)).amount==='0.10');

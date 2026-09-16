@@ -6,9 +6,9 @@ const filterLabels = { clientId: 'Client', departmentId: 'Department', serviceEn
 export const workActionHref = values => `/work?${new URLSearchParams(Object.entries({ tab: 'actions', ...values }).filter(([, value]) => value != null && value !== '')).toString()}`;
 
 export function WorkTabs({ active = 'actions' }) {
-  return <nav className="bo-tabs" aria-label="Work sections"><ul className="bo-tab-strip">
-    {[['actions', '/work', 'Actions'], ['projects', '/work?tab=projects', 'Projects']].map(([key, href, label]) => <li key={key}><a href={href} className="bo-client-tab" aria-current={active === key ? 'page' : undefined}>{label}</a></li>)}
-  </ul></nav>;
+  return <nav className="bo-view-nav" aria-label="Work sections">
+    {[['actions', '/work', 'Actions'], ['projects', '/work?tab=projects', 'Projects']].map(([key, href, label]) => <Button key={key} href={href} aria-current={active === key ? 'page' : undefined}>{label}</Button>)}
+  </nav>;
 }
 
 export function ActionFilters({ view = 'mine', filters = {}, options = {} }) {

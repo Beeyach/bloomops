@@ -1,3 +1,4 @@
+import TeamNavigation from '@/components/bloomops/TeamNavigation';
 import {requireShell} from '@/lib/bloomops/shell-server.mjs';
 import {teamActionWorkload} from '@/lib/bloomops/team-workload.mjs';
 import {Button,EmptyState,Facts,Notice,PageHeader,Section} from '@/components/bloomops/Primitives';
@@ -13,11 +14,11 @@ function Counts({row}) {return <Facts items={[
 export default async function TeamWorkloadPage({searchParams}) {
   const {access,actor}=await requireShell('internal');
   const result=await teamActionWorkload(access.db,actor,await searchParams||{});
-  return <><PageHeader title="Action workload" subtitle="Current open Actions by assignee." actions={<><Button href="/team">People</Button><Button href="/team/departments">Department work</Button></>}/>
-    <p className="bo-body">Only work you can currently read is included. Counts describe Actions, not hours or capacity. Waiting, review and blocked counts can overlap.</p>
-    <p className="bo-small bo-section-description">Dates follow each Client’s timezone. Dependency-blocked Actions are excluded from Overdue. Done and cancelled work is excluded.</p>
+  return <><PageHeader title="Action workload" subtitle="Current open Actions by assignee."/><TeamNavigation active="workload"/>
+    <details className="bo-explanation"><summary>How workload is counted</summary><p className="bo-body">Only work you can currently read is included. Counts describe Actions, not hours or capacity. Waiting, review and blocked counts can overlap.</p>
+    <p className="bo-small bo-section-description">Dates follow each Client’s timezone. Dependency-blocked Actions are excluded from Overdue. Done and cancelled work is excluded.</p></details>
     {!result.ok?<Notice tone="warning">{result.reason==='invalid'?'These workload filters are invalid.':result.reason==='not_found'?'No readable open Actions remain for that assignee.':'This workload view is unavailable.'} <a className="bo-link" href="/team/workload">Open current workload</a></Notice>:<>
-      <Button href={href(result.query,{})}>Refresh workload</Button>
+      <div className="bo-results-actions"><Button size="sm" icon="refresh" href={href(result.query,{})}>Refresh workload</Button></div>
       {result.selected&&<Section title={`${label(result.selected)}: open Actions`}>
         {result.selected.membershipId&&!result.selected.active&&<p>This assignee is no longer active; their existing responsibility is retained.</p>}
         <Counts row={result.selected}/><ActionList items={result.actions?.items||[]}/>

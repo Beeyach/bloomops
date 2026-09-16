@@ -61,3 +61,13 @@ test('read pages have truthful visible overflow, no lifetime cap and exact filte
  assert.equal((await t.list(pm,{clientId:'foreign-client'})).items.length,0);assert.equal((await t.list(pm,{type:'video'})).items.length,0);assert.ok((await t.add()).ok);
  const before=t.snapshot();await t.list();await contentOptions(t.db,t.owner);assert.deepEqual(t.snapshot(),before);assert.equal(all(t.raw,'PRAGMA foreign_key_check').length,0);
 });
+
+test('platform choices use authorized stored labels, including custom names, without crossing workspace or assignment',async()=>{
+ const t=await setup();
+ const created=await t.add();assert.ok(created.ok);
+ run(t.raw,'INSERT INTO content_platforms(workspace_id,content_id,platform_key,label) VALUES(?,?,?,?)','a',created.contentId,'community board','Community Board');
+ const options=await contentOptions(t.db,t.owner);
+ assert.ok(options.platforms.some(p=>p.key==='community board'&&p.label==='Community Board'));
+ const denied=await contentOptions(t.db,await t.actor('other'));
+ assert.deepEqual(denied.platforms,[]);
+});

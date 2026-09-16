@@ -63,6 +63,8 @@ jobs:
           python3 .github/scripts/pr-validation.py run ci-evidence/n3a-native node scripts/client-reports-native-local.mjs
           python3 .github/scripts/pr-validation.py run ci-evidence/onboarding-setup node --test tests/bloomops-onboarding-setup.test.mjs
           python3 .github/scripts/pr-validation.py run ci-evidence/onboarding-native node scripts/onboarding-setup-native-local.mjs
+      - name: Pilot handoff transaction and upgrade checks
+        run: python3 .github/scripts/pr-validation.py run ci-evidence/pilot-handoff-native node scripts/pilot-handoff-native-local.mjs
       - name: Disposable native D1
         run: python3 .github/scripts/pr-validation.py run ci-evidence/native node scripts/notifications-native-local.mjs
       - name: Reusable Work tests and native D1

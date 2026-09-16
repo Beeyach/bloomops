@@ -5,6 +5,7 @@ import { ROLE_LABELS, listWorkspaceMembers } from '@/lib/bloomops/membership.mjs
 import { listInvitations } from '@/lib/bloomops/invitations.mjs';
 import { navItem } from '@/lib/bloomops/navigation.mjs';
 import { Button, Facts, PageHeader, Surface } from '@/components/bloomops/Primitives';
+import TeamNavigation from '@/components/bloomops/TeamNavigation';
 import TeamManager from '@/components/bloomops/TeamManager';
 
 // Team. The engine decides which of two screens renders (teamViewFor):
@@ -22,7 +23,7 @@ export default async function TeamPage() {
   if (teamViewFor(actor) !== 'manage') {
     return (
       <>
-        <PageHeader title="Team" subtitle={navItem('team').purpose} actions={<><Button href="/team/workload">Action workload</Button><Button href="/team/departments">Department work</Button></>} />
+        <PageHeader title="Team" subtitle={navItem('team').purpose} /><TeamNavigation/>
         <Surface padding="lg" className="bo-page-narrow">
           <h2 className="bo-h2" style={{ marginBottom: 12 }}>
             Your place in {access.workspace.name}

@@ -874,7 +874,8 @@ html:has(.bo-root) {
 }
 .bo-facts dt {
   color: var(--bo-text-soft);
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 600;
   padding-top: 1px;
 }
 .bo-facts dd {
@@ -1083,9 +1084,9 @@ a.bo-row:hover {
   gap: var(--bo-s2);
 }
 .bo-label {
-  color: var(--bo-text);
-  font-size: 14px;
-  font-weight: 500;
+  color: var(--bo-text-soft);
+  font-size: 13px;
+  font-weight: 600;
 }
 .bo-optional {
   margin-left: var(--bo-s1);
@@ -1233,6 +1234,7 @@ select.bo-control {
 .bo-main .bo-empty { width: 100%; max-width: none; text-align: center; }
 .bo-main .bo-empty > .bo-body { max-width: 62ch; margin-inline: auto; }
 .bo-main .bo-empty-actions { justify-content: center; }
+.bo-empty-icon{display:inline-flex;width:36px;height:36px;align-items:center;justify-content:center;margin-bottom:12px}.bo-empty-icon svg{width:100%;height:100%}
 .bo-empty .bo-h2 {
   margin-bottom: var(--bo-s2);
 }
@@ -1955,7 +1957,7 @@ select.bo-control {
   gap: var(--bo-s5);
 }
 .bo-view-nav { display: flex; flex-wrap: wrap; gap: var(--bo-s2); margin-bottom: var(--bo-s5); }
-.bo-view-nav .bo-btn[aria-current="page"] { background: var(--bo-lilac); border-color: var(--bo-ink-soft); color: var(--bo-ink); box-shadow: inset 0 -2px 0 var(--bo-ink-soft); font-weight: 600; }
+.bo-view-nav .bo-btn[aria-current="page"] { background: var(--bo-lilac); border-color: var(--bo-ink-soft); color: var(--bo-ink); box-shadow: none; font-weight: 600; }
 .bo-form-actions {
   display: flex;
   flex-wrap: wrap;
@@ -2169,7 +2171,7 @@ select.bo-control {
 .bo-action-filter-panel { margin-bottom: 24px; }
 .bo-action-filter-panel > summary { min-height: 44px; padding: 12px 0; cursor: pointer; font-size: 14px; font-weight: 600; }
 .bo-action-filter-panel[open] > summary { margin-bottom: 12px; }
-.bo-action-filters { padding: 16px; background: var(--bo-mist); border-radius: var(--bo-r-md); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; align-items: end; margin-bottom: 24px; }
+.bo-action-filters { padding: 12px 16px; background: var(--bo-surface); border:1px solid var(--bo-border); border-radius: var(--bo-r-md); display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 240px)); gap: 12px; align-items: end; margin-bottom: 24px; }
 .bo-action-filters .bo-field { min-width: 0; margin: 0; }
 .bo-action-filter-buttons, .bo-action-buttons, .bo-action-pagination { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .bo-action-filter-buttons { grid-column: 1 / -1; }
@@ -2235,8 +2237,8 @@ select.bo-control {
 .bo-content-flags { border: 0; padding: 0; margin: 0; min-width: 0; }
 .bo-content-check { display: flex; align-items: center; gap: 12px; min-height: 44px; cursor: pointer; }
 .bo-content-check input { width: 20px; height: 20px; accent-color: var(--bo-ink); }
-.bo-content-parent-search, .bo-content-filters { padding:16px; background:var(--bo-mist); border-radius:10px; display: flex; flex-wrap: wrap; align-items: end; gap: 16px; margin: 0 0 32px; }
-.bo-content-filters .bo-field { flex: 1 1 150px; min-width: 0; }
+.bo-content-parent-search, .bo-content-filters { padding:12px 16px; background:var(--bo-surface); border:1px solid var(--bo-border); border-radius:10px; display: flex; flex-wrap: wrap; align-items: end; gap: 16px; margin: 0 0 32px; }
+.bo-content-filters .bo-field { flex: 0 1 200px; min-width: 0; margin:0; }
 .bo-content-parent-search .bo-field { flex: 1; min-width: 0; max-width: 480px; }
 .bo-content-list { list-style: none; margin: 0; padding: 0; }
 .bo-content-list > li { border-top: 1px solid var(--bo-border); padding: 24px 0; display: grid; gap: 12px; overflow-wrap: anywhere; }
@@ -2402,8 +2404,8 @@ select.bo-control {
 .bo-internal-utilities .bo-brand-logo { margin-right:auto; display:none; }
 @media(max-width:767px) { .bo-internal-utilities { padding:12px 16px; flex-wrap:wrap; } .bo-internal-utilities .bo-brand-logo { display:block; } .bo-workspace-control { order:5; flex:1 1 100%; max-width:none; } }
 
-.bo-team-navigation{display:flex;align-items:center;flex-wrap:wrap;gap:8px 24px;margin-bottom:24px;padding:12px 16px;background:var(--bo-lilac);border-radius:10px}
-.bo-team-navigation>a:not(.bo-btn){display:inline-flex;align-items:center;min-height:44px;color:var(--bo-ink-soft);text-underline-offset:4px}.bo-team-navigation>a[aria-current]{font-weight:600;color:var(--bo-ink)}.bo-team-navigation>.bo-btn{margin-left:auto}
+.bo-team-navigation{align-items:center}.bo-team-navigation>a:last-child[href="/team/finance-access"]{margin-left:auto}
+
 .bo-member-email,.bo-member-role,.bo-member-joined{display:block}.bo-member-role{margin-top:4px}.bo-row-meta:has(.bo-member-email){line-height:1.6}
 
 .bo-finance-filters{padding:16px;background:var(--bo-mist);border-radius:10px}.bo-finance-filters label{margin:0}.bo-finance-scope{font-size:13px;margin:16px 0 24px}.bo-finance-scope summary{cursor:pointer;min-height:32px}.bo-finance-scope p{margin-top:8px}
@@ -2415,3 +2417,17 @@ select.bo-control {
 .bo-invitation-meta{display:flex;flex-wrap:wrap;gap:4px 16px}
 
 .bo-row-meta:has(>span){display:flex;flex-wrap:wrap;gap:4px 16px}.bo-service-department{display:block;color:var(--bo-ink-soft);margin-top:4px}
+
+.bo-explanation{margin-block:16px 24px;max-width:72ch}.bo-explanation summary{cursor:pointer;font-size:14px;font-weight:600;min-height:40px}.bo-explanation p{margin-block:12px}.bo-section>p+.bo-btn,.bo-section>p+.bo-form-actions{margin-top:16px}
+
+.bo-platform-custom{margin-top:12px}.bo-platform-custom label{display:block;font-size:13px;font-weight:600;margin-bottom:8px}
+
+/* The prospect entry path never replaces the independently recoverable manual form. */
+.bo-client-prospect-picker{padding:20px;margin-bottom:32px;border:1px solid var(--bo-border);border-radius:12px;background:var(--bo-surface-2)}
+.bo-client-prospect-picker>p{margin-block:12px 20px;line-height:1.6}
+.bo-client-prospect-picker form{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+.bo-client-prospect-picker form>.bo-field{flex:1 1 240px}
+.bo-client-prospect-picker form>label{display:flex;align-items:center;gap:8px;min-height:40px}
+.bo-client-prospect-picker ul{list-style:none;padding:0;display:grid;gap:8px;margin-block:16px}
+.bo-client-prospect-picker>section{border-top:1px solid var(--bo-border);padding-top:20px;margin-top:20px}
+.bo-client-prospect-picker>section>.bo-btn{margin:16px 12px 0 0}
