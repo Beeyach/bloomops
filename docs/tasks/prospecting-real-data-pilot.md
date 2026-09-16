@@ -2,116 +2,100 @@
 
 Model: GPT-6 Astra
 Reasoning: Medium
-Surface: Existing local Codex session with authenticated GitHub and browser access
+Surface: Existing Codex session with authenticated GitHub and browser access
 
-## Goal and owner decision
+## Goal and scope
 
-Load up to five real businesses into Ary's usable Prospecting workspace. Let her review the records and save notes before deciding further improvements. Pause redesign and unrelated feature work. Stop after handing over the populated list.
+Create one usable, persistent Prospecting workspace for Ary and load up to five already-researched real businesses. Let her use the list and save notes. Pause redesign and unrelated feature work. Stop after delivering the working batch.
 
-This task combines the owner's request for real prospects with the completed app-wide QA report. It replaces the earlier instruction to repeat a broad repair pass before importing. It does not authorize outreach or a new product phase.
+This revision resolves the destination blocker from the first attempt. The selected new workspace name is **Bloomwired Prospecting**. This is a setup decision for the pilot, not a claim that a workspace with that name already exists or that Ary previously chose the name.
 
-Read applicable repository instructions, the current `docs/BUILD_STATE.md`, and relevant intake rules in `docs/PROSPECTING_ROADMAP.md` and `docs/PROSPECTING_SHEET.md`. Preserve existing worktrees, PR #93 if still active, QA fixtures, and uncommitted documentation. Check current state rather than assuming historical branch ownership.
+Executing this task covers creating that one workspace through the existing application flow, as well as adding the eligible records. A fresh application workspace is ordinary supported setup; it is not permission to provision a database, deploy an application, create production infrastructure, or change permissions in an existing workspace.
 
-This document lives on a documentation branch. Read it by the exact supplied commit without switching, resetting, or merging the active implementation worktree. Do not merge this branch or open a PR simply to execute these instructions. No build, migration, or deployment is needed merely to read a task.
+This replaces the previous instruction to stop merely because no non-QA Prospecting workspace exists. It does not authorize using a QA workspace, renaming Operations/QA into the target, bypassing authorization, or ignoring a concrete storage-risk finding.
 
-## Starting point and evidence limits
+Read applicable repository instructions and the relevant intake contract. Preserve existing worktrees, PR #93 if still active, pending BUILD_STATE edits, and prior evidence. Read this document at the supplied commit without switching, resetting, or merging your active branch. No application build or deployment is required simply to read or execute ordinary data-entry flows.
 
-At preparation, repository `main` resolved to `af71130f5e032a2c85c3d13e1cc9f727e1a044dc`. The owner's latest supplied release report states that PR #97 merged and staging served `af71130`. Check the actual deployed revision when executing; do not force the app back to this reference.
+## 1. Resume the existing attempt
 
-That report says authorized QA users can open Prospecting from the sidebar and complete create/edit/filter/import flows. A restricted Team Member now receives an explanation and workspace recovery instead of a generic not-found screen. The authorized Owner's earlier failure remains unreproduced. QA success with another identity does not prove Ary's session works.
+The supplied operator report says no records were added. The five public business identities were checked; K9 Summit Academy's email was not established. Research was saved outside Git at:
 
-Retain the existing limitations without reopening them unless they block the pilot: unreproduced Owner-specific access failure, inconclusive initial activation timing, unexecuted live Windows 200% zoom, and no comparable live Prospecting performance baseline. PERF3 remains open. Do not repeat the completed app-wide QA sweep.
+`/home/ary/.local/share/bloomops-private/ary-review-batch-01/research-not-imported.json`
 
-## 1. Use Ary's actual persistent workspace
+Read that local file and its actual source/check-time fields. Keep the original research intact. Do not assume a record exists in Bloomsi just because it appears in this research file.
 
-Open the current deployed app, initially referenced by `https://staging.ops.gobloomwired.com`. Use Ary's genuine authorized identity and intended fresh Prospecting workspace. Verify the selected workspace and role through supported session/workspace controls.
+Reuse the recent verified research rather than repeating all five searches. Recheck only missing, stale, contradictory, or unsupported details. If the private file is unavailable, recover the facts from the original pilot task at commit `b2d2cddaf0d1923c7aabdd1bb65965b848a5a101` and its public source pages. Do not reuse an unverified email from an older assistant message.
 
-Do not use an internal synthetic QA actor's workspace, a disposable database, or the legacy Leads That Bloom workspace. Confirm that the selected workspace's records survive normal restarts/releases and are excluded from fixture reset and cleanup procedures. Real prospects must not become disposable test records.
+The current main inspected during preparation contains the supported creation flow:
+- `app/workspaces/page.jsx`: authenticated workspace chooser; creation control available to the selected workspace's Owner/Admin.
+- `components/bloomops/WorkspaceChooser.jsx`: "Start a fresh prospecting workspace", Workspace name, and "Create workspace"; successful creation selects the new workspace.
+- `lib/bloomops/workspaces.mjs`: `createProspectingWorkspace()` creates an active prospecting workspace, a creator Owner membership, and default catalogue configuration. It uses a creation request ID and rechecks authority. It does not copy prospect histories or connections.
 
-Use the existing authenticated browser session when available. If a genuine sign-in is needed, use the supported flow and an already controlled mailbox; never forge a session, expose magic links, or change roles to overcome a denial.
+These are source observations at main `af71130f5e032a2c85c3d13e1cc9f727e1a044dc`, not a claim that live creation was tested in this chat. Inspect the current served revision and actual controls before using them.
 
-If multiple workspaces are genuinely indistinguishable after inspecting the available context, ask only which should receive the batch. Do not guess. If no safely persistent destination is available, report that specific limitation without creating infrastructure or silently loading real data into QA storage.
+## 2. Create the destination through the real interface
 
-Click the actual Prospecting sidebar entry and confirm the usable list. If it fails for Ary, capture the real URL, identity/workspace context, response, and error before making the smallest necessary correction. Do not broaden this into redesign or disable authorization.
+Use Ary's genuinely authenticated session on the current staging app, initially `https://staging.ops.gobloomwired.com`. Open `/workspaces`.
 
-## 2. Keep this a review-only intake
+Check whether an earlier interrupted attempt already created a workspace named Bloomwired Prospecting. If it did, confirm Ary's legitimate membership, prospecting purpose, and actual creation/context evidence before reusing it. A matching name alone is insufficient.
 
-The owner authorizes storing these public business details and an honest initial review note. No emails, SMS, form submissions, follow-up scheduling, campaign enrollment, contact discovery requiring paid services, provider sync, or outreach is authorized.
+Otherwise:
+1. Select Ary's existing Operations workspace if she already has an active Owner/Admin membership there. This establishes the legitimate source context only; do not import any prospects into it.
+2. Return to `/workspaces` and use "Start a fresh prospecting workspace".
+3. Enter **Bloomwired Prospecting** and click **Create workspace** once.
+4. Confirm the new workspace is selected, its purpose is Prospecting, Ary is its Owner through normal creation, and its prospect list is empty.
+5. Reload and confirm the same membership, workspace, and list remain accessible through ordinary navigation.
 
-Inspect the actual create/import side effects before the first write. Choose an existing supported unaudited review/hold state with no sending or automatic AI work. Do not invent an enum, mark a prospect Strong or Ready to contact, or change global automation settings. Qualification is not established by being included in this batch.
+If creation succeeded but selection failed, recover by selecting the already-created workspace. Do not create another one or generate repeated creation requests blindly.
 
-Check existing records and already-authorized suppression/contact-history information by business identity, domain, and verified public email where available. Preserve existing records and notes. Skip duplicates, suppressed contacts, known previously contacted businesses, and existing clients found through supported checks. Unknown contact history remains unknown, not proof of no prior contact.
+Do not grant Ary new privileges in Operations, use a synthetic QA actor, forge sessions, or insert workspace/membership rows directly. If she has no eligible source membership or the supported operation actually fails, report the precise role/response and the operation attempted. Merely finding no pre-existing Prospecting workspace is no longer a blocker.
 
-Do not copy legacy histories, credentials, audits, campaigns, or source records. Do not scan an entire connected mailbox or another workspace's private data for this small pilot.
+## 3. Treat this as real pilot data on staging
 
-## 3. Recheck these five public candidates
+The new workspace remains in the existing staging environment. Tenant separation does not create a separate database or turn staging into production.
 
-The following are research targets from the earlier proposed batch. They are not prequalified leads, verified current contacts, or a claim that every URL is currently available.
+Check the actual scoped fixture/cleanup procedures before loading records. Do not run reset scripts. The new workspace must not be classified as a synthetic QA fixture or included in a known destructive cleanup target. Preserve all existing Operations, QA, and legacy LTB records.
 
-1. Evelynne Gomes Greenberg Photography
-   Source: https://egomesgreenbergphotography.com/contact
-2. Rachael Mattio Photography
-   Source: https://rmattiophotography.com/contact
-3. K9 Summit Academy
-   Source: https://www.k9summitacademy.com/contact-us
-4. Rieko Yamanaka
-   Source: https://www.rieko.co/contact
-5. Annie Swafford
-   Source: https://www.creeksidewholehealthcenter.com/life-coaching
+Record the new workspace identity in private pilot notes outside Git as real pilot data to retain, and keep a recoverable private export after import. A name or a note alone is not proof of cleanup exclusion. If a known reset policy makes safe retention impossible, report that concrete policy instead of silently importing.
 
-Open each source before creating its record. Record only supported business name, website, category, source URL, actual check time, and a publicly advertised business email when verified. Inspect normal linked public contact pages if needed. No login bypass, contact submission, or exhaustive crawl.
+No infrastructure, backup service, production rollout, migration, or credential change is part of this task. Do not demand a production-readiness project for a five-record manual pilot.
 
-Do not reuse a claimed prior verification date or assume previously supplied emails remain correct. Do not guess identity, location, timezone, email, financial capacity, business problems, buying intent, or qualification scores. Leave unavailable optional fields unknown. If a required field cannot be established without invention, skip the record and explain the exact constraint.
+## 4. Load the already-researched businesses
 
-If a source cannot establish the intended business, skip it with a reason. Do not quietly substitute another business or increase the batch. A smaller honest batch is acceptable.
+Candidates remain limited to Evelynne Gomes Greenberg Photography, Rachael Mattio Photography, K9 Summit Academy, Rieko Yamanaka, and Annie Swafford. Use only supported details in the private research. Do not broaden the batch.
 
-## 4. Load and preserve the eligible records
+Keep K9's email unknown unless independently verified. A website-only record is acceptable when the actual intake contract permits it. If a genuinely required field is missing, skip only that candidate and state the constraint; do not invent a value or block the other eligible records.
 
-Batch label: `Ary review batch 01`.
+Before intake, inspect the current create/import side effects. Use the existing supported unaudited review/hold state, with no sending or automatic AI work. No email, SMS, contact-form submission, campaign enrollment, follow-up scheduling, paid enrichment, mailbox connection, provider sync, or outreach is authorized. Do not change global automation settings or mark records Strong/Ready to contact.
 
-Use the ordinary Add prospect or supported reviewed-import flow. Map to the real intake schema. Apply its explicit origin/provenance rules and record the actual source and check time. Use existing batch/tag/note fields; do not add a schema, custom status, or batch-management feature.
+Check existing records and already-authorized suppression/contact-history information by business identity, domain, and verified public email where available. Skip duplicates, suppressed contacts, known previously contacted businesses, and existing clients found through supported checks. A newly empty workspace is not proof these businesses were never contacted. Unavailable history remains explicitly unknown. Do not copy legacy histories or scan entire mailboxes.
 
-Add one record first. Reopen it and verify the saved business details, source, review state, and absence of outreach/enrollment side effects. Then load the remaining eligible candidates.
+Use the ordinary Add prospect or supported reviewed-import flow. Apply the real intake schema's provenance rules. Batch label: `Ary review batch 01`. Use existing batch/tag/note fields, without adding a schema or feature.
+
+Add one record first, reopen it, and verify fields, source, state, and absence of outreach side effects. Then load the remaining eligible candidates. Inspect saved results before retrying an interrupted operation.
 
 Initial note:
 
 > Added for Ary's manual review by the assistant. Qualification, service need, buying intent, and email deliverability are not established. Contact history is unverified unless separately documented. No outreach authorized.
 
-Do not attribute that note to Ary or fabricate a sent/contacted event. Preserve any established facts separately without converting this note into a qualification decision.
+Do not attribute that note to Ary as though she wrote it, invent a business problem, fabricate a contact event, or overwrite existing notes.
 
-If a save/import is interrupted, inspect what persisted before retrying. Do not duplicate records or overwrite an existing prospect to make the batch count reach five.
+Keep imported contact data, workspace IDs, private notes, screenshots, credentials, and sessions outside Git and CI artifacts. Retain the original research and a separate import receipt with actual saved record IDs and private export location.
 
-These are real records. Keep a recoverable export in private local storage outside Git. Do not commit the imported dataset, discovered contact details, workspace identifiers, private notes, screenshots, credentials, or session material to the repository or CI artifacts. The public research URLs in this task are not an imported contact database.
+## 5. Verify the pilot and hand it over
 
-## 5. Verify the practical review flow only
+Through the deployed interface, open Prospecting from the sidebar, display the batch in an existing All prospects/review view, search for one business, open its details and website, save the honest initial note, and reload/reopen to verify persistence.
 
-Through the actual deployed interface:
+Do not leave a Ready-to-contact filter hiding the records. Do not change qualification to satisfy the filter. Confirm no enrollment, scheduled action, provider sync, or sending occurred.
 
-- Open Prospecting from the sidebar.
-- Display the batch in an existing All prospects or suitable review view.
-- Search for one added business and open its details.
-- Open its public website.
-- Save the honest initial note, reload/reopen, and confirm it persisted.
-- Confirm no record was enrolled, scheduled, marked outreach-ready, or sent a message.
+This data-entry task needs no full-suite/build/CI run or independent audit. A real application defect blocking the basic flow warrants only the smallest correction and applicable checks. Do not restart the completed app-wide QA or redesign.
 
-Do not leave the app on a Ready-to-contact filter that hides the records. Do not change records to satisfy that filter.
+Return directly to Ary:
+- The working workspace name and Prospecting URL, with actual selected-context evidence.
+- Names, record links, and number actually imported, plus skips and reasons.
+- A screenshot of the populated list without unrelated private data.
+- The shortest click path for writing and saving her own notes.
+- Confirmation that no outreach/enrollment occurred.
+- Private export location and any remaining specific limitation.
 
-A data-only pilot requires neither a new full-suite/build/CI cycle nor an independent audit. If an actual code defect blocks basic use, fix only that defect with focused regressions and the normal applicable release checks under existing staging authorization. No new framework, broad QA, or cosmetic work.
-
-Do not claim live speed improvement or completion of PERF3 from this pilot.
-
-## 6. Deliver the working list and stop
-
-Return directly to Ary, not in a public repository report:
-
-- Exact workspace and working Prospecting URL.
-- Names, record links, and actual number added.
-- Candidates skipped and their specific reasons.
-- Screenshot of the populated review view, with no unrelated private data.
-- Short click path for writing and saving her notes.
-- Confirmation that no outreach, enrollment, or provider sync occurred.
-- Private export location and any concrete remaining blocker.
-
-Do not call a saved draft or an import preview a completed import. Leave the real records intact after verification. Preserve existing worktrees and pending documentation.
-
-Then stop for Ary to use Bloomsi. Do not resume redesign, expand sourcing, restart the product roadmap, build a feedback feature, send messages, or prepare another large audit archive.
+Do not label research or import previews as saved records. Leave the real workspace and records intact. Keep PERF3 and prior unreproduced limitations separate. Stop for Ary to use Bloomsi; do not resume sourcing, redesign, another roadmap phase, or an audit archive.
