@@ -233,7 +233,14 @@ try {
     missingIndexes.length === 0 ? `${indexNames.length} indexes, including the partial unique ones` : `missing: ${missingIndexes.join(', ')}`);
 
   record('fresh database has no foreign-key violations', query('PRAGMA foreign_key_check').length === 0);
-  record('fresh database passes SQLite integrity check', query('PRAGMA quick_check').every(row => Object.values(row)[0] === 'ok'));
+  if (LOCAL) {
+    const { localD1Integrity } = await import('./zero-local-integrity.mjs');
+    const integrity = localD1Integrity(tmp);
+    record('fresh database passes whole-database SQLite integrity check', integrity.result === 'ok', `exact disposable D1 file, query-only SQLite ${integrity.version}; no partial-table substitution`);
+  } else {
+    const integrity = query('PRAGMA quick_check');
+    record('fresh database passes SQLite integrity check', integrity.length === 1 && Object.values(integrity[0])[0] === 'ok');
+  }
   const snapA = snapshot();
   const second = migrateAll('second run');
   record('second run changed nothing in the inherited ledger', second.inherited.applied === 0 && second.inherited.satisfied === 0 && second.inherited.skipped === inheritedFiles.length);

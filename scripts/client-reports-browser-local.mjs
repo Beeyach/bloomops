@@ -233,7 +233,13 @@ try{
  for(const reportId of created){
   const original=(await get(owner.ctx,api+'/'+reportId)).data.report;
   await owner.page.bringToFront();await owner.page.goto(base+path+'/'+reportId,{waitUntil:'networkidle'});
-  await owner.page.getByRole('link',{name:'Use setup for a new period',exact:true}).click();await owner.page.getByRole('heading',{name:'New report draft',exact:true}).waitFor();
+  let newEditorRequested,releaseEditor;const requestedEditor=new Promise(r=>newEditorRequested=r),blockedEditor=new Promise(r=>releaseEditor=r);
+  const newEditorChunk=url=>url.pathname.includes('/reports/new/')&&url.pathname.endsWith('.js');
+  await owner.page.route(newEditorChunk,async route=>{newEditorRequested();await blockedEditor;await route.continue();});
+  const openNewPeriod=owner.page.getByRole('link',{name:'Use setup for a new period',exact:true}).click();
+  await requestedEditor;await owner.page.getByRole('heading',{name:'New report draft',exact:true}).waitFor();
+  check('new-period input waits for its handlers '+reportId,await owner.page.getByLabel('Period start',{exact:true}).isDisabled());
+  releaseEditor();await openNewPeriod;await owner.page.unroute(newEditorChunk);
   check('new period pins template and service '+reportId,await owner.page.getByRole('combobox',{name:'Report template',exact:true}).isDisabled()&&(await owner.page.getByRole('textbox',{name:'Purchased service',exact:true}).inputValue()).includes(original.serviceName));
   check('new period starts without dates or old observations '+reportId,await owner.page.getByLabel('Period start',{exact:true}).inputValue()===''&&await owner.page.getByLabel('Period end',{exact:true}).inputValue()===''&&await owner.page.locator('input[type="number"]').count()===0&&await owner.page.getByRole('textbox',{name:'Client summary',exact:true}).inputValue()==='');
   await owner.page.getByLabel('Period start',{exact:true}).fill('2026-09-01');await owner.page.getByLabel('Period end',{exact:true}).fill('2026-09-30');

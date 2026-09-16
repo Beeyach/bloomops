@@ -1,0 +1,12 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import {mkdtempSync,mkdirSync,rmSync,readFileSync,symlinkSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {localD1Integrity} from '../.github/scripts/zero-local-integrity.mjs';
+function fixture(){const root=mkdtempSync(join(tmpdir(),'finance-integrity-test-')),dir=join(root,'.wrangler/state/v3/d1/miniflare-D1DatabaseObject');mkdirSync(dir,{recursive:true});const file=join(dir,'a'.repeat(64)+'.sqlite'),db=new DatabaseSync(file);db.exec('CREATE TABLE sample(id INTEGER PRIMARY KEY,value INTEGER NOT NULL CHECK(value>0));INSERT INTO sample VALUES(1,10)');return {root,dir,file,db,close(){db.close();rmSync(root,{recursive:true,force:true});}};}
+test('whole local D1 file is checked read-only without mutating bytes',()=>{const t=fixture();try{const before=readFileSync(t.file);assert.equal(localD1Integrity(t.root).result,'ok');assert.deepEqual(readFileSync(t.file),before);}finally{t.close();}});
+test('actual invalid data fails integrity even when the table and schema exist',()=>{const t=fixture();try{t.db.exec('PRAGMA ignore_check_constraints=ON;UPDATE sample SET value=-1');assert.throws(()=>localD1Integrity(t.root),/CHECK constraint failed/);}finally{t.close();}});
+test('committed WAL data is included, not a stale main-file copy',()=>{const t=fixture();try{t.db.exec('PRAGMA journal_mode=WAL;PRAGMA wal_autocheckpoint=0;PRAGMA ignore_check_constraints=ON;UPDATE sample SET value=-1');assert.throws(()=>localD1Integrity(t.root),/CHECK constraint failed/);}finally{t.close();}});
+test('missing, ambiguous or symlinked database identity fails closed',()=>{const t=fixture();try{const second=new DatabaseSync(join(t.dir,'b'.repeat(64)+'.sqlite'));second.close();assert.throws(()=>localD1Integrity(t.root),/exactly one/);rmSync(join(t.dir,'b'.repeat(64)+'.sqlite'));symlinkSync(t.file,join(t.dir,'link.sqlite'));assert.throws(()=>localD1Integrity(t.root),/symlink/);rmSync(join(t.dir,'link.sqlite'));rmSync(t.file);assert.throws(()=>localD1Integrity(t.root),/exactly one/);}finally{t.close();}});

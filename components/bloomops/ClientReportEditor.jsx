@@ -8,6 +8,7 @@ import ReportComparisonPicker from './ReportComparisonPicker';
 const emptyMetric=()=>({state:'missing',value:null,sourceNote:'',collectedAt:null});
 const draftFields=r=>Object.fromEntries(['title','periodStart','periodEnd','timezone','channel','accountLabel','scopeLabel','commentary','metrics','comparisonPublicationId',...CLIENT_NARRATIVE_FIELDS].map(k=>[k,r[k]??'']));
 export default function ClientReportEditor({client,initial=null,services=null,reuse=null,scope}){
+ const [ready,setReady]=useState(false);
  const setup=initial||reuse,pinned=!!setup;
  const [templateId,setTemplate]=useState(setup?.templateId||''),[serviceId,setService]=useState(setup?.serviceEngagementId||'');
  const template=reportTemplate(templateId,setup?.templateVersion||1),[data,setData]=useState(setup?draftFields(setup):{title:'',periodStart:'',periodEnd:'',timezone:'UTC',channel:'',accountLabel:'',scopeLabel:'',commentary:'',metrics:{}});
@@ -15,7 +16,7 @@ export default function ClientReportEditor({client,initial=null,services=null,re
  const [options,setOptions]=useState(services),[search,setSearch]=useState(''),[optionsBusy,setOptionsBusy]=useState(false);
  const scopeRef=useRef(scope),live=useRef(true),saveGeneration=useRef(0),readGeneration=useRef(0),serviceGeneration=useRef(0),request=useRef(null),pending=useRef(null),dirtyRef=useRef(false);
  const editable=initial?initial.canEdit:true;
- useEffect(()=>{live.current=true;function leave(e){if(dirtyRef.current){e.preventDefault();e.returnValue='';}}document.addEventListener('click',link);function link(e){const a=e.target.closest('a[href]');if(a&&dirtyRef.current&&!window.confirm('Leave this report with unsaved changes?'))e.preventDefault();}
+ useEffect(()=>{live.current=true;setReady(true);function leave(e){if(dirtyRef.current){e.preventDefault();e.returnValue='';}}document.addEventListener('click',link);function link(e){const a=e.target.closest('a[href]');if(a&&dirtyRef.current&&!window.confirm('Leave this report with unsaved changes?'))e.preventDefault();}
  window.addEventListener('beforeunload',leave);return()=>{live.current=false;saveGeneration.current++;readGeneration.current++;serviceGeneration.current++;document.removeEventListener('click',link);window.removeEventListener('beforeunload',leave);};},[]);
  useEffect(()=>{async function refresh(){const g=++readGeneration.current;try{const res=await fetch(`/api/bloomops/clients/${client.id}/reports${initial?'/'+initial.id:''}`,{cache:'no-store'});const body=await res.json();if(!live.current||g!==readGeneration.current)return;if(!res.ok||body.scope?.userId!==scope.userId||body.scope?.workspaceId!==scope.workspaceId){saveGeneration.current++;setDenied(true);dirtyRef.current=false;setDirty(false);setError('Report access changed. Reopen it in the correct workspace.');}}catch{/* Save rechecks authority; a read failure does not discard unsaved input. */}}
  window.addEventListener('focus',refresh);window.addEventListener('pageshow',refresh);return()=>{readGeneration.current++;window.removeEventListener('focus',refresh);window.removeEventListener('pageshow',refresh);};},[client.id,initial?.id,scope.userId,scope.workspaceId]);
@@ -29,7 +30,7 @@ export default function ClientReportEditor({client,initial=null,services=null,re
  if(!res.ok){if(res.status===409)setConflict(true);if([401,403,404].includes(res.status)){setDenied(true);dirtyRef.current=false;}if(res.status<500)pending.current=null;throw Error(result.error||'Draft could not be saved.');}
  dirtyRef.current=false;setDirty(false);setStatus('Saved.');window.location.assign(`/clients/${client.id}/reports/${result.id}`);
  }catch(e){if(live.current&&g===saveGeneration.current){setError(e.message||'Save failed. Retry the same request.');setStatus('Save failed.');}}finally{if(live.current&&g===saveGeneration.current)setBusy(false);}}
- const locked=busy||!!pending.current||!editable||isConflict;
+ const locked=!ready||busy||!!pending.current||!editable||isConflict;
  if(denied)return <p role="alert">{error}</p>;
  return <div className="bo-report"><PageHeader title={initial?'Edit report draft':'New report draft'} subtitle={`Private manual reporting for ${client.name}`}/>
  <div className="bo-form-actions"><Button variant="ghost" href={`/clients/${client.id}/reports`}>All reports</Button>{initial&&<Button variant="ghost" href={`/clients/${client.id}/reports/${initial.id}/preview`}>Preview saved draft</Button>}</div>
@@ -40,7 +41,7 @@ export default function ClientReportEditor({client,initial=null,services=null,re
  {reuse&&<p role="note">Reusing template version {reuse.templateVersion} and account setup. Choose a new period. Previous values, provenance, commentary and client narrative have not been copied.</p>}
  {!editable&&<p>Read-only access. A workspace Owner, Admin or Project Manager can edit.</p>}
  {error&&<div role="alert"><p>{error}</p>{isConflict&&<Button variant="ghost" href={`/clients/${client.id}/reports/${initial?.id||''}`}>Reopen saved draft</Button>}</div>}
- <p role="status">{status|| (dirty?'Unsaved changes.':'Draft changes stay private until explicitly published. Published versions remain separate.')}</p>
+ <p role="status">{!ready?'Loading report editor…':status|| (dirty?'Unsaved changes.':'Draft changes stay private until explicitly published. Published versions remain separate.')}</p>
  {!pinned&&<div className="bo-report-service"><label>Find a purchased service<input value={search} onChange={e=>setSearch(e.target.value)} disabled={locked}/></label><Button type="button" onClick={()=>loadServices()} disabled={locked||optionsBusy}>Find services</Button>{options?.page>1&&<Button type="button" onClick={()=>loadServices(options.page-1)} disabled={optionsBusy}>Previous services</Button>}{options?.more&&<Button type="button" onClick={()=>loadServices(options.page+1)} disabled={optionsBusy}>More services</Button>}{optionsBusy&&<p role="status">Loading services…</p>}</div>}
  {initial&&editable&&template&&<ClientReportCsv report={{...data,templateId,templateVersion:template.version}} disabled={locked} onApply={metrics=>change('metrics',metrics)}/>}
  {initial&&editable&&<ReportComparisonPicker report={initial} scope={scope} value={data.comparisonPublicationId||''} onChange={value=>change('comparisonPublicationId',value)} disabled={locked} contextChanged={['periodStart','periodEnd','timezone','channel','accountLabel','scopeLabel'].some(key=>data[key]!==initial[key])}/>}
@@ -55,5 +56,5 @@ export default function ClientReportEditor({client,initial=null,services=null,re
  <label>Report commentary<textarea rows="7" maxLength={8000} value={data.commentary} onChange={e=>change('commentary',e.target.value)}/><span>Internal only. Commentary and metric source notes never appear in a published report.</span></label>
  <h2>Client-facing narrative</h2><p>These saved fields are included only when you explicitly publish a reviewed version.</p>
  {[["clientSummary","Client summary"],["workCompleted","Work completed"],["limitations","Limits and context"],["nextActions","Next actions"]].map(([key,label])=><label key={key}>{label}<textarea rows="4" maxLength={8000} value={data[key]||''} onChange={e=>change(key,e.target.value)}/></label>)}</>}
- </fieldset>{editable&&<Button variant="primary" type="submit" disabled={busy||isConflict||!template}>{busy?'Saving…':pending.current?'Retry save':'Save draft'}</Button>}</form></div>;
+ </fieldset>{editable&&<Button variant="primary" type="submit" disabled={!ready||busy||isConflict||!template}>{busy?'Saving…':pending.current?'Retry save':'Save draft'}</Button>}</form></div>;
 }

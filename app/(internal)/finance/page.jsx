@@ -1,39 +1,18 @@
-import { requireShell } from '@/lib/bloomops/shell-server.mjs';
-import { financeViewFor } from '@/lib/bloomops/shell.mjs';
-import { navItem } from '@/lib/bloomops/navigation.mjs';
-import { AreaPreview, PageHeader, Surface } from '@/components/bloomops/Primitives';
-
-export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Finance' };
-
-// Finance is in the map for everyone and open only to people the engine
-// says hold finance.view (the Owner by role; Admin, Project Manager, and
-// Team Member only by explicit grant). Without it the page says so and
-// describes nothing. With it, the area is still a placeholder: no records
-// exist in Release A.
-export default async function FinancePage() {
-  const { actor } = await requireShell('internal');
-  if (financeViewFor(actor) !== 'preview') {
-    return (
-      <>
-        <PageHeader title="Finance" />
-        <Surface tone="mist" padding="lg" className="bo-page-narrow">
-          <p className="bo-body">
-            Finance is open to the workspace Owner and to people who have been given finance access. It is not open to you. If you need it, ask your workspace Owner.
-          </p>
-        </Surface>
-      </>
-    );
-  }
-  return (
-    <AreaPreview
-      title="Finance"
-      purpose={navItem('finance').purpose}
-      items={[
-        ['Per client and service', 'Package, amount, invoice and payment state, due and paid dates.'],
-        ['Renewals', 'What comes up for renewal and when.'],
-        ['Kept light', 'No accounting, tax, payroll, or reconciliation.'],
-      ]}
-    />
-  );
+import {requireShell} from '@/lib/bloomops/shell-server.mjs';
+import {listFinanceRecords,financePermission} from '@/lib/bloomops/finance.mjs';
+import {FINANCE_STATUSES,financeLabel} from '@/lib/bloomops/finance-values.mjs';
+import {PageHeader,Button,Surface} from '@/components/bloomops/Primitives';
+export const dynamic='force-dynamic';
+export const metadata={title:'Finance'};
+export default async function FinancePage({searchParams}){
+ const {access,actor}=await requireShell('internal'),q=await searchParams,result=await listFinanceRecords(access.db,actor,q),manage=await financePermission(access.db,actor,'capabilities.manage');
+ const href=page=>'/finance?'+new URLSearchParams({...q,page:String(page)});
+ return <><PageHeader title="Finance" subtitle="Manual invoices and payments. No money is sent or collected here." actions={<>{manage&&<Button href="/team/finance-access">Manage Finance access</Button>}{result.canEdit&&<Button href="/finance/new" variant="primary">New finance record</Button>}</>}/>
+ {!result.ok?<Surface padding="lg"><p>{result.reason==='invalid'?'These Finance filters are invalid.':'Finance is private. Ask a workspace administrator to configure your access.'}</p>{result.reason==='invalid'&&<Button href="/finance">Reset filters</Button>}</Surface>:<>
+ <form className="bo-finance-filters" action="/finance"><label>Record type<select aria-label="Record type" name="kind" defaultValue={q.kind||''}><option value="">All types</option><option value="invoice">Invoices</option><option value="payment">Payments</option></select></label><label>Status<select aria-label="Status" name="status" defaultValue={q.status||''}><option value="">All statuses</option>{Object.values(FINANCE_STATUSES).flat().map(s=><option key={s} value={s}>{financeLabel(s)}</option>)}</select></label><label>History<select aria-label="History" name="archived" defaultValue={q.archived||''}><option value="">Active records</option><option value="true">Archived records</option></select></label><label>Due view<select aria-label="Due view" name="overdue" defaultValue={q.overdue||''}><option value="">All dates</option><option value="true">Overdue invoices</option></select></label>{q.clientId&&<input type="hidden" name="clientId" value={q.clientId}/>} {q.serviceEngagementId&&<input type="hidden" name="serviceEngagementId" value={q.serviceEngagementId}/>}<Button type="submit">Apply filters</Button><Button href="/finance">Reset</Button></form>
+ <p className="bo-muted">Overdue uses the UTC calendar day ({result.today}). Totals cover all filtered, authorized records; invoice and payment totals are separate.</p>
+ {result.totals.length>0&&<section aria-label="Finance totals" className="bo-finance-totals">{result.totals.map(t=><div key={[t.currency,t.digits,t.kind,t.status].join('-')}><h2 className="bo-h3">{financeLabel(t.kind)}: {financeLabel(t.status)}</h2><p>{t.currency} {t.amount}</p><span>{t.count} records</span></div>)}</section>}
+ <section aria-label="Finance records">{!result.items.length?<Surface padding="lg"><h2 className="bo-h2">No finance records in this view</h2><p>Create a manual record or change the filters.</p></Surface>:result.items.map(r=><article key={r.id} className="bo-finance-row"><h2 className="bo-h3"><a href={'/finance/'+r.id}>{r.title}</a></h2><dl><div><dt>Client</dt><dd><a href={'/finance?clientId='+encodeURIComponent(r.clientId)}>{r.clientName}</a></dd></div><div><dt>Service</dt><dd>{r.serviceEngagementId?<a href={'/finance?serviceEngagementId='+encodeURIComponent(r.serviceEngagementId)}>{r.serviceName}{r.packageName?' — '+r.packageName:''}</a>:'Client-level'}</dd></div><div><dt>{financeLabel(r.kind)}</dt><dd>{financeLabel(r.status)}</dd></div><div><dt>Amount</dt><dd>{r.currency} {r.amount}</dd></div><div><dt>Due date</dt><dd>{r.dueDate||'Not set'}</dd></div><div><dt>Renewal date</dt><dd>{r.renewalDate||'Not set'}</dd></div></dl></article>)}</section>
+ <nav aria-label="Finance pages" className="bo-form-actions">{result.page>1&&<Button href={href(result.page-1)}>Previous page</Button>}{result.more&&<Button href={href(result.page+1)}>Next page</Button>}</nav></>}
+ </>;
 }
