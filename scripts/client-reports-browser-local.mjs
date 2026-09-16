@@ -213,7 +213,12 @@ try{
   await owner.page.getByRole('link',{name:'Preview saved draft',exact:true}).click();await owner.page.getByRole('heading',{name:next.title,exact:true}).waitFor();check('new period saved preview has no fabricated calculation '+reportId,await owner.page.getByText('Not available',{exact:true}).count()>0);
   check('new period remains private '+reportId,(await get(owner.ctx,api+'/'+nextId+'/publications')).data.review.current===null);
  }
- check('new-period source cannot cross Client boundaries',(await owner.ctx.request.get(base+`/clients/${otherClient}/reports/new?source=${created[0]}`)).status()===404);
+ // Next may stream the shell before notFound(), leaving HTTP 200. Assert the
+ // actual denied UI and API authority, rather than treating that transport as access.
+ const denied=await owner.page.goto(base+`/clients/${otherClient}/reports/new?source=${created[0]}`,{waitUntil:'networkidle'});
+ await owner.page.getByRole('heading',{name:'There is nothing here',exact:true}).waitFor();
+ check('new-period source cannot cross Client boundaries',[200,404].includes(denied.status())&&await owner.page.getByRole('heading',{name:'New report draft',exact:true}).count()===0&&await owner.page.getByRole('button',{name:'Save draft',exact:true}).count()===0&&(await get(owner.ctx,`/api/bloomops/clients/${otherClient}/reports/${created[0]}`)).status===404);
+
  await portalContext.close();
  check('browser has no runtime errors',errors.length===0);writeFileSync(out+'/results.json',JSON.stringify({checks,errors,fixtures:{clientId,otherClient,ghl,social,reports:created},sourceRevision:identity.expectedRevision},null,2));
 }catch(error){if(browser){let i=0;for(const ctx of browser.contexts())for(const page of ctx.pages())await page.screenshot({path:out+'/failure-'+(++i)+'.png',fullPage:true}).catch(()=>{});}writeFileSync(out+'/results.json',JSON.stringify({checks,errors,failure:reportBrowserError(error)},null,2));console.error(reportBrowserError(error));process.exitCode=1;}finally{identity.finishedAt=new Date().toISOString();identity.artifactsUnchanged=hash(JSON.stringify(buildArtifacts(root)))===identity.artifactDigest;writeFileSync(out+'/artifact-identity.json',JSON.stringify(identity,null,2));if(!identity.artifactsUnchanged)process.exitCode=1;await browser?.close();await mf.dispose();rmSync(tmp,{recursive:true,force:true});}
