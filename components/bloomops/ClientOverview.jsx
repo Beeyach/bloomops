@@ -149,7 +149,7 @@ function DetailsForm({ client, owners, onSubmit, onCancel, busy, serverError, fi
             {options.map((owner) => (
               <option key={owner.id} value={owner.id}>
                 {owner.name}
-                {owner.roleLabel ? ` · ${owner.roleLabel}` : ''}
+                {owner.roleLabel ? ` (${owner.roleLabel})` : ''}
               </option>
             ))}
           </select>

@@ -17,8 +17,8 @@ export function MilestoneList({ items, controls = null }) {
       <div className="bo-milestone-heading"><h3 className="bo-row-title">{item.name}</h3>
         <Status label={MILESTONE_STATUS_LABELS[item.status]} tone={item.status === 'completed' ? 'success' : item.status === 'waiting' ? 'warning' : 'neutral'} glyph={item.status === 'completed' ? 'check' : item.status === 'waiting' ? 'clock' : 'dot'} />
       </div>
-      <p className="bo-small">{[item.startDate && `Starts ${formatDate(item.startDate)}`, item.targetDate && `Target ${formatDate(item.targetDate)}`,
-        item.completedAt && `Completed ${formatDate(item.completedAt)}`, item.visibility === 'client' ? 'Client visible when the project is shared' : item.visibility === 'restricted' ? 'Restricted' : 'Internal'].filter(Boolean).join(' · ')}</p>
+      <p className="bo-small bo-record-subtitle">{[item.startDate && `Starts ${formatDate(item.startDate)}`, item.targetDate && `Target ${formatDate(item.targetDate)}`,
+        item.completedAt && `Completed ${formatDate(item.completedAt)}`, item.visibility === 'client' ? 'Client visible when the project is shared' : item.visibility === 'restricted' ? 'Restricted' : 'Internal'].filter(Boolean).map(label=><span key={label}>{label}</span>)}</p>
       {item.clientLabel && <p className="bo-small">Client-facing label: {item.clientLabel}</p>}
       {item.waitingReason && <p className="bo-body bo-project-reason">Waiting on: {item.waitingReason}</p>}
       {controls?.(item, index)}

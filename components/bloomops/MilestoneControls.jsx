@@ -70,7 +70,7 @@ export default function MilestoneControls({ projectId, summary, mayManage, canRe
     <Dialog open={Boolean(dialog)} onClose={close} title={dialog?.kind === 'create' ? 'Add milestone' : dialog?.kind === 'status' ? 'Change milestone status' : 'Edit milestone'} initialFocus={dialog?.kind === 'status' ? '#milestone-toStatus' : '#milestone-name'}>
       {dialog && <form onSubmit={submit} noValidate><div className="bo-dialog-body">
         {dialog.kind === 'status' ? <>
-          <p className="bo-body">{dialog.item.name} · Currently {MILESTONE_STATUS_LABELS[dialog.item.status]}.</p>
+          <p className="bo-body">{dialog.item.name}. Currently {MILESTONE_STATUS_LABELS[dialog.item.status]}.</p>
           <Field id="milestone-toStatus" label="Next milestone status" error={errors.toStatus}><select {...aria('toStatus')} className="bo-control" value={values.toStatus} onChange={e => setValues(v => ({ ...v, toStatus: e.target.value }))}>
             {MILESTONE_TRANSITIONS[dialog.item.status].map(status => <option key={status} value={status}>{MILESTONE_STATUS_LABELS[status]}</option>)}
           </select></Field>
