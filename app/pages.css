@@ -95,3 +95,7 @@
 .bo-page-tools .bo-page-record-context{margin-block:16px;padding:0;border:0}
 .bo-page-move-control{border:0;background:transparent;color:var(--bo-ink-soft);font:inherit;font-size:12px;min-height:36px;padding:4px 8px;border-radius:6px;cursor:pointer}
 .bo-page-move-control:hover{background:var(--bo-lilac)}
+
+/* Placeholder copy uses the same readable secondary ink as Page labels. */
+.bo-page-search input::placeholder,.bo-page-title textarea::placeholder,.bo-page-comments-dialog textarea::placeholder{color:var(--bo-text-soft);opacity:1}
+.bo-page-editor .rich-editor .ProseMirror p.is-editor-empty:first-child::before{color:var(--bo-text-soft)}

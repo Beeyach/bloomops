@@ -45,3 +45,5 @@
 .bo-search-result .bo-prospect-favicon.is-loaded { opacity:1; }
 
 .bo-search-results:focus { outline:none; }
+
+.bo-search-input input::placeholder{color:var(--bo-text-soft);opacity:1}

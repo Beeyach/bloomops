@@ -628,3 +628,5 @@
 }
 
 .bo-skill-export{padding:24px;background:var(--bo-mist);border-radius:12px;margin:24px 0}.bo-skill-export>.bo-hint{margin-top:8px}.bo-sheet-empty{width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:260px;padding:32px 20px}.bo-sheet-empty h2{font:600 20px var(--bo-font-display);margin:16px 0 8px}.bo-sheet-empty p{margin:0 0 20px;color:var(--bo-ink-soft)}.bo-sheet-empty-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+
+.bo-sheet-search input::placeholder{color:var(--bo-text-soft);opacity:1}

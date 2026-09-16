@@ -50,6 +50,15 @@ try{
  async function login(user,suppliedContext=null){const ctx=suppliedContext||await browser.newContext({viewport:{width:1440,height:1000}});await ctx.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());const email=user+'@example.com';assert.equal((await ctx.request.post(base+'/api/auth/sign-in/magic-link',{headers:{origin:base},data:{email,callbackURL:'/'}})).status(),200);
   const mail=await bucket.get('dev-mail/'+createHash('sha256').update(email).digest('hex')+'.json');assert.ok(mail);const url=JSON.parse(await mail.text()).text.match(/https?:\/\/\S+/)[0];const parsed=new URL(url);assert.ok(parsed.origin===base&&parsed.pathname==='/api/auth/magic-link/verify',`local auth host/path: ${parsed.host} ${parsed.pathname}`);
   const page=await ctx.newPage();page.on('pageerror',e=>errors.push(reportBrowserError(e)));await page.goto(url,{waitUntil:'networkidle'});return {ctx,page};}
+ const contrasts=[];
+ async function readable(locator,label,pseudo=null){
+  const value=await locator.evaluate((e,pseudo)=>{
+   const color=getComputedStyle(e,pseudo).color;let node=e,background;
+   while(node){background=getComputedStyle(node).backgroundColor;if(background!=='rgba(0, 0, 0, 0)'&&background!=='transparent')break;node=node.parentElement;}
+   const luminance=s=>s.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;}).reduce((n,v,i)=>n+v*[.2126,.7152,.0722][i],0);
+   const a=luminance(color),b=luminance(background);return {color,background,ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
+  },pseudo);check(label+' has normal-text contrast',value.ratio>=4.5);contrasts.push({label,...value});writeFileSync(out+'/text-contrast.json',JSON.stringify(contrasts,null,2));
+ }
  const owner=await login('ellen');
  identity.servedAssets=[];for(const url of await owner.page.locator('script[src]').evaluateAll(nodes=>nodes.map(n=>n.src))){const path=new URL(url).pathname,file=artifacts.find(f=>f.path==='.open-next/assets'+decodeURIComponent(path));assert.ok(file,'served script belongs to completed build');const response=await owner.ctx.request.get(url);assert.equal(response.status(),200);const sha256=hash(await response.body());assert.equal(sha256,file.sha256);identity.servedAssets.push({path,sha256});}
  assert.ok(identity.servedAssets.length);writeFileSync(out+'/artifact-identity.json',JSON.stringify(identity,null,2));
@@ -75,6 +84,7 @@ try{
  }
 
  writeFileSync(out+'/timings.json',JSON.stringify(timings,null,2));
+ await readable(page.locator('#sheet-search'),'Prospecting search placeholder','::placeholder');
  // Distinct empty/filter recovery with real stored rows.
  await page.goto(base+'/prospecting?q=unmatched-synthetic-name',{waitUntil:'networkidle'});
  await page.getByRole('heading',{name:'No prospects match these filters',exact:true}).waitFor();
@@ -82,20 +92,18 @@ try{
  await page.locator('.bo-sheet-empty').getByRole('button',{name:'Clear filters',exact:true}).click();await page.locator('tbody tr').first().waitFor();check('Clear filters restores existing records',await page.locator('tbody tr').count()===25);
  for(const route of ['/prospecting/skills','/prospecting/skills/audit']){await page.goto(base+route,{waitUntil:'networkidle'});for(const width of [1440,768,390]){await page.setViewportSize({width,height:1000});check(route+' fits '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:out+'/'+route.replaceAll('/','-')+'-'+width+'.png',fullPage:true});}}
  await page.setViewportSize({width:1440,height:1000});await post('/api/bloomops/workspaces/select',{workspaceId:'a'});await page.goto(base+'/',{waitUntil:'networkidle'});
+ await page.goto(base+'/search',{waitUntil:'networkidle'});await readable(page.locator('#workspace-search-query'),'Workspace search placeholder','::placeholder');
  const client=await post('/api/bloomops/clients',{name:'Synthetic client with a long name for layout review',contactName:'QA contact',contactEmail:'portal@example.test',timezone:'Australia/Sydney',requestId:randomUUID(),workspaceId:'a',userId:'ellen'});assert.equal(client.status,201,JSON.stringify(client.data));const clientId=client.data.client.id;
  const serviceType=await binding.prepare("SELECT id FROM service_types WHERE workspace_id='a' AND slug='ghl'").first();const service=await post(`/api/bloomops/clients/${clientId}/services`,{serviceTypeId:serviceType.id,packageName:'QA Systems service'});assert.equal(service.status,201,JSON.stringify(service.data));
  const project=await post(`/api/bloomops/clients/${clientId}/projects`,{name:'Synthetic delivery project with a long name that must wrap without hiding its metadata',serviceEngagementId:service.data.service.id});assert.equal(project.status,201,JSON.stringify(project.data));
  await page.goto(base+'/pages',{waitUntil:'networkidle'});await page.getByRole('button',{name:'New page',exact:true}).click();await page.waitForURL(u=>/^\/pages\/[0-9a-f-]+$/.test(u.pathname));const pagePath=new URL(page.url()).pathname;
+ await readable(page.locator('.bo-page-search input'),'Page search placeholder','::placeholder');await readable(page.getByRole('textbox',{name:'Page title',exact:true}),'Page title placeholder','::placeholder');
+ await page.getByRole('button',{name:'Comments',exact:true}).click();await readable(page.locator('#bo-comment-writing'),'Page comment placeholder','::placeholder');await page.getByRole('button',{name:'Close comments',exact:true}).click();
  const writingSaved=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/bloomops'+pagePath&&r.request().method()==='PUT'&&r.status()===200&&r.request().postDataJSON()?.body?.includes('Saved writing remains editable'));await page.getByRole('textbox',{name:'Page title',exact:true}).fill('Synthetic UI writing workspace');await page.locator('.ProseMirror').fill('Saved writing remains editable during the UI refinement.');await page.getByRole('textbox',{name:'Page title',exact:true}).focus();await writingSaved;await page.getByText('Saved',{exact:true}).waitFor();await page.reload({waitUntil:'networkidle'});await page.locator('.ProseMirror').waitFor();check('Page writing and title persist through the actual editor',await page.getByRole('textbox',{name:'Page title',exact:true}).inputValue()==='Synthetic UI writing workspace'&&await page.locator('.ProseMirror').innerText()==='Saved writing remains editable during the UI refinement.');
  await page.getByText('Page tools: templates and record context',{exact:true}).focus();await page.keyboard.press('Enter');check('Page tools open with keyboard',await page.getByRole('button',{name:'Edit record context',exact:true}).isVisible());await page.getByText('Page tools: templates and record context',{exact:true}).click();
  // Measure the actual quiet metadata on the synthetic Client's persisted history.
  await page.goto(base+'/clients/'+clientId+'?tab=activity',{waitUntil:'networkidle'});
- const contrast=await page.locator('.bo-activity-meta').first().evaluate(e=>{
-  const color=getComputedStyle(e).color;let node=e,background;
-  while(node){background=getComputedStyle(node).backgroundColor;if(background!=='rgba(0, 0, 0, 0)'&&background!=='transparent')break;node=node.parentElement;}
-  const luminance=s=>s.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;}).reduce((n,v,i)=>n+v*[.2126,.7152,.0722][i],0);
-  const a=luminance(color),b=luminance(background);return {color,background,ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
- });check('persisted Client history metadata has normal-text contrast',contrast.ratio>=4.5);writeFileSync(out+'/metadata-contrast.json',JSON.stringify(contrast,null,2));
+ await readable(page.locator('.bo-activity-meta').first(),'Persisted Client history metadata');
  const layouts=[];
  for(const route of ['/work?tab=projects','/systems','/social','/ads','/team','/finance','/settings',pagePath]){
   await page.goto(base+route,{waitUntil:'networkidle'});
