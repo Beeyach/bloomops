@@ -18,11 +18,11 @@ export default async function TeamDepartmentsPage({searchParams}) {
         <Button type="submit">Show department work</Button>
       </form>
       <h2 className="bo-h2">{result.department.name} {result.query.tab==='projects'?'projects':'Actions'}</h2>
-      <p className="bo-small">Only records you can currently read are included. A Service sets its work’s department; work without a Service uses the Project department. Action access does not grant access to its Project.</p>
+      <p className="bo-small bo-section-description">Only records you can currently read are included. A Service sets its work’s department; work without a Service uses the Project department. Action access does not grant access to its Project.</p>
       {result.query.department!=='operations'&&<Button variant="ghost" href={'/'+result.query.department}>Open {result.department.name} workspace</Button>}
       {!result.records.items.length?<EmptyState title="No readable work in this view"><p>Try Actions for individually assigned work, or include all work to see completed records.</p></EmptyState>:
         result.query.tab==='projects'?<ProjectList projects={result.records.items} filtered structured/>:<ActionList items={result.records.items} structured/>}
-      <nav className="bo-form-actions" aria-label="Department work pages">
+      <nav className="bo-form-actions bo-results-actions" aria-label="Department work pages">
         {result.query.page>1&&<Button href={href(result.query,{page:result.query.page-1})}>Previous records</Button>}
         {result.records.hasMore&&result.query.page<10000&&<Button href={href(result.query,{page:result.query.page+1})}>Next records</Button>}
         <Button href={href(result.query,{})}>Refresh department work</Button>

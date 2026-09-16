@@ -137,6 +137,14 @@ try{
  // Measure the actual quiet metadata on the synthetic Client's persisted history.
  await page.goto(base+'/clients/'+clientId+'?tab=activity',{waitUntil:'networkidle'});
  await readable(page.locator('.bo-activity-meta').first(),'Persisted Client history metadata');
+ // Results controls have a deliberate region, including the empty department view.
+ for(const route of ['/team/departments','/team/workload']){
+  await page.goto(base+route,{waitUntil:'networkidle'});
+  const gaps=await page.locator('.bo-results-actions:not(:empty)').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().top-e.previousElementSibling.getBoundingClientRect().bottom));
+  if(route==='/team/departments')check('Department refresh is separated from empty results',gaps.length===1&&gaps[0]>=16);
+  check(route+' results controls keep their region spacing',gaps.every(n=>n>=16));
+  check(route+' explanation has a separate content gap',await page.locator('.bo-section-description').evaluate(e=>parseFloat(getComputedStyle(e).marginBottom)>=12));
+ }
  const layouts=[];
  for(const route of ['/work?tab=projects','/systems','/social','/ads','/team','/finance','/settings',pagePath]){
   await page.goto(base+route,{waitUntil:'networkidle'});
