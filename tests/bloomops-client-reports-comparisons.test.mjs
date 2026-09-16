@@ -1,0 +1,22 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {setup} from './_work-projections.mjs';
+import {run,all} from './_bloomops-db.mjs';
+import {saveClientReport as save,getClientReport as get} from '../lib/bloomops/client-reports.mjs';
+import {changeReportPublication as publish} from '../lib/bloomops/client-report-publications.mjs';
+import {comparisonOptions} from '../lib/bloomops/client-report-comparisons.mjs';
+import {checkReportComparisons} from './_client-report-comparisons.mjs';
+import {input,draft} from './_client-report-fixture.mjs';
+import {releaseInput} from './_client-report-archive.mjs';
+for(const template of ['ghl_campaign','social'])test(template+': persist compatible comparison, freeze published data, reject changed context and withdrawn baseline',async ctx=>{const t=await setup();ctx.after(()=>t.raw.close());await checkReportComparisons(t.db,t.owner,await t.actor('james'),template);});
+test('comparison selection preserves row scope and rolls back with failed metric write',async ctx=>{
+ const t=await setup();ctx.after(()=>t.raw.close());const previous=await save(t.db,t.owner,'james',null,input({draft:draft({clientSummary:'Prior'})})),pub=await publish(t.db,t.owner,'james',previous.id,releaseInput());
+ const value=input({draft:draft({periodStart:'2026-09-01',periodEnd:'2026-09-30',comparisonPublicationId:pub.id})});
+ assert.equal((await save(t.db,t.owner,'lawrence',null,{...value,serviceEngagementId:'kajabi-service'})).reason,'invalid');
+ for(const who of ['james','foreign','sam'])assert.equal((await save(t.db,await t.actor(who),'james',null,value)).reason,'not_found');
+ const created=await save(t.db,t.owner,'james',null,value),before=await get(t.db,t.owner,'james',created.id);assert.ok(created.ok);
+ run(t.raw,"CREATE TRIGGER comparison_fail BEFORE INSERT ON client_report_metrics BEGIN SELECT RAISE(ABORT,'comparison synthetic rollback'); END");await assert.rejects(save(t.db,t.owner,'james',created.id,{...value,expectedRevision:1,draft:{...value.draft,comparisonPublicationId:null}}));assert.deepEqual(await get(t.db,t.owner,'james',created.id),before);run(t.raw,'DROP TRIGGER comparison_fail');
+ const writes=await Promise.all([save(t.db,t.owner,'james',created.id,{...value,expectedRevision:1}),save(t.db,t.owner,'james',created.id,{...value,expectedRevision:1,draft:{...value.draft,comparisonPublicationId:null}})]);assert.equal(writes.filter(r=>r.ok).length,1);assert.equal(writes.filter(r=>r.reason==='conflict').length,1);
+ assert.throws(()=>run(t.raw,'INSERT INTO client_report_comparisons(workspace_id,report_id,publication_id) VALUES(?,?,?)','b',created.id,pub.id),/FOREIGN KEY/);
+ run(t.raw,"UPDATE workspace_memberships SET status='suspended' WHERE id='m-ellen'");assert.equal((await comparisonOptions(t.db,t.owner,before)).items.length,0);assert.equal(await get(t.db,t.owner,'james',created.id),null);
+});

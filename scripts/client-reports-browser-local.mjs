@@ -101,7 +101,7 @@ try{
  const path=`/clients/${clientId}/reports`,api=`/api/bloomops/clients/${clientId}/reports`;
  await owner.page.goto(base+`/clients/${clientId}`,{waitUntil:'networkidle'});await owner.page.getByRole('link',{name:'Reports',exact:true}).click();await owner.page.getByText('No report drafts yet.',{exact:true}).waitFor();check('Client Reports destination and empty state',true);
  const metric=async(page,label,value)=>{await page.getByLabel(label+' availability').selectOption('value');await page.getByLabel(label+' count').fill(String(value));};
- const created=[];
+ const created=[],nextPeriods=[];
  for(const [template,service,channel,title] of [['ghl_campaign',ghl,'email','N3A GHL persisted draft'],['social',social,'instagram','N3A Social persisted draft']]){
   await owner.page.goto(base+path+'/new',{waitUntil:'networkidle'});await owner.page.screenshot({path:out+'/new-form.png',fullPage:true});await owner.page.getByRole('combobox',{name:/^Purchased service/}).selectOption(service);await owner.page.getByLabel('Report template').selectOption(template);
   await owner.page.getByLabel('Report title').fill(title);await owner.page.getByLabel('Channel').selectOption(channel);await owner.page.getByLabel('Period start',{exact:true}).fill('2026-08-01');await owner.page.getByLabel('Period end',{exact:true}).fill('2026-08-31');await owner.page.getByLabel('Timezone').fill('Australia/Sydney');await owner.page.getByLabel('Account',{exact:true}).fill('Synthetic source account');await owner.page.getByLabel('Campaign or content scope').fill('One synthetic campaign');
@@ -230,11 +230,33 @@ try{
   check('new period pins template and service '+reportId,await owner.page.getByRole('combobox',{name:'Report template',exact:true}).isDisabled()&&(await owner.page.getByRole('textbox',{name:'Purchased service',exact:true}).inputValue()).includes(original.serviceName));
   check('new period starts without dates or old observations '+reportId,await owner.page.getByLabel('Period start',{exact:true}).inputValue()===''&&await owner.page.getByLabel('Period end',{exact:true}).inputValue()===''&&await owner.page.locator('input[type="number"]').count()===0&&await owner.page.getByRole('textbox',{name:'Client summary',exact:true}).inputValue()==='');
   await owner.page.getByLabel('Period start',{exact:true}).fill('2026-09-01');await owner.page.getByLabel('Period end',{exact:true}).fill('2026-09-30');
-  await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Save draft',exact:true}).click()]);const nextId=owner.page.url().split('/').at(-1);const next=(await get(owner.ctx,api+'/'+nextId)).data.report;
+  await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Save draft',exact:true}).click()]);const nextId=owner.page.url().split('/').at(-1);const next=(await get(owner.ctx,api+'/'+nextId)).data.report;nextPeriods.push(nextId);
   check('new period persists separately with no copied provenance '+reportId,next.id!==reportId&&next.templateVersion===original.templateVersion&&next.revision===1&&Object.values(next.metrics).every(m=>m.state==='missing'&&m.value===null&&m.sourceNote===''&&m.collectedAt===null&&m.importId===null));
   check('new period leaves original draft untouched '+reportId,JSON.stringify((await get(owner.ctx,api+'/'+reportId)).data.report)===JSON.stringify(original));
   await owner.page.getByRole('link',{name:'Preview saved draft',exact:true}).click();await owner.page.getByRole('heading',{name:next.title,exact:true}).waitFor();check('new period saved preview has no fabricated calculation '+reportId,await owner.page.getByText('Not available',{exact:true}).count()>0);
   check('new period remains private '+reportId,(await get(owner.ctx,api+'/'+nextId+'/publications')).data.review.current===null);
+ }
+ // Choose a real earlier published snapshot, save the comparison, and verify
+ // that the private preview, publication and downloaded PDF use that saved data.
+ for(let i=0;i<created.length;i++){
+  const sourceId=created[i],reportId=nextPeriods[i];await owner.page.bringToFront();await owner.page.goto(base+path+'/'+sourceId+'/publication',{waitUntil:'networkidle'});await owner.page.getByRole('checkbox').check();await publishAction('Publish reviewed revision');
+  const baseline=(await get(owner.ctx,api+'/'+sourceId+'/publications')).data.review.current;
+  await owner.page.goto(base+path+'/'+reportId,{waitUntil:'networkidle'});
+  const selection=owner.page.getByRole('combobox',{name:'Compare with previous published report',exact:true});await selection.locator(`option[value="${baseline.id}"]`).waitFor({state:'attached'});await selection.selectOption(baseline.id);
+  const report=(await get(owner.ctx,api+'/'+reportId)).data.report,key=report.templateId==='social'?'published':'sent',label=report.templateId==='social'?'Published content':'Sent messages';await metric(owner.page,label,0);await owner.page.getByRole('textbox',{name:'Client summary',exact:true}).fill('Synthetic saved comparison');
+  await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Save draft',exact:true}).click()]);
+  const stored=(await get(owner.ctx,api+'/'+reportId)).data.report,expected=report.templateId==='social'?-18:-32; // Earlier CSV regression deliberately corrected 17 to 18.
+  check('comparison persists selected published version '+reportId,stored.comparisonPublicationId===baseline.id&&stored.comparison.metrics.find(m=>m.key===key).difference===expected);
+  await owner.page.getByRole('link',{name:'Preview saved draft',exact:true}).click();await owner.page.getByRole('heading',{name:'Period comparison',exact:true}).waitFor();
+  const row=owner.page.getByRole('row').filter({has:owner.page.getByRole('rowheader',{name:label,exact:true})});check('saved comparison table distinguishes zero and negative difference '+reportId,(await row.innerText()).includes(String(expected))&&await owner.page.getByRole('figure',{name:label+', count comparison',exact:true}).count()===1);
+  await owner.page.setViewportSize({width:320,height:1000});check('comparison narrow layout keeps table reachable '+reportId,await owner.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)&&await owner.page.getByRole('region',{name:'Comparison values table',exact:true}).getAttribute('tabindex')==='0');await owner.page.screenshot({path:out+'/'+report.templateId+'-comparison-preview-320.png',fullPage:true});await owner.page.setViewportSize({width:1440,height:1000});
+  await owner.page.goto(base+path+'/'+reportId+'/publication',{waitUntil:'networkidle'});await owner.page.getByRole('checkbox').check();await publishAction('Publish reviewed report');const release=(await get(owner.ctx,api+'/'+reportId+'/publications')).data.review.current;
+  await portalPage.bringToFront();await portalPage.goto(base+'/portal/reports/'+release.id,{waitUntil:'networkidle'});await portalPage.getByRole('heading',{name:'Period comparison',exact:true}).waitFor();
+  const visible=(await get(portalContext,'/api/bloomops/portal/reports/'+release.id)).data.report;check('portal freezes saved comparison '+reportId,JSON.stringify(visible.snapshot.comparison)===JSON.stringify(stored.comparison));
+  const download=portalPage.waitForEvent('download');await portalPage.getByRole('button',{name:'Download this published PDF',exact:true}).click();await(await download).saveAs(out+'/'+report.templateId+'-comparison.pdf');check('actual comparison PDF download '+reportId,readFileSync(out+'/'+report.templateId+'-comparison.pdf').subarray(0,5).toString()==='%PDF-');
+  await owner.page.bringToFront();await owner.page.goto(base+path+'/'+sourceId+'/publication',{waitUntil:'networkidle'});await publishAction('Withdraw client access');
+  check('published comparison remains immutable when baseline is withdrawn '+reportId,JSON.stringify((await get(portalContext,'/api/bloomops/portal/reports/'+release.id)).data.report)===JSON.stringify(visible));
+  await owner.page.goto(base+path+'/'+reportId+'/publication',{waitUntil:'networkidle'});check('unavailable comparison blocks new publication but permits withdrawal '+reportId,await owner.page.getByRole('button',{name:'Publish reviewed revision',exact:true}).isDisabled()&&await owner.page.getByRole('button',{name:'Withdraw client access',exact:true}).isEnabled());await publishAction('Withdraw client access');
  }
  // Next may stream the shell before notFound(), leaving HTTP 200. Assert the
  // actual denied UI and API authority, rather than treating that transport as access.

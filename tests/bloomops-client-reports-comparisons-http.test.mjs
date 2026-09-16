@@ -1,0 +1,21 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import './_jsx.mjs';
+import {setup} from './_work-projections.mjs';
+import {APP_URL,run} from './_bloomops-db.mjs';
+import {saveClientReport} from '../lib/bloomops/client-reports.mjs';
+import {changeReportPublication} from '../lib/bloomops/client-report-publications.mjs';
+import {input,draft} from './_client-report-fixture.mjs';
+import {releaseInput} from './_client-report-archive.mjs';
+test('comparison options require actual internal edit scope and reveal no other Client or portal candidates',async ctx=>{
+ const t=await setup({auth:true});ctx.after(()=>t.raw.close());globalThis[Symbol.for('__cloudflare-context__')]={env:t.env,cf:{},ctx:{}};
+ const prior=await saveClientReport(t.db,t.owner,'james',null,input({draft:draft({clientSummary:'Published baseline'})})),published=await changeReportPublication(t.db,t.owner,'james',prior.id,releaseInput());
+ const current=await saveClientReport(t.db,t.owner,'james',null,input({draft:draft({periodStart:'2026-09-01',periodEnd:'2026-09-30'})}));
+ const route=await import('../app/api/bloomops/clients/[id]/reports/[reportId]/comparisons/route.js');const cookies={};for(const name of ['ellen','james','sam','foreign'])cookies[name]=(await t.signIn(name+'@example.com')).cookie;
+ const request=(name,query='')=>new Request(APP_URL+'/api/bloomops/clients/james/reports/'+current.id+'/comparisons'+query,{headers:{...(name?{cookie:cookies[name]}:{})}}),params={params:Promise.resolve({id:'james',reportId:current.id})};
+ const good=await route.GET(request('ellen'),params);assert.equal(good.status,200);assert.equal(good.headers.get('cache-control'),'no-store');assert.equal((await good.json()).items[0].id,published.id);
+ assert.equal((await route.GET(request(null),params)).status,401);for(const name of ['james','sam','foreign'])assert.equal((await route.GET(request(name),params)).status,404);
+ assert.equal((await route.GET(request('ellen'),{params:Promise.resolve({id:'lawrence',reportId:current.id})})).status,404);
+ assert.equal((await route.GET(request('ellen','?page=0'),params)).status,400);assert.equal((await route.GET(request('ellen','?userId=foreign'),params)).status,400);
+ run(t.raw,"UPDATE workspace_memberships SET status='suspended' WHERE id='m-ellen'");assert.equal((await route.GET(request('ellen'),params)).status,403);
+});
