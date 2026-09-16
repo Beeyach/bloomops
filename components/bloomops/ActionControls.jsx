@@ -71,7 +71,7 @@ export function ActionControls({ action = null, projectId, members = [], milesto
     {dependencies && <Section id="action-dependencies" title="Dependencies" aside={mayManage && <Button size="sm" disabled={busy || !ready || !available.length} onClick={() => open('dependency')}>Add dependency</Button>}>
       <p className="bo-small">Prerequisite Actions are satisfied when Done. Cancelled work remains unresolved.</p>
       {dependencies.items.length ? <ul className="bo-action-dependencies" aria-label="Prerequisite Actions">{dependencies.items.map(edge => <li key={edge.id}>
-        <div><a className="bo-action-title" href={`/work/actions/${edge.actionId}`}>{edge.title}</a><p className="bo-small">{ACTION_STATUS_LABELS[edge.status]} · {edge.satisfied ? 'Satisfied' : 'Unresolved'}</p></div>
+        <div><a className="bo-action-title" href={`/work/actions/${edge.actionId}`}>{edge.title}</a><p className="bo-small"><span>{ACTION_STATUS_LABELS[edge.status]}</span> <span>{edge.satisfied ? 'Satisfied' : 'Unresolved'}</span></p></div>
         {mayManage && <Button size="sm" disabled={busy || !ready} onClick={() => open('remove', edge)} aria-label={`Remove dependency on ${edge.title}`}>Remove dependency</Button>}
       </li>)}</ul> : <p className="bo-body">{action.dependencyBlocked ? 'A prerequisite is unresolved. Its details are not available to you.' : 'No available prerequisites.'}</p>}
       {mayManage && !available.length && <p className="bo-small">Add another Action to this Project before choosing a new prerequisite.</p>}
@@ -99,7 +99,7 @@ export function ActionControls({ action = null, projectId, members = [], milesto
           {dialog.kind === 'create' && <p className="bo-small">Starts To Do with Normal priority unless you choose another priority. A Project can hold up to 200 Actions.</p>}
         </>}
         {dialog.kind === 'status' && <>
-          <p className="bo-body">{action.title} · Currently {ACTION_STATUS_LABELS[action.status]}.</p>
+          <p className="bo-body">{action.title}. Currently {ACTION_STATUS_LABELS[action.status]}.</p>
           <Field id="action-toStatus" label="Next Action status" error={errors.toStatus}><select {...aria('toStatus')} className="bo-control" value={values.toStatus} onChange={change('toStatus')}>{ACTION_TRANSITIONS[action.status].map(value => <option key={value} value={value}>{ACTION_STATUS_LABELS[value]}</option>)}</select></Field>
           {values.toStatus === 'waiting' && <>
             <Field id="action-waitingType" label="Waiting on" error={errors.waitingType}><select {...aria('waitingType')} className="bo-control" value={values.waitingType} onChange={change('waitingType')}>{ACTION_WAITING_TYPES.map(value => <option key={value} value={value}>{actionLabel(value)}</option>)}</select></Field>

@@ -32,7 +32,7 @@ export default function ContentApprovals({item,history,openRound=null,mayManage=
       {round.withdrawnAt&&<p className="bo-hint">Withdrawn <time dateTime={round.withdrawnAt}>{round.withdrawnAt.replace('T',' ').replace('Z',' UTC')}</time>{round.withdrawerName?` by ${round.withdrawerName}`:''}</p>}
       {round.feedback&&<div className="bo-review-feedback"><h4 className="bo-label">Client feedback</h4><p className="bo-content-copy">{round.feedback}</p></div>}
       {round.withdrawalReason&&<p className="bo-content-copy">Withdrawal reason: {round.withdrawalReason}</p>}
-      <details className="bo-review-details"><summary>Review snapshot · Round {round.number}</summary><ContentReviewSnapshot snapshot={round.snapshot} /></details>
+      <details className="bo-review-details"><summary>Review snapshot: Round {round.number}</summary><ContentReviewSnapshot snapshot={round.snapshot} /></details>
     </li>)}</ol>:<p className="bo-body">No approval rounds on this page.</p>}
     <nav className="bo-form-actions" aria-label="Approval history pages">{history.page>1&&<Button href={`/social/${item.id}?approvalPage=${history.page-1}#content-approvals`}>Newer rounds</Button>}{history.hasMore&&<Button href={`/social/${item.id}?approvalPage=${history.page+1}#content-approvals`}>Older rounds</Button>}</nav>
     <Dialog open={!!mode} onClose={close} title={mode==='withdraw'?'Withdraw approval request':'Request Client approval'} initialFocus={mode==='withdraw'?'#approval-withdrawal-reason':'#approval-confirm'}>

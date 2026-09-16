@@ -21,10 +21,10 @@ export default function ContentCalendar({result,month,query={},options}) {
     {!result.items.length?<EmptyState title="Nothing planned in this range"><p>Choose another month, clear filters, or add a target publish date to Content.</p></EmptyState>:<div className="bo-content-calendar">{dates.map(date=><section key={date} aria-labelledby={`calendar-${date}`}>
       <h2 id={`calendar-${date}`} className="bo-h2"><time dateTime={date}>{contentDateLabel(date)}</time></h2>
       <ul className="bo-content-list" aria-label={`Content for ${date}`}>{result.items.filter(i=>i.targetPublishDate===date).map(item=><li key={item.id}>
-        <div><a className="bo-content-title" href={`/social/${item.id}`}>{item.title}</a><p className="bo-small">{item.clientName} · {CONTENT_TYPE_LABELS[item.type]}</p></div>
-        <div className="bo-content-summary"><Status label={CONTENT_STAGE_LABELS[item.stage]} /><span>{item.platforms.length?item.platforms.map(p=>p.label).join(' · '):'No platforms set'}</span>{item.stage==='published'&&item.publishedAt&&<span>Published <time dateTime={item.publishedAt}>{item.publishedAt.replace('T',' ').replace('Z',' UTC')}</time></span>}</div>
+        <div><a className="bo-content-title" href={`/social/${item.id}`}>{item.title}</a><p className="bo-small bo-record-subtitle"><span>{item.clientName}</span><span>{CONTENT_TYPE_LABELS[item.type]}</span></p></div>
+        <div className="bo-content-summary"><Status label={CONTENT_STAGE_LABELS[item.stage]} /><span>{item.platforms.length?item.platforms.map(p=><span key={p.label}>{p.label}</span>):'No platforms set'}</span>{item.stage==='published'&&item.publishedAt&&<span>Published <time dateTime={item.publishedAt}>{item.publishedAt.replace('T',' ').replace('Z',' UTC')}</time></span>}</div>
       </li>)}</ul>
     </section>)}</div>}
-    <nav className="bo-content-pagination" aria-label="Calendar pages">{result.page>1&&<Button href={href({page:String(result.page-1)})}>Previous page</Button>}<p className="bo-small">Page {result.page}{result.hasMore?' · More dated Content is available.':''}</p>{result.hasMore&&<Button href={href({page:String(result.page+1)})}>Next page</Button>}</nav>
+    <nav className="bo-content-pagination" aria-label="Calendar pages">{result.page>1&&<Button href={href({page:String(result.page-1)})}>Previous page</Button>}<p className="bo-small">Page {result.page}{result.hasMore&&<span className="bo-pagination-note">More dated Content is available.</span>}</p>{result.hasMore&&<Button href={href({page:String(result.page+1)})}>Next page</Button>}</nav>
   </>;
 }

@@ -13,5 +13,5 @@ export default async function EditContentPage({ params }) {
   if (!item) notFound();
   const options = await contentOptions(access.db, actor, { query: item.clientName.slice(0, 120) });
   item.approvalRequested=!!(await openContentApproval(access.db,actor,item.id));
-  return <><Button href={`/social/${item.id}`} variant="ghost">Back to Content</Button><PageHeader title="Edit Content" subtitle={`${item.clientName} · ${item.serviceName || 'Client-level Content'}`} /><ContentForm item={item} options={options} /><ContentPlatforms item={item} /></>;
+  return <><Button href={`/social/${item.id}`} variant="ghost">Back to Content</Button><PageHeader title="Edit Content" subtitle={<span className="bo-record-subtitle"><span>{item.clientName}</span><span>{item.serviceName || 'Client-level Content'}</span></span>} /><ContentForm item={item} options={options} /><ContentPlatforms item={item} /></>;
 }

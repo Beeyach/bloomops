@@ -86,7 +86,7 @@ export default function SystemsBuildControls({ projectId, retryScope, options: i
     <Dialog open={open} onClose={close} title={packet ? 'Resume build' : preview ? `Review ${platform} work` : `Choose ${platform} components`}>
       <div className="bo-dialog-body" aria-busy={busy}>
         {packet ? <p className="bo-body">Retry the saved request to confirm its result. Work that was already saved will be kept without duplication.</p> : preview ? <>
-          <p className="bo-body">{preview.plan.milestones.length} milestones · {preview.plan.actions.length} actions · {preview.plan.deliverables.length} deliverables</p>
+          <p className="bo-body bo-record-subtitle"><span>{preview.plan.milestones.length} milestones</span><span>{preview.plan.actions.length} actions</span><span>{preview.plan.deliverables.length} deliverables</span></p>
           <p className="bo-small">Work starts internal, without assignments or dates. The project stays Planned.</p>
           {[['Milestones', preview.plan.milestones, 'name'], ['Actions', preview.plan.actions, 'title'], ['Deliverables', preview.plan.deliverables, 'title']].map(([label, rows, title]) => <div key={label}>
             <h3 className="bo-h3">{label}</h3>{rows.length ? <ol className="bo-build-preview">{rows.map(row => <li key={row.logicalKey}>{row[title]}</li>)}</ol> : <p className="bo-small">None selected.</p>}

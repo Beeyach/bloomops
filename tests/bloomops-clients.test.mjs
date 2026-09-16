@@ -1246,7 +1246,7 @@ test('a contact row names the primary in words and says when someone can sign in
   const primary = render(Clients.ContactRow, { contact: { id: 'c1', name: 'Rae Ellis', title: 'Operations lead', email: 'rae@example.com', phone: '+61 2 5550 0100', isPrimary: true, linked: false } });
   assert.match(primary, /Rae Ellis/);
   assert.match(primary, /Primary contact/);
-  assert.match(primary, /Operations lead · rae@example.com/);
+  assert.match(primary, /<span>Operations lead<\/span><span>rae@example.com<\/span>/);
   assert.ok(!/Can sign in/.test(primary));
 
   const linked = render(Clients.ContactRow, { contact: { id: 'c2', name: 'Sam', title: null, email: 'sam@example.com', phone: null, isPrimary: false, linked: true } });
@@ -1261,7 +1261,7 @@ test('an activity line is words, a name, and a date, with no code, id, or JSON',
   });
   assert.match(html, /Health changed/);
   assert.match(html, /From On Track to Needs Attention\./);
-  assert.match(html, /Priya Manel · 4 Sept? 2026/);
+  assert.match(html, /<span>Priya Manel<\/span><time>4 Sept? 2026<\/time>/);
   assert.ok(!/CLIENT_|metadata|\{|e1/.test(html.replace(/class="[^"]*"/g, '')), 'no code, metadata, or id');
   assert.ok(!/mono/.test(html), 'and no console aesthetic');
 });

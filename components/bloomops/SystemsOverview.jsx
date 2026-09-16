@@ -3,6 +3,7 @@ import { PROJECT_STATUSES, PROJECT_STATUS_LABELS } from '@/lib/bloomops/project-
 import { DELIVERABLE_STATUS_LABELS } from '@/lib/bloomops/deliverable-values.mjs';
 import { Button, EmptyState, Field, Section, Status } from './Primitives';
 import { ProjectHealth, ProjectStatus } from './Projects';
+import {Icon} from './Icons';
 import { WorkSummary } from './WorkSummary';
 
 const pageHref = (filters, page) => '/systems?' + new URLSearchParams({ ...filters, page });
@@ -15,7 +16,7 @@ export function SystemsOverview({ projection }) {
         <option value="">All clients</option>{options.clients.items.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
       </select></Field>
       <Field id="systems-service" label="Service"><select className="bo-control" id="systems-service" name="serviceEngagementId" defaultValue={filters.serviceEngagementId}>
-        <option value="">All Systems services</option>{options.services.items.map(item => <option key={item.id} value={item.id}>{item.clientName} · {item.name}</option>)}
+        <option value="">All Systems services</option>{options.services.items.map(item => <option key={item.id} value={item.id}>{item.clientName}: {item.name}</option>)}
       </select></Field>
       <Field id="systems-status" label="Project status"><select className="bo-control" id="systems-status" name="status" defaultValue={filters.status}>
         <option value="active">Active projects</option><option value="all">All statuses</option>
@@ -31,11 +32,11 @@ export function SystemsOverview({ projection }) {
       </EmptyState> : <ul className="bo-rows" aria-label="Systems projects">
         {projects.items.map(project => <li className="bo-project-row" key={project.id} data-project-id={project.id}>
           <div className="bo-row-text"><a className="bo-link bo-project-name" href={`/work/projects/${project.id}`}>{project.name}</a>
-            <span className="bo-row-meta">{project.clientName} · {project.serviceName}</span>
+            <dl className="bo-record-context"><div><dt>Client</dt><dd>{project.clientName}</dd></div><div><dt>Service</dt><dd>{project.serviceName}</dd></div></dl>
           </div>
-          <div className="bo-project-state"><ProjectStatus status={project.status} /><ProjectHealth health={project.health} /></div>
-          <div className="bo-project-meta">{project.attentionReason && <span>{project.attentionReason}</span>}
-            <span>{project.targetDate ? <>Target <time dateTime={project.targetDate}>{formatDate(project.targetDate)}</time></> : 'No target date'}</span>
+          <div className="bo-project-state"><ProjectStatus status={project.status} />{!['archived','cancelled','completed'].includes(project.status)&&<ProjectHealth health={project.health} />}</div>
+          <div className="bo-project-meta">{!['archived','cancelled','completed'].includes(project.status)&&project.attentionReason && <span>{project.attentionReason}</span>}
+            <span><Icon name="calendar" size={16}/>{project.targetDate ? <>Target <time dateTime={project.targetDate}>{formatDate(project.targetDate)}</time></> : 'No target date'}</span>
           </div>
           <WorkSummary project={project} execution />
         </li>)}
@@ -50,7 +51,7 @@ export function SystemsOverview({ projection }) {
       <p className="bo-small">Across the selected projects: review and approved work, plus targets in the next 14 days or already past. Dates follow each Client’s timezone, or UTC when unset.</p>
       <ul className="bo-home-outputs" aria-label="Systems deliverables">{deliverables.items.map(item => <li key={item.id} data-deliverable-id={item.id}>
         <div><a className="bo-link bo-project-name" href={`/work/projects/${item.projectId}#project-deliverables-title`}>{item.title}</a>
-          <p className="bo-small">{item.clientName} · {item.projectName}</p></div>
+          <dl className="bo-record-context"><div><dt>Client</dt><dd>{item.clientName}</dd></div><div><dt>Project</dt><dd>{item.projectName}</dd></div></dl></div>
         <div className="bo-home-output-state"><Status label={DELIVERABLE_STATUS_LABELS[item.status]} />
           {item.targetDate && <span className="bo-small">Target <time dateTime={item.targetDate}>{formatDate(item.targetDate)}</time></span>}
         </div>

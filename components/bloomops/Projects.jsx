@@ -1,3 +1,4 @@
+import {Icon} from './Icons';
 import {Button} from './Primitives';
 import { formatDate } from '@/lib/bloomops/format.mjs';
 import { PROJECT_HEALTH_LABELS, PROJECT_STATUS_LABELS, PROJECT_STATUS_TONES, PROJECT_VISIBILITY_LABELS } from '@/lib/bloomops/project-values.mjs';
@@ -24,10 +25,10 @@ export function ProjectList({ projects, filtered = false, hasMore = false, struc
       {projects.map(project => <li key={project.id} className="bo-project-row">
         <div className="bo-row-text">
           <a className="bo-link bo-project-name" href={`/work/projects/${project.id}`}>{project.name}</a>
-          {structured ? <dl className="bo-ads-context"><div><dt>Client</dt><dd>{project.clientName}</dd></div>{project.serviceName && <div><dt>Service</dt><dd>{project.serviceName}</dd></div>}</dl> : <span className="bo-row-meta">{[project.clientName, project.serviceName, project.departmentName].filter(Boolean).join(' · ')}</span>}
+          <dl className="bo-record-context"><div><dt>Client</dt><dd>{project.clientName}</dd></div>{project.serviceName&&<div><dt>Service</dt><dd>{project.serviceName}</dd></div>}{project.departmentName&&<div><dt>Type</dt><dd>{project.departmentName}</dd></div>}</dl>
         </div>
-        <div className="bo-project-state"><ProjectStatus status={project.status} /><ProjectHealth health={project.health} /></div>
-        <div className="bo-project-meta"><span>{project.targetDate ? `Target ${formatDate(project.targetDate)}` : 'No target date'}</span><span className="bo-small">{project.ownerName || 'No owner yet'}</span></div>
+        <div className="bo-project-state"><ProjectStatus status={project.status} />{!['archived','cancelled','completed'].includes(project.status)&&<ProjectHealth health={project.health} />}</div>
+        <div className="bo-project-meta"><span><Icon name="calendar" size={16}/>{project.targetDate ? `Target ${formatDate(project.targetDate)}` : 'No target date'}</span><span className="bo-small"><Icon name="user" size={16}/>{project.ownerName || 'No owner yet'}</span></div>
         <WorkSummary project={project} structured={structured} />
       </li>)}
     </ul>

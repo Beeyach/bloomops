@@ -2,7 +2,7 @@ import './globals.css';
 import './bloomops.css';
 
 export const metadata = {
-  title: { default: 'Bloomsi', template: '%s — Bloomsi' },
+  title: { default: 'Bloomsi', template: '%s | Bloomsi' },
   description: 'Post-sale agency operations and client portal.',
 };
 

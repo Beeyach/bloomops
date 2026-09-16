@@ -65,7 +65,7 @@ function AssignForm({ candidates, assigned, onSubmit, onCancel, busy, serverErro
             >
               {available.map((c) => (
                 <option key={c.membershipId} value={c.membershipId}>
-                  {c.name} · {c.roleLabel}
+                  {c.name} ({c.roleLabel})
                 </option>
               ))}
             </select>

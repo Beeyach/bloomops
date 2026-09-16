@@ -13,3 +13,5 @@
 .skeleton{height:100px;border-radius:10px;background:var(--bo-surface-2,#f0f3fc);margin:20px 0}.skeleton:last-of-type{height:180px}
 
 .conflict{margin-top:12px;padding:12px;border-left:3px solid #aa8958;background:#fcf7ed;font-size:13px;line-height:1.5}.conflict p{margin:6px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+
+.composer textarea::placeholder,.picker input::placeholder{color:var(--bo-text-soft,#5d5873);opacity:1}

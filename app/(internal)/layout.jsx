@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
 export default async function InternalLayout({ children }) {
   const { access } = await requireShell('internal');
   return (
-    <InternalShell workspace={access.workspace} user={access.user} roleLabel={ROLE_LABELS[access.membership.role] || access.membership.role}>
+    <InternalShell membershipId={access.membership.id} workspace={access.workspace} user={access.user} roleLabel={ROLE_LABELS[access.membership.role] || access.membership.role}>
       {children}
     </InternalShell>
   );

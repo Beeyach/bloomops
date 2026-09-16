@@ -15,16 +15,16 @@ export function ContentList({ result, query = {}, options }) {
     </form>
     {(options.parentsOverflow || options.membersOverflow) && <Notice>Filter choices show the first available Clients, services and owners. All accessible Content remains available through the pages below.</Notice>}
     {!result.items.length ? <EmptyState title="No Content here yet"><p>{Object.values(query).some(Boolean) ? 'Try clearing the filters or returning to the first page.' : 'Create an idea for a Client or a purchased Social service.'}</p></EmptyState> : <ul className="bo-content-list" aria-label="Content items">{result.items.map(item => <li key={item.id}>
-      <div><a className="bo-content-title" href={`/social/${item.id}`}>{item.title}</a><p className="bo-small">{item.clientName} · {item.serviceName || 'Client-level Content'}{item.packageName ? ` · ${item.packageName}` : ''}</p></div>
-      <div className="bo-content-summary"><span>{CONTENT_TYPE_LABELS[item.type]}</span><span>{item.platforms?.map(p=>p.label).join(' · ') || 'No platforms set'}</span><Status label={CONTENT_STAGE_LABELS[item.stage]} /><span>{item.ownerName || 'No owner'}</span><span>{item.targetPublishDate ? `Target ${item.targetPublishDate}` : 'No target date'}</span><span>{CONTENT_VISIBILITY_LABELS[item.visibility]}</span></div>
+      <div><a className="bo-content-title" href={`/social/${item.id}`}>{item.title}</a><dl className="bo-record-context"><div><dt>Client</dt><dd>{item.clientName}</dd></div><div><dt>Service</dt><dd>{item.serviceName || 'Client-level Content'}{item.packageName&&<span className="bo-finance-package">{item.packageName}</span>}</dd></div></dl></div>
+      <div className="bo-content-summary"><span>{CONTENT_TYPE_LABELS[item.type]}</span><span>{item.platforms?.length ? item.platforms.map(p=><span key={p.label}>{p.label}</span>) : 'No platforms set'}</span><Status label={CONTENT_STAGE_LABELS[item.stage]} /><span>{item.ownerName || 'No owner'}</span><span>{item.targetPublishDate ? `Target ${item.targetPublishDate}` : 'No target date'}</span><span>{CONTENT_VISIBILITY_LABELS[item.visibility]}</span></div>
     </li>)}</ul>}
-    <nav className="bo-content-pagination" aria-label="Content pages">{result.page > 1 && <Button href={pageHref(result.page - 1)}>Previous page</Button>}<p className="bo-small">Page {result.page}{result.hasMore ? ' · More Content is available.' : ''}</p>{result.hasMore && <Button href={pageHref(result.page + 1)}>Next page</Button>}</nav>
+    <nav className="bo-content-pagination" aria-label="Content pages">{result.page > 1 && <Button href={pageHref(result.page - 1)}>Previous page</Button>}<p className="bo-small">Page {result.page}{result.hasMore ? ' (More Content is available.)' : ''}</p>{result.hasMore && <Button href={pageHref(result.page + 1)}>Next page</Button>}</nav>
   </>;
 }
 export function ContentDetail({ item }) {
   return <div className="bo-content-detail">
     <Button href="/social" variant="ghost" size="sm">Back to Social</Button>
-    <PageHeader title={item.title} subtitle={`${item.clientName} · ${item.serviceName || 'Client-level Content'}${item.packageName ? ` · ${item.packageName}` : ''}`} actions={<Button href={`/social/${item.id}/edit`}>Edit details</Button>} />
+    <PageHeader title={item.title} subtitle={<span className="bo-record-subtitle"><span>{item.clientName}</span><span>{item.serviceName || 'Client-level Content'}</span>{item.packageName&&<span>{item.packageName}</span>}</span>} actions={<Button href={`/social/${item.id}/edit`}>Edit details</Button>} />
     <Facts items={[
       ['Type', CONTENT_TYPE_LABELS[item.type]], ['Stage', <Status key="stage" label={CONTENT_STAGE_LABELS[item.stage]} />], ['Pillar', item.pillar || 'Not set'], ['Owner', item.ownerName || 'Nobody yet'], ['Target publish date', item.targetPublishDate || 'Not set'], ['Visibility', CONTENT_VISIBILITY_LABELS[item.visibility]],
       ['Recording required', item.recordingRequired ? 'Yes' : 'No'], ['Internal review required', item.internalReviewRequired ? 'Yes' : 'No'], ['Client approval required', item.clientApprovalRequired ? 'Yes' : 'No'],

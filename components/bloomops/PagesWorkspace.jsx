@@ -32,7 +32,7 @@ export default function PagesWorkspace({initialTree,workspaceId,basePath='/pages
   return <li key={node.id}><div className={'bo-page-tree-row'+(currentId===node.id?' is-current':'')+(drop===node.id?' is-drop':'')} style={{'--page-depth':level}} draggable={tree.canManage&&!busy} onDragStart={e=>{if(e.target.closest('button'))return e.preventDefault();e.dataTransfer.setData('application/x-bloomsi-page',node.id);e.dataTransfer.effectAllowed='move';}} onDragEnd={()=>setDrop(null)} onDragOver={e=>{if(e.dataTransfer.types.includes('application/x-bloomsi-page')){e.preventDefault();e.stopPropagation();setDrop(node.id);}}} onDrop={e=>dropOn(e,node.id)}>
    <IconButton icon={open?'chevron-down':'chevron-right'} label={(open?'Collapse ':'Expand ')+node.title} disabled={!hasChildren} aria-expanded={hasChildren?open:undefined} onClick={()=>setExpanded(old=>open?old.filter(id=>id!==node.id):[...old,node.id])}/>
    <Link href={basePath+'/'+node.id} prefetch={false} aria-current={currentId===node.id?'page':undefined} title={node.title}><PageGlyph name={node.icon} size={16}/><span>{node.title}</span></Link>
-   {tree.canManage&&<><IconButton icon="more" label={'Move '+node.title} disabled={busy} onClick={()=>value.openMove(node.id)}/>
+   {tree.canManage&&<><button type="button" className="bo-page-move-control" aria-label={'Move '+node.title} disabled={busy} onClick={()=>value.openMove(node.id)}>Move</button>
    <IconButton icon="plus" label={'Add page inside '+node.title} disabled={busy||depthOf(node.id,tree.rows)>=MAX_PAGE_DEPTH-1} onClick={()=>create(node.id)}/></>}
   </div>{hasChildren&&open&&<ul>{node.children.map(child=>row(child,level+1))}</ul>}</li>;
  }

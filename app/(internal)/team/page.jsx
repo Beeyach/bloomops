@@ -38,5 +38,5 @@ export default async function TeamPage() {
 
   const [rows, invitations] = await readTogether(access.db, db => Promise.all([listWorkspaceMembers(db, access.workspace.id), listInvitations(db, access.workspace.id)]));
   const members = rows.map((m) => ({ ...m, roleLabel: ROLE_LABELS[m.role] || m.role }));
-  return <><div className="bo-form-actions"><Button href="/team/finance-access">Finance access</Button><Button href="/team/workload">Action workload</Button><Button href="/team/departments">Department work</Button></div><TeamManager members={members} invitations={invitations.map((i) => ({ ...i, roleLabel: ROLE_LABELS[i.role] || i.role }))} selfMembershipId={access.membership.id} workspaceName={access.workspace.name} /></>;
+  return <><TeamManager members={members} invitations={invitations.map((i) => ({ ...i, roleLabel: ROLE_LABELS[i.role] || i.role }))} selfMembershipId={access.membership.id} workspaceName={access.workspace.name} /></>;
 }

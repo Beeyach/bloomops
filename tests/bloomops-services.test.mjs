@@ -741,7 +741,7 @@ test('a service row is a row: name, department, package, date, and a status in w
     },
   });
   assert.match(html, /Social Media Management/);
-  assert.match(html, /Social · Growth · Started 1 Mar 2026/);
+  assert.match(html, /<span>Social<\/span><span>Growth<\/span><span>Started 1 Mar 2026<\/span>/);
   assert.match(html, /Three posts a week\./);
   assert.match(html, />Active</, 'the status is a word, not a colour');
   assert.doesNotMatch(html, /bo-card|gradient|holo|progress/i, 'no card, no chart, no ring');

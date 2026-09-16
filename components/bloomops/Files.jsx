@@ -29,7 +29,7 @@ export function FileList({ items = [], controls = null, portal = false, content 
     <div className="bo-file-heading"><h3 className="bo-row-title">{file.filename}</h3>{(!portal || content) && <Status label={FILE_STATUS_LABELS[file.status]} tone={file.status === 'failed' ? 'error' : 'neutral'} />}</div>
     <dl className="bo-file-properties"><div><dt>Size</dt><dd>{fileSize(file.byteSize)}</dd></div><div><dt>Type</dt><dd>{file.mimeType}</dd></div><div><dt>Added</dt><dd>{formatDate(file.readyAt || file.createdAt)}</dd></div></dl>
     {(portal ? file.attachmentLabel : file.deliverableTitle) && <p className="bo-small">For {portal ? file.attachmentLabel : file.deliverableTitle}</p>}
-    {!portal && <p className="bo-small">{content && `${file.purpose === 'recording' ? 'Recording' : 'Production asset'} · `}{file.visibility === 'client' ? content ? 'Client eligible under the recording request rules' : 'Client visible when the Project and attachment are shared' : file.visibility === 'restricted' ? 'Restricted' : 'Internal'}</p>}
+    {!portal && <p className="bo-small">{content && <span className="bo-pagination-note">{file.purpose === 'recording' ? 'Recording' : 'Production asset'}</span>}{file.visibility === 'client' ? content ? 'Client eligible under the recording request rules' : 'Client visible when the Project and attachment are shared' : file.visibility === 'restricted' ? 'Restricted' : 'Internal'}</p>}
     <div className="bo-file-controls">{((portal && !content) || file.status === 'ready') && <FileDownload file={file} downloadBase={downloadBase} />}{controls?.(file)}</div>
   </li>)}</ul>;
 }
@@ -42,5 +42,5 @@ export function PortalFiles({ summary, downloadBase = null }) {
 export function DeliverableFiles({ items = [] }) {
   const ready = items.filter(file => file.status === 'ready');
   if (!ready.length) return null;
-  return <div className="bo-deliverable-files"><p className="bo-small">Attached files</p><ul className="bo-files">{ready.map(file => <li className="bo-file-attachment" key={file.id}><span>{file.filename} · {fileSize(file.byteSize)}</span><FileDownload file={file} /></li>)}</ul></div>;
+  return <div className="bo-deliverable-files"><p className="bo-small">Attached files</p><ul className="bo-files">{ready.map(file => <li className="bo-file-attachment" key={file.id}><span className="bo-record-subtitle"><span>{file.filename}</span><span>{fileSize(file.byteSize)}</span></span><FileDownload file={file} /></li>)}</ul></div>;
 }

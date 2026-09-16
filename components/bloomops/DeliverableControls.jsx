@@ -62,7 +62,7 @@ export default function DeliverableControls({ projectId, summary, files = [], ma
     <Dialog open={Boolean(dialog)} onClose={close} title={dialog?.kind === 'create' ? 'Add Deliverable' : dialog?.kind === 'status' ? 'Change Deliverable status' : 'Edit Deliverable'} initialFocus={dialog?.kind === 'status' ? '#deliverable-toStatus' : '#deliverable-title'}>
       {dialog && <form onSubmit={submit} noValidate><div className="bo-dialog-body">
         {dialog.kind === 'status' ? <>
-          <p className="bo-body">{dialog.item.title} · Currently {DELIVERABLE_STATUS_LABELS[dialog.item.status]}.</p>
+          <p className="bo-body">{dialog.item.title}. Currently {DELIVERABLE_STATUS_LABELS[dialog.item.status]}.</p>
           <Field id="deliverable-toStatus" label="Next Deliverable status" error={errors.toStatus}><select {...aria('toStatus')} className="bo-control" value={values.toStatus} onChange={change('toStatus')}>
             {DELIVERABLE_TRANSITIONS[dialog.item.status].map(status => <option key={status} value={status}>{DELIVERABLE_STATUS_LABELS[status]}</option>)}
           </select></Field>
