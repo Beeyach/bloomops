@@ -154,6 +154,15 @@ try{
  assert.equal((await post(owner.ctx,'/api/bloomops/members/m-ary',{status:'suspended'},'PATCH')).status,200);await admin.page.evaluate(()=>window.dispatchEvent(new Event('focus')));await admin.page.getByRole('alert').filter({hasText:'no longer available'}).waitFor();check('revocation removes mounted private preview',await admin.page.getByRole('heading',{name:'N3A GHL persisted draft',exact:true}).count()===0);check('revocation denies guessed API',[403,404].includes((await get(admin.ctx,api+'/'+id)).status));
  assert.equal((await post(owner.ctx,'/api/bloomops/members/m-ary',{status:'active'},'PATCH')).status,200);
  await owner.page.emulateMedia({reducedMotion:'reduce'});await owner.page.goto(base+path+'/'+id+'/preview',{waitUntil:'networkidle'});check('reduced motion preview healthy',await owner.page.getByRole('heading',{name:'N3A GHL persisted draft',exact:true}).count()===1);
+ // Wait for the actual publication mutation, not a preceding route navigation.
+ async function publishAction(label,{keyboard=false}={}){
+  const button=owner.page.getByRole('button',{name:label,exact:true});
+  await owner.page.waitForFunction(name=>Array.from(document.querySelectorAll('button')).some(b=>b.textContent.trim()===name&&!b.disabled),label);
+  const response=owner.page.waitForResponse(r=>r.url().endsWith('/publications')&&r.request().method()==='POST');
+  const navigation=owner.page.waitForNavigation({waitUntil:'networkidle'});
+  if(keyboard){await button.focus();await owner.page.keyboard.press('Enter');}else await button.click();
+  const result=await response;assert.equal(result.status(),200,'publication mutation succeeds');await navigation;
+ }
  const published=[];
  for(const reportId of created){
   await owner.page.bringToFront();await owner.page.goto(base+path+'/'+reportId,{waitUntil:'networkidle'});
@@ -161,7 +170,7 @@ try{
   await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Save draft',exact:true}).click()]);
   await owner.page.getByRole('link',{name:'Review publication and history',exact:true}).click();await owner.page.getByRole('heading',{name:'Publication review',exact:true}).waitFor();
   check('publication review excludes private source text '+reportId,!((await owner.page.locator('main').innerText()).includes('synthetic source')));
-  await owner.page.getByRole('checkbox').check();await owner.page.getByRole('button',{name:'Publish reviewed report',exact:true}).focus();await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.keyboard.press('Enter')]);
+  await owner.page.getByRole('checkbox').check();await publishAction('Publish reviewed report',{keyboard:true});
   const release=(await get(owner.ctx,api+'/'+reportId+'/publications')).data.review.current;published.push(release.id);check('explicit publish creates version one '+reportId,release.sequence===1&&release.kind==='publish');
   await portalPage.bringToFront();await portalPage.goto(base+'/portal/reports',{waitUntil:'networkidle'});const entry=(await get(portalContext,'/api/bloomops/portal/reports/'+release.id)).data.report;
   await portalPage.getByRole('link',{name:entry.snapshot.title,exact:true}).click();await portalPage.getByText('Client-safe summary for '+reportId,{exact:true}).waitFor();
@@ -172,10 +181,10 @@ try{
   await owner.page.bringToFront();await owner.page.goto(base+path+'/'+reportId,{waitUntil:'networkidle'});await owner.page.getByRole('textbox',{name:'Client summary',exact:true}).fill('Revised client-safe summary');await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Save draft',exact:true}).click()]);
   check('editor keeps draft and publication status distinct '+reportId,await owner.page.getByRole('status').filter({hasText:'Published versions remain separate.'}).count()===1);
   check('draft edit leaves released snapshot unchanged '+reportId,(await get(portalContext,'/api/bloomops/portal/reports/'+release.id)).data.report.snapshot.clientSummary==='Client-safe summary for '+reportId);
-  await owner.page.getByRole('link',{name:'Review publication and history',exact:true}).click();await owner.page.getByRole('checkbox').check();await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Publish reviewed revision',exact:true}).click()]);
+  await owner.page.getByRole('link',{name:'Review publication and history',exact:true}).click();await owner.page.getByRole('checkbox').check();await publishAction('Publish reviewed revision');
   const revised=(await get(owner.ctx,api+'/'+reportId+'/publications')).data.review.current;check('revision preserves earlier internal history '+reportId,(await get(owner.ctx,api+'/'+reportId+'/versions/'+release.id)).data.report.snapshot.clientSummary==='Client-safe summary for '+reportId&&revised.sequence===2);
   check('replaced client link and PDF are denied '+reportId,(await get(portalContext,'/api/bloomops/portal/reports/'+release.id)).status===404&&(await portalContext.request.get(base+'/api/bloomops/portal/reports/'+release.id+'/pdf')).status()===404);
-  await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Withdraw client access',exact:true}).click()]);check('withdrawal denies latest portal/PDF while retaining history '+reportId,(await get(portalContext,'/api/bloomops/portal/reports/'+revised.id)).status===404&&(await portalContext.request.get(base+'/api/bloomops/portal/reports/'+revised.id+'/pdf')).status()===404&&(await get(owner.ctx,api+'/'+reportId+'/versions/'+revised.id)).status===200);
+  await publishAction('Withdraw client access');check('withdrawal denies latest portal/PDF while retaining history '+reportId,(await get(portalContext,'/api/bloomops/portal/reports/'+revised.id)).status===404&&(await portalContext.request.get(base+'/api/bloomops/portal/reports/'+revised.id+'/pdf')).status()===404&&(await get(owner.ctx,api+'/'+reportId+'/versions/'+revised.id)).status===200);
  }
  check('withdrawn reports disappear from client list',(await get(portalContext,'/api/bloomops/portal/reports')).data.items.length===0);
  await portalContext.close();
