@@ -47,7 +47,7 @@ export function ClientRow({ client }) {
       <a className="bo-row bo-client-row" href={`/clients/${client.id}`}>
         <span className="bo-row-text">
           <span className="bo-row-title">{client.name}</span>
-          {context.length > 0 && <span className="bo-row-meta">{context.join(' · ')}</span>}
+          {context.length > 0 && <span className="bo-row-meta">{context.map((value,i)=><span key={i}>{value}</span>)}</span>}
         </span>
         <span className="bo-row-end bo-client-row-state">
           <ClientStatus status={client.relationshipStatus} />
@@ -164,7 +164,7 @@ export function ContactRow({ contact, actions = null }) {
           {contact.name}
           {contact.isPrimary && <span className="bo-client-primary">Primary contact</span>}
         </span>
-        {meta.length > 0 && <span className="bo-row-meta">{meta.join(' · ')}</span>}
+        {meta.length > 0 && <span className="bo-row-meta">{meta.map((value,i)=><span key={i}>{value}</span>)}</span>}
         {contact.linked && <span className="bo-row-meta">Can sign in to the client portal.</span>}
       </span>
       {actions && <span className="bo-row-end">{actions}</span>}
@@ -183,7 +183,7 @@ export function ActivityRow({ event }) {
         <span className="bo-activity-title">{event.title}</span>
         {event.detail && <span className="bo-activity-detail">{event.detail}</span>}
         <span className="bo-activity-meta">
-          {event.actor ? `${event.actor} · ${when}` : when}
+          <span>{event.actor}</span><time>{when}</time>
         </span>
       </span>
     </li>

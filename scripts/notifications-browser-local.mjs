@@ -1,6 +1,7 @@
 // N2E: reuse the N2D Playwright flows and existing numeric navigation wrapper.
 // Starts its own built Worker, in-memory D1/R2 and synthetic identities. No .dev.vars.
 import assert from 'node:assert/strict';
+import {checkNotificationBell} from './notification-bell-browser.mjs';
 import {createRequire} from 'node:module';
 import {dirname,resolve,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -84,6 +85,7 @@ try{
  const command=async(ctx,patch)=>post(ctx,api,{...(await inbox(ctx)).scope,...patch});
  const rootInput=input({mentions:['m-ary']});const rootMsg=await post(owner.ctx,discussion,rootInput);assert.equal(rootMsg.status,200);await post(owner.ctx,discussion,rootInput);
  check('real HTTP mention retry produces one delivery',(await inbox(ary.ctx)).items.length===1);
+ await checkNotificationBell({page:ary.page,ctx:ary.ctx,base,inbox,command,check,out});
  await ary.page.goto(base+'/notifications',{waitUntil:'networkidle'});await ary.page.getByRole('heading',{name:'Notifications',exact:true}).waitFor();
  for(const width of [1440,1024,768,390,320]){await ary.page.setViewportSize({width,height:1000});check(`inbox ${width} no overflow`,await ary.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await ary.page.screenshot({path:out+`/inbox-${width}.png`,fullPage:true});}
  await ary.page.setViewportSize({width:1440,height:1000});await ary.page.getByRole('button',{name:/Mark read:/}).focus();await ary.page.keyboard.press('Enter');await ary.page.getByText('0 unread',{exact:true}).waitFor();check('keyboard marks read',true);await ary.page.getByRole('button',{name:/Mark unread:/}).click();await ary.page.getByText('1 unread',{exact:true}).waitFor();check('UI marks unread',true);

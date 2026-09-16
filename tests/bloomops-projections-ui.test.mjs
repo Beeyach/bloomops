@@ -20,7 +20,7 @@ test('Home renders distinct accessible record links with no management controls 
   const html=render(OperationalHome,{projection:await t.home()});
   for(const id of ['home-overdue','home-projects','home-deliverables','home-recent']) assert.match(html,new RegExp(`aria-labelledby="${id}-title"`));
   assert.match(html,/\/work\/actions\/website-action/); assert.match(html,/\/work\/projects\/website#project-deliverables-title/); assert.match(html,/\/work\/projects\/website#project-files-title/);
-  assert.match(html,/Deliverable delivered/); assert.match(html,/File uploaded/); assert.match(html,/1 of 1 milestones finished · 100%/);
+  assert.match(html,/Deliverable delivered/); assert.match(html,/File uploaded/); assert.match(html,/1 of 1 milestones finished[\s\S]*100%/);
   assert.doesNotMatch(html,/<button|<input|<select|<form|Upload file|Change status|Archive|SECRET_KEY|uploader|sha256|OLD_/);
   assert.doesNotMatch(html,/home-today-title|home-waiting-title|home-review-title/,'empty Action sections stay absent');
 });
@@ -30,7 +30,7 @@ test('Work Projects gain only readable summaries and links to the exact Action v
   const html=render(ProjectList,{projects:(await t.summaries()).items});
   assert.match(html,/Summary for Project website/); assert.match(html,/3 open Actions/); assert.match(html,/2 Deliverables/); assert.match(html,/1 Ready file/);
   for(const view of ['overdue','waiting','review']) assert.match(html,new RegExp(`view=${view}`));
-  assert.match(html,/Project website/); assert.match(html,/james · social · social/); assert.doesNotMatch(html,/undefined|NaN|SECRET_KEY/);
+  assert.match(html,/Project website/); assert.match(html,/<dt>Client<\/dt><dd>james<\/dd>[\s\S]*<dt>Service<\/dt><dd>social<\/dd>[\s\S]*<dt>Type<\/dt><dd>social<\/dd>/); assert.doesNotMatch(html,/undefined|NaN|SECRET_KEY/);
 });
 
 test('an Action-only Home has its Action link and no Project/Deliverable/File/Client summary links', async () => {

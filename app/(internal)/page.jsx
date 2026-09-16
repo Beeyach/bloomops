@@ -12,7 +12,7 @@ export default async function HomePage() {
   const projection = await homeProjection(access.db, actor);
   return (
     <>
-      <PageHeader title="Home" subtitle={`${access.workspace.name} · What needs attention across your work.`} actions={<Button href="/work">My work</Button>} />
+      <PageHeader title="Home" subtitle="What needs attention across your work." actions={<Button href="/work">My work</Button>} />
       <OperationalHome projection={projection} />
     </>
   );

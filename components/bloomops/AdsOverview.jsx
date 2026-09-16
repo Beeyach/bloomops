@@ -33,8 +33,8 @@ export function AdsOverview({ projection }) {
           <div className="bo-row-text"><a className="bo-link bo-project-name" href={`/work/projects/${project.id}`}>{project.name}</a>
             <dl className="bo-ads-context"><div><dt>Client</dt><dd>{project.clientName}</dd></div><div><dt>Service</dt><dd>{project.serviceName}</dd></div></dl>
           </div>
-          <div className="bo-project-state"><ProjectStatus status={project.status} /><ProjectHealth health={project.health} /></div>
-          <div className="bo-project-meta">{project.attentionReason && <span>{project.attentionReason}</span>}
+          <div className="bo-project-state"><ProjectStatus status={project.status} />{!['archived','cancelled','completed'].includes(project.status)&&<ProjectHealth health={project.health} />}</div>
+          <div className="bo-project-meta">{!['archived','cancelled','completed'].includes(project.status)&&project.attentionReason && <span>{project.attentionReason}</span>}
             <span>{project.targetDate ? <>Target <time dateTime={project.targetDate}>{formatDate(project.targetDate)}</time></> : 'No target date'}</span>
           </div>
           <WorkSummary project={project} execution structured />

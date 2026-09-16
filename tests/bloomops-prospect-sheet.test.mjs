@@ -74,3 +74,15 @@ test('manual evidence notes remain readable only in authorized prospect history'
  const history=(await getProspect(t.db,t.actor,t.id)).activity;assert.equal(history.filter(e=>e.metadata.note?.startsWith('Visible internal evidence')).length,3);assert.ok(history.every(e=>!Object.hasOwn(e.metadata,'source')));
  assert.equal(await getProspect(t.db,{...t.actor,role:'client'},t.id),null);assert.equal(await getProspect(t.db,{...t.actor,workspaceId:'foreign'},t.id),null);run(t.raw,"UPDATE workspace_memberships SET status='suspended' WHERE id='m'");assert.equal(await getProspect(t.db,t.actor,t.id),null);
 });
+
+test('empty-state copy distinguishes a filtered miss from an empty authorized workspace',async c=>{
+ const t=await fixture(c);
+ assert.equal((await listProspectSheet(t.db,t.actor,{q:'no matching synthetic record'})).workspaceEmpty,false);
+ assert.equal((await listProspectSheet(t.db,t.actor,{})).workspaceEmpty,false);
+ run(t.raw,"INSERT INTO workspace_memberships(id,workspace_id,user_id,role,status) VALUES('empty-member','foreign','owner','owner','active')");
+ t.actor={...t.actor,workspaceId:'foreign',membershipId:'empty-member'};
+ assert.equal((await listProspectSheet(t.db,t.actor,{})).workspaceEmpty,true);
+ assert.equal((await listProspectSheet(t.db,t.actor,{q:'no matching synthetic record'})).workspaceEmpty,true);
+ run(t.raw,"UPDATE workspace_memberships SET status='suspended' WHERE id='empty-member'");
+ assert.equal((await listProspectSheet(t.db,t.actor,{})).rows.length,0);
+});

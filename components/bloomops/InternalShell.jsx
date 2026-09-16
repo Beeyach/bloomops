@@ -1,4 +1,6 @@
-import NotificationLink from './NotificationLink';
+import NotificationBell from './NotificationBell';
+import {Icon} from './Icons';
+import Link from 'next/link';
 import BrandLogo from './BrandLogo';
 import { INTERNAL_NAV } from '@/lib/bloomops/navigation.mjs';
 import InternalNav from './InternalNav';
@@ -18,7 +20,7 @@ import SearchLink from './SearchLink';
 // resolved that through lib/bloomops/shell-server.mjs, and every page
 // resolves it again for itself.
 
-export default function InternalShell({ workspace, user, roleLabel, children }) {
+export default function InternalShell({ workspace, user, roleLabel, membershipId, children }) {
   const account = { name: user.name, email: user.email, roleLabel, workspaceName: workspace.name };
   return (
     <div className="bo-root">
@@ -29,12 +31,10 @@ export default function InternalShell({ workspace, user, roleLabel, children }) 
         <aside className="bo-sidebar" aria-label="Workspace">
           <div className="bo-sidebar-head">
             <BrandLogo />
-            <div className="bo-workspace-text" style={{ minWidth: 0 }}>
-              <div className="bo-workspace-name">{workspace.name}</div>
-            </div>
+
           </div>
           <div className="bo-sidebar-scroll">
-            <SearchLink /><NotificationLink />
+            <SearchLink />
             <InternalNav items={INTERNAL_NAV} />
           </div>
           <div className="bo-sidebar-foot">
@@ -42,14 +42,12 @@ export default function InternalShell({ workspace, user, roleLabel, children }) 
           </div>
         </aside>
         <div className="bo-main">
-          <header className="bo-topbar bo-topbar-internal">
-            <div className="bo-topbar-title">
-              <BrandLogo />
-              <div style={{ minWidth: 0 }}>
-                <div className="bo-workspace-name">{workspace.name}</div>
-              </div>
-            </div>
-            <div className="bo-topbar-tools"><NotificationLink compact/><SearchLink compact/><AccountMenu {...account} placement="down" compact settingsHref="/settings" /></div>
+          <header className="bo-internal-utilities">
+            <BrandLogo />
+            <Link href="/workspaces" className="bo-workspace-control" title={workspace.name} aria-label={`Switch workspace: ${workspace.name}`}><Icon name="team" size={18}/><span><small>Workspace</small><strong>{workspace.name}</strong></span><Icon name="chevron-down" size={16}/></Link>
+            <NotificationBell scope={{workspaceId:workspace.id,userId:user.id,membershipId}}/>
+            <SearchLink compact/>
+            <AccountMenu {...account} placement="down" compact settingsHref="/settings" />
           </header>
           <main id="main" className="bo-page" tabIndex={-1}>
             {children}

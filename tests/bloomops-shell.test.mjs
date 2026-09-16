@@ -343,7 +343,7 @@ test('the Team rows offer only the actions the server would accept, and never a 
 
   const pending = { id: 'i1', email: 'new@example.com', role: 'admin', roleLabel: 'Admin', status: 'pending', expiresAt: new Date(Date.now() + 3 * 86400000).toISOString(), inviteeName: 'New Person', tokenHash: 'should-never-be-passed' };
   const row = render(InvitationRow, { invitation: pending, busy: null, onResend: noop, onRevoke: noop });
-  assert.match(row, /New Person · new@example.com/);
+  assert.match(row, /New Person<\/span><span class="bo-row-meta bo-invitation-meta"><span>new@example.com<\/span>/);
   assert.match(row, /Expires in 3 days/);
   assert.match(row, /Resend the invitation/);
   assert.match(row, /Withdraw the invitation/);

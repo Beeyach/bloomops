@@ -87,7 +87,7 @@ function ServiceForm({ service, serviceTypes, onSubmit, onCancel, busy, serverEr
               <span className="bo-label">Service</span>
               <p className="bo-body">
                 {service.serviceTypeName}
-                {service.departmentName ? <span className="bo-soft"> · {service.departmentName}</span> : null}
+                {service.departmentName ? <span className="bo-service-department">{service.departmentName}</span> : null}
               </p>
             </div>
             <Field id={id('status')} label="Status" error={shown.status} hint="This changes the service only. The client’s own status is not affected.">
@@ -113,7 +113,7 @@ function ServiceForm({ service, serviceTypes, onSubmit, onCancel, busy, serverEr
             >
               {serviceTypes.map((type) => (
                 <option key={type.id} value={type.id}>
-                  {type.departmentName ? `${type.name} · ${type.departmentName}` : type.name}
+                  {type.departmentName ? `${type.name} (${type.departmentName})` : type.name}
                 </option>
               ))}
             </select>

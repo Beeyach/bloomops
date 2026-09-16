@@ -100,9 +100,9 @@ export function InvitationRow({ invitation, busy, onResend, onRevoke }) {
   return (
     <li className="bo-row bo-row-wrap">
       <span className="bo-row-text">
-        <span className="bo-row-title">{invitation.inviteeName ? `${invitation.inviteeName} · ${invitation.email}` : invitation.email}</span>
-        <span className="bo-row-meta">
-          {invitation.roleLabel} · {expiry}
+        <span className="bo-row-title">{invitation.inviteeName || invitation.email}</span>
+        <span className="bo-row-meta bo-invitation-meta">
+          <span>{invitation.email}</span><span>{invitation.roleLabel}</span><span>{expiry}</span>
         </span>
       </span>
       <span className="bo-row-end">
@@ -264,6 +264,8 @@ export default function TeamManager({ members, invitations, selfMembershipId, wo
           </Button>
         }
       />
+
+      <nav className="bo-team-navigation" aria-label="Team views"><a href="/team" aria-current="page">People</a><a href="/team/workload">Workload</a><a href="/team/departments">Department work</a><Button href="/team/finance-access" size="sm" icon="settings">Finance access</Button></nav>
 
       <Section id="members" title="People" aside={<span className="bo-small bo-num">{plural(current.length, 'member')}</span>}>
         <ul className="bo-rows" aria-label="Members">

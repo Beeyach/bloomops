@@ -204,7 +204,7 @@
 .bo-skill-version dt { color:var(--bo-ink-soft); }
 .bo-skill-version dd { margin:0; }
 .bo-skill-export { margin:28px 0; }
-.bo-skill-actions { display:flex; gap:12px; flex-wrap:wrap; }
+.bo-skill-actions { display:flex; gap:12px; flex-wrap:wrap; margin:16px 0; }
 .bo-skill-export > .bo-hint { margin-top:16px; }
 .bo-skill-notice { margin-top:20px; }
 .bo-skill-notice p { margin:0; }
@@ -212,7 +212,7 @@
 .bo-skill-outline > section { min-width:0; }
 .bo-skill-outline li { overflow-wrap:anywhere; }
 .bo-skill-outline h2 { font-size:20px; margin-bottom:12px; }
-.bo-skill-outline ul { padding-left:20px; }
+.bo-skill-outline ul { list-style:disc; padding-left:20px; margin:0; }
 .bo-skill-outline li { margin:8px 0; }
 .bo-skill-instructions { max-width:72ch; padding-top:16px; }
 .bo-skill-instructions p { margin:0 0 20px; }
@@ -626,3 +626,5 @@
  .bo-sheet-page .bo-sheet-cell-editor .bo-platform-options { flex-basis:44px; }
  .bo-sheet-page .bo-sheet-recovery>summary { min-height:44px; }
 }
+
+.bo-skill-export{padding:24px;background:var(--bo-mist);border-radius:12px;margin:24px 0}.bo-skill-export>.bo-hint{margin-top:8px}.bo-sheet-empty{width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:260px;padding:32px 20px}.bo-sheet-empty h2{font:600 20px var(--bo-font-display);margin:16px 0 8px}.bo-sheet-empty p{margin:0 0 20px;color:var(--bo-ink-soft)}.bo-sheet-empty-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}

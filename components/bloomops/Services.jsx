@@ -33,7 +33,7 @@ export function ServiceRow({ service, actions = null }) {
     <li className={`bo-row bo-service-row${actions ? ' bo-row-wrap' : ''}`}>
       <span className="bo-row-text">
         <span className="bo-row-title">{service.serviceTypeName}</span>
-        {meta.length > 0 && <span className="bo-row-meta">{meta.join(' · ')}</span>}
+        {meta.length > 0 && <span className="bo-row-meta">{meta.map((value,i)=><span key={i}>{value}</span>)}</span>}
         {service.scopeNotes && <span className="bo-service-scope">{service.scopeNotes}</span>}
       </span>
       <span className="bo-row-end bo-service-row-state">
@@ -62,7 +62,7 @@ export function AssignmentRow({ assignment, actions = null }) {
           {' '}
           <span className="bo-assign-role">{assignment.assignmentRoleLabel}</span>
         </span>
-        {meta.length > 0 && <span className="bo-row-meta">{meta.join(' · ')}</span>}
+        {meta.length > 0 && <span className="bo-row-meta">{meta.map((value,i)=><span key={i}>{value}</span>)}</span>}
         {!assignment.active && <span className="bo-row-meta">No longer active in this workspace.</span>}
       </span>
       {actions && <span className="bo-row-end">{actions}</span>}

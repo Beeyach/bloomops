@@ -21,9 +21,9 @@ export default async function WorkPage({ searchParams }) {
     const { view, filters, page } = normalized.ok ? normalized : { view: 'mine', filters: {}, page: 1 };
     const [result, options] = await readTogether(access.db, db => Promise.all([listActions(db, actor, { ...filters, view, page }), actionFilterOptions(db, actor)]));
     return <>
-      <PageHeader title="Actions" subtitle="Work · The next steps across your clients and projects." />
-      <WorkTabs /><Button href="/team/workload" variant="ghost">Action workload</Button>
-      {ACTIONS['project.create'].roles.includes(actor.role)&&<Button href="/work/setups" variant="ghost">Reusable Work setups</Button>}
+      <PageHeader title="Work" subtitle="Next steps across your clients and projects." />
+      <WorkTabs /><div className="bo-view-tools"><Button href="/team/workload" variant="ghost">Action workload</Button>
+      {ACTIONS['project.create'].roles.includes(actor.role)&&<Button href="/work/setups" icon="pages">Work templates</Button>}</div>
       {!normalized.ok && <Notice tone="warning">Those filters are unavailable. Showing your Actions.</Notice>}
       <ActionFilters view={view} filters={filters} options={options} />
       <ActionList items={result.items || []} />
@@ -34,9 +34,9 @@ export default async function WorkPage({ searchParams }) {
   const status = PROJECT_STATUSES.includes(query?.status) ? query.status : 'all';
   const projects = await listProjectSummaries(access.db, actor, { status });
   return <>
-    <PageHeader title="Projects" subtitle="Work · Delivery across your clients and services." actions={ACTIONS['project.create'].roles.includes(actor.role) && <Button href="/work/projects/new" variant="primary">Create project</Button>} />
-    <WorkTabs active="projects" />
-    {ACTIONS['project.create'].roles.includes(actor.role)&&<Button href="/work/setups" variant="ghost">Reusable Work setups</Button>}
+    <PageHeader title="Work" subtitle="Delivery across your clients and services." actions={ACTIONS['project.create'].roles.includes(actor.role) && <Button href="/work/projects/new" variant="primary">Create project</Button>} />
+    <WorkTabs active="projects" /><div className="bo-view-tools">
+    {ACTIONS['project.create'].roles.includes(actor.role)&&<Button href="/work/setups" icon="pages">Work templates</Button>}</div>
     <form className="bo-project-filter" action="/work">
       <input type="hidden" name="tab" value="projects" />
       <Field id="project-filter-status" label="Status"><select id="project-filter-status" name="status" className="bo-control" defaultValue={status}>

@@ -1,5 +1,26 @@
 # Bloomsi Build State
 
+## Owner UI cleanup checkpoint — 16 September 2026
+
+Current bounded priority: implement [the complete owner brief](bloomsi-ui-cleanup-brief.md)
+on `feat/ui-cleanup-20260916`, based on main `52dacbf`. PR93 Client edit recovery
+remains safely committed at `ebfae0f` in its own unchanged worktree; both jobs in
+run35084403671 passed. It remains unmerged, with staging acceptance pending.
+The finite product-completion list below is retained; this pass adds no product milestone.
+
+Screenshot checklist (implementation in progress; rendered acceptance pending):
+- [ ] Shared hierarchy, spacing, controls, compact identity and workspace utility.
+- [ ] Work/Systems aligned records, truthful status, shortcut hierarchy and tab overflow.
+- [ ] Bell panel with current scope/read behavior; Prospecting empty/filter states and measured navigation.
+- [ ] Fluid Pages writing area, named tools/Move, preserved editing and recovery.
+- [ ] Skills, Social, Ads, Team, Finance and Settings use the same visual system.
+- [ ] Completed-build responsive/keyboard/zoom/Windows checks, full suite, CI and staging comparison.
+
+Baseline Windows staging `52dacbf`: Bricolage and Inter load. Work tab strip is
+43px high with44px scroll content; removing the tab's -1px bottom margin yields
+44/44 without hiding scrollbars. Existing QA workspace names and stored punctuation
+are preserved. Prospecting timing evidence is separate from unresolved overall PERF3.
+
 ## Owner execution decision and finite completion list — 15 September 2026
 
 The owner now directs integrated completion of the agreed product scope. Independent
