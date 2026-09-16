@@ -88,15 +88,15 @@
 /* Fluid canvas, bounded prose. Wide blocks keep their own local scrolling. */
 .bo-page:has(.bo-pages-workspace){max-width:none}
 .bo-page-editor .ProseMirror>:is(p,h1,h2,h3,ul,ol,blockquote){max-width:76ch}
-.bo-page-toolbar{flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--bo-border)}
+.bo-page-toolbar{position:relative;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--bo-border)}
 .bo-page-breadcrumbs{flex:1 1 180px}
-.bo-page-tools{position:relative;margin:0;margin-left:auto;flex-shrink:0}
+.bo-page-tools{position:static;margin:0;margin-left:auto;flex-shrink:0}
 .bo-page-tools>summary{min-height:40px;display:flex;align-items:center;padding:8px 12px;cursor:pointer;font-weight:600;font-size:14px;border:1px solid var(--bo-border);border-radius:8px;background:var(--bo-surface)}
 .bo-page-tools>summary:focus-visible{outline:2px solid var(--bo-focus);outline-offset:2px}
-.bo-page-tools-panel{position:absolute;z-index:30;right:0;top:calc(100% + 8px);width:min(520px,calc(100vw - 40px));max-height:min(620px,70vh);overflow:auto;padding:20px;background:var(--bo-surface);border:1px solid var(--bo-border);border-radius:12px;box-shadow:0 12px 32px #0002}
+.bo-page-tools-panel{position:absolute;z-index:30;right:0;top:calc(100% + 8px);width:min(520px,100%);max-height:min(620px,70vh);overflow:auto;padding:20px;background:var(--bo-surface);border:1px solid var(--bo-border);border-radius:12px;box-shadow:0 12px 32px #0002}
 .bo-page-tools-panel>section+section{border-top:1px solid var(--bo-border);padding-top:20px;margin-top:24px}
 .bo-page-tools-panel p+.bo-btn{margin-top:12px}
-@media(max-width:767px){.bo-page-toolbar{position:relative}.bo-page-tools{position:static}.bo-page-tools-panel{right:0;top:100%;width:min(520px,100%);max-height:60vh}}
+@media(max-width:767px){.bo-page-tools-panel{max-height:60vh}}
 .bo-page-tools .bo-page-record-context{margin-block:16px;padding:0;border:0}
 .bo-page-move-control{border:0;background:transparent;color:var(--bo-ink-soft);font:inherit;font-size:12px;min-height:36px;padding:4px 8px;border-radius:6px;cursor:pointer}
 .bo-page-move-control:hover{background:var(--bo-lilac)}

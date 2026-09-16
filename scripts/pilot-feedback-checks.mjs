@@ -52,8 +52,8 @@ export async function pilotFeedbackChecks({page,ctx,base,check,out}){
  await editor.getByText('Middle synthetic block',{exact:true}).click();await page.getByRole('button',{name:'Move block down',exact:true}).click();
  await page.waitForFunction(()=>document.querySelector('.ProseMirror').lastElementChild.textContent==='Middle synthetic block');await page.waitForFunction(()=>document.querySelector('.bo-page-toolbar [role="status"]')?.textContent==='Saved');await page.reload({waitUntil:'networkidle'});await editor.waitFor();
  check('Moved block order persists after saved reload',await editor.locator(':scope > *').last().textContent()==='Middle synthetic block');
- await editor.getByText('Middle synthetic block',{exact:true}).click();check('Last block cannot move down',await page.getByRole('button',{name:'Move block down',exact:true}).isDisabled());
- await page.getByRole('button',{name:'Move block up',exact:true}).click();await editor.getByText('First synthetic block',{exact:true}).click();check('First block cannot move up',await page.getByRole('button',{name:'Move block up',exact:true}).isDisabled());
+ await editor.getByText('Middle synthetic block',{exact:true}).click();await page.waitForFunction(()=>document.querySelector('[aria-label="Move block down"]').disabled);check('Last block cannot move down',await page.getByRole('button',{name:'Move block down',exact:true}).isDisabled());
+ await page.getByRole('button',{name:'Move block up',exact:true}).click();await editor.getByText('First synthetic block',{exact:true}).click();await page.waitForFunction(()=>document.querySelector('[aria-label="Move block up"]').disabled);check('First block cannot move up',await page.getByRole('button',{name:'Move block up',exact:true}).isDisabled());
  await page.waitForFunction(()=>document.querySelector('.bo-page-toolbar [role="status"]')?.textContent==='Saved');
 
  for(const width of [1920,1440,768,390]){
