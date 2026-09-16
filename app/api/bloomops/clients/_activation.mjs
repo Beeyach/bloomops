@@ -17,7 +17,7 @@ export const activationMessages = {
   definition_conflict:
     'The selected onboarding templates contain conflicting requirements. Review their instructions before activation.',
   existing_open_instance:
-    'This client already has onboarding that was created separately. Ask an administrator to review it.',
+    'This client already has onboarding that was created separately. Review it on the Onboarding tab before continuing.',
   not_activated: 'Activate the client before retrying their invitation.',
 };
 export async function activationResponse(req, params, retryOnly = false) {

@@ -794,3 +794,13 @@ test('readiness reports missing templates and denies revoked or foreign access',
   run(t.raw,"UPDATE workspace_memberships SET status='suspended' WHERE id=?",t.actor.membershipId);assert.equal((await activationReadiness(t.db,t.actor,'client')).ok,false);
  }finally{t.raw.close();}
 });
+
+test('readiness reports a separately generated open instance without creating activation or mail',async()=>{
+ const {activationReadiness}=await import('../lib/bloomops/client-activation.mjs');
+ const {prepareOnboardingPlan,persistOnboardingPlan}=await import('../lib/bloomops/onboarding-generation.mjs');
+ const t=await setup();try{
+  const prepared=await prepareOnboardingPlan(t.db,{workspaceId:t.ws.id,clientId:'client',serviceEngagementIds:['social-media-management','ads']});assert.ok(prepared.ok);
+  assert.ok((await persistOnboardingPlan(t.db,{workspaceId:t.ws.id,clientId:'client',plan:prepared.plan})).ok);
+  const before=core(t),ready=await activationReadiness(t.db,t.actor,'client');assert.equal(ready.ready,false);assert.equal(ready.reason,'existing_open_instance');assert.deepEqual(core(t),before);assert.equal(t.mailer.sent.length,0);assert.equal((await t.activate()).reason,'existing_open_instance');assert.deepEqual(core(t),before);
+ }finally{t.raw.close();}
+});

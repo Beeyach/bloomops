@@ -2187,6 +2187,7 @@ select.bo-control {
 .bo-action-filters .bo-field { min-width: 0; margin: 0; }
 .bo-action-filter-buttons, .bo-action-buttons, .bo-action-pagination { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .bo-action-filter-buttons { grid-column: 1 / -1; }
+@media(min-width:1200px){.bo-systems .bo-action-filter-buttons{grid-column:auto;justify-content:flex-end;}}
 .bo-actions, .bo-action-dependencies { list-style: none; padding: 0; margin: 0; }
 .bo-action-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(130px, 160px) minmax(130px, 170px); gap: 12px 24px; align-items: start; padding: 20px 0; border-bottom: 1px solid var(--bo-border); }
 .bo-action-main, .bo-action-state, .bo-action-meta { min-width: 0; overflow-wrap: anywhere; }
