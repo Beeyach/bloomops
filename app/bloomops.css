@@ -2418,7 +2418,7 @@ select.bo-control {
 
 .bo-row-meta:has(>span){display:flex;flex-wrap:wrap;gap:4px 16px}.bo-service-department{display:block;color:var(--bo-ink-soft);margin-top:4px}
 
-.bo-explanation{margin-block:16px 24px;max-width:72ch}.bo-explanation summary{cursor:pointer;font-size:14px;font-weight:600;min-height:40px}.bo-explanation p{margin-block:12px}.bo-section>p+.bo-btn{margin-top:16px}
+.bo-explanation{margin-block:16px 24px;max-width:72ch}.bo-explanation summary{cursor:pointer;font-size:14px;font-weight:600;min-height:40px}.bo-explanation p{margin-block:12px}.bo-section>p+.bo-btn,.bo-section>p+.bo-form-actions{margin-top:16px}
 
 .bo-platform-custom{margin-top:12px}.bo-platform-custom label{display:block;font-size:13px;font-weight:600;margin-bottom:8px}
 

@@ -11,7 +11,13 @@ export async function pilotFeedbackChecks({page,ctx,base,check,out}){
  await page.screenshot({path:out+'/new-prospect-setup.png',fullPage:true});
  await page.getByLabel('Business name',{exact:true}).fill('Synthetic handoff fern');await page.getByLabel('Public contact email',{exact:false}).fill('fern@example.test');
  await page.getByRole('button',{name:'Create prospect',exact:true}).click();await page.waitForURL(u=>/^\/prospecting\/[a-f0-9-]+$/.test(u.pathname));
- const id=new URL(page.url()).pathname.split('/').pop();await page.getByRole('link',{name:'Review client handoff',exact:true}).click();
+ const id=new URL(page.url()).pathname.split('/').pop();
+ const provenance=page.locator('#provenance');await provenance.locator('summary').click();
+ check('Provenance labels have matching icons without invented verification',await provenance.locator('dt').count()>0&&await provenance.locator('dt:not(:has(svg))').count()===0&&await provenance.getByText('Not checked',{exact:true}).count()>0);
+ for(const width of [1440,390]){await page.setViewportSize({width,height:1000});check('Profile provenance fits '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:out+'/profile-provenance-'+width+'.png',fullPage:true});}
+ await page.setViewportSize({width:1440,height:1000});
+ check('Evidence and draft actions preserve real destinations',await page.getByRole('link',{name:'View audit evidence',exact:true}).getAttribute('href')==='#evidence'&&await page.getByRole('link',{name:'View draft',exact:true}).getAttribute('href')==='#draft');
+ await page.getByRole('link',{name:'Review client handoff',exact:true}).click();
  await page.getByRole('button',{name:'New client',exact:true}).click();await page.getByRole('group',{name:'Service choices'}).getByRole('button').filter({has:page.getByText('Service reference: kajabi',{exact:true})}).click();
  await page.getByLabel('Package name',{exact:true}).fill('Synthetic course setup');await page.getByLabel('Agreed scope',{exact:true}).fill('Prepare synthetic course pages. No provider or invitation.');
  await page.getByRole('button',{name:'Review handoff',exact:true}).click();await page.getByRole('region',{name:'Handoff preview'}).waitFor();
@@ -90,6 +96,10 @@ export async function pilotFeedbackChecks({page,ctx,base,check,out}){
   const nav=page.locator(path==='/work'?'nav[aria-label="Work sections"]':'nav[aria-label="Team views"]');
   check(path+' uses compact bounded controls',await nav.locator('.bo-btn').count()>=2&&await nav.locator('[aria-current="page"]').count()===1);
  }
+ await page.goto(base+'/settings',{waitUntil:'networkidle'});
+ const setupGeometry=await page.locator('#ghl-setup').evaluate(section=>{const description=section.querySelector('p').getBoundingClientRect(),button=section.querySelector('a.bo-btn').getBoundingClientRect();return {left:button.left-description.left,gap:button.top-description.bottom};});
+ check('Settings setup actions align with their explanation and have a real gap',Math.abs(setupGeometry.left)<=1&&setupGeometry.gap>=16);
+ await page.screenshot({path:out+'/settings-aligned.png',fullPage:true});
  await page.goto(base+'/social',{waitUntil:'networkidle'});const selector=page.getByLabel('Platform',{exact:true});await selector.selectOption('custom');await page.getByLabel('Platform label',{exact:true}).fill('Legacy private channel');await page.getByRole('button',{name:'Apply filters',exact:true}).click();await page.waitForURL(u=>u.searchParams.get('platform')==='Legacy private channel');
  check('Custom platform survives explicit filter navigation',await page.getByLabel('Platform',{exact:true}).inputValue()==='platform:Legacy private channel');await page.getByRole('link',{name:'Clear filters',exact:true}).first().click();await page.waitForURL(base+'/social');
  check('Platform All restored by Clear',await page.getByLabel('Platform',{exact:true}).inputValue()==='platform:');
