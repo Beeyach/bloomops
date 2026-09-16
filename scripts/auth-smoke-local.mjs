@@ -273,11 +273,16 @@ let invitationId = '';
   check('the client detail renders with the five Release A tabs', detail.status === 200 && detail.text.includes(CLIENT_NAME) && /Overview/.test(detail.text) && /Services/.test(detail.text) && /Onboarding/.test(detail.text) && /Team/.test(detail.text) && /Activity/.test(detail.text), `status ${detail.status}`);
   check('and offers the separate activation control', /Activate Client/.test(detail.text));
 
-  const health = await call(`/api/bloomops/clients/${clientId}`, { method: 'PATCH', cookie: owner.cookie, body: { health: 'needs_attention' } });
+  const guardedClientPatch = async body => {
+    const current = await call(`/api/bloomops/clients/${clientId}`, {method:'GET',cookie:owner.cookie});
+    must('current Client editor is authorized',current.status===200);
+    return call(`/api/bloomops/clients/${clientId}`,{method:'PATCH',cookie:owner.cookie,body:{...body,expected:current.json.snapshot,editorScope:current.json.scope}});
+  };
+  const health = await guardedClientPatch({ health: 'needs_attention' });
   check('the Owner changes the health', health.status === 200, `status ${health.status} ${health.text.slice(0, 160)}`);
   const afterHealth = sqlOne(`SELECT relationship_status, health FROM bloomops_clients WHERE id = ${lit(clientId)}`);
   check('and the lifecycle is untouched by it', afterHealth?.health === 'needs_attention' && afterHealth?.relationship_status === 'draft', JSON.stringify(afterHealth));
-  const lifecycle = await call(`/api/bloomops/clients/${clientId}`, { method: 'PATCH', cookie: owner.cookie, body: { relationshipStatus: 'active' } });
+  const lifecycle = await guardedClientPatch({ relationshipStatus: 'active' });
   check('the lifecycle cannot be written through ordinary editing', lifecycle.status === 400 && lifecycle.json?.reason === 'status_not_editable', `status ${lifecycle.status}`);
 
   const second = await call(`/api/bloomops/clients/${clientId}/contacts`, { method: 'POST', cookie: owner.cookie, body: { name: 'Second Contact', email: `second-${randomBytes(3).toString('hex')}@example.com`, title: 'Operations' } });
@@ -298,13 +303,13 @@ let invitationId = '';
   // unchanged must not fail an unrelated edit.
   const ownerMembershipId = sqlOne(`SELECT id FROM workspace_memberships WHERE workspace_id = ${lit(row.workspace_id)} AND user_id = (SELECT id FROM user WHERE email = ${lit(ADMIN)})`)?.id;
   must('the Admin membership is available to own a client', Boolean(ownerMembershipId), 'no admin membership');
-  const owned = await call(`/api/bloomops/clients/${clientId}`, { method: 'PATCH', cookie: owner.cookie, body: { ownerMembershipId } });
+  const owned = await guardedClientPatch({ ownerMembershipId });
   check('the Owner names an internal owner', owned.status === 200, `status ${owned.status} ${owned.text.slice(0, 160)}`);
   sql(`UPDATE workspace_memberships SET status = 'suspended' WHERE id = ${lit(ownerMembershipId)};`);
-  const keptOwner = await call(`/api/bloomops/clients/${clientId}`, { method: 'PATCH', cookie: owner.cookie, body: { website: 'smoke-client-2.example', ownerMembershipId } });
+  const keptOwner = await guardedClientPatch({ website: 'smoke-client-2.example', ownerMembershipId });
   check('an unrelated edit still saves when the stored owner is no longer eligible', keptOwner.status === 200, `status ${keptOwner.status} ${keptOwner.text.slice(0, 200)}`);
   check('and the owner is unchanged with no owner event', sqlOne(`SELECT owner_membership_id FROM bloomops_clients WHERE id = ${lit(clientId)}`)?.owner_membership_id === ownerMembershipId && countRows('activity_events', `client_id = ${lit(clientId)} AND event_type = 'CLIENT_OWNER_CHANGED'`) === 1);
-  const newIneligible = await call(`/api/bloomops/clients/${clientId}`, { method: 'PATCH', cookie: owner.cookie, body: { ownerMembershipId: `m_${'x'.repeat(8)}` } });
+  const newIneligible = await guardedClientPatch({ ownerMembershipId: `m_${'x'.repeat(8)}` });
   check('but a genuinely new ineligible owner is still refused', newIneligible.status === 400 && newIneligible.json?.errors?.ownerMembershipId === 'Choose an owner from the list.', `status ${newIneligible.status}`);
   sql(`UPDATE workspace_memberships SET status = 'active' WHERE id = ${lit(ownerMembershipId)};`);
 

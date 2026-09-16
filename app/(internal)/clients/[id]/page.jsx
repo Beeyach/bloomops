@@ -127,7 +127,7 @@ async function OverviewTab({ access, actor, client, contacts, mayManage }) {
   return (
     <>
       {operations}
-      <ClientOverview client={client} owners={owners} timezones={timezoneOptions()} />
+      <ClientOverview key={`${actor.userId}:${actor.workspaceId}:${client.id}`} scope={{userId:actor.userId,workspaceId:actor.workspaceId}} client={client} owners={owners} timezones={timezoneOptions()} />
       <ClientContacts clientId={client.id} clientName={client.name} contacts={contacts} />
     </>
   );

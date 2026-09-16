@@ -1,0 +1,100 @@
+// N1H Client details recovery: completed Worker, isolated resources and build attribution.
+// Starts its own built Worker, in-memory D1/R2 and synthetic identities. No .dev.vars.
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {dirname,resolve,join} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {mkdtempSync,mkdirSync,readFileSync,writeFileSync,rmSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
+import {buildArtifacts,hash,localProcesses} from './notification-build-evidence.mjs';
+import {createServer} from 'node:net';
+import {tmpdir} from 'node:os';
+import {createHash,randomUUID} from 'node:crypto';
+import {unstable_getMiniflareWorkerOptions} from 'wrangler';
+import {runBootstrap} from '../lib/bloomops/bootstrap.mjs';
+import {reportBrowserError} from './client-reports-evidence.mjs';
+const root=resolve(fileURLToPath(new URL('../',import.meta.url)));
+const out=resolve(process.env.BLOOMOPS_BROWSER_EVIDENCE_DIR||'/tmp/bloomops-client-edit-verification/browser');mkdirSync(out,{recursive:true});
+const port=await new Promise((resolve,reject)=>{const socket=createServer();socket.once('error',reject);socket.listen(0,'127.0.0.1',()=>{const port=socket.address().port;socket.close(()=>resolve(port));});});
+const base=`http://localhost:${port}`;
+const require=createRequire(import.meta.url),wranglerRoot=dirname(require.resolve('wrangler/package.json'));
+const {Miniflare,convertV4MiniflareOptions}=require(require.resolve('miniflare',{paths:[wranglerRoot]}));
+const {chromium}=createRequire(process.env.BLOOMOPS_PLAYWRIGHT_PACKAGE||'/tmp/bloomops-n2e-browser-tools/package.json')('playwright');
+const tmp=mkdtempSync(join(tmpdir(),'bloomops-client-edit-browser-')),configPath=join(tmp,'wrangler.jsonc');
+const artifacts=buildArtifacts(root);
+const expected=process.env.BLOOMOPS_BUILD_IDENTITY?JSON.parse(readFileSync(process.env.BLOOMOPS_BUILD_IDENTITY,'utf8')):null;
+if(expected)assert.deepEqual(artifacts,expected.files,'Completed build matches recorded artifacts');
+const identity={root,startedAt:new Date().toISOString(),command:[process.execPath,...process.argv.slice(1)],pid:process.pid,port,entrypoint:join(root,'.open-next/worker.js'),wrapper:join(root,'scripts/navigation-perf-worker.mjs'),artifactDigest:hash(JSON.stringify(artifacts)),expectedRevision:expected?.revision||null};
+writeFileSync(out+'/artifact-files.json',JSON.stringify(artifacts,null,2));
+const source=JSON.parse(readFileSync(join(root,'wrangler.jsonc'),'utf8').replace(/^\s*\/\/.*$/gm,''));
+assert.equal(source.vars.BLOOMOPS_ENV,'development');assert.equal(source.vars.BLOOMOPS_MAIL_TRANSPORT,'r2-dev');
+const config={name:'bloomops-dev',main:join(root,'scripts/navigation-perf-worker.mjs'),compatibility_date:source.compatibility_date,compatibility_flags:source.compatibility_flags,
+ assets:{directory:join(root,'.open-next/assets'),binding:'ASSETS'},vars:{BLOOMOPS_ENV:'development',BLOOMOPS_MAIL_TRANSPORT:'r2-dev',BLOOMOPS_APP_URL:base,PERF1_LOCAL_ONLY:'synthetic-local',PERF1_D1_DELAY_MS:'0'},
+ d1_databases:[{binding:'DB',database_name:'n2e-disposable',database_id:'n2e-browser-isolated'}],r2_buckets:[{binding:'FILES',bucket_name:'n2e-browser-files'}],observability:{enabled:false}};
+writeFileSync(configPath,JSON.stringify(config));
+execFileSync(process.execPath,[join(wranglerRoot,'bin/wrangler.js'),'deploy','--dry-run','--no-autoconfig','--config',configPath,'--outdir',join(tmp,'bundle')],{cwd:root,env:{...process.env,WRANGLER_LOG:'error'},stdio:'pipe',maxBuffer:32*1024*1024});
+const options=unstable_getMiniflareWorkerOptions(configPath).workerOptions;delete options.modulesRules;
+const mf=new Miniflare(convertV4MiniflareOptions({...options,modules:true,script:readFileSync(join(tmp,'bundle/navigation-perf-worker.js'),'utf8'),host:'127.0.0.1',port,cf:false,logRequests:false}));
+let browser;const checks=[],errors=[];const check=(name,ok)=>{assert.ok(ok,name);checks.push(name);console.log('ok '+name);};
+try{
+ await mf.ready;identity.readyAt=new Date().toISOString();identity.processes=localProcesses();identity.bundle={path:join(tmp,'bundle/navigation-perf-worker.js'),sha256:hash(readFileSync(join(tmp,'bundle/navigation-perf-worker.js')))};identity.configuration=config;identity.version=await(await fetch(base+'/api/version')).json();if(expected)assert.equal(identity.version.sha,expected.revision.slice(0,7),'Served build revision');writeFileSync(out+'/artifact-identity.json',JSON.stringify(identity,null,2));
+ const binding=await mf.getD1Database('DB'),bucket=await mf.getR2Bucket('FILES');
+ const journal=JSON.parse(readFileSync(join(root,'drizzle/meta/_journal.json'),'utf8'));
+ await binding.prepare('CREATE TABLE d1_migrations(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT UNIQUE,applied_at TEXT)').run();
+ for(const entry of journal.entries){for(const stmt of readFileSync(join(root,`drizzle/${entry.tag}.sql`),'utf8').split('--> statement-breakpoint').map(x=>x.trim()).filter(Boolean))await binding.prepare(stmt).run();await binding.prepare('INSERT INTO d1_migrations(name) VALUES(?)').bind(entry.tag+'.sql').run();}
+ await runBootstrap(binding,{workspaceName:'Client Recovery Synthetic QA',workspaceSlug:'n3a-qa',owner:{email:'ellen@example.com',name:'QA Owner'},admin:{email:'ary@example.com',name:'QA Admin'}},{ids:{workspaceId:'a',ownerUserId:'ellen',ownerMembershipId:'m-ellen',adminUserId:'ary',adminMembershipId:'m-ary'}});
+ await runBootstrap(binding,{workspaceName:'Client Recovery Other QA',workspaceSlug:'n3a-other',owner:{email:'foreign@example.com',name:'Other Owner'},admin:{email:'other-admin@example.com',name:'Other Admin'}},{ids:{workspaceId:'b',ownerUserId:'foreign',ownerMembershipId:'m-foreign'}});
+ // WSL hosts with a failing software GL process can disable that optional
+ // rasterizer. DOM interaction, actionability and screenshot assertions remain.
+ browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-gpu',...(process.env.BLOOMOPS_DISABLE_SOFTWARE_RASTERIZER==='1'?['--disable-software-rasterizer']:[])]});
+ async function login(user){const ctx=await browser.newContext({viewport:{width:1440,height:1000}});await ctx.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());const email=user+'@example.com';assert.equal((await ctx.request.post(base+'/api/auth/sign-in/magic-link',{headers:{origin:base},data:{email,callbackURL:'/'}})).status(),200);
+  const mail=await bucket.get('dev-mail/'+createHash('sha256').update(email).digest('hex')+'.json');assert.ok(mail);const url=JSON.parse(await mail.text()).text.match(/https?:\/\/\S+/)[0];const parsed=new URL(url);assert.ok(parsed.origin===base&&parsed.pathname==='/api/auth/magic-link/verify',`local auth host/path: ${parsed.host} ${parsed.pathname}`);
+  const page=await ctx.newPage();page.on('pageerror',e=>errors.push(reportBrowserError(e)));await page.goto(url,{waitUntil:'networkidle'});return {ctx,page};}
+ const owner=await login('ellen');
+ identity.servedAssets=[];for(const url of await owner.page.locator('script[src]').evaluateAll(nodes=>nodes.map(n=>n.src))){const path=new URL(url).pathname,file=artifacts.find(f=>f.path==='.open-next/assets'+decodeURIComponent(path));assert.ok(file,'served script belongs to completed build');const response=await owner.ctx.request.get(url);assert.equal(response.status(),200);const sha256=hash(await response.body());assert.equal(sha256,file.sha256);identity.servedAssets.push({path,sha256});}
+ assert.ok(identity.servedAssets.length);writeFileSync(out+'/artifact-identity.json',JSON.stringify(identity,null,2));
+ const admin=await login('ary'),foreign=await login('foreign');
+ const get=async(ctx,path)=>{const r=await ctx.request.get(base+path);return {status:r.status(),data:await r.json()};};
+ const post=async(ctx,path,data,method='POST')=>{const r=await ctx.request.fetch(base+path,{method,headers:{origin:base},data});return {status:r.status(),data:await r.json()};};
+ const made=await post(owner.ctx,'/api/bloomops/clients',{name:'Client Recovery Synthetic Client',contactName:'Synthetic portal contact',contactEmail:'contact@example.test',timezone:'Australia/Sydney',requestId:randomUUID(),userId:'ellen',workspaceId:'a'});assert.equal(made.status,201);const clientId=made.data.client.id;
+ const serviceType=await binding.prepare("SELECT id FROM service_types WHERE workspace_id='a' AND slug='ghl'").first();const service=await post(owner.ctx,`/api/bloomops/clients/${clientId}/services`,{serviceTypeId:serviceType.id,packageName:'Synthetic Work QA'});assert.equal(service.status,201);const serviceId=service.data.service.id;
+ check('supported Client and Service fixtures',!!clientId&&!!serviceId);
+
+
+ async function acceptInvitation(email,area){const invitationMail=JSON.parse(await(await bucket.get('dev-mail/'+createHash('sha256').update(email).digest('hex')+'.json')).text()),invitationUrl=invitationMail.text.match(/https?:\/\/\S+/)[0];assert.equal(new URL(invitationUrl).origin,base);const ctx=await browser.newContext({viewport:{width:1440,height:1000}});await ctx.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.abort());const page=await ctx.newPage();page.on('pageerror',e=>errors.push(reportBrowserError(e)));await page.goto(invitationUrl,{waitUntil:'networkidle'});assert.equal((await ctx.request.post(base+'/api/auth/sign-in/magic-link',{headers:{origin:base},data:{email,callbackURL:new URL(invitationUrl).pathname}})).status(),200);const mail=JSON.parse(await(await bucket.get('dev-mail/'+createHash('sha256').update(email).digest('hex')+'.json')).text());await page.goto(mail.text.match(/https?:\/\/\S+/)[0],{waitUntil:'networkidle'});await page.getByRole('button',{name:'Accept and continue',exact:true}).click();await page.waitForURL(base+area);return {ctx,page};}
+ const page=owner.page,path=`/api/bloomops/clients/${clientId}`,url=base+'/clients/'+clientId;
+ page.on('dialog',d=>d.accept());admin.page.on('dialog',d=>d.accept());
+ const open=async p=>{await p.goto(url,{waitUntil:'networkidle'});await p.getByRole('button',{name:'Edit details',exact:true}).click();await p.getByLabel('Client or company name',{exact:true}).waitFor();await p.waitForFunction(()=>!document.getElementById('edit-name')?.closest('fieldset').disabled);};
+ const name=p=>p.getByLabel('Client or company name',{exact:true}),website=p=>p.getByLabel('Website',{exact:true}),dialog=p=>p.getByRole('dialog',{name:'Edit client details',exact:true});
+ const close=async p=>{await dialog(p).getByRole('button',{name:'Close',exact:true}).last().click();await dialog(p).waitFor({state:'hidden'});};
+ const copies=()=>page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('bloomsi:client-edit:')).map(k=>JSON.parse(localStorage.getItem(k))));
+ const history=async()=>(await binding.prepare('SELECT * FROM activity_events WHERE client_id=? ORDER BY rowid').bind(clientId).all()).results;
+ const before=await history();await open(page);await name(page).fill('Unfinished client details');await website(page).fill('https://');await close(page);
+ check('closing keeps raw incomplete fields without a server save',(await copies()).some(c=>c.fields.website==='https://')&&JSON.stringify(await history())===JSON.stringify(before));
+ await open(page);check('reopening uses current saved Client until explicit restoration',await name(page).inputValue()==='Client Recovery Synthetic Client');
+ await page.getByText('Recovery copies (1)',{exact:true}).click();await page.getByRole('button',{name:'Restore copy',exact:true}).click();await page.getByText('Recovery copy restored for review. Nothing has been saved to the Client.',{exact:true}).waitFor();
+ check('explicit restore keeps incomplete fields and original snapshot',await name(page).inputValue()==='Unfinished client details'&&await website(page).inputValue()==='https://'&&(await copies())[0].expected.name==='Client Recovery Synthetic Client');
+ await page.getByRole('button',{name:'Save changes',exact:true}).click();await page.getByText('Some of what you entered needs a change.',{exact:true}).waitFor();check('validation error preserves editable raw input',await website(page).inputValue()==='https://'&&await website(page).isEnabled());
+ await website(page).fill('https://qa.example.test');
+ for(const width of [1440,1024,768,390,320]){await page.setViewportSize({width,height:1000});check('Client edit fits '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:out+'/client-edit-'+width+'.png',fullPage:true});}
+ await name(page).focus();await page.keyboard.press('Tab');check('keyboard reaches Website',await website(page).evaluate(n=>n===document.activeElement));
+ await page.getByRole('button',{name:'Save changes',exact:true}).click();await dialog(page).waitFor({state:'hidden'});check('successful save persists normalized values and retires the recovery copy',(await get(owner.ctx,path)).data.snapshot.website==='https://qa.example.test'&&(await copies()).length===0);
+ await open(page);await open(admin.page);await name(page).fill('Owner draft preserved');await name(admin.page).fill('Other editor won');await admin.page.getByRole('button',{name:'Save changes',exact:true}).click();await dialog(admin.page).waitFor({state:'hidden'});const won=await history();
+ await page.getByRole('button',{name:'Save changes',exact:true}).click();await page.getByRole('button',{name:'Reload saved details',exact:true}).waitFor();check('concurrent editor conflict preserves unsaved fields and saved winner',await name(page).inputValue()==='Owner draft preserved'&&(await get(owner.ctx,path)).data.snapshot.name==='Other editor won'&&JSON.stringify(await history())===JSON.stringify(won));
+ await page.screenshot({path:out+'/client-conflict.png',fullPage:true});await page.getByRole('button',{name:'Reload saved details',exact:true}).click();await page.waitForFunction(()=>document.getElementById('edit-name')?.value==='Other editor won');check('explicit reload keeps old edits as a separate recovery copy',(await copies()).some(c=>c.fields.name==='Owner draft preserved'));
+ await name(page).fill('Save whose reply was lost');let commits=0;const lose=async route=>{if(route.request().method()!=='PATCH')return route.continue();const response=await route.fetch();assert.equal(response.status(),200);commits++;await route.abort('failed');};await page.route(base+path,lose);await page.getByRole('button',{name:'Save changes',exact:true}).click();await page.getByRole('button',{name:'Retry same save',exact:true}).waitFor();await page.unroute(base+path,lose);const committed=await history();
+ check('lost reply retains exact attempted values',commits===1&&(await copies()).some(c=>c.pending?.name==='Save whose reply was lost'));
+ await page.getByRole('button',{name:'Retry same save',exact:true}).click();await page.getByRole('button',{name:'Reload saved details',exact:true}).waitFor();check('retry after committed save cannot overwrite or duplicate activity',(await get(owner.ctx,path)).data.snapshot.name==='Save whose reply was lost'&&JSON.stringify(await history())===JSON.stringify(committed));
+ await page.getByRole('button',{name:'Reload saved details',exact:true}).click();await page.waitForFunction(()=>document.getElementById('edit-name')?.value==='Save whose reply was lost');
+ // Explicit ordering: a delayed access response must not resurrect an unmounted editor.
+ await close(page);let arrived,release;const entered=new Promise(r=>arrived=r),gate=new Promise(r=>release=r);const delayed=async route=>{if(route.request().method()!=='GET')return route.continue();const response=await route.fetch();arrived();await gate;await route.fulfill({response}).catch(()=>{});};await page.route(base+path,delayed);await page.getByRole('button',{name:'Edit details',exact:true}).click();await entered;await dialog(page).getByRole('button',{name:'Close',exact:true}).click();release();await page.unroute(base+path,delayed);check('delayed access reply after dismissal does not reopen the editor',await dialog(page).count()===0);
+ await open(page);await page.evaluate(()=>{window.restoreClientEditStorage=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k.startsWith('bloomsi:client-edit:'))throw Error('Synthetic Client edit quota');return window.restoreClientEditStorage.call(this,k,v);};});await website(page).fill('https://quota.example.test');await page.getByText('Synthetic Client edit quota',{exact:true}).waitFor();check('storage failure leaves entered text usable',await website(page).inputValue()==='https://quota.example.test');await page.evaluate(()=>{Storage.prototype.setItem=window.restoreClientEditStorage;});
+ // Context retirement cannot save or recreate copies through a late callback.
+ await page.evaluate(()=>{localStorage.setItem('bloomsi:draft-context','different-workspace');dispatchEvent(new Event('bloomsi:draft-context'));});await dialog(page).waitFor({state:'hidden'});check('workspace retirement closes old private editor',await page.getByRole('button',{name:'Edit details',exact:true}).isDisabled());
+ await open(page);await website(page).fill('https://logout.example.test');await page.getByRole('button',{name:'Close',exact:true}).last().click();
+ const prior=(await get(owner.ctx,path)).data;check('missing compare stamp cannot write',(await post(owner.ctx,path,{name:'Bypass'},'PATCH')).status===404);check('wrong initiating user cannot write',(await post(owner.ctx,path,{expected:prior.snapshot,editorScope:{userId:'ary',workspaceId:'a'},name:'Bypass'},'PATCH')).status===404);check('foreign workspace cannot recover private details',(await get(foreign.ctx,path)).status===404);
+ await open(admin.page);await name(admin.page).fill('Revoked private input');await binding.prepare("UPDATE workspace_memberships SET status='suspended' WHERE id='m-ary'").run();await admin.page.evaluate(()=>dispatchEvent(new Event('focus')));await admin.page.getByText('This editor is no longer available. Close it and reopen the Client in your current workspace.',{exact:true}).waitFor();check('revoked access clears mounted fields and Client recovery copies',await name(admin.page).count()===0&&await admin.page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('bloomsi:client-edit:')).length)===0);
+ await binding.prepare("UPDATE workspace_memberships SET status='active' WHERE id='m-ary'").run();
+ const activation=await post(owner.ctx,`/api/bloomops/clients/${clientId}/activate`,{});assert.equal(activation.status,200);const portal=await acceptInvitation('contact@example.test','/portal');check('genuine portal identity cannot read or mutate Client editor',(await get(portal.ctx,path)).status===404&&(await post(portal.ctx,path,{expected:prior.snapshot,editorScope:prior.scope,name:'Portal write'},'PATCH')).status===404);
+ check('Client recovery browser runtime has no errors',errors.length===0);writeFileSync(out+'/results.json',JSON.stringify({checks,errors,fixtures:{clientId,serviceId},sourceRevision:identity.expectedRevision},null,2));
+}catch(error){if(browser){let i=0;for(const ctx of browser.contexts())for(const page of ctx.pages())if(!/magic-link|\/invite\//.test(page.url()))await page.screenshot({path:out+'/failure-'+(++i)+'.png',fullPage:true}).catch(()=>{});}writeFileSync(out+'/results.json',JSON.stringify({checks,errors,failure:reportBrowserError(error)},null,2));console.error(reportBrowserError(error));process.exitCode=1;}finally{identity.finishedAt=new Date().toISOString();identity.artifactsUnchanged=hash(JSON.stringify(buildArtifacts(root)))===identity.artifactDigest;writeFileSync(out+'/artifact-identity.json',JSON.stringify(identity,null,2));if(!identity.artifactsUnchanged)process.exitCode=1;await browser?.close();await mf.dispose();rmSync(tmp,{recursive:true,force:true});}
