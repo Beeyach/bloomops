@@ -372,6 +372,13 @@
       "when": 1789529090135,
       "tag": "0052_colorful_norrin_radd",
       "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "6",
+      "when": 1789532921401,
+      "tag": "0053_heavy_gunslinger",
+      "breakpoints": true
     }
   ]
 }

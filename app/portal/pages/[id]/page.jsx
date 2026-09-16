@@ -7,5 +7,5 @@ export const dynamic='force-dynamic';
 export const metadata={title:'Page'};
 export default async function WorkspacePage({params}){
  const {access,actor}=await requireShell('portal');const page=await getWorkspacePage(access.db,actor,(await params).id);if(!page)notFound();
- return page.canEdit?<PageEditor key={JSON.stringify([actor.userId,page.workspaceId,page.id])} initial={page} userId={actor.userId}/>:<PageReader page={page}/>;
+ return page.canEdit?<PageEditor key={JSON.stringify([actor.userId,page.workspaceId,page.id])} initial={page} userId={actor.userId}/>:<PageReader page={page} userId={actor.userId}/>;
 }
