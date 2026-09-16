@@ -25,6 +25,6 @@ export default function ContentCalendar({result,month,query={},options}) {
         <div className="bo-content-summary"><Status label={CONTENT_STAGE_LABELS[item.stage]} /><span>{item.platforms.length?item.platforms.map(p=><span key={p.label}>{p.label}</span>):'No platforms set'}</span>{item.stage==='published'&&item.publishedAt&&<span>Published <time dateTime={item.publishedAt}>{item.publishedAt.replace('T',' ').replace('Z',' UTC')}</time></span>}</div>
       </li>)}</ul>
     </section>)}</div>}
-    <nav className="bo-content-pagination" aria-label="Calendar pages">{result.page>1&&<Button href={href({page:String(result.page-1)})}>Previous page</Button>}<p className="bo-small">Page {result.page}{result.hasMore?' · More dated Content is available.':''}</p>{result.hasMore&&<Button href={href({page:String(result.page+1)})}>Next page</Button>}</nav>
+    <nav className="bo-content-pagination" aria-label="Calendar pages">{result.page>1&&<Button href={href({page:String(result.page-1)})}>Previous page</Button>}<p className="bo-small">Page {result.page}{result.hasMore&&<span className="bo-pagination-note">More dated Content is available.</span>}</p>{result.hasMore&&<Button href={href({page:String(result.page+1)})}>Next page</Button>}</nav>
   </>;
 }

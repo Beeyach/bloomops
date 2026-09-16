@@ -21,6 +21,7 @@ export function NavList({ items = INTERNAL_NAV, active = null, LinkComponent = L
             <li key={item.key}>
               <LinkComponent
                 href={item.href}
+                prefetch={item.key === 'prospecting' ? true : undefined}
                 className="bo-nav-item"
                 aria-current={active === item.key ? 'page' : undefined}
                 onClick={onNavigate || undefined}
