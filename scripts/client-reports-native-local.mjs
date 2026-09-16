@@ -21,7 +21,11 @@ const require=createRequire(import.meta.url),{Miniflare,convertV4MiniflareOption
 const mf=new Miniflare(convertV4MiniflareOptions({modules:true,script:'export default {fetch(){return new Response("local")}}',compatibilityDate:'2025-05-01',cf:false,d1Databases:{DB:'n3a-upgrade',FRESH:'n3a-fresh',ARCHIVE:'archive-upgrade',COMPARE:'comparison-upgrade'}}));
 const t=await setup(),checks=[];const check=(name,ok)=>{assert.ok(ok,name);checks.push(name);console.log('ok '+name);};
 try{
- const binding=await mf.getD1Database('DB'),fresh=await mf.getD1Database('FRESH');const files=migrationFiles();assert.equal(files.at(-1).tag,'0051_broken_proteus');
+ const binding=await mf.getD1Database('DB'),fresh=await mf.getD1Database('FRESH');
+ // These populated upgrade boundaries are specific to reporting migrations
+ // 0049–0051. Later unrelated schema must not shift those fixture boundaries.
+ const allFiles=migrationFiles(),reportingEnd=allFiles.findIndex(f=>f.tag==='0051_broken_proteus');assert.ok(reportingEnd>=0);
+ const files=allFiles.slice(0,reportingEnd+1);assert.equal(files.at(-1).tag,'0051_broken_proteus');
  const migrate=async(db,files)=>{for(const file of files)for(const stmt of readFileSync(file.url,'utf8').split('--> statement-breakpoint').map(s=>s.trim()).filter(Boolean))await db.prepare(stmt).run();};
  await migrate(binding,files.slice(0,-3));
  await save(t.db,t.owner,'james',null,input({draft:draft({metrics:{sent:observation(19)}})}));
