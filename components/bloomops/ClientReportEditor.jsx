@@ -4,8 +4,9 @@ import {PageHeader,Button} from './Primitives';
 import {REPORT_TEMPLATES,reportTemplate,CLIENT_NARRATIVE_FIELDS} from '@/lib/bloomops/client-report-values.mjs';
 import ClientReportCsv from './ClientReportCsv';
 import ReportArchive from './ReportArchive';
+import ReportComparisonPicker from './ReportComparisonPicker';
 const emptyMetric=()=>({state:'missing',value:null,sourceNote:'',collectedAt:null});
-const draftFields=r=>Object.fromEntries(['title','periodStart','periodEnd','timezone','channel','accountLabel','scopeLabel','commentary','metrics',...CLIENT_NARRATIVE_FIELDS].map(k=>[k,r[k]??'']));
+const draftFields=r=>Object.fromEntries(['title','periodStart','periodEnd','timezone','channel','accountLabel','scopeLabel','commentary','metrics','comparisonPublicationId',...CLIENT_NARRATIVE_FIELDS].map(k=>[k,r[k]??'']));
 export default function ClientReportEditor({client,initial=null,services=null,reuse=null,scope}){
  const setup=initial||reuse,pinned=!!setup;
  const [templateId,setTemplate]=useState(setup?.templateId||''),[serviceId,setService]=useState(setup?.serviceEngagementId||'');
@@ -42,6 +43,7 @@ export default function ClientReportEditor({client,initial=null,services=null,re
  <p role="status">{status|| (dirty?'Unsaved changes.':'Draft changes stay private until explicitly published. Published versions remain separate.')}</p>
  {!pinned&&<div className="bo-report-service"><label>Find a purchased service<input value={search} onChange={e=>setSearch(e.target.value)} disabled={locked}/></label><Button type="button" onClick={()=>loadServices()} disabled={locked||optionsBusy}>Find services</Button>{options?.page>1&&<Button type="button" onClick={()=>loadServices(options.page-1)} disabled={optionsBusy}>Previous services</Button>}{options?.more&&<Button type="button" onClick={()=>loadServices(options.page+1)} disabled={optionsBusy}>More services</Button>}{optionsBusy&&<p role="status">Loading services…</p>}</div>}
  {initial&&editable&&template&&<ClientReportCsv report={{...data,templateId,templateVersion:template.version}} disabled={locked} onApply={metrics=>change('metrics',metrics)}/>}
+ {initial&&editable&&<ReportComparisonPicker report={initial} scope={scope} value={data.comparisonPublicationId||''} onChange={value=>change('comparisonPublicationId',value)} disabled={locked} contextChanged={['periodStart','periodEnd','timezone','channel','accountLabel','scopeLabel'].some(key=>data[key]!==initial[key])}/>}
  <form onSubmit={save}><fieldset disabled={locked}><div className="bo-report-grid">
  <label>Purchased service{pinned?<input value={`${setup.serviceName}${setup.packageName?' — '+setup.packageName:''}`} readOnly/>:<select required value={serviceId} onChange={e=>{setService(e.target.value);change('title',data.title);}}><option value="">Choose a service</option>{options?.items.map(s=><option key={s.id} value={s.id}>{s.name}{s.packageName?' — '+s.packageName:''} — {s.status}{s.startDate?` · ${s.startDate}`:''}</option>)}</select>}</label>
  <label>Report template<select required disabled={pinned} value={templateId} onChange={e=>{setTemplate(e.target.value);change('metrics',{});setData(d=>({...d,channel:''}));}}><option value="">Choose a template</option>{REPORT_TEMPLATES.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}</select></label>
