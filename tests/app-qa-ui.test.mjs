@@ -6,8 +6,22 @@ import assert from 'node:assert/strict';
 const {ContentList}=await import('../components/bloomops/ContentViews.jsx');
 const {default:ContentCalendar}=await import('../components/bloomops/ContentCalendar.jsx');
 const {AdsCreativeList}=await import('../components/bloomops/AdsCreative.jsx');
+const {OnboardingClients}=await import('../components/bloomops/OnboardingClients.jsx');
 const render=(C,p)=>renderToStaticMarkup(React.createElement(C,p));
 const options={parents:[],members:[]};
+test('Onboarding links each authorized Client directly to its real checklist',()=>{
+ const html=render(OnboardingClients,{clients:[{id:'qa-a',name:'QA A',relationshipStatus:'active'},{id:'qa-b',name:'QA B',relationshipStatus:'draft'}],total:2});
+ assert.match(html,/href="\/clients\/qa-a\?tab=onboarding"/);
+ assert.match(html,/href="\/clients\/qa-b\?tab=onboarding"/);
+ assert.match(html,/QA A/);assert.match(html,/QA B/);
+ assert.doesNotMatch(html,/not available|not built|checklist complete/i);
+});
+test('Onboarding empty and bounded lists do not claim missing access means no workspace clients',()=>{
+ const empty=render(OnboardingClients,{clients:[],total:0});
+ assert.match(empty,/Clients you have permission to open/);assert.match(empty,/href="\/clients"/);
+ const bounded=render(OnboardingClients,{clients:[{id:'qa-a',name:'QA A',relationshipStatus:'active'}],total:250});
+ assert.match(bounded,/Showing 1 of 250 Clients/);assert.match(bounded,/Find a Client by lifecycle/);
+});
 test('empty first Social page has recovery but no inert pagination',()=>{
  const html=render(ContentList,{result:{items:[],page:1,hasMore:false},options});
  assert.doesNotMatch(html,/aria-label="Content pages"/);
