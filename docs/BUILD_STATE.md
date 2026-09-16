@@ -29,6 +29,8 @@ No migration is planned. Existing remote-D1 quick_check SQLITE_NOMEM limitation 
 
 Verification checkpoint: full7417/7417 exit0 at11a2f8e; focused68/68 after review fixes; native9 checks pass. Completed build6d01065 exit0; focused browser91 checks pass with zero runtime errors and unchanged artifact hashes. Broader sweep passed responsive setup geometry before a new exact-label locator failed on the report template select; corrected to the existing reporting harness locator, not treated as a product failure. One same-session Sol review and focused re-review resolved stale editor review-token reuse and existing-open-onboarding readiness; no material finding remains in that reviewed scope. Normal screenshots were viewed, producing small final Client utility/report header polish. Final build/full/remote/staging checks are still pending. No real pilot records changed.
 
+Final visual inspection also corrected report textarea labels inheriting narrative margins, a post-render error-focus race, and the empty save-status line shifting the Prospecting count by10px (independently measured in Windows staging). Save feedback retains a reserved toolbar footer so actual record positions do not jump. These changes remain under PR99; final verification is recorded in that PR and the compact local release evidence.
+
 
 ## Owner pilot usability feedback 01 - 16 September 2026
 
