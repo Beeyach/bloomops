@@ -1,6 +1,7 @@
 // UI refinement: actual layout, navigation timing and editor checks over an isolated completed Worker.
 // Starts its own built Worker, in-memory D1/R2 and synthetic identities. No .dev.vars.
 import assert from 'node:assert/strict';
+import {qaRestrictedSidebar,qaOperationalLayout} from './app-qa-checks.mjs';
 import {createRequire} from 'node:module';
 import {dirname,resolve,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -13,7 +14,7 @@ import {createHash,randomUUID} from 'node:crypto';
 import {unstable_getMiniflareWorkerOptions} from 'wrangler';
 import {runBootstrap} from '../lib/bloomops/bootstrap.mjs';
 import {reportBrowserError} from './client-reports-evidence.mjs';
-const root=resolve(fileURLToPath(new URL('../',import.meta.url)));
+const root=resolve(process.env.BLOOMOPS_UI_BUILD_ROOT||fileURLToPath(new URL('../',import.meta.url)));
 const out=resolve(process.env.BLOOMOPS_BROWSER_EVIDENCE_DIR||'/tmp/bloomops-ui-verification/browser');mkdirSync(out,{recursive:true});
 const port=await new Promise((resolve,reject)=>{const socket=createServer();socket.once('error',reject);socket.listen(0,'127.0.0.1',()=>{const port=socket.address().port;socket.close(()=>resolve(port));});});
 const base=`http://localhost:${port}`;
@@ -65,6 +66,7 @@ try{
 
  const page=owner.page;page.setDefaultTimeout(20000);
  const post=async(path,data)=>{const r=await owner.ctx.request.post(base+path,{headers:{origin:base},data});return {status:r.status(),data:await r.json()};};
+ await qaRestrictedSidebar({browser,base,bucket,owner,check,out,hashEmail:email=>createHash('sha256').update(email).digest('hex')});
  const workspace=await post('/api/bloomops/workspaces',{name:'UI Synthetic Prospecting',requestId:randomUUID(),sourceWorkspaceId:'a'});assert.equal(workspace.status,201);
  const workspaceId=workspace.data.workspaceId;assert.equal((await post('/api/bloomops/workspaces/select',{workspaceId})).status,200);
  const timings=[];
@@ -79,12 +81,22 @@ try{
    const timing=await page.evaluate(()=>({feedbackMs:window.__uiFeedback,usableMs:window.__uiReady,resources:performance.getEntriesByType('resource').filter(r=>r.name.includes('/prospecting')||r.initiatorType==='script').map(r=>({path:new URL(r.name).pathname,startMs:r.startTime-window.__uiStart,durationMs:r.duration,ttfbMs:r.responseStart-r.requestStart}))}));
    for(const sample of samples)sample.detail=await(await owner.ctx.request.get(base+'/__perf1?id='+sample.id)).json();timings.push({population,iteration:i,...timing,samples});
   }
-  for(const width of [1440,1280,1024,768,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:out+'/prospecting-'+population+'-'+width+'.png',fullPage:true});check('Prospecting '+population+' fits '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}
+  for(const width of [1920,1440,1280,1024,768,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:out+'/prospecting-'+population+'-'+width+'.png',fullPage:true});check('Prospecting '+population+' fits '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}
   await page.setViewportSize({width:1440,height:1000});
  }
 
  writeFileSync(out+'/timings.json',JSON.stringify(timings,null,2));
  await readable(page.locator('#sheet-search'),'Prospecting search placeholder','::placeholder');
+ // History and reload must retain the authorized, usable sheet, not just a 200 response.
+ await page.goto(base+'/',{waitUntil:'networkidle'});
+ await page.locator('nav[aria-label="Main"]').getByRole('link',{name:'Prospecting',exact:true}).click();
+ await page.locator('.bo-sheet-scroll[aria-busy="false"]').waitFor();
+ check('sidebar reaches authorized populated Prospecting',await page.locator('tbody tr').count()===25);
+ await page.goBack({waitUntil:'networkidle'});check('Prospecting Back returns Home',new URL(page.url()).pathname==='/');
+ await page.goForward({waitUntil:'networkidle'});await page.locator('.bo-sheet-scroll[aria-busy="false"]').waitFor();
+ check('Prospecting Forward restores current results',await page.locator('tbody tr').count()===25);
+ await page.reload({waitUntil:'networkidle'});await page.locator('.bo-sheet-scroll[aria-busy="false"]').waitFor();
+ check('Prospecting reload retains authorized results',await page.locator('tbody tr').count()===25);
  // Distinct empty/filter recovery with real stored rows.
  await page.goto(base+'/prospecting?q=unmatched-synthetic-name',{waitUntil:'networkidle'});
  await page.getByRole('heading',{name:'No prospects match these filters',exact:true}).waitFor();
@@ -107,7 +119,7 @@ try{
  const layouts=[];
  for(const route of ['/work?tab=projects','/systems','/social','/ads','/team','/finance','/settings',pagePath]){
   await page.goto(base+route,{waitUntil:'networkidle'});
-  for(const width of [1440,1280,1024,768,390]){await page.setViewportSize({width,height:1000});
+  for(const width of [1920,1440,1280,1024,768,390]){await page.setViewportSize({width,height:1000});
    const dimensions=await page.evaluate(()=>({documentWidth:document.documentElement.scrollWidth,viewport:innerWidth,tabs:[...document.querySelectorAll('.bo-tab-strip')].map(e=>({height:e.clientHeight,scrollHeight:e.scrollHeight,width:e.clientWidth,scrollWidth:e.scrollWidth})),fonts:[...document.fonts].filter(f=>f.status==='loaded').map(f=>f.family)}));
    check(route+' no page overflow at '+width,dimensions.documentWidth<=width);check(route+' no vertical tab overflow at '+width,dimensions.tabs.every(t=>t.scrollHeight<=t.height));layouts.push({route,width,...dimensions});
    await page.screenshot({path:out+'/'+(route===pagePath?'page-editor':route.slice(1).replaceAll('?','-').replaceAll('=','-'))+'-'+width+'.png',fullPage:true});
@@ -118,6 +130,12 @@ try{
  zoomBrowser=await chromium.launchPersistentContext(join(tmp,'zoom-profile'),{channel:'chromium',headless:true,viewport:{width:1440,height:1000},args:['--no-sandbox','--disable-gpu',...(process.env.BLOOMOPS_DISABLE_SOFTWARE_RASTERIZER==='1'?['--disable-software-rasterizer']:[])]});
  const settings=await zoomBrowser.newPage();await settings.goto('chrome://settings/appearance');await settings.locator('select#zoomLevel').selectOption({label:'200%'});await settings.close();
  const zoomActor=await login('ellen',zoomBrowser);assert.equal((await zoomActor.ctx.request.post(base+'/api/bloomops/workspaces/select',{headers:{origin:base},data:{workspaceId:'a'}})).status(),200);
+ const operational=[];
+ for(const route of ['/social','/social/calendar','/ads','/ads/creative','/systems']){
+  await page.goto(base+route,{waitUntil:'networkidle'});
+  for(const width of [1920,1440,1280,768,390]){await page.setViewportSize({width,height:1000});operational.push(await qaOperationalLayout(page,check));await page.screenshot({path:out+'/qa-'+route.slice(1).replaceAll('/','-')+'-'+width+'.png',fullPage:true});}
+ }
+ writeFileSync(out+'/operational-layouts.json',JSON.stringify(operational,null,2));
  const zoomChecks=[];
  for(const route of ['/work?tab=projects','/systems','/social','/ads','/team','/finance','/settings',pagePath]){
   const page=zoomActor.page;await page.goto(base+route,{waitUntil:'networkidle'});

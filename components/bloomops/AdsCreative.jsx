@@ -6,7 +6,7 @@ import { CONTENT_STAGE_LABELS, CONTENT_TYPE_LABELS, CONTENT_VISIBILITY_LABELS } 
 import { ADS_STAGES } from '@/lib/bloomops/content-pipeline-values.mjs';
 const base='/ads/creative';
 export function AdsNavigation({creative=false}) {
-  return <nav className="bo-form-actions" aria-label="Ads views"><Button href="/ads" aria-current={!creative?'page':undefined}>Campaign work</Button><Button href={base} aria-current={creative?'page':undefined}>Creative</Button></nav>;
+  return <nav className="bo-view-nav" aria-label="Ads views"><Button href="/ads" aria-current={!creative?'page':undefined}>Campaign work</Button><Button href={base} aria-current={creative?'page':undefined}>Creative</Button></nav>;
 }
 function Context({item}) {
   return <dl className="bo-ads-context">{[['Project',item.projectName],['Client',item.clientName],['Service',item.serviceName]].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>;
@@ -32,7 +32,7 @@ export function AdsCreativeList({result,facets}) {
       <CreativeState item={item} /><div className="bo-creative-meta"><CreativeType item={item} /><span>Owner: {item.ownerName || 'Nobody yet'}</span>{item.targetPublishDate&&<span>Target: {item.targetPublishDate}</span>}</div>
       {!!item.platforms?.length&&<ul className="bo-creative-platforms" aria-label="Platforms">{item.platforms.map(p=><li key={p.key}>{p.key==='instagram'&&<Icon name="instagram" size={16} />}{p.label}</li>)}</ul>}
     </li>)}</ul>}
-    <nav className="bo-content-pagination" aria-label="Creative pages">{result.page>1&&<Button href={href(result.page-1)}>Previous page</Button>}<p className="bo-small">Page {result.page}</p>{result.hasMore&&result.page<10000&&<Button href={href(result.page+1)}>Next page</Button>}</nav>
+    {(result.page > 1 || result.hasMore) && <nav className="bo-content-pagination" aria-label="Creative pages">{result.page>1&&<Button href={href(result.page-1)}>Previous page</Button>}<p className="bo-small">Page {result.page}</p>{result.hasMore&&result.page<10000&&<Button href={href(result.page+1)}>Next page</Button>}</nav>}
   </>;
 }
 export function AdsCreativeDetail({item}) {

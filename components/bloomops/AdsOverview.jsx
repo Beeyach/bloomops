@@ -25,9 +25,9 @@ export function AdsOverview({ projection }) {
     </form>
     {(options.clients.hasMore || options.services.hasMore) && <p className="bo-small">Showing the first 200 filter choices, plus your selection. Choose a Client to narrow Services, or browse the project pages below.</p>}
     <Section id="ads-projects" title="Campaign work">
-      <p className="bo-small">Delivery projects needing attention appear first. Open a project to continue its work.</p>
+      <p className="bo-small bo-section-description">Delivery projects needing attention appear first. Open a project to continue its work.</p>
       {!projects.items.length ? <EmptyState title="No campaign work in this view" actions={<Button href="/work?tab=projects">Open Work projects</Button>}>
-        <p>Projects you can access under a Ads service appear here. Try another filter or open Work to manage projects.</p>
+        <p>Projects you can access under an Ads service appear here. Try another filter or open Work to manage projects.</p>
       </EmptyState> : <ul className="bo-rows" aria-label="Campaign work">
         {projects.items.map(project => <li className="bo-project-row" key={project.id} data-project-id={project.id}>
           <div className="bo-row-text"><a className="bo-link bo-project-name" href={`/work/projects/${project.id}`}>{project.name}</a>
@@ -47,7 +47,7 @@ export function AdsOverview({ projection }) {
       </nav>}
     </Section>
     {deliverables.items.length > 0 && <Section id="ads-deliverables" title="Deliverables to move forward">
-      <p className="bo-small">Across the selected projects: review and approved work, plus targets in the next 14 days or already past. Dates follow each Client’s timezone, or UTC when unset.</p>
+      <p className="bo-small bo-section-description">Across the selected projects: review and approved work, plus targets in the next 14 days or already past. Dates follow each Client’s timezone, or UTC when unset.</p>
       <ul className="bo-home-outputs" aria-label="Ads deliverables">{deliverables.items.map(item => <li key={item.id} data-deliverable-id={item.id}>
         <div><a className="bo-link bo-project-name" href={`/work/projects/${item.projectId}#project-deliverables-title`}>{item.title}</a>
           <dl className="bo-ads-context"><div><dt>Client</dt><dd>{item.clientName}</dd></div><div><dt>Project</dt><dd>{item.projectName}</dd></div></dl></div>

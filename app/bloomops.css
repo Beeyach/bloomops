@@ -328,6 +328,9 @@ html:has(.bo-root) {
   padding: var(--bo-s8) var(--bo-s8) var(--bo-s16);
 }
 
+/* Operational surfaces fill the main column; prose/form components retain their own bounds. */
+.bo-main > .bo-page { max-width: none; }
+
 .bo-page-narrow {
   max-width: 760px;
 }
@@ -815,6 +818,9 @@ html:has(.bo-root) {
 .bo-section {
   margin-top: var(--bo-s10);
 }
+.bo-section-description { margin-bottom: var(--bo-s4); max-width: 72ch; }
+.bo-section + .bo-action-controls { margin-top: var(--bo-s5); }
+.bo-access-actions { display: flex; flex-wrap: wrap; gap: var(--bo-s3); margin-top: var(--bo-s5); }
 .bo-section-head {
   display: flex;
   align-items: baseline;
@@ -1224,6 +1230,9 @@ select.bo-control {
   background: transparent;
   max-width: 640px;
 }
+.bo-main .bo-empty { width: 100%; max-width: none; text-align: center; }
+.bo-main .bo-empty > .bo-body { max-width: 62ch; margin-inline: auto; }
+.bo-main .bo-empty-actions { justify-content: center; }
 .bo-empty .bo-h2 {
   margin-bottom: var(--bo-s2);
 }
@@ -1945,6 +1954,8 @@ select.bo-control {
   flex-direction: column;
   gap: var(--bo-s5);
 }
+.bo-view-nav { display: flex; flex-wrap: wrap; gap: var(--bo-s2); margin-bottom: var(--bo-s5); }
+.bo-view-nav .bo-btn[aria-current="page"] { background: var(--bo-lilac); border-color: var(--bo-ink-soft); color: var(--bo-ink); box-shadow: inset 0 -2px 0 var(--bo-ink-soft); font-weight: 600; }
 .bo-form-actions {
   display: flex;
   flex-wrap: wrap;
