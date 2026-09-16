@@ -75,10 +75,10 @@ export default async function ClientDetailPage({ params, searchParams }) {
   return (
     <>
       <ClientDetailHeader client={client} />
-      <div className="bo-form-actions"><Button href={`/clients/${client.id}/preview`} icon="eye" variant="ghost">Preview as client</Button><Button href={`/discussions/client/${client.id}`} icon="message" variant="ghost">Discussion</Button><Button href={`/pages/records/client/${client.id}`} variant="ghost">Linked Pages</Button></div>
+      <nav aria-label="Client tools" className="bo-client-tools"><Button href={`/clients/${client.id}/preview`} icon="eye" variant="ghost">Preview as client</Button><Button href={`/discussions/client/${client.id}`} icon="message" variant="ghost">Discussion</Button><Button href={`/pages/records/client/${client.id}`} variant="ghost">Linked Pages</Button></nav>
       {access.workspace.purpose==='prospecting'&&<ProspectClientOrigin db={access.db} actor={actor} clientId={client.id}/>}
-      {mayActivate && <ClientActivation key={`${actor.workspaceId}:${actor.userId}:${client.id}`} workspaceId={actor.workspaceId} userId={actor.userId} clientId={client.id} draft={client.relationshipStatus === 'draft'} activation={activation} />}
       <ClientTabs clientId={client.id} active={tab} hasProjects={hasProjects} />
+      {mayActivate && <ClientActivation key={`${actor.workspaceId}:${actor.userId}:${client.id}`} workspaceId={actor.workspaceId} userId={actor.userId} clientId={client.id} draft={client.relationshipStatus === 'draft'} activation={activation} />}
       {tab === 'projects' && <Section id="projects" title="Projects"><ProjectList projects={projects.items} hasMore={projects.hasMore} /></Section>}
       {tab === 'overview' && <OverviewTab access={access} actor={actor} client={client} contacts={contacts} mayManage={mayManage} />}
       {tab === 'services' && <ServicesTab access={access} actor={actor} client={client} mayManage={mayManage} />}

@@ -1784,6 +1784,8 @@ select.bo-control {
 /* Client setup: one clear action region, native choices, compact route links. */
 .bo-check { display:flex; align-items:center; gap:12px; min-height:44px; line-height:1.5; }
 .bo-check input[type=checkbox],.bo-check input[type=radio] { flex:0 0 20px; width:20px; height:20px; min-height:20px; padding:0; margin:0; accent-color:var(--bo-ink); }
+.bo-client-tools { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; margin-block:16px; }
+.bo-client-tools .bo-btn { flex:0 1 auto; }
 .bo-client-readiness { display:grid; gap:16px; justify-items:start; padding:24px; margin-block:24px; border:1px solid var(--bo-border); border-radius:12px; background:var(--bo-lilac); }
 .bo-client-readiness h2 { font-size:20px; margin:0; }.bo-client-readiness p { margin:0; max-width:72ch; line-height:1.6; }
 .bo-activation-actions,.bo-readiness-recovery { display:grid; gap:16px; justify-items:start; max-width:100%; }

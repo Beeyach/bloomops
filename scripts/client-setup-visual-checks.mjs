@@ -19,7 +19,7 @@ export async function clientSetupVisualChecks({page,ctx,base,clientId,check,out,
  await page.goto(base+'/work/setups',{waitUntil:'networkidle'});check('Work templates has a genuine Back destination',await page.getByRole('link',{name:'Back to Work',exact:true}).getAttribute('href')==='/work?tab=projects');
  check('Work template current status is explicit',await page.getByRole('link',{name:'Active templates',exact:true}).getAttribute('aria-current')==='page');await page.screenshot({path:out+'/work-templates-1440.png'});
  await page.goto(base+'/clients/'+clientId+'/reports',{waitUntil:'networkidle'});check('Reports describe real draft and publication behavior',await page.getByText('Manage private drafts and explicitly published client versions.',{exact:true}).isVisible());await page.screenshot({path:out+'/reports-1440.png'});
- await page.getByRole('link',{name:'New report',exact:true}).click();await page.getByLabel('Report template',{exact:true}).selectOption({index:1});
+ await page.getByRole('link',{name:'New report',exact:true}).click();await page.getByLabel('Report template').selectOption({index:1});
  const metric=page.locator('.bo-report-metric').first();await metric.scrollIntoViewIfNeeded();
  check('Metric explanation and controls have deliberate gaps',await metric.evaluate(e=>{const p=e.querySelector(':scope > p'),grid=e.querySelector('.bo-report-grid');return parseFloat(getComputedStyle(p).marginTop)>=12&&grid.getBoundingClientRect().top-p.getBoundingClientRect().bottom>=19;}));
  await page.screenshot({path:out+'/report-metrics-1440.png'});page.once('dialog',d=>d.accept());await page.goto(base+'/prospecting',{waitUntil:'networkidle'});

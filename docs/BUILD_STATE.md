@@ -8,23 +8,26 @@ Design direction: existing Cloud #F8FAFF, Snow #FFFFFF, Lilac #EEEAFB, Ink #1815
 
 | Item | Scenario / correction | Verification / remaining |
 | --- | --- | --- |
-| U01 | Per-service scope errors and first-invalid focus; retain entered choices | Implemented; browser retest pending |
-| U02 | Typed text controls exclude checkbox/radio | Live d361177 reproduces 26×44 checkbox with12px padding; corrected browser retest pending |
-| U03 | Focused primary contact before services; full research secondary | Implemented using existing guarded partial profile edits; browser pending |
-| U04 | Left-aligned workspace identity and trailing chevron | Implemented; geometry/scope retest pending |
-| U05 | Systems responsive filter grid and right action group | Implemented; geometry pending |
-| U06 | Calendar human-readable month and deliberate region spacing | Implemented; target-date behavior unchanged; browser pending |
-| U07 | Work templates Back/status/authorized first-create | Implemented; browser pending |
-| U08 | Reports Client header, active/archive links, truthful publication copy | Implemented; browser pending |
-| U09 | Metric legend/help/value/provenance spacing | Implemented; calculations and snapshots unchanged; browser pending |
-| U10 | Wrong-workspace recovery and action spacing | Pending |
-| U11 | Contacts/details above operational sections; bounded requests with View all | Implemented; normal viewport review pending |
-| U12 | Canonical read-only readiness; explicit template recovery and activation confirmation | Domain52 tests pass; full UI/native/denial/retry flow pending |
+| U01 | Per-service scope errors and first-invalid focus; retain entered choices | Implemented; completed-build focused workflow passed; final staging pending |
+| U02 | Typed text controls exclude checkbox/radio | Live d361177 reproduces 26×44 checkbox with12px padding; corrected built browser20×20 and keyboard checks passed; staging pending |
+| U03 | Focused primary contact before services; full research secondary | Implemented with guarded partial profile edits; save failure/retry/cancel and real persistence passed |
+| U04 | Left-aligned workspace identity and trailing chevron | Left alignment and cancelled/confirmed scope-switch checks passed locally |
+| U05 | Systems responsive filter grid and right action group | Desktop aligned actions and responsive geometry passed locally |
+| U06 | Calendar human-readable month and deliberate region spacing | Human month and measured gaps passed1440/1920/768/390; date semantics unchanged |
+| U07 | Work templates Back/status/authorized first-create | Implemented; real route/current-status checks passed locally |
+| U08 | Reports Client header, active/archive links, truthful publication copy | Implemented; real route/current-status checks passed locally |
+| U09 | Metric legend/help/value/provenance spacing | Implemented; calculations and snapshots unchanged; final metric browser retest pending |
+| U10 | Wrong-workspace recovery and action spacing | Implemented; explicit chooser, no automatic selection; final retest pending |
+| U11 | Contacts/details above operational sections; bounded requests with View all | Contacts moved above operational details, bounded requests retained; normal desktop/mobile screenshots inspected; utility wrapping refined |
+| U12 | Canonical read-only readiness; explicit template recovery and activation confirmation | Fresh workspace → contact → two services → template revision/publication → explicit activation → genuine separate portal login passes locally; native9; final staging pending |
 | U13 | Prospect view/count/search alignment | Implemented; geometry/keyboard pending |
 
 Live baseline fixture created through normal UI: workspace `Bloomsi QA Client setup UX`, prospect `1b3e1006-aac8-4335-99dc-c8d9b939c626` (QA Client Setup Studio), no contact or conversion yet. No real pilot records changed. Before screenshot: `/home/ary/Developer/bloomops-client-setup-ui-evidence/before-contact-1440.png`. Staging baseline reports d361177. Windows C has108GiB free; Linux860GiB, inodes available, rw and flushed write/read/delete probe passed before dependency setup.
 
 No migration is planned. Existing remote-D1 quick_check SQLITE_NOMEM limitation and overall PERF3 remain open; not reclassified by this UX pass. PR98 release is merged/deployed atd361177 despite older S01 table prose below; historical evidence retained.
+
+
+Verification checkpoint: full7417/7417 exit0 at11a2f8e; focused68/68 after review fixes; native9 checks pass. Completed build6d01065 exit0; focused browser91 checks pass with zero runtime errors and unchanged artifact hashes. Broader sweep passed responsive setup geometry before a new exact-label locator failed on the report template select; corrected to the existing reporting harness locator, not treated as a product failure. One same-session Sol review and focused re-review resolved stale editor review-token reuse and existing-open-onboarding readiness; no material finding remains in that reviewed scope. Normal screenshots were viewed, producing small final Client utility/report header polish. Final build/full/remote/staging checks are still pending. No real pilot records changed.
 
 
 ## Owner pilot usability feedback 01 - 16 September 2026

@@ -76,7 +76,7 @@ export default function ProspectConversionPreview({initial,userId,initialProfile
      <Button onClick={()=>{invalidate();setChosenServices(values=>values.filter(v=>v.id!==service.id));}}>Remove {service.name}</Button>
      {initial.canManageOfferings&&service.slug.startsWith('custom-')&&<Button onClick={()=>{invalidate();setOfferingEditor({initial:service});}}>Edit offering name</Button>}
     </fieldset>)}
-    {errors.scopeNotes&&<p role="alert">{errors.scopeNotes}</p>}{errors.packageName&&<p role="alert">{errors.packageName}</p>}
+    {errors.scopeNotes&&!errors.services&&<p role="alert">{errors.scopeNotes}</p>}{errors.packageName&&!errors.services&&<p role="alert">{errors.packageName}</p>}
     {initial.canManageOfferings&&<Button icon="plus" onClick={()=>{invalidate();setOfferingEditor({initial:null});}}>Add a custom service</Button>}
    </section>
    {message&&<p role="alert" className="bo-prospect-notice">{message}</p>}{searching&&<p role="status">Loading choices…</p>}
