@@ -6,7 +6,7 @@ New roadmap features remain paused. One active route/scenario checklist follows.
 PR95 merged as `0039b83` and staging serves that revision. Its tree equals executed
 candidate `4ceae2e`; CI35110736050 passes full7388 and all feature jobs. Staging
 35113022895 and disposable-D1 35113022685 pass. Ready-event35112993093 is observed
-separately (feature passed, full suite still running at this checkpoint).
+separately (both jobs passed).
 Owned follow-through branch: `fix/app-qa-followthrough-20260916`, base `0039b83`,
 worktree `/home/ary/Developer/bloomops-app-qa-20260916`. Other worktrees and PR93
 remain untouched. Evidence: `/home/ary/Developer/bloomops-app-qa-evidence`.
@@ -15,7 +15,7 @@ remain untouched. Evidence: `/home/ary/Developer/bloomops-app-qa-evidence`.
 | --- | --- | --- | --- |
 | Sidebar → Prospecting | Team Member generic not-found despite HTTP200; Owner/Admin access works | Explicit restricted-role explanation with workspace recovery; existing authorization unchanged | FIXED AND RETESTED on0039: same B session sidebar/denial/API403; Owner sidebar usable. No authorized Owner failure reproduced. Local genuine empty, restricted, history/reload regressions pass; live fresh-session/history follow-through remains |
 | Social / Ads / Systems lists | Windows1920 main1688 vs canvas1120, empty640; nav/filter and description/result gaps0 | Fluid working column; centered full-width empty region; selected views;20px/16px gaps; omit inert page1 | FIXED AND RETESTED live0039 Social/Ads: canvas1688, inner1624; view/filter20px; Ads description16px; no document overflow. Matched before/after screenshots retained. Local293 checks include five widths and native200% |
-| Action detail / status / dependencies | Fields touch action row; dependency help touches result |20px action region and16px help gap | Live d294 create/title validation/self assignment/status save/reload/dependency add-remove PASS. Corrected live geometry screenshot still pending |
+| Action detail / status / dependencies | Fields touch action row; dependency help touches result |20px action region and16px help gap | Live d294 create/title validation/self assignment/status save/reload/dependency add-remove PASS. FIXED AND RETESTED0039:20px action gap; Windows390 keyboard status dialog opens, Escape returns focus, no overflow |
 | Shell / notification / scope | No new delivery defect observed | None | Live separate B Page comment → A reply → B unread1 → rendered notification click → correct Page/discussion and unread clears PASS on d294. Grant revoked, inbox/count and old-link access removed. Search/mobile/current revision sweep pending |
 | Prospect records / Skills / CSV | CSV preview says "Review 1 rows" | Reuse singular/plural formatter | Live d294 create/invalid timezone/edit/reload/search/views/Clear/CSV import/Skills task and context downloads PASS. Singular fix and one/two-row UI regressions pending release |
 | Clients / Services / Onboarding / Work | Global Onboarding falsely says checklist unavailable; per-Client checklist works | Canonical authorized Client list links directly to each real checklist; no new engine or access grant | Live Client create/edit long name/Service create-edit PASS. Global recovery implemented with empty/limited-list tests and actual sidebar→activated checklist regression; verification/release pending. No invitation sent to example.test |
@@ -30,7 +30,7 @@ remain untouched. Evidence: `/home/ary/Developer/bloomops-app-qa-evidence`.
 The initial follow-through source `bd61892` passes full7390/7390 and build, but
 its build-identity export correctly stopped because the new reporting reproduction
 was being added. No browser success is attributed to that interrupted sequence.
-Reporting fix focused26 and native46 pass; final full/build/browser remain pending.
+Corrected source `1fac133` passes focused26, native46, full7391/7391 exit0 with no skips, completed Cloudflare build exit0, UI298 and reporting159 built-Worker checks with zero runtime errors. Artifact hashes and served assets match the completed build. Remote validation and final staging retests remain pending.
 Keep raw interrupted and failing reproduction logs. No schema/migration/dependency
 changes. Temporary Finance/Page grants and GHL settings are restored. Synthetic
 records retained only for this QA sweep; inventory and restoration receipts are
