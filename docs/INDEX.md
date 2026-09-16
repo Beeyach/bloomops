@@ -1,6 +1,6 @@
 # BloomOps Documentation Index
 
-Current owner priority: integrated agreed-product completion, tracked in [BUILD_STATE](BUILD_STATE.md). [Reporting](phases/N3.md) is merged and staging verified through1973e2f; [N4 reusable Work and Page links](phases/N4.md) are integrated; Page templates are in PR89, and [F1 Team Action workload](phases/F.md) is the current separate implementation. N2E and PR79 remain closed. Preserve E3B and paused Prospecting work.
+Current owner priority: integrated agreed-product completion, tracked in [BUILD_STATE](BUILD_STATE.md). [Reporting](phases/N3.md) is merged and staging verified through1973e2f; [N4 reusable Work and Page links](phases/N4.md) are integrated; Page templates (PR89) and [F1 Team Action workload](phases/F.md) are merged and staging verified throughbafd6e0. F2 Department work is the current bounded implementation, locally verified and awaiting remote/staging gates. N2E and PR79 remain closed. Preserve E3B and paused Prospecting work.
 
 Historical previous priority: [N2E in-app notifications](phases/N2.md#n2e-bounded-contract--useful-in-app-notifications). [Local evidence](previews/notifications/README.md) records the independent-audit handoff; PR77/N2D is merged; [BUILD_STATE](BUILD_STATE.md) records exact release gates and the next bounded task. Preserve the accepted [prospect sheet](PROSPECTING_SHEET.md) and [Bloomsi branding](BRANDING.md). Earlier release entries below are historical.
 
