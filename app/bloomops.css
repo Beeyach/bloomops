@@ -2331,3 +2331,22 @@ select.bo-control {
 .bo-file-properties dt { color:var(--bo-ink-soft); }
 .bo-file-properties dd { margin:0; }
 @media(max-width:767px) { .bo-file-properties { font-size:16px; } }
+
+/* Reusable Work: full-page structured authoring and an explicit job preview. */
+.bo-work-setup { max-width:1000px; }
+.bo-work-setup fieldset { min-width:0; border:0; padding:0; margin:24px 0; }
+.bo-work-setup legend { font-weight:600; margin-bottom:16px; }
+.bo-work-setup h2 { margin-top:32px; }
+.bo-work-setup section { margin-top:32px; }
+.bo-work-setup-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px 24px; }
+.bo-work-setup label { display:flex; flex-direction:column; gap:8px; font-size:14px; font-weight:500; }
+.bo-work-setup input:not([type=checkbox]),.bo-work-setup textarea,.bo-work-setup select { box-sizing:border-box; width:100%; min-height:44px; border:1px solid var(--bo-border); border-radius:8px; padding:10px 12px; background:var(--bo-surface); color:var(--bo-ink); font:inherit; }
+.bo-work-setup textarea { min-height:100px; resize:vertical; }
+.bo-work-setup input:focus-visible,.bo-work-setup textarea:focus-visible,.bo-work-setup select:focus-visible { outline:2px solid var(--bo-focus); outline-offset:2px; }
+.bo-work-setup .bo-work-setup-row { border-top:1px solid var(--bo-border); padding-top:16px; }
+.bo-work-setup-row>.bo-btn,.bo-work-setup details { margin-top:16px; }
+.bo-work-setup .bo-work-setup-check { flex-direction:row; align-items:center; min-height:44px; font-weight:400; }
+.bo-work-setup summary { cursor:pointer; min-height:44px; padding-top:8px; }
+.bo-work-setup li { margin-bottom:20px; overflow-wrap:anywhere; }
+.bo-work-setup li p { white-space:pre-wrap; }
+@media(max-width:600px) { .bo-work-setup-grid { grid-template-columns:minmax(0,1fr); } .bo-work-setup label { font-size:16px; } }
