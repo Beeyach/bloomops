@@ -197,6 +197,29 @@ try{
   const revised=(await get(owner.ctx,api+'/'+reportId+'/publications')).data.review.current;check('revision preserves earlier internal history '+reportId,(await get(owner.ctx,api+'/'+reportId+'/versions/'+release.id)).data.report.snapshot.clientSummary==='Client-safe summary for '+reportId&&revised.sequence===2);
   check('replaced client link and PDF are denied '+reportId,(await get(portalContext,'/api/bloomops/portal/reports/'+release.id)).status===404&&(await portalContext.request.get(base+'/api/bloomops/portal/reports/'+release.id+'/pdf')).status()===404);
   await publishAction('Withdraw client access');check('withdrawal denies latest portal/PDF while retaining history '+reportId,(await get(portalContext,'/api/bloomops/portal/reports/'+revised.id)).status===404&&(await portalContext.request.get(base+'/api/bloomops/portal/reports/'+revised.id+'/pdf')).status()===404&&(await get(owner.ctx,api+'/'+reportId+'/versions/'+revised.id)).status===200);
+  // Archive a real current publication, retain its immutable history, restore
+  // privately and require a fresh explicit publication. Never write fixtures directly.
+  await owner.page.getByRole('checkbox').check();await publishAction('Publish reviewed revision');
+  const toArchive=(await get(owner.ctx,api+'/'+reportId+'/publications')).data.review.current;
+  await owner.page.getByRole('link',{name:'Back to saved draft',exact:true}).click();
+  const archiveUrl=base+api+'/'+reportId+'/archive';
+  await owner.page.route(archiveUrl,async route=>{const response=await route.fetch();assert.equal(response.status(),200);await route.abort('failed');});
+  owner.page.once('dialog',dialog=>dialog.accept());await owner.page.getByRole('button',{name:'Archive report',exact:true}).click();
+  await owner.page.getByRole('button',{name:'Retry archive change',exact:true}).waitFor();await owner.page.unroute(archiveUrl);
+  check('lost archive response retains explicit retry '+reportId,(await get(owner.ctx,api+'/'+reportId)).data.report.archivedAt!==null);
+  await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Retry archive change',exact:true}).click()]);
+  check('archived editor is read only '+reportId,await owner.page.getByRole('textbox',{name:'Report title',exact:true}).isDisabled()&&await owner.page.getByRole('button',{name:'Save draft',exact:true}).count()===0);
+  check('archive denies current client report and PDF '+reportId,(await get(portalContext,'/api/bloomops/portal/reports/'+toArchive.id)).status===404&&(await portalContext.request.get(base+'/api/bloomops/portal/reports/'+toArchive.id+'/pdf')).status()===404);
+  check('archive preserves internal snapshot '+reportId,(await get(owner.ctx,api+'/'+reportId+'/versions/'+toArchive.id)).status===200);
+  await owner.page.getByRole('link',{name:'All reports',exact:true}).click();check('archived report absent from active list '+reportId,await owner.page.locator(`a[href="${path}/${reportId}"]`).count()===0);
+  await owner.page.getByRole('link',{name:'Archived reports',exact:true}).click();await owner.page.locator(`a[href="${path}/${reportId}"]`).click();
+  owner.page.once('dialog',dialog=>dialog.accept());await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Restore private draft',exact:true}).click()]);
+  check('restore permits internal editing '+reportId,await owner.page.getByRole('textbox',{name:'Report title',exact:true}).isEnabled());
+  check('restored old client link and PDF stay denied '+reportId,(await get(portalContext,'/api/bloomops/portal/reports/'+toArchive.id)).status===404&&(await portalContext.request.get(base+'/api/bloomops/portal/reports/'+toArchive.id+'/pdf')).status()===404);
+  await owner.page.getByRole('link',{name:'Review publication and history',exact:true}).click();await owner.page.getByRole('status').filter({hasText:'Private after archive.'}).waitFor();
+  await owner.page.getByRole('checkbox').check();await publishAction('Publish reviewed revision');const restored=(await get(owner.ctx,api+'/'+reportId+'/publications')).data.review.current;
+  check('explicit fresh version restores client access '+reportId,restored.sequence>toArchive.sequence&&(await get(portalContext,'/api/bloomops/portal/reports/'+restored.id)).status===200);
+  await publishAction('Withdraw client access');
  }
  check('withdrawn reports disappear from client list',(await get(portalContext,'/api/bloomops/portal/reports')).data.items.length===0);
  // Supported new-period UI creates a separate private draft with blank results.
