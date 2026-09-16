@@ -33,6 +33,7 @@ export async function clientSetupChecks({page,ctx,base,browser,bucket,check,out}
  const ads=page.getByRole('group',{name:'Ads',exact:true}),ghl=page.getByRole('group',{name:'GHL',exact:true});
  await ads.getByLabel('Agreed scope (required)',{exact:true}).fill('Synthetic campaign planning only');
  await page.getByRole('button',{name:'Review handoff',exact:true}).click();await ghl.getByText('Describe the agreed scope.',{exact:true}).waitFor();
+ await page.waitForFunction(()=>document.activeElement?.matches('textarea[aria-invalid=true]'));
  check('Service validation focuses the exact missing scope',await ghl.getByLabel('Agreed scope (required)',{exact:true}).evaluate(e=>document.activeElement===e));
  check('Other purchased scope remains intact',await ads.getByLabel('Agreed scope (required)',{exact:true}).inputValue()==='Synthetic campaign planning only');
  await page.screenshot({path:out+'/client-setup-service-error-1440.png'});
