@@ -522,10 +522,10 @@
  .bo-sheet-page .bo-sheet-cell-content { min-height:36px; gap:8px; }
  .bo-sheet-page .bo-sheet-stage>svg { width:16px; height:16px; }
  .bo-sheet-page .bo-sheet-toolbar .bo-btn,.bo-sheet-page .bo-sheet-count,.bo-sheet-page .bo-sheet-search input,.bo-sheet-page .bo-sheet-active-filters,.bo-sheet-page .bo-sheet-footer { font-size:14px; }
- .bo-sheet-page .bo-sheet-toolbar { gap:8px; padding-bottom:12px; }
+ .bo-sheet-page .bo-sheet-toolbar { gap:8px; padding-bottom:28px; }
 }
 @media (min-width:768px) and (pointer:fine) {
- .bo-sheet-page .bo-sheet-toolbar .bo-btn { min-height:36px; padding:6px 10px; }
+ .bo-sheet-page .bo-sheet-toolbar .bo-btn { min-height:44px; padding:6px 10px; }
  .bo-sheet-page .bo-sheet-search { min-height:40px; }
 }
 @media (max-width:767px),(pointer:coarse) {
