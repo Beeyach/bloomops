@@ -23,3 +23,24 @@ test('no-op, zero-row and failed archive writes preserve all saved content',asyn
  run(t.raw,"CREATE TRIGGER archive_ignore BEFORE UPDATE ON client_report_drafts BEGIN SELECT RAISE(IGNORE); END");assert.equal((await archive(t.db,t.owner,'james',created.id,archiveInput())).reason,'conflict');assert.deepEqual(await get(t.db,t.owner,'james',created.id),before);run(t.raw,'DROP TRIGGER archive_ignore');
  run(t.raw,"CREATE TRIGGER archive_failure BEFORE UPDATE ON client_report_drafts BEGIN SELECT RAISE(ABORT,'synthetic archive failure'); END");await assert.rejects(archive(t.db,t.owner,'james',created.id,archiveInput()),e=>/synthetic archive failure/.test(e.cause?.message||e.message));assert.deepEqual(await get(t.db,t.owner,'james',created.id),before);assert.equal(all(t.raw,'SELECT * FROM client_report_publications').length,0);
 });
+
+// Model an independent writer immediately after a header read. A real D1 batch
+// keeps that writer outside all statements in its transaction.
+function interleaveAfterReportHeader(t,mutation){
+ const prepare=t.d1.prepare.bind(t.d1),batch=t.d1.batch.bind(t.d1);let armed=true,inBatch=false,pending=false;
+ const header=sql=>sql.startsWith('select ')&&sql.includes('from "client_report_drafts"')&&sql.includes('inner join "bloomops_clients"');
+ const wrap=(statement,sql)=>new Proxy(statement,{get(target,key){if(key==='bind')return(...args)=>wrap(target.bind(...args),sql);if(['all','raw'].includes(key))return async(...args)=>{const result=await target[key](...args);if(armed&&header(sql)){armed=false;if(inBatch)pending=true;else await mutation();}return result;};return target[key];}});
+ t.d1.prepare=sql=>wrap(prepare(sql),sql);
+ t.d1.batch=async statements=>{inBatch=true;let result;try{result=await batch(statements);}finally{inBatch=false;}if(pending){pending=false;await mutation();}return result;};
+ return ()=>assert.equal(armed,false,'the actual header read was intercepted');
+}
+test('archive overlapping an authorized read returns a coherent report instead of false revocation',async ctx=>{
+ const t=await setup();ctx.after(()=>t.raw.close());const created=await save(t.db,t.owner,'james',null,input());
+ const observed=interleaveAfterReportHeader(t,async()=>assert.ok((await archive(t.db,t.owner,'james',created.id,archiveInput())).ok));
+ const report=await get(t.db,t.owner,'james',created.id);observed();assert.ok(report,'an unchanged current permission must not become a transient not-found');assert.equal(report.revision,1);assert.equal(report.archivedAt,null);assert.ok(Object.keys(report.metrics).length>0);assert.ok((await get(t.db,t.owner,'james',created.id)).archivedAt);
+});
+test('coherent report reads still reject actual membership revocation after the snapshot',async ctx=>{
+ const t=await setup();ctx.after(()=>t.raw.close());const created=await save(t.db,t.owner,'james',null,input());
+ const observed=interleaveAfterReportHeader(t,async()=>run(t.raw,"UPDATE workspace_memberships SET status='suspended' WHERE id='m-ellen'"));
+ assert.equal(await get(t.db,t.owner,'james',created.id),null);observed();
+});

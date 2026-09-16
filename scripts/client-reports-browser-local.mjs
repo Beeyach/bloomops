@@ -203,7 +203,14 @@ try{
   const toArchive=(await get(owner.ctx,api+'/'+reportId+'/publications')).data.review.current;
   await owner.page.getByRole('link',{name:'Back to saved draft',exact:true}).click();
   const archiveUrl=base+api+'/'+reportId+'/archive';
-  await owner.page.route(archiveUrl,async route=>{const response=await route.fetch();assert.equal(response.status(),200);await route.abort('failed');});
+  await owner.page.route(archiveUrl,async route=>{
+   const readUrl=base+api+'/'+reportId;
+   const refreshed=owner.page.waitForResponse(r=>r.url()===readUrl&&r.request().method()==='GET');
+   await owner.page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+   const response=await route.fetch();assert.equal(response.status(),200);
+   check('concurrent archive access refresh remains authorized '+reportId,(await refreshed).status()===200);
+   await route.abort('failed');
+  });
   owner.page.once('dialog',dialog=>dialog.accept());await owner.page.getByRole('button',{name:'Archive report',exact:true}).click();
   await owner.page.getByRole('button',{name:'Retry archive change',exact:true}).waitFor();await owner.page.unroute(archiveUrl);
   check('lost archive response retains explicit retry '+reportId,(await get(owner.ctx,api+'/'+reportId)).data.report.archivedAt!==null);
