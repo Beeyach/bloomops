@@ -81,3 +81,5 @@ Prior to final release, complete the final artifact-bound browsers, remote valid
 Windows staging geometry and matched screenshots. PR93 remains separate; its only
 additional source overlap is the owner-role option label in ClientOverview, not its
 save/recovery implementation. Keep the product completion list in BUILD_STATE.
+
+Final integration follow-up: remote run35094766037 passed full7384/7384 and notification/report/Work/Page browsers. Team browser stopped on stale authored-label locators (Workload and the assignee heading); those locators now follow the actual navigation without removing behavioral assertions. The faint text token is darkened from3.73:1 to5.78:1 on white (4.90:1 on lilac), with a rendered Finance-placeholder check; its amount label uses the existing screen-reader utility. Final CI/staging results are recorded on PR94.

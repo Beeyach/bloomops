@@ -91,6 +91,13 @@ try{
  const layouts=[];
  for(const route of ['/work?tab=projects','/systems','/social','/ads','/team','/finance','/settings',pagePath]){
   await page.goto(base+route,{waitUntil:'networkidle'});
+  if(route==='/finance'){
+   const contrast=await page.locator('input.bo-control').first().evaluate(e=>{
+    const color=getComputedStyle(e,'::placeholder').color,background=getComputedStyle(e).backgroundColor;
+    const luminance=s=>s.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;}).reduce((n,v,i)=>n+v*[.2126,.7152,.0722][i],0);
+    const a=luminance(color),b=luminance(background);return {color,background,ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
+   });check('actual Finance control placeholder has normal-text contrast',contrast.ratio>=4.5);writeFileSync(out+'/control-contrast.json',JSON.stringify(contrast,null,2));
+  }
   for(const width of [1440,1280,1024,768,390]){await page.setViewportSize({width,height:1000});
    const dimensions=await page.evaluate(()=>({documentWidth:document.documentElement.scrollWidth,viewport:innerWidth,tabs:[...document.querySelectorAll('.bo-tab-strip')].map(e=>({height:e.clientHeight,scrollHeight:e.scrollHeight,width:e.clientWidth,scrollWidth:e.scrollWidth})),fonts:[...document.fonts].filter(f=>f.status==='loaded').map(f=>f.family)}));
    check(route+' no page overflow at '+width,dimensions.documentWidth<=width);check(route+' no vertical tab overflow at '+width,dimensions.tabs.every(t=>t.scrollHeight<=t.height));layouts.push({route,width,...dimensions});
