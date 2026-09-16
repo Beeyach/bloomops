@@ -2360,3 +2360,5 @@ select.bo-control {
 .bo-page-record-picker input,.bo-page-record-picker select {display:block;width:100%;max-width:100%;min-height:44px;margin-top:.35rem;}
 .bo-record-pages {padding-left:1.25rem;}
 .bo-record-pages li {padding:.6rem 0;overflow-wrap:anywhere;}
+.bo-page-template-preview{max-width:920px;margin-inline:auto;min-width:0;overflow-wrap:anywhere}
+.bo-page-template-preview .bo-page-body{margin-top:var(--bo-space-6,24px)}
