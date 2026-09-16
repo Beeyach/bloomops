@@ -33,7 +33,9 @@ try{
  assert.equal((await set('edit')).ok,true);await binding.prepare("INSERT INTO service_assignments(workspace_id,service_engagement_id,membership_id) VALUES('a','ghl-service','m-sam')").run();const sam=await t.actor('sam');
  check('supported grants plus canonical Service scope enable Finance',(await financeParents(db,sam)).items[0].serviceEngagementId==='ghl-service'&&(await getFinanceRecord(db,sam,a.id)).id===a.id);
  await set('none');check('native capability revocation hides data and rejects writes',await getFinanceRecord(db,sam,a.id)===null&&(await saveFinanceRecord(db,sam,null,{...input,userId:'sam',requestId:crypto.randomUUID()})).ok===false);
- await binding.prepare("UPDATE workspace_memberships SET status='suspended' WHERE id='m-ellen'").run();check('zero-row stale actor creation cannot succeed',(await saveFinanceRecord(db,t.owner,null,{...input,requestId:crypto.randomUUID()})).ok===false&&(await binding.prepare('SELECT count(*) n FROM finance_records').first()).n===1);
+ const iso=await saveFinanceRecord(db,t.owner,null,{...input,requestId:crypto.randomUUID(),record:{...input.record,currency:'HUF',amount:'1.25'}});
+ const isoSaved=await getFinanceRecord(db,t.owner,iso.id);check('native ISO fraction round-trips without display rounding',iso.ok&&isoSaved.amount==='1.25'&&isoSaved.currencyDigits===2&&isoSaved.amountMinor===125);
+ await binding.prepare("UPDATE workspace_memberships SET status='suspended' WHERE id='m-ellen'").run();check('zero-row stale actor creation cannot succeed',(await saveFinanceRecord(db,t.owner,null,{...input,requestId:crypto.randomUUID()})).ok===false&&(await binding.prepare('SELECT count(*) n FROM finance_records').first()).n===2);
  check('final FK integrity is clean',(await binding.prepare('PRAGMA foreign_key_check').all()).results.length===0);
  console.log(JSON.stringify({checks:checks.length,exitCode:0,names:checks}));
 }finally{t.raw.close();await mf.dispose();}

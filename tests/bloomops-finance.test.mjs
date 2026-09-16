@@ -17,6 +17,20 @@ test('exact minor units, zero, ISO precision and missing/invalid distinction',()
  assert.equal(financeAmount('90071992547409930',2),'900719925474099.30');
 });
 
+test('ISO minor units are independent of locale display rounding',()=>{
+ for(const currency of ['AFN','ALL','COP','HUF','IDR','IRR','KPW','LAK','LBP','MGA','MMK','PKR','SOS','SYP','YER']){
+  const v=financeInput(record({currency,amount:'1.25'}),'invoice').value;
+  assert.equal(v.amountMinor,125,currency);assert.equal(v.currencyDigits,2,currency);
+  assert.equal(financeAmount(v.amountMinor,v.currencyDigits),'1.25');
+ }
+ const iq=financeInput(record({currency:'IQD',amount:'1.005'}),'invoice').value;
+ assert.equal(iq.amountMinor,1005);assert.equal(iq.currencyDigits,3);
+ assert.ok(financeInput(record({currency:'IQD',amount:'1.0005'}),'invoice').error);
+ for(const currency of ['XDR','XSU','SLL'])assert.ok(financeInput(record({currency}),'invoice').error);
+ // Existing pinned precision is not silently reinterpreted by a catalogue update.
+ assert.equal(financeInput(record({currency:'HUF',amount:'125'}),'invoice',0).value.amountMinor,125);
+});
+
 test('dates and invoice/payment vocabulary validate without silently processing money',()=>{
  for(const dueDate of ['2026-02-29','2026-13-01','2026-01-00','2026-01-01T00:00:00Z'])assert.ok(financeInput(record({dueDate}),'invoice').error);
  assert.equal(financeInput(record({dueDate:'2028-02-29'}),'invoice').value.dueDate,'2028-02-29');
