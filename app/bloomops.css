@@ -1961,6 +1961,7 @@ select.bo-control {
   flex-wrap: wrap;
   gap: var(--bo-s2);
 }
+.bo-results-actions:not(:empty) { margin-top: var(--bo-s5); }
 .bo-form-actions .bo-btn {
   flex: 0 1 auto;
 }

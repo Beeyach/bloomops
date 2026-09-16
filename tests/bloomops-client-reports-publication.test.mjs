@@ -28,3 +28,12 @@ test('client release queries recheck contact and membership, hide other Clients 
  run(x.raw,"UPDATE client_contacts SET user_id=NULL WHERE id='c-james'");assert.equal(await getPublishedReport(x.db,client,released.id,{portal:true}),null);assert.equal((await listPublishedReports(x.db,client,{portal:true})).items.length,0);assert.ok(await getPublishedReport(x.db,x.owner,released.id));
  run(x.raw,"UPDATE workspace_memberships SET status='suspended' WHERE id='m-ellen'");assert.equal(await reportPublicationReview(x.db,x.owner,'james',created.id),null);assert.equal((await publish(x.db,x.owner,'james',created.id,{...command(),expectedSequence:1,kind:'withdraw'})).reason,'not_found');
 });
+
+test('new publication provenance uses authored parentheses while retaining user punctuation',async t=>{
+ const x=await setup();t.after(()=>x.raw.close());
+ const created=await save(x.db,x.owner,'james',null,input({draft:draft({clientSummary:'Customer wording — stays · verbatim'})}));
+ const review=await reportPublicationReview(x.db,x.owner,'james',created.id);
+ assert.equal(review.snapshot.clientSummary,'Customer wording — stays · verbatim');
+ assert.equal(review.snapshot.metrics[0].origin,'Manually entered (unverified)');
+ assert.doesNotMatch(review.snapshot.metrics.map(m=>m.origin).join(''),/[\u2014\u00b7]/);
+});
