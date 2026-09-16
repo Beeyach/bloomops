@@ -32,6 +32,8 @@ S05/S06 implementation choices from this owner task: up to ten distinct purchase
 
 Final application build84aa103 exited0 and its hashes remained unchanged through 370 full UI browser checks, zero runtime errors, including new service-scope geometry and source/workspace fixtures. The final harness-only correction pins Finance upgrade to0055 (rather than assuming it is last), applies subsequent migrations and checks fresh/upgraded schema equality; native22 passes. Reporting and notification harnesses already pin their own historical boundaries and remain unchanged. Earlier CI Finance assertion55 !=56 and browser fixture/selector failures are preserved, not waived. Final remote validation and staging are still pending; no real prospect was mutated.
 
+Remote35144838511 passed full7412/7412 on candidatebb39913 and all feature checks through Page templates, then failed on a stale restricted-user Team browser locator for the renamed Workload link. The locator is now scoped to the real Team navigation, with every restricted/revocation assertion retained. Same completed application build84aa103 passes Team26 and Finance27 browser checks, zero runtime errors. No application change or rebuild was needed for this test-only correction. Final PR validation will cover this harness revision before merge.
+
 ## Owner app-wide QA and correction - 16 September 2026
 
 New roadmap features remain paused. One active route/scenario checklist follows.
