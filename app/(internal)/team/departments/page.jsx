@@ -21,7 +21,7 @@ export default async function TeamDepartmentsPage({searchParams}) {
       <p className="bo-small">Only records you can currently read are included. A Service sets its work’s department; work without a Service uses the Project department. Action access does not grant access to its Project.</p>
       {result.query.department!=='operations'&&<Button variant="ghost" href={'/'+result.query.department}>Open {result.department.name} workspace</Button>}
       {!result.records.items.length?<EmptyState title="No readable work in this view"><p>Try Actions for individually assigned work, or include all work to see completed records.</p></EmptyState>:
-        result.query.tab==='projects'?<ProjectList projects={result.records.items} filtered/>:<ActionList items={result.records.items}/>}
+        result.query.tab==='projects'?<ProjectList projects={result.records.items} filtered structured/>:<ActionList items={result.records.items} structured/>}
       <nav className="bo-form-actions" aria-label="Department work pages">
         {result.query.page>1&&<Button href={href(result.query,{page:result.query.page-1})}>Previous records</Button>}
         {result.records.hasMore&&result.query.page<10000&&<Button href={href(result.query,{page:result.query.page+1})}>Next records</Button>}

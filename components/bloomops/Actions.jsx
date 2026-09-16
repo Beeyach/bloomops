@@ -33,17 +33,17 @@ export function ActionFilters({ view = 'mine', filters = {}, options = {} }) {
   </>;
 }
 
-export function ActionList({ items = [], controls = null, projectContext = false }) {
+export function ActionList({ items = [], controls = null, projectContext = false, structured = false }) {
   if (!items.length) return <EmptyState title="No Actions in this view"><p>Try another view or adjust the filters.</p></EmptyState>;
   return <ul className="bo-actions" aria-label="Actions">{items.map(item => <li key={item.id} className="bo-action-row" data-action-id={item.id}>
     <div className="bo-action-main"><h3 className="bo-row-title"><a href={`/work/actions/${item.id}`} className="bo-action-title">{item.title}</a></h3>
-      {!projectContext && <p className="bo-small">{item.clientName} · {item.projectName}</p>}
+      {!projectContext && (structured ? <dl className="bo-ads-context"><div><dt>Client</dt><dd>{item.clientName}</dd></div><div><dt>Project</dt><dd>{item.projectName}</dd></div></dl> : <p className="bo-small">{item.clientName} · {item.projectName}</p>)}
       {item.dependencyBlocked && <p className="bo-action-blocked">Dependency blocked</p>}
-      {item.waitingReason && <p className="bo-small bo-project-reason">Waiting on {actionLabel(item.waitingType)} · {item.waitingReason}</p>}
+      {item.waitingReason && (structured ? <dl className="bo-ads-context"><div><dt>Waiting on {actionLabel(item.waitingType)}</dt><dd className="bo-project-reason">{item.waitingReason}</dd></div></dl> : <p className="bo-small bo-project-reason">Waiting on {actionLabel(item.waitingType)} · {item.waitingReason}</p>)}
     </div>
     <div className="bo-action-state"><Status label={ACTION_STATUS_LABELS[item.status]} tone={item.status === 'done' ? 'success' : 'neutral'} glyph={item.status === 'done' ? 'check' : 'dot'} /><span className="bo-small">{actionLabel(item.priority)} priority</span></div>
     <div className="bo-action-meta"><span>{item.assigneeName || 'Unassigned'}{item.assigneeMembershipId && !item.assigneeActive ? ' (inactive)' : ''}</span>
-      <span>{item.dueDate ? <>Due <time dateTime={item.dueDate}>{item.dueDate}</time>{item.overdue ? ' · Overdue' : ''}</> : 'No due date'}</span>
+      <span>{item.dueDate ? <>Due <time dateTime={item.dueDate}>{item.dueDate}</time>{item.overdue ? (structured ? <strong className="bo-action-blocked"> Overdue</strong> : ' · Overdue') : ''}</> : 'No due date'}</span>
     </div>
     {controls && <div className="bo-action-row-controls">{controls(item)}</div>}
   </li>)}</ul>;

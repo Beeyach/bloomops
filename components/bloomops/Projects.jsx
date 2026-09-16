@@ -15,7 +15,7 @@ export function ProjectHealth({ health }) {
   return <Status label={PROJECT_HEALTH_LABELS[health]} tone={health === 'on_track' ? 'success' : health === 'at_risk' ? 'error' : 'warning'} />;
 }
 
-export function ProjectList({ projects, filtered = false, hasMore = false }) {
+export function ProjectList({ projects, filtered = false, hasMore = false, structured = false }) {
   if (!projects.length) return <EmptyState title={filtered ? 'No projects match this view' : 'No projects yet'}>
     <p>{filtered ? 'Choose another status to see more work.' : 'Projects bring a client’s delivery into one place. Projects you have access to will appear here.'}</p>
   </EmptyState>;
@@ -24,11 +24,11 @@ export function ProjectList({ projects, filtered = false, hasMore = false }) {
       {projects.map(project => <li key={project.id} className="bo-project-row">
         <div className="bo-row-text">
           <a className="bo-link bo-project-name" href={`/work/projects/${project.id}`}>{project.name}</a>
-          <span className="bo-row-meta">{[project.clientName, project.serviceName, project.departmentName].filter(Boolean).join(' · ')}</span>
+          {structured ? <dl className="bo-ads-context"><div><dt>Client</dt><dd>{project.clientName}</dd></div>{project.serviceName && <div><dt>Service</dt><dd>{project.serviceName}</dd></div>}</dl> : <span className="bo-row-meta">{[project.clientName, project.serviceName, project.departmentName].filter(Boolean).join(' · ')}</span>}
         </div>
         <div className="bo-project-state"><ProjectStatus status={project.status} /><ProjectHealth health={project.health} /></div>
         <div className="bo-project-meta"><span>{project.targetDate ? `Target ${formatDate(project.targetDate)}` : 'No target date'}</span><span className="bo-small">{project.ownerName || 'No owner yet'}</span></div>
-        <WorkSummary project={project} />
+        <WorkSummary project={project} structured={structured} />
       </li>)}
     </ul>
     {hasMore && <p className="bo-small">Showing the first {projects.length} projects. Choose a status or open a client’s Projects tab to narrow the view.</p>}
