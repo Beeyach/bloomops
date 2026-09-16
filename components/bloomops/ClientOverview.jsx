@@ -109,7 +109,7 @@ function DetailsForm({ client, scope, owners, onSaved, onCancel, closeRef }) {
         <p className="bo-small">Unsaved details are kept in this browser for seven days when storage is available. They are only saved to the Client when you choose Save changes.</p>
         {draft.storageError && <Notice tone="error">{draft.storageError}</Notice>}
         {draft.copies.length>0 && <details><summary>Recovery copies ({draft.copies.length})</summary><ul className="bo-rows">{draft.copies.map(copy=><li key={copy.key}><span>{new Date(copy.at).toLocaleString()}</span> <Button size="sm" disabled={busy||checking} onClick={()=>draft.recover(copy.key)}>Restore copy</Button> <Button size="sm" disabled={busy||checking} onClick={()=>draft.discard(copy.key)}>Discard copy</Button></li>)}</ul></details>}
-        <fieldset disabled={busy||checking||Boolean(pending)} style={{border:0,padding:0,margin:0,minWidth:0}}>
+        <fieldset disabled={busy||checking||Boolean(pending)} style={{border:0,padding:0,margin:0,minWidth:0,display:'flex',flexDirection:'column',gap:'var(--bo-s4)'}}>
         <Field id="edit-name" label="Client or company name" error={shown.name}>
           <input {...fieldAria({ id: 'edit-name', error: shown.name })} className="bo-control" type="text" maxLength={LIMITS.name} value={values.name} onChange={set('name')} required />
         </Field>
