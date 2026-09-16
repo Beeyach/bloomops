@@ -38,6 +38,12 @@ try{
  const schema=async db=>(await db.prepare("SELECT name,sql FROM sqlite_master WHERE sql IS NOT NULL ORDER BY name").all()).results;check('fresh and populated upgrade schema match',JSON.stringify(await schema(binding))===JSON.stringify(await schema(fresh)));
  const db=bloomOpsDb(binding),v=input({draft:draft({metrics:{sent:observation(3),delivered:observation(2)}})});
  const results=await Promise.all([save(db,t.owner,'james',null,v),save(db,t.owner,'james',null,v)]);check('native concurrent create retries return one draft',results.every(r=>r.ok)&&results[0].id===results[1].id);const id=results[0].id;check('native persisted calculated preview', (await get(db,t.owner,'james',id)).calculations[0].display==='66.67%');
+ // Native D1 batch returns named objects. Duplicate joined SQL column names
+ // must not collapse and shift the Client, Service and package fields.
+ const expectedContext=await binding.prepare("SELECT c.name AS clientName, st.name AS serviceName, s.package_name AS packageName FROM bloomops_clients c JOIN service_engagements s ON s.workspace_id=c.workspace_id AND s.client_id=c.id JOIN service_types st ON st.workspace_id=s.workspace_id AND st.id=s.service_type_id WHERE c.id='james' AND s.id='ghl-service'").first();
+ const observedContext=await get(db,t.owner,'james',id);
+ assert.deepEqual({clientName:observedContext.clientName,serviceName:observedContext.serviceName,packageName:observedContext.packageName},expectedContext,'native batched report retains its exact Client, Service and package');
+ check('native batched report context agrees with its canonical parents',true);
  const writes=await Promise.all([save(db,t.owner,'james',id,{...v,expectedRevision:1}),save(db,t.owner,'james',id,{...v,expectedRevision:1,draft:draft({title:'Concurrent edit'})})]);check('native concurrent edits have exactly one winner',writes.filter(r=>r.ok).length===1&&writes.filter(r=>r.reason==='conflict').length===1);
  const saved=await get(db,t.owner,'james',id);
  await binding.prepare("CREATE TRIGGER report_ignore BEFORE UPDATE ON client_report_drafts BEGIN SELECT RAISE(IGNORE); END").run();check('zero-row header update returns conflict',(await save(db,t.owner,'james',id,{...v,expectedRevision:saved.revision})).reason==='conflict');check('zero-row preserves complete draft',JSON.stringify(await get(db,t.owner,'james',id))===JSON.stringify(saved));await binding.prepare('DROP TRIGGER report_ignore').run();

@@ -2,40 +2,39 @@
 
 ## Owner app-wide QA and correction - 16 September 2026
 
-New roadmap features paused. Base `d2947b2`; owned branch `fix/app-qa-20260916`.
-Previous UI worktree and its uncommitted release checkpoint are preserved.
-This is the one active route/scenario checklist; results below must distinguish
-real staging interaction, local regression checks and missing coverage.
+New roadmap features remain paused. One active route/scenario checklist follows.
+PR95 merged as `0039b83` and staging serves that revision. Its tree equals executed
+candidate `4ceae2e`; CI35110736050 passes full7388 and all feature jobs. Staging
+35113022895 and disposable-D1 35113022685 pass. Ready-event35112993093 is observed
+separately (feature passed, full suite still running at this checkpoint).
+Owned follow-through branch: `fix/app-qa-followthrough-20260916`, base `0039b83`,
+worktree `/home/ary/Developer/bloomops-app-qa-20260916`. Other worktrees and PR93
+remain untouched. Evidence: `/home/ary/Developer/bloomops-app-qa-evidence`.
 
-| Route / scenario | Observed defect | Correction | Retest / limitation |
+| Route / scenario | Observed defect | Correction | Retest / remaining limitation |
 | --- | --- | --- | --- |
-| Sidebar → Prospecting | Team Member reaches generic not-found despite RSC200; fresh Admin in operations workspace reaches supported chooser | Explicit restricted-role explanation and workspace recovery; data authorization unchanged | Owner/Admin navigation works on d2947b2; restricted sidebar regression reproduced against completed old build, corrected completed-build sidebar checks PASS (explicit denial, API403, reload); live retest pending |
-| Social / Ads / Systems lists | Windows1920: main1688px vs canvas1120px, empty640px, view/filter gap0px, description/results gap0px | Fluid internal working column, centered full-width empty region, view/section gaps, active view, truthful pagination | Four pre-fix assertions fail; focused48/48 pass; built geometry and native200% checks PASS; live retest pending |
-| Action detail / status / dependencies | Windows detail/action gap0px; dependency help/result gap0px |20px action region and16px help gap | Live reproduction confirmed; retest pending |
-| Shell / workspace / search / notifications | Prior acceptance retained, new sweep pending | None yet | NOT RUN |
-| Prospect records / Skills / supported import | Supported workflow exercised with isolated synthetic records | None needed | Staging d2947b2 PASS: invalid timezone, create/edit/reload, search/views/Clear, CSV preview/import/profile, Skills task/context downloads |
-| Clients / Services / Onboarding / Work / templates | Supported create/edit/status/dependency sweep pending; PR93 remains separately owned | None yet | NOT RUN |
-| Social content / calendar / stage controls | Saved workflow and empty/filter recovery pending | None yet | NOT RUN |
-| Ads / Systems detail and setup | Only shipped operations in scope; no provider actions | None yet | NOT RUN |
-| Pages editor / subpages / Move / templates / context / discussions / sharing | Full supported interaction sweep pending | None yet | NOT RUN |
-| Team / workload / department / capability controls | Least-privilege and restoration checks pending | None yet | NOT RUN |
-| Finance manual records / filters / summaries | No payments or calculation redesign | None yet | NOT RUN |
-| Reporting drafts / CSV / publication / portal / PDF | Existing synthetic actors and fixtures only | None yet | NOT RUN |
-| Settings / validation / persistence | Restore every temporary setting | None yet | NOT RUN |
+| Sidebar → Prospecting | Team Member generic not-found despite HTTP200; Owner/Admin access works | Explicit restricted-role explanation with workspace recovery; existing authorization unchanged | FIXED AND RETESTED on0039: same B session sidebar/denial/API403; Owner sidebar usable. No authorized Owner failure reproduced. Local genuine empty, restricted, history/reload regressions pass; live fresh-session/history follow-through remains |
+| Social / Ads / Systems lists | Windows1920 main1688 vs canvas1120, empty640; nav/filter and description/result gaps0 | Fluid working column; centered full-width empty region; selected views;20px/16px gaps; omit inert page1 | FIXED AND RETESTED live0039 Social/Ads: canvas1688, inner1624; view/filter20px; Ads description16px; no document overflow. Matched before/after screenshots retained. Local293 checks include five widths and native200% |
+| Action detail / status / dependencies | Fields touch action row; dependency help touches result |20px action region and16px help gap | Live d294 create/title validation/self assignment/status save/reload/dependency add-remove PASS. Corrected live geometry screenshot still pending |
+| Shell / notification / scope | No new delivery defect observed | None | Live separate B Page comment → A reply → B unread1 → rendered notification click → correct Page/discussion and unread clears PASS on d294. Grant revoked, inbox/count and old-link access removed. Search/mobile/current revision sweep pending |
+| Prospect records / Skills / CSV | CSV preview says "Review 1 rows" | Reuse singular/plural formatter | Live d294 create/invalid timezone/edit/reload/search/views/Clear/CSV import/Skills task and context downloads PASS. Singular fix and one/two-row UI regressions pending release |
+| Clients / Services / Onboarding / Work | Global Onboarding falsely says checklist unavailable; per-Client checklist works | Canonical authorized Client list links directly to each real checklist; no new engine or access grant | Live Client create/edit long name/Service create-edit PASS. Global recovery implemented with empty/limited-list tests and actual sidebar→activated checklist regression; verification/release pending. No invitation sent to example.test |
+| Social content / calendar / stage | No workflow failure observed | None | PASS on0039: UI create internal Static Post, Script transition, edit caption/pillar/date, reload; Calendar date placement, Idea filter exclusion and Clear recovery. No external publishing |
+| Ads / Systems | No new setup mutation defect observed | None | Live Settings GHL binding disable/restore with stale409 recovery PASS, original true restored. Synthetic Ads Project created through Ads→Work, further detail/edit/filter checks pending |
+| Pages / comments / sharing | No new saved-writing/access defect observed | None | PASS d294: parent/subpage title/body save/reload; Move root/back; comment/reply/resolve; genuine B comment grant and notification click, then revoke/stale denial. Template/context/blocks/narrow follow-through pending |
+| Team / Finance capabilities | No permission defect observed | None | PASS d294: People, workload and department show actual synthetic Action; B Finance None→View gives read-only200, restored None gives404. Department heading spacing observation needs visual confirmation before classifying |
+| Finance records | No calculation/persistence defect observed | None | PASS d294:12.345USD validation,12.34 create→23.45 edit/reload, scoped Draft summary1/USD23.45, B direct denial. This run's record archived; no payment/invoice sent |
+| Reporting | Live0039 saved preview/API mislabels Client as GHL. Native D1 reproduces collapsed duplicate name columns in batched join | Explicit unique SQL aliases preserve positional decoding and one-snapshot read | Pre-fix native fails with client=systems/service=null instead of james/systems. Corrected native46 PASS. Live draft/CSV100,80,8 and80% calculation persist; publication deliberately withheld until context fix deployed. Existing immutable publications are not rewritten |
+| Settings | No configuration/recovery defect observed | None | PASS: normal GHL setup review/save, stale409, refresh and exact original setting restored; no external provider call |
 
-Local checkpoint: source `5999bca`, full7388/7388 exit0 (no skips), focused48/48,
-completed Cloudflare build exit0, browser293 checks with zero runtime errors.
-The first browser attempt exposed an isolated build setup problem: symlinked
-external node_modules prevented OpenNext patching its resolved Next paths.
-The worktree now has its own unchanged-lockfile installation; the rebuilt Worker
-passes. The new denial assertion was corrected from404 to the existing explicit
-403 contract, with exact error-body verification. No application input changed
-after the successful build. Evidence: `/home/ary/Developer/bloomops-app-qa-evidence`.
-Current staging remains d2947b2; these fixes are not yet deployed.
-The live Action check created only a named synthetic Action, verified status
-save/reload, and added then removed a dependency on an existing synthetic Action.
-The CSV importer has a nonblocking singular-copy issue ("Review 1 rows"); retain
-it in this same stabilization list. Other workflow rows remain genuinely pending.
+The initial follow-through source `bd61892` passes full7390/7390 and build, but
+its build-identity export correctly stopped because the new reporting reproduction
+was being added. No browser success is attributed to that interrupted sequence.
+Reporting fix focused26 and native46 pass; final full/build/browser remain pending.
+Keep raw interrupted and failing reproduction logs. No schema/migration/dependency
+changes. Temporary Finance/Page grants and GHL settings are restored. Synthetic
+records retained only for this QA sweep; inventory and restoration receipts are
+outside the worktree. PERF3 is open; no live Prospecting speedup is established.
 
 ## Owner UI cleanup release checkpoint - 16 September 2026
 
