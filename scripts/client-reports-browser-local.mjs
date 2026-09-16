@@ -156,6 +156,16 @@ try{
  assert.equal((await post(owner.ctx,'/api/bloomops/members/m-ary',{status:'suspended'},'PATCH')).status,200);await admin.page.evaluate(()=>window.dispatchEvent(new Event('focus')));await admin.page.getByRole('alert').filter({hasText:'no longer available'}).waitFor();check('revocation removes mounted private preview',await admin.page.getByRole('heading',{name:'N3A GHL persisted draft',exact:true}).count()===0);check('revocation denies guessed API',[403,404].includes((await get(admin.ctx,api+'/'+id)).status));
  assert.equal((await post(owner.ctx,'/api/bloomops/members/m-ary',{status:'active'},'PATCH')).status,200);
  await owner.page.emulateMedia({reducedMotion:'reduce'});await owner.page.goto(base+path+'/'+id+'/preview',{waitUntil:'networkidle'});check('reduced motion preview healthy',await owner.page.getByRole('heading',{name:'N3A GHL persisted draft',exact:true}).count()===1);
+ // Explicitly hold application scripts: SSR controls must not accept lost clicks.
+ async function openWithScriptsHeld(page,link,control,assertion){
+  let release;const gate=new Promise(resolve=>{release=resolve;});
+  const scripts=url=>url.pathname.startsWith('/_next/static/')&&url.pathname.endsWith('.js');
+  await page.route(scripts,async route=>{await gate;await route.continue();});
+  const navigation=link.click();
+  try{await control.waitFor({state:'attached'});check(assertion,await control.isDisabled());}
+  finally{release();}
+  await navigation;await page.waitForLoadState('networkidle');await page.unroute(scripts);
+ }
  // Wait for the actual publication mutation, not a preceding route navigation.
  async function publishAction(label,{keyboard=false}={}){
   const button=owner.page.getByRole('button',{name:label,exact:true});
@@ -170,12 +180,12 @@ try{
   await owner.page.bringToFront();await owner.page.goto(base+path+'/'+reportId,{waitUntil:'networkidle'});
   await owner.page.getByRole('textbox',{name:'Client summary',exact:true}).fill('Client-safe summary for '+reportId);await owner.page.getByRole('textbox',{name:'Work completed',exact:true}).fill('Synthetic work completed');await owner.page.getByRole('textbox',{name:'Limits and context',exact:true}).fill('Manual observations, not provider verified');await owner.page.getByRole('textbox',{name:'Next actions',exact:true}).fill('Review next reporting period');
   await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Save draft',exact:true}).click()]);
-  await owner.page.getByRole('link',{name:'Review publication and history',exact:true}).click();await owner.page.getByRole('heading',{name:'Publication review',exact:true}).waitFor();
+  await openWithScriptsHeld(owner.page,owner.page.getByRole('link',{name:'Review publication and history',exact:true}),owner.page.getByRole('checkbox'),'publication review waits for hydration '+reportId);await owner.page.getByRole('heading',{name:'Publication review',exact:true}).waitFor();
   check('publication review excludes private source text '+reportId,!((await owner.page.locator('main').innerText()).includes('synthetic source')));
   await owner.page.getByRole('checkbox').check();await publishAction('Publish reviewed report',{keyboard:true});
   const release=(await get(owner.ctx,api+'/'+reportId+'/publications')).data.review.current;published.push(release.id);check('explicit publish creates version one '+reportId,release.sequence===1&&release.kind==='publish');
   await portalPage.bringToFront();await portalPage.goto(base+'/portal/reports',{waitUntil:'networkidle'});const entry=(await get(portalContext,'/api/bloomops/portal/reports/'+release.id)).data.report;
-  await portalPage.getByRole('link',{name:entry.snapshot.title,exact:true}).click();await portalPage.getByText('Client-safe summary for '+reportId,{exact:true}).waitFor();
+  await openWithScriptsHeld(portalPage,portalPage.getByRole('link',{name:entry.snapshot.title,exact:true}),portalPage.getByRole('button',{name:'Download this published PDF',exact:true}),'PDF control waits for hydration '+reportId);await portalPage.getByText('Client-safe summary for '+reportId,{exact:true}).waitFor();
   check('portal renders frozen calculations '+reportId,await portalPage.getByText(entry.snapshot.templateId==='social'?'-5':'3.13%',{exact:true}).count()===1);
   const download=portalPage.waitForEvent('download');await portalPage.getByRole('button',{name:'Download this published PDF',exact:true}).click();const pdf=await download;await pdf.saveAs(out+'/'+entry.snapshot.templateId+'-published-v1.pdf');check('real authorized published PDF downloaded '+reportId,readFileSync(out+'/'+entry.snapshot.templateId+'-published-v1.pdf').subarray(0,5).toString()==='%PDF-');
   const pdfResponse=await portalContext.request.get(base+'/api/bloomops/portal/reports/'+release.id+'/pdf');check('PDF identifies exact snapshot '+reportId,pdfResponse.status()===200&&pdfResponse.headers()['x-bloomsi-snapshot-hash']===entry.snapshotHash&&pdfResponse.headers()['x-bloomsi-published-version']==='1');
