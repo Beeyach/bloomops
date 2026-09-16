@@ -36,6 +36,8 @@ Final local UI acceptance: completed build58603e5, 58 fresh-workspace/shared-scr
 
 Completed buildb4a7332 passes59 setup/shared-screen checks and32 existing sheet-save browser checks, with zero runtime errors and unchanged artifacts. CI35160723074 exposed an obsolete reporting-browser exact-text locator (`No report drafts yet.`); the new EmptyState renders the same words as a heading without terminal punctuation. The assertion now targets that exact heading, retaining the real Client navigation and subsequent persistence/publication checks. Its failed run is preserved; the corrected reporting browser is verified against the same completed application artifact before republishing.
 
+The same application artifact also passes the complete429-check UI sweep and159 reporting checks. CI35162215677 then exposed the Work-template harness's old empty-state paragraph. It now verifies the actual heading and supported New setup destination; the create/edit/concurrency/retirement assertions remain intact. Both failed CI runs remain evidence rather than waived success. Remaining shared browser harnesses are checked locally before the next push.
+
 
 ## Owner pilot usability feedback 01 - 16 September 2026
 
