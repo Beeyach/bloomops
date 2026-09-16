@@ -77,3 +77,66 @@ the existing workload/access regressions, `node scripts/team-workload-browser-lo
 `npm run cf:build`, and `git diff --check`. The native Worker browser reads use the
 shipped migrations and real D1. No schema/migration change needs separate upgrade
 verification. Finance and broader all-form recovery remain unfinished.
+
+## F3: Finance Lite — 16 September 2026
+
+The owner selects the agreed Release-F manual Finance workflow. Inherited scope:
+PRODUCT_SPEC Finance fields (Client, Service, package, amount/currency, invoice and
+payment states, dates, provider/reference and renewal); DOMAIN_MODEL Finance's
+invoice Draft/Sent/Paid/Overdue/Void and payment Pending/Completed/Failed/Refunded.
+Accounting, tax, payroll, reconciliation and real payment/provider operations stay
+excluded. These manual records neither charge anyone nor activate a Client.
+
+New implementation decisions resolving the intentionally lightweight specification:
+- Separate invoice and payment records, with required Client and optional actual
+  purchased Service belonging to that Client. Package is read from that Service;
+  no duplicated Service catalogue or invented ownership. Type and parents are fixed
+  after creation; correct a mistaken parent by archiving and creating a new record.
+- Required title, exact nonnegative amount and supported ISO currency. Store integer
+  minor units and currency precision, never binary floating point. Currency precision
+  follows the runtime's ISO catalogue at creation and is pinned on that record.
+  Reject extra decimal places, exponent notation, blanks, negatives and amounts above
+  1,000,000,000,000 minor units. Zero is valid. No exchange conversion or inferred tax.
+- Manual status, due/paid/renewal calendar dates, provider, reference and notes.
+  Paid invoices/completed payments require a paid date; pending/draft/failed/void
+  records cannot carry one. Refunded payment keeps its original paid date. Strict
+  Gregorian dates, no implicit timezone conversion. Overdue view means a Sent or
+  explicitly Overdue invoice with a due date before today's UTC date (shown in UI).
+  Explicit Overdue requires a due date. No automatic mutation or renewal scheduling.
+- List/filter by type, Client, Service, status and archive; 25 rows/page. Summaries
+  total the authorized filtered set per currency, type and status using exact minor
+  units, not just the page. Invoice and payment sums are never netted together or
+  called revenue/balance. Full-page create/reopen/edit, archive/restore, current
+  revision conflicts preserve unsaved input; creation UUID retries preserve intent.
+- Existing capabilities.manage policy (Owner/Admin by role or explicit grant) owns
+  Team → Finance access. Configure None / View / View and edit for active internal
+  memberships. Owner's inherent access cannot be revoked. No portal grants; no role
+  changes. This screen manages only finance.view/edit, not arbitrary capabilities.
+  Existing explicit edit without view does not reveal records: editing needs both.
+- Every record query/write rechecks active workspace, membership/user/role and current
+  Finance grants. Owner/Admin/PM retain canonical workspace scope; Team requires a
+  Client assignment or, for Service-linked records only, that Service assignment.
+  Service-only scope must not enumerate sibling Services or Client-level finance.
+  Portal and preview users are denied, including direct IDs. Current grants are
+  checked in the write statement. Capability operations recheck current manager
+  authority and target identity inside a transactional batch.
+- No hard deletion. Additive generated schema uses composite Client/Service and
+  membership constraints. Creation receipts remain on archived rows; report data
+  and private notes never enter a public activity feed. All API responses use the
+  existing no-store/origin/auth conventions; no polling or external integrations.
+
+Acceptance: exact decimal/zero/currency/rounding rejection and separate totals;
+real create/retry/concurrent create, reopen/edit/conflict/archive/restore; invalid
+and foreign parent relationships; current/revoked capability/assignment/membership,
+portal/preview isolation and direct API denial; admin access configuration through
+normal screens; supported Client/Service setup; empty/error/retry, keyboard and
+320/390/768/1024/1440 layouts. Native local D1 fresh/populated upgrade constraints,
+focused Node tests, full suite, completed Worker build/browser and synthetic staging
+must pass. No independent per-slice audit gate under the owner's current direction.
+
+Commands: `node --test tests/bloomops-finance.test.mjs`,
+`node scripts/finance-native-local.mjs`, `node scripts/finance-browser-local.mjs`
+(with the existing completed-build identity and isolated Playwright environment),
+`node .github/scripts/verify-zero-remote.mjs --local`, `npm test`,
+`npm run cf:build`, `git diff --check`. New harness commands become evidence only
+when implemented and executed; their declaration is not a passing result.

@@ -2365,3 +2365,9 @@ select.bo-control {
 
 .bo-workload-list { display: grid; gap: 1.5rem; }
 .bo-workload-person { padding-block: 1rem; border-bottom: 1px solid var(--bo-border, #dedee7); min-width: 0; }
+
+/* Finance: labelled records and exact manual values, comfortable at phone widths. */
+.bo-finance-filters,.bo-finance-grid,.bo-finance-totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:20px;margin:24px 0;align-items:end}
+.bo-finance-editor{max-width:960px}.bo-finance-editor fieldset{border:0;padding:0;min-width:0}.bo-finance-editor label,.bo-finance-filters label,.bo-finance-row label{display:grid;gap:8px;min-width:0;margin-bottom:16px}
+.bo-finance-editor input,.bo-finance-editor select,.bo-finance-editor textarea,.bo-finance-filters select,.bo-finance-row select{width:100%;min-width:0;min-height:44px;font-size:16px;padding:10px;border:1px solid var(--bo-border);border-radius:8px;background:var(--bo-snow);color:inherit}
+.bo-finance-row{padding:24px 0;border-bottom:1px solid var(--bo-border);overflow-wrap:anywhere}.bo-finance-row dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:16px;margin:16px 0}.bo-finance-row dt{font-size:14px;color:var(--bo-ink-soft);margin-bottom:4px}.bo-finance-row dd{margin:0}.bo-finance-totals{align-items:start}.bo-finance-totals p{font-variant-numeric:tabular-nums;font-size:22px;margin:6px 0}.bo-finance-editor .bo-finance-check{display:flex;align-items:center;gap:12px}.bo-finance-check input{width:24px;min-height:24px}.bo-finance-editor section{margin:24px 0}.bo-finance-editor :focus-visible,.bo-finance-row :focus-visible{outline:2px solid currentColor;outline-offset:3px}
