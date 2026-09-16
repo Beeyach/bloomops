@@ -21,3 +21,6 @@ test('Empty icon is supplementary and preserves recovery text/action',()=>{
  const html=render(EmptyState,{title:'No matching records',children:'Clear these filters.',actions:React.createElement('a',{href:'/work'},'Clear filters')});
  assert.match(html,/bo-empty-icon/);assert.match(html,/aria-hidden="true"/);assert.match(html,/Clear these filters/);assert.match(html,/href="\/work"/);
 });
+
+const {default:ClientProspectPicker}=await import('../components/bloomops/ClientProspectPicker.jsx');
+test('prospect entry distinguishes reviewed sale handoff from independent manual creation',()=>{const html=render(ClientProspectPicker,{workspaceId:'synthetic',userId:'owner'});assert.match(html,/Find a prospect/);assert.match(html,/Strong fit only/);assert.match(html,/Searching and choosing save nothing and stop no outreach/);assert.match(html,/Manual entry below stays separate/);assert.doesNotMatch(html,/selected prospect|Confirm sale/i);});

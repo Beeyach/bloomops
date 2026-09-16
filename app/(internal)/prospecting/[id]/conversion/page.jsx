@@ -11,5 +11,5 @@ export default async function ConversionPage({params}){
  const {access,actor}=await requireShell('internal');const data=await getConversionOptions(access.db,actor,(await params).id);if(!data.ok)notFound();
  const saved=await getProspectConversion(access.db,actor,(await params).id);if(!saved.ok)notFound();
  const profile=await getProspect(access.db,actor,data.profile.id);if(!profile)notFound();
- return <ProspectConversionPreview key={JSON.stringify([actor.userId,actor.workspaceId,data.profile.id])} userId={actor.userId} initialProfile={profile} initial={{...data,canManageTemplates:evaluate(actor,{action:'templates.manage'}).allowed,receipt:saved.receipt}}/>;
+ return <ProspectConversionPreview key={JSON.stringify([actor.userId,actor.workspaceId,data.profile.id])} userId={actor.userId} initialProfile={profile} initial={{...data,canManageTemplates:evaluate(actor,{action:'templates.manage'}).allowed,canManageOfferings:evaluate(actor,{action:'workspace.settings'}).allowed,receipt:saved.receipt}}/>;
 }

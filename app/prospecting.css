@@ -633,3 +633,5 @@
 
 /* Field provenance retains full values with a consistent label hierarchy. */
 .bo-prospect-sources dt{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--bo-text-soft);margin-bottom:8px}.bo-prospect-sources dt svg{flex-shrink:0}.bo-prospect-sources dd{font-size:15px;line-height:1.6;overflow-wrap:anywhere}.bo-workspace-account{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:16px 0;margin-bottom:24px;border-bottom:1px solid var(--bo-border)}.bo-workspace-account p{margin:4px 0;overflow-wrap:anywhere}
+
+.bo-handoff-purchased{border:1px solid var(--bo-border);border-radius:12px;padding:16px;margin-block:20px}.bo-handoff-purchased>legend{padding-inline:8px;font-weight:600}.bo-handoff-purchased>.bo-btn{margin:12px 12px 0 0}.bo-handoff-service-summary{list-style:none;padding:0;display:grid;gap:16px;margin-block:20px}.bo-handoff-service-summary>li{padding:16px;border:1px solid var(--bo-border);border-radius:10px}.bo-handoff-service-summary p{margin-top:8px;overflow-wrap:anywhere}

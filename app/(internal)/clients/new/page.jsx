@@ -3,6 +3,7 @@ import { requireShell } from '@/lib/bloomops/shell-server.mjs';
 import { notFound } from 'next/navigation';
 import { ownerCandidates, timezoneOptions } from '@/lib/bloomops/clients.mjs';
 import { PageHeader } from '@/components/bloomops/Primitives';
+import ClientProspectPicker from '@/components/bloomops/ClientProspectPicker';
 import ClientForm from '@/components/bloomops/ClientForm';
 
 // Add a client. A route rather than a dialog, so the form has an address a
@@ -24,6 +25,7 @@ export default async function NewClientPage() {
     <>
       <PageHeader title="Add a client" subtitle="A client record with the person the agency talks to. Nobody is invited or emailed." />
       <div className="bo-page-narrow">
+        {access.workspace.purpose==='prospecting'&&evaluate(actor,{action:'prospecting.manage'}).allowed&&<ClientProspectPicker key={JSON.stringify([actor.userId,actor.workspaceId])} userId={actor.userId} workspaceId={actor.workspaceId}/>}
         <ClientForm key={JSON.stringify([actor.userId, actor.workspaceId])} userId={actor.userId} workspaceId={actor.workspaceId} owners={owners} timezones={timezoneOptions()} />
       </div>
     </>

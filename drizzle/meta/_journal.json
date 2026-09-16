@@ -393,6 +393,13 @@
       "when": 1789545999063,
       "tag": "0055_chilly_alex_wilder",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "6",
+      "when": 1789587078759,
+      "tag": "0056_solid_gladiator",
+      "breakpoints": true
     }
   ]
 }

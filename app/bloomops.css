@@ -2421,3 +2421,13 @@ select.bo-control {
 .bo-explanation{margin-block:16px 24px;max-width:72ch}.bo-explanation summary{cursor:pointer;font-size:14px;font-weight:600;min-height:40px}.bo-explanation p{margin-block:12px}.bo-section>p+.bo-btn{margin-top:16px}
 
 .bo-platform-custom{margin-top:12px}.bo-platform-custom label{display:block;font-size:13px;font-weight:600;margin-bottom:8px}
+
+/* The prospect entry path never replaces the independently recoverable manual form. */
+.bo-client-prospect-picker{padding:20px;margin-bottom:32px;border:1px solid var(--bo-border);border-radius:12px;background:var(--bo-surface-2)}
+.bo-client-prospect-picker>p{margin-block:12px 20px;line-height:1.6}
+.bo-client-prospect-picker form{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+.bo-client-prospect-picker form>.bo-field{flex:1 1 240px}
+.bo-client-prospect-picker form>label{display:flex;align-items:center;gap:8px;min-height:40px}
+.bo-client-prospect-picker ul{list-style:none;padding:0;display:grid;gap:8px;margin-block:16px}
+.bo-client-prospect-picker>section{border-top:1px solid var(--bo-border);padding-top:20px;margin-top:20px}
+.bo-client-prospect-picker>section>.bo-btn{margin:16px 12px 0 0}

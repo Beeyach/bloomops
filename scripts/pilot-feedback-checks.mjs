@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import {multiServiceChecks} from './pilot-multi-service-checks.mjs';
 export async function pilotFeedbackChecks({page,ctx,base,check,out}){
+ await page.setViewportSize({width:1440,height:1000});
  const headers={origin:base};
  // Supported workspace creation isolates this workflow from all earlier fixtures.
  const made=await ctx.request.post(base+'/api/bloomops/workspaces',{headers,data:{name:'Synthetic pilot feedback',requestId:crypto.randomUUID(),sourceWorkspaceId:'a'}});
@@ -91,4 +93,5 @@ export async function pilotFeedbackChecks({page,ctx,base,check,out}){
  await page.goto(base+'/social',{waitUntil:'networkidle'});const selector=page.getByLabel('Platform',{exact:true});await selector.selectOption('custom');await page.getByLabel('Platform label',{exact:true}).fill('Legacy private channel');await page.getByRole('button',{name:'Apply filters',exact:true}).click();await page.waitForURL(u=>u.searchParams.get('platform')==='Legacy private channel');
  check('Custom platform survives explicit filter navigation',await page.getByLabel('Platform',{exact:true}).inputValue()==='platform:Legacy private channel');await page.getByRole('link',{name:'Clear filters',exact:true}).first().click();await page.waitForURL(base+'/social');
  check('Platform All restored by Clear',await page.getByLabel('Platform',{exact:true}).inputValue()==='platform:');
+ await multiServiceChecks({page,ctx,base,workspaceId,check,out});
 }
