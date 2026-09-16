@@ -1,5 +1,32 @@
 # Bloomsi Build State
 
+## Owner Client setup UX and UI foundations - 16 September 2026
+
+Task: `docs/tasks/client-setup-ux-and-ui-foundations.md` at `896fcd79cab4cc1708e8124845d4ab5645094c26`, read in full through GitHub. Owned branch `fix/client-setup-ui-20260916`, base `d361177`. Other worktrees and PR93 remain untouched. The two pinned design skills are installed under `.agents/skills` with source revisions in `SOURCES.md`. They are read directly in this session. Existing product completion list is retained.
+
+Design direction: existing Cloud #F8FAFF, Snow #FFFFFF, Lilac #EEEAFB, Ink #18152B and Ink Soft #5D5873; existing fonts. Left-aligned Client/contact → purchased services → explicit review, with compact actions and supporting research secondary. This follows Attio's record hierarchy and Linear's focused creation/recovery patterns without importing their branding. Native square choices have generous label targets. Compact Social navigation is retained.
+
+| Item | Scenario / correction | Verification / remaining |
+| --- | --- | --- |
+| U01 | Per-service scope errors and first-invalid focus; retain entered choices | Implemented; browser retest pending |
+| U02 | Typed text controls exclude checkbox/radio | Live d361177 reproduces 26×44 checkbox with12px padding; corrected browser retest pending |
+| U03 | Focused primary contact before services; full research secondary | Implemented using existing guarded partial profile edits; browser pending |
+| U04 | Left-aligned workspace identity and trailing chevron | Implemented; geometry/scope retest pending |
+| U05 | Systems responsive filter grid and right action group | Implemented; geometry pending |
+| U06 | Calendar human-readable month and deliberate region spacing | Implemented; target-date behavior unchanged; browser pending |
+| U07 | Work templates Back/status/authorized first-create | Implemented; browser pending |
+| U08 | Reports Client header, active/archive links, truthful publication copy | Implemented; browser pending |
+| U09 | Metric legend/help/value/provenance spacing | Implemented; calculations and snapshots unchanged; browser pending |
+| U10 | Wrong-workspace recovery and action spacing | Pending |
+| U11 | Contacts/details above operational sections; bounded requests with View all | Implemented; normal viewport review pending |
+| U12 | Canonical read-only readiness; explicit template recovery and activation confirmation | Domain52 tests pass; full UI/native/denial/retry flow pending |
+| U13 | Prospect view/count/search alignment | Implemented; geometry/keyboard pending |
+
+Live baseline fixture created through normal UI: workspace `Bloomsi QA Client setup UX`, prospect `1b3e1006-aac8-4335-99dc-c8d9b939c626` (QA Client Setup Studio), no contact or conversion yet. No real pilot records changed. Before screenshot: `/home/ary/Developer/bloomops-client-setup-ui-evidence/before-contact-1440.png`. Staging baseline reports d361177. Windows C has108GiB free; Linux860GiB, inodes available, rw and flushed write/read/delete probe passed before dependency setup.
+
+No migration is planned. Existing remote-D1 quick_check SQLITE_NOMEM limitation and overall PERF3 remain open; not reclassified by this UX pass. PR98 release is merged/deployed atd361177 despite older S01 table prose below; historical evidence retained.
+
+
 ## Owner pilot usability feedback 01 - 16 September 2026
 
 Owner task: `docs/tasks/pilot-usability-feedback-01.md` at `5de7e0b28f5eb9bd5751d0d8347df8efd20bf0a8`, read directly from GitHub. Base `af71130`; branch `fix/pilot-feedback-01-20260916`. This is the single S01-S19 register. Existing completion list and PR93 are preserved. Real pilot prospects are read-only and excluded from tests. All mutations use synthetic QA/local records.

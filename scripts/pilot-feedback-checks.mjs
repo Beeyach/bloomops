@@ -1,6 +1,7 @@
+import {clientSetupChecks} from './client-setup-checks.mjs';
 import assert from 'node:assert/strict';
 import {multiServiceChecks} from './pilot-multi-service-checks.mjs';
-export async function pilotFeedbackChecks({page,ctx,base,check,out}){
+export async function pilotFeedbackChecks({page,ctx,base,check,out,bucket,browser}){
  await page.setViewportSize({width:1440,height:1000});
  const headers={origin:base};
  // Supported workspace creation isolates this workflow from all earlier fixtures.
@@ -23,18 +24,18 @@ export async function pilotFeedbackChecks({page,ctx,base,check,out}){
  check('Evidence and draft actions preserve real destinations',await page.getByRole('link',{name:'View audit evidence',exact:true}).getAttribute('href')==='#evidence'&&await page.getByRole('link',{name:'View draft',exact:true}).getAttribute('href')==='#draft');
  await page.getByRole('link',{name:'Review client handoff',exact:true}).click();
  await page.getByRole('button',{name:'New client',exact:true}).click();await page.getByRole('group',{name:'Service choices'}).getByRole('button').filter({has:page.getByText('Service reference: kajabi',{exact:true})}).click();
- await page.getByLabel('Package name',{exact:true}).fill('Synthetic course setup');await page.getByLabel('Agreed scope',{exact:true}).fill('Prepare synthetic course pages. No provider or invitation.');
+ await page.getByLabel('Package name',{exact:true}).fill('Synthetic course setup');await page.getByLabel('Agreed scope (required)',{exact:true}).fill('Prepare synthetic course pages. No provider or invitation.');
  await page.getByRole('button',{name:'Review handoff',exact:true}).click();await page.getByRole('region',{name:'Handoff preview'}).waitFor();
  await page.screenshot({path:out+'/handoff-missing-contact.png',fullPage:true});
  check('Missing contact cannot be confirmed as a sale',await page.getByRole('button',{name:'Convert to client',exact:true}).count()===0);
  const repair=page.getByRole('link',{name:'Edit prospect contact',exact:true});
  check('Missing contact has an actionable in-page repair',await repair.count()===1);await repair.click();
- await page.getByRole('button',{name:'Edit identity & contact',exact:true}).click();await page.getByLabel(/^Person\s*\(optional\)$/).fill('Synthetic Fern Contact');
+ await page.getByRole('button',{name:'Edit primary contact',exact:true}).click();await page.getByLabel('Contact name',{exact:true}).fill('Synthetic Fern Contact');
  let rejectedSave=false;
  await page.route('**/api/bloomops/prospecting/'+id,async route=>{if(route.request().method()==='PATCH'&&!rejectedSave){rejectedSave=true;await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,error:'Synthetic unavailable response'})});}else await route.continue();});
- await page.getByRole('button',{name:'Save identity & contact',exact:true}).click();await page.getByText(/Save failed. Your draft is still here/).waitFor();
- check('Contact save error retains entered values',await page.getByLabel(/^Person\s*\(optional\)$/).inputValue()==='Synthetic Fern Contact');
- await page.getByRole('button',{name:'Save identity & contact',exact:true}).click();await page.getByRole('button',{name:'Edit identity & contact',exact:true}).waitFor();
+ await page.getByRole('button',{name:'Save primary contact',exact:true}).click();await page.getByText(/Save failed. Your draft is still here/).waitFor();
+ check('Contact save error retains entered values',await page.getByLabel('Contact name',{exact:true}).inputValue()==='Synthetic Fern Contact');
+ await page.getByRole('button',{name:'Save primary contact',exact:true}).click();await page.getByRole('button',{name:'Edit primary contact',exact:true}).waitFor();
  check('Contact repair preserves selected service and package',await page.getByText('Selected: Kajabi',{exact:true}).isVisible()&&await page.getByLabel('Package name',{exact:true}).inputValue()==='Synthetic course setup');
  check('Contact repair persists through the real profile writer',(await (await ctx.request.get(base+'/api/bloomops/prospecting/'+id)).json()).profile.personName==='Synthetic Fern Contact');
  await page.getByRole('button',{name:'Review handoff',exact:true}).click();const confirmation=page.getByRole('checkbox',{name:'Confirm this sale and permanently stop cold outreach.',exact:true});await confirmation.waitFor();
@@ -42,12 +43,12 @@ export async function pilotFeedbackChecks({page,ctx,base,check,out}){
  const popupPromise=page.waitForEvent('popup');await page.getByRole('link',{name:'Review onboarding setup in a new tab',exact:true}).click();const setup=await popupPromise;await setup.waitForLoadState('networkidle');
  check('Setup opens the authorized real onboarding route',new URL(setup.url()).pathname==='/settings/onboarding');
  await setup.getByRole('checkbox',{name:/Install missing.*Common/i}).check();await setup.getByRole('checkbox',{name:/Install missing.*Kajabi/i}).check();await setup.getByRole('button',{name:'Install selected defaults',exact:true}).click();await setup.getByText('Selected onboarding categories are ready. No client was activated or contacted.',{exact:true}).waitFor();await setup.close();
- check('Setup return retains scope text',await page.getByLabel('Agreed scope',{exact:true}).inputValue()==='Prepare synthetic course pages. No provider or invitation.');
+ check('Setup return retains scope text',await page.getByLabel('Agreed scope (required)',{exact:true}).inputValue()==='Prepare synthetic course pages. No provider or invitation.');
  await page.getByRole('button',{name:'Review handoff',exact:true}).click();await page.getByText(/steps in the current template preview/).waitFor();await confirmation.check();
  let releaseConversion,enteredConversion;const conversionPending=new Promise(resolve=>enteredConversion=resolve),conversionRelease=new Promise(resolve=>releaseConversion=resolve);
  await page.route('**/api/bloomops/prospecting/'+id+'/conversion',async route=>{enteredConversion();await conversionRelease;await route.continue();});
  await page.getByRole('button',{name:'Convert to client',exact:true}).click();await conversionPending;
- check('Contact cannot be edited during conversion',await page.getByRole('button',{name:'Edit identity & contact',exact:true}).isDisabled());releaseConversion();
+ check('Contact cannot be edited during conversion',await page.getByRole('button',{name:'Edit primary contact',exact:true}).isDisabled());releaseConversion();
  await page.getByRole('region',{name:'Recorded client conversion'}).waitFor();
  await page.reload({waitUntil:'networkidle'});check('Confirmed conversion receipt survives reload',await page.getByRole('region',{name:'Recorded client conversion'}).isVisible());
  await page.getByRole('link',{name:'Open client',exact:true}).click();await page.waitForURL(/\/clients\//);check('Conversion destination has the saved client',await page.getByRole('heading',{name:'Synthetic handoff fern',exact:true}).isVisible());
@@ -112,4 +113,5 @@ export async function pilotFeedbackChecks({page,ctx,base,check,out}){
  check('Custom platform survives explicit filter navigation',await page.getByLabel('Platform',{exact:true}).inputValue()==='platform:Legacy private channel');await page.getByRole('link',{name:'Clear filters',exact:true}).first().click();await page.waitForURL(base+'/social');
  check('Platform All restored by Clear',await page.getByLabel('Platform',{exact:true}).inputValue()==='platform:');
  await multiServiceChecks({page,ctx,base,workspaceId,check,out});
+ await clientSetupChecks({page,ctx,base,browser,bucket,check,out});
 }

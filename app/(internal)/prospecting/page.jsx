@@ -6,6 +6,6 @@ export const dynamic='force-dynamic';
 export const metadata={title:'Prospects'};
 export default async function ProspectsPage({searchParams}){
  const {access,actor}=await requireShell('internal');if(!evaluate(actor,{action:'prospecting.view'}).allowed)return <div className="bo-prospect-page"><PageHeader title="Prospecting"/><Notice>Prospecting is available to workspace Owners and Admins. Your current role does not include access.</Notice><div className="bo-access-actions"><Button href="/workspaces">Choose workspace</Button><Button href="/" variant="ghost">Back to Home</Button></div></div>;
- if(access.workspace.purpose!=='prospecting')return <div className="bo-prospect-page"><PageHeader title="Prospecting"/><p>Choose your fresh prospecting workspace to begin.</p><Button href="/workspaces">Choose workspace</Button></div>;
+ if(access.workspace.purpose!=='prospecting')return <div className="bo-prospect-page"><PageHeader title="Prospecting"/><p>Prospects belong to a prospecting workspace. Choose yours to open its records; your current workspace stays selected until you choose another.</p><div className="bo-access-actions"><Button href="/workspaces">Choose workspace</Button></div></div>;
  return <ProspectSheet key={JSON.stringify([actor.userId,actor.workspaceId])} workspaceId={actor.workspaceId} userId={actor.userId} workspaceName={access.workspace.name} initialQuery={await searchParams}/>;
 }

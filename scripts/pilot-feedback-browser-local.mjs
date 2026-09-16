@@ -53,6 +53,6 @@ try{
   const mail=await bucket.get('dev-mail/'+createHash('sha256').update(email).digest('hex')+'.json');assert.ok(mail);const url=JSON.parse(await mail.text()).text.match(/https?:\/\/\S+/)[0];const parsed=new URL(url);assert.ok(parsed.origin===base&&parsed.pathname==='/api/auth/magic-link/verify',`local auth host/path: ${parsed.host} ${parsed.pathname}`);
   const page=await ctx.newPage();page.on('pageerror',e=>errors.push(reportBrowserError(e)));await page.goto(url,{waitUntil:'networkidle'});return {ctx,page};}
  const owner=await login('ellen');
- await pilotFeedbackChecks({page:owner.page,ctx:owner.ctx,base,check,out});
+ await pilotFeedbackChecks({page:owner.page,ctx:owner.ctx,base,check,out,bucket,browser});
  check('No runtime errors',errors.length===0);writeFileSync(out+'/results.json',JSON.stringify({checks,errors},null,2));
 }catch(error){console.error(reportBrowserError(error));writeFileSync(out+'/failure.json',JSON.stringify({checks,errors,failure:reportBrowserError(error)},null,2));process.exitCode=1;}finally{identity.finishedAt=new Date().toISOString();identity.artifactsUnchanged=hash(JSON.stringify(buildArtifacts(root)))===identity.artifactDigest;writeFileSync(out+'/artifact-identity.json',JSON.stringify(identity,null,2));if(!identity.artifactsUnchanged)process.exitCode=1;await zoomBrowser?.close();await browser?.close();await mf.dispose();rmSync(tmp,{recursive:true,force:true});}

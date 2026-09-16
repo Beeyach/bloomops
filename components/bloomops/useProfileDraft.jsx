@@ -3,12 +3,12 @@ import {useEffect,useRef,useState} from 'react';
 import {createProfileDraftStore,profileDraftDirty,chosenProfileSources} from '@/lib/bloomops/profile-drafts.mjs';
 import {DRAFT_CONTEXT_KEY} from '@/lib/bloomops/draft-context.mjs';
 const cancelled=()=>new DOMException('This editor is no longer active.','AbortError');
-export default function useProfileDraft({userId,workspaceId,prospectId,section,draft,onRecover,onLost,creating=false}){
+export default function useProfileDraft({userId,workspaceId,prospectId,section,draft,onRecover,onLost,creating=false,fieldKeys=null}){
  const store=useRef(null),source=useRef(null),latest=useRef(null),callbacks=useRef(null),alive=useRef(false),invalid=useRef(false),pending=useRef(null),sequence=useRef(0);
  latest.current=draft;callbacks.current={onRecover,onLost};
  const [copies,setCopies]=useState([]),[storageError,setStorageError]=useState(''),[recovering,setRecovering]=useState(false),[error,setError]=useState('');
  function valid(){try{return alive.current&&!invalid.current&&(!store.current||store.current.valid());}catch{return false;}}
- function list(){if(!store.current||!valid())return;try{setCopies(store.current.list().filter(c=>c.key!==store.current.own&&c.value.section===section).map(c=>({key:c.key,at:c.value.updatedAt,count:new Set([...Object.keys(c.value.fields).filter(k=>(c.value.fields[k]??'')!==(c.value.before[k]??'')),...Object.keys(chosenProfileSources(c.value))]).size})));}catch{setStorageError('Recovery copies could not be read. Keep this tab open until saved.');}}
+ function list(){if(!store.current||!valid())return;try{setCopies(store.current.list().filter(c=>c.key!==store.current.own&&c.value.section===section&&(fieldKeys?c.value.fieldSet==='primary_contact':!c.value.fieldSet)).map(c=>({key:c.key,at:c.value.updatedAt,count:new Set([...Object.keys(c.value.fields).filter(k=>(c.value.fields[k]??'')!==(c.value.before[k]??'')),...Object.keys(chosenProfileSources(c.value))]).size})));}catch{setStorageError('Recovery copies could not be read. Keep this tab open until saved.');}}
  function persist(){if(!valid()||!store.current)return;try{const value=latest.current&&profileDraftDirty(latest.current)?latest.current:null;store.current.write(value);if(creating&&value&&source.current){store.current.remove(source.current.key,source.current.raw);source.current=null;list();}setStorageError('');}catch(e){if(alive.current)setStorageError(e.message);}}
  function invalidate(clear=false){if(clear)try{store.current?.clearScope();}catch{}invalid.current=true;sequence.current++;pending.current?.abort();store.current?.dispose();callbacks.current.onLost();}
  useEffect(()=>{

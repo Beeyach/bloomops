@@ -553,3 +553,22 @@ Keep a step's identity icon after completion; show completion separately in
 its status. Onboarding title icons use a compact 28px tile with a 16px glyph,
 centered on the title row; Required/Optional belongs below that row. Reuse the
 icon vocabulary and consistent sizing. No emojis.
+
+## Client setup and typed controls (owner task, September 2026)
+
+Keep primary contact and selected services in the essential flow, before review.
+Supporting research opens separately without replacing handoff selections.
+Errors belong beside the exact service field and focus the first invalid control.
+Draft save, sale confirmation, template publication, and invitation delivery are
+separate explicit actions. Readiness explains the next supported action before
+activation. Avoid a full-width CTA where a compact action region is sufficient.
+
+Text-input rules must exclude checkbox and radio types. Keep a native square
+indicator with a generous label target; test nested forms as well as standalone
+controls. Apply existing spacing tokens to labels, help, actions and disclosures.
+Use compact ordinary route links for alternate views, preserving Social's pattern.
+Inspect 1440×900 and1920×1080 screenshots at100% before claiming visual completion.
+
+Project-local design references: `.agents/skills/SOURCES.md`. Interaction references:
+[Attio record hierarchy](https://attio.com/changelog/2026/record-page-redesign) and
+[Linear focused creation](https://linear.app/docs/creating-issues).

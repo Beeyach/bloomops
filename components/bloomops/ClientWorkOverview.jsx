@@ -55,14 +55,15 @@ export default function ClientWorkOverview({ clientId, overview }) {
           <p className={styles.timezone}>Dates in {timezone.replaceAll('_', ' ')}</p>
           {overdue && <div className={styles.overdue}><span className={styles.late}>Past due</span><a className="bo-link" href={overdue.href}>{overdue.title}</a><span className="bo-small">{kinds[overdue.kind]} due {formatDate(overdue.date)}</span></div>}
         </Section>
-        <Section id="open-requests" title="Open requests" aside={requests.state !== 'unavailable' && <More href={clientTab(clientId, 'onboarding')}>{requests.hasMore ? 'More requests' : 'Onboarding'}</More>}>
+        <Section id="open-requests" title="Open requests" aside={requests.state !== 'unavailable' && <More href={clientTab(clientId, 'onboarding')}>View all requests</More>}>
           {requests.state === 'unavailable' ? <p className="bo-small">Onboarding is not available to you.</p> : requests.state === 'not_created' ? <p className="bo-small">Onboarding has not been created yet.</p> : <>
             {!!requests.progress?.total && <div className={styles.progress}><p className="bo-small">{requests.progress.done} of {requests.progress.total} required steps satisfied</p><progress value={requests.progress.done} max={requests.progress.total} aria-label="Required onboarding steps satisfied"/></div>}
-            {requests.items.length ? <ul className={styles.requests}>{requests.items.map(item => <li key={item.id}>
+            {requests.items.length ? <ul className={styles.requests}>{requests.items.slice(0,3).map(item => <li key={item.id}>
               <a className={styles.workLink} href={clientTab(clientId, 'onboarding')}><Icon name={item.audience === 'review' ? 'shield-check' : 'onboarding'} size={16}/><span>{item.title}</span><Icon name="chevron-right" size={16}/></a>
               <div className={styles.states}><Status label={item.audience === 'review' ? 'Needs verification' : item.audience === 'client' ? 'Client action' : 'Team action'} tone={item.audience === 'review' ? 'warning' : 'info'} glyph="clock"/>
                 <span className="bo-small">{item.required ? 'Required' : 'Optional'}</span>{item.status === 'blocked' && <span className={styles.late}>Blocked</span>}</div>
             </li>)}</ul> : <p className="bo-small">No open onboarding requests available to you.</p>}
+            {requests.items.length>3&&<p className="bo-small">Showing 3 open requests. View all requests for the full checklist.</p>}
           </>}
         </Section>
       </div>

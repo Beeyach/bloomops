@@ -22,3 +22,24 @@ test('setup HTTP uses real sessions, current permissions, origin and explicit sc
  const read=await call('ellen');assert.equal(read.status,200);assert.equal(read.headers.get('cache-control'),'no-store');
  assert.equal((await call('ellen','POST',command,'https://foreign.invalid')).status,403);assert.equal((await call('ellen','POST',{...command,workspaceId:'b'})).status,404);assert.equal((await call('ellen','POST',command)).status,200);
 });
+
+test('reviewed template recovery creates immutable drafts, publishes explicitly and never silently enables',async ctx=>{
+ const {manageOnboardingSetup}=await import('../lib/bloomops/onboarding-setup.mjs');
+ const t=await setup();ctx.after(()=>t.raw.close());await installOnboardingDefaults(t.db,t.owner,command);
+ let state=await onboardingSetup(t.db,t.owner),item=state.items.find(i=>i.slug==='common');
+ const original=all(t.raw,'SELECT * FROM template_versions WHERE template_id=?',item.templateId);
+ const definition=structuredClone(item.versions[0].definition);definition.items[0].instructions='Synthetic reviewed requirement.';
+ const action=(i,patch)=>manageOnboardingSetup(t.db,t.owner,{workspaceId:'a',userId:'ellen',slug:i.slug,reviewToken:i.reviewToken,...patch});
+ state=await action(item,{action:'save_version',definition});assert.ok(state.ok);item=state.items.find(i=>i.slug==='common');assert.equal(item.versions[0].status,'draft');assert.deepEqual(all(t.raw,'SELECT * FROM template_versions WHERE id=?',original[0].id),original);
+ const stale=item;
+ state=await action(item,{action:'publish',versionId:item.versions[0].id});assert.ok(state.ok);item=state.items.find(i=>i.slug==='common');assert.equal(item.versions[0].status,'published');assert.equal(item.versions[1].status,'retired');assert.equal((await action(stale,{action:'save_version',definition})).reason,'conflict');
+ run(t.raw,'UPDATE templates SET active=0 WHERE id=?',item.templateId);state=await onboardingSetup(t.db,t.owner);item=state.items.find(i=>i.slug==='common');assert.equal(item.state,'inactive');
+ const versions=all(t.raw,'SELECT * FROM template_versions WHERE template_id=?',item.templateId);state=await action(item,{action:'enable'});assert.ok(state.ok);assert.equal(state.items.find(i=>i.slug==='common').state,'published');assert.deepEqual(all(t.raw,'SELECT * FROM template_versions WHERE template_id=?',item.templateId),versions);
+ assert.equal(all(t.raw,'SELECT * FROM client_activations').length,0);
+});
+test('template recovery rejects stale scope, invalid definitions and revoked managers',async ctx=>{
+ const {manageOnboardingSetup}=await import('../lib/bloomops/onboarding-setup.mjs');const t=await setup();ctx.after(()=>t.raw.close());await installOnboardingDefaults(t.db,t.owner,command);
+ const item=(await onboardingSetup(t.db,t.owner)).items.find(i=>i.slug==='common');const input={workspaceId:'a',userId:'ellen',slug:'common',reviewToken:item.reviewToken,action:'save_version',definition:{}};
+ assert.equal((await manageOnboardingSetup(t.db,t.owner,input)).reason,'invalid_definition');assert.equal((await manageOnboardingSetup(t.db,t.owner,{...input,workspaceId:'b'})).ok,false);
+ run(t.raw,"UPDATE workspace_memberships SET status='suspended' WHERE id='m-ellen'");assert.equal((await manageOnboardingSetup(t.db,t.owner,input)).ok,false);
+});
