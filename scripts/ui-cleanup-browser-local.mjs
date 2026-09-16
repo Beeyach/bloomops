@@ -85,6 +85,17 @@ try{
   await page.setViewportSize({width:1440,height:1000});
  }
 
+ // Preview through the real file control without importing additional records.
+ await page.goto(base+'/prospecting/import/csv',{waitUntil:'networkidle'});
+ await page.waitForFunction(()=>document.getElementById('csv-file')?.disabled===false);
+ for(const count of [1,2]){
+  const text='Business name,Contact name,Website,Email,Platform\n'+Array.from({length:count},(_,i)=>`QA preview ${i},Synthetic QA,,,Kajabi`).join('\n');
+  await page.getByLabel('CSV file',{exact:true}).setInputFiles({name:'qa-preview.csv',mimeType:'text/csv',buffer:Buffer.from(text)});
+  await page.getByRole('button',{name:'Preview import',exact:true}).click();
+  await page.getByRole('heading',{name:`Review ${count} ${count===1?'row':'rows'}`,exact:true}).waitFor();
+  check(`CSV preview uses correct singular/plural for ${count}`,true);
+ }
+ await page.goto(base+'/prospecting',{waitUntil:'networkidle'});
  writeFileSync(out+'/timings.json',JSON.stringify(timings,null,2));
  await readable(page.locator('#sheet-search'),'Prospecting search placeholder','::placeholder');
  // History and reload must retain the authorized, usable sheet, not just a 200 response.
@@ -107,6 +118,16 @@ try{
  await page.goto(base+'/search',{waitUntil:'networkidle'});await readable(page.locator('#workspace-search-query'),'Workspace search placeholder','::placeholder');
  const client=await post('/api/bloomops/clients',{name:'Synthetic client with a long name for layout review',contactName:'QA contact',contactEmail:'portal@example.test',timezone:'Australia/Sydney',requestId:randomUUID(),workspaceId:'a',userId:'ellen'});assert.equal(client.status,201,JSON.stringify(client.data));const clientId=client.data.client.id;
  const serviceType=await binding.prepare("SELECT id FROM service_types WHERE workspace_id='a' AND slug='ghl'").first();const service=await post(`/api/bloomops/clients/${clientId}/services`,{serviceTypeId:serviceType.id,packageName:'QA Systems service'});assert.equal(service.status,201,JSON.stringify(service.data));
+ const activation=await post(`/api/bloomops/clients/${clientId}/activate`,{});
+ assert.equal(activation.status,200,JSON.stringify(activation.data));
+ await page.locator('nav[aria-label="Main"]').getByRole('link',{name:'Onboarding',exact:true}).click();
+ await page.waitForURL(base+'/onboarding');
+ const checklist=page.locator(`a[href="/clients/${clientId}?tab=onboarding"]`);
+ await checklist.waitFor();check('Onboarding sidebar exposes the real authorized Client checklist',await checklist.innerText().then(t=>t.includes('Synthetic client')));
+ await checklist.click();await page.waitForURL(u=>u.pathname==='/clients/'+clientId&&u.searchParams.get('tab')==='onboarding');
+ await page.getByText('Agreement',{exact:true}).waitFor();
+ check('Onboarding link opens persisted generated requirements',true);
+ await page.reload({waitUntil:'networkidle'});check('Onboarding requirements survive reload',await page.getByText('Agreement',{exact:true}).count()===1);
  const project=await post(`/api/bloomops/clients/${clientId}/projects`,{name:'Synthetic delivery project with a long name that must wrap without hiding its metadata',serviceEngagementId:service.data.service.id});assert.equal(project.status,201,JSON.stringify(project.data));
  await page.goto(base+'/pages',{waitUntil:'networkidle'});await page.getByRole('button',{name:'New page',exact:true}).click();await page.waitForURL(u=>/^\/pages\/[0-9a-f-]+$/.test(u.pathname));const pagePath=new URL(page.url()).pathname;
  await readable(page.locator('.bo-page-search input'),'Page search placeholder','::placeholder');await readable(page.getByRole('textbox',{name:'Page title',exact:true}),'Page title placeholder','::placeholder');

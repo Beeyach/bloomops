@@ -12,6 +12,12 @@ for(const templateId of ['ghl_campaign','social'])test(`${templateId}: persists,
  assert.equal((await save(t.db,t.owner,'james',result.id,{...v,expectedRevision:1,draft:draft({...v.draft,commentary:'Revised'})})).ok,true);report=await get(t.db,t.owner,'james',result.id);assert.equal(report.commentary,'Revised');assert.equal(report.revision,2);assert.equal(report.updaterUserId,'ellen');
  assert.equal((await save(t.db,t.owner,'james',result.id,{...v,templateVersion:2,expectedRevision:2})).ok,false);
 });
+test('saved context retains distinct Client, Service, package and comparison fields',async ctx=>{
+ const t=await fixture(ctx);run(t.raw,"UPDATE service_engagements SET package_name='Synthetic package' WHERE id='ghl-service'");
+ const created=await save(t.db,t.owner,'james',null,input());const r=await get(t.db,t.owner,'james',created.id);
+ assert.deepEqual([r.clientName,r.serviceName,r.packageName],['james','systems','Synthetic package']);
+ assert.equal(r.comparisonPublicationId,null);
+});
 test('creation concurrent retry once, altered request conflicts, later edits survive retry',async ctx=>{
  const t=await fixture(ctx),v=input();const results=await Promise.all([save(t.db,t.owner,'james',null,v),save(t.db,t.owner,'james',null,v)]);assert.ok(results.every(r=>r.ok));assert.equal(results[0].id,results[1].id);assert.equal(one(t.raw,'SELECT count(*) n FROM client_report_drafts').n,1);
  assert.equal((await save(t.db,t.owner,'james',null,{...v,draft:draft({title:'Changed'})})).reason,'conflict');
