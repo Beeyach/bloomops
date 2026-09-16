@@ -79,6 +79,10 @@ jobs:
         run: |
           python3 .github/scripts/pr-validation.py run ci-evidence/finance-tests node --test tests/bloomops-finance.test.mjs
           python3 .github/scripts/pr-validation.py run ci-evidence/finance-native node scripts/finance-native-local.mjs
+      - name: Client edit recovery and native D1
+        run: |
+          python3 .github/scripts/pr-validation.py run ci-evidence/client-edit-tests node --test tests/bloomops-client-edit*.test.mjs tests/bloomops-clients.test.mjs
+          python3 .github/scripts/pr-validation.py run ci-evidence/client-edit-native node scripts/client-edit-native-local.mjs
       - name: Disposable local zero-to-current migration
         run: python3 .github/scripts/pr-validation.py run ci-evidence/zero node .github/scripts/verify-zero-remote.mjs --local
       - name: Build completed Worker
@@ -108,6 +112,7 @@ jobs:
           BLOOMOPS_BROWSER_EVIDENCE_DIR="$GITHUB_WORKSPACE/ci-evidence/page-templates-browser" python3 .github/scripts/pr-validation.py run ci-evidence/page-templates-browser-run node scripts/page-templates-browser-local.mjs
           BLOOMOPS_BROWSER_EVIDENCE_DIR="$GITHUB_WORKSPACE/ci-evidence/team-workload-browser" python3 .github/scripts/pr-validation.py run ci-evidence/team-workload-browser-run node scripts/team-workload-browser-local.mjs
           BLOOMOPS_BROWSER_EVIDENCE_DIR="$GITHUB_WORKSPACE/ci-evidence/finance-browser" python3 .github/scripts/pr-validation.py run ci-evidence/finance-browser-run node scripts/finance-browser-local.mjs
+          BLOOMOPS_BROWSER_EVIDENCE_DIR="$GITHUB_WORKSPACE/ci-evidence/client-edit-browser" python3 .github/scripts/pr-validation.py run ci-evidence/client-edit-browser-run node scripts/client-edit-browser-local.mjs
           git diff --exit-code
       - name: Upload synthetic feature evidence
         if: ${{ always() }}

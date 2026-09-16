@@ -40,7 +40,7 @@ const root = new URL('..', import.meta.url);
 const src = (path) => readFileSync(new URL(path, root), 'utf8');
 
 const { POST: createRoute } = await import('../app/api/bloomops/clients/route.js');
-const { PATCH: patchRoute } = await import('../app/api/bloomops/clients/[id]/route.js');
+const { PATCH: patchRoute, GET: readEditRoute } = await import('../app/api/bloomops/clients/[id]/route.js');
 const { POST: addContactRoute } = await import('../app/api/bloomops/clients/[id]/contacts/route.js');
 const { PATCH: patchContactRoute, DELETE: deleteContactRoute } = await import('../app/api/bloomops/clients/[id]/contacts/[contactId]/route.js');
 
@@ -131,7 +131,7 @@ async function scenario() {
             : patchContactRoute
           : /\/contacts$/.test(path)
             ? addContactRoute
-            : patchRoute;
+            : method === 'GET' ? readEditRoute : patchRoute;
     const res = await handler(req, { params: Promise.resolve(params) });
     let json = null;
     try {
@@ -141,7 +141,10 @@ async function scenario() {
   }
 
   const create = (email, body) => call(email, '/api/bloomops/clients', { body });
-  const patch = (email, id, body) => call(email, `/api/bloomops/clients/${id}`, { method: 'PATCH', body, params: { id } });
+  const patch = async (email, id, body) => {
+    const read = await call(email, `/api/bloomops/clients/${id}`, {method:'GET', params:{id}});
+    return call(email, `/api/bloomops/clients/${id}`, {method:'PATCH',body:{expected:read.json?.snapshot,editorScope:read.json?.scope,...body},params:{id}});
+  };
   const addContact = (email, id, body) => call(email, `/api/bloomops/clients/${id}/contacts`, { body, params: { id } });
   const patchContact = (email, id, contactId, body) =>
     call(email, `/api/bloomops/clients/${id}/contacts/${contactId}`, { method: 'PATCH', body, params: { id, contactId } });
@@ -1334,4 +1337,22 @@ test('A6 built nothing that a later phase owns', () => {
   const migration = src('drizzle/0003_a6_primary_contact.sql');
   assert.equal(migration.trim().split('\n').length, 1, 'the A6 migration is one statement');
   assert.match(migration, /^CREATE UNIQUE INDEX/);
+});
+
+// N1H: these direct calls intentionally do not refresh an editor's original values.
+test('HTTP Client editing binds initiating scope, checks original values and never caches private recovery reads', async () => {
+ const s=await scenario(),id='c_lawrence',path=`/api/bloomops/clients/${id}`,params={id};
+ const original=await s.call(PEOPLE.owner,path,{method:'GET',params});
+ assert.equal(original.status,200);assert.match(original.res.headers.get('cache-control'),/no-store/);
+ const input={editorScope:original.json.scope,expected:original.json.snapshot,name:'Original editor saved'};
+ assert.equal((await s.call(PEOPLE.owner,path,{method:'PATCH',params,body:{name:'Missing stamp'}})).status,404);
+ assert.equal((await s.call(PEOPLE.owner,path,{method:'PATCH',params,body:{...input,expected:{}}})).status,400);
+ assert.equal((await s.call(PEOPLE.admin,path,{method:'PATCH',params,body:input})).status,404);
+ assert.equal((await s.call(PEOPLE.owner,path,{method:'PATCH',params,body:input})).status,200);
+ const before=s.events(id);
+ assert.equal((await s.call(PEOPLE.owner,path,{method:'PATCH',params,body:{...input,name:'Stale editor'}})).status,409);
+ assert.equal(s.clientRow(id).name,'Original editor saved');assert.deepEqual(s.events(id),before);
+ for(const person of [PEOPLE.tmClient,PEOPLE.clientLinked,PEOPLE.bOwner])assert.notEqual((await s.call(person,path,{method:'GET',params})).status,200);
+ run(s.raw,"UPDATE workspace_memberships SET status='suspended' WHERE id=?",s.ownerA.id);
+ assert.notEqual((await s.call(PEOPLE.owner,path,{method:'GET',params})).status,200);
 });

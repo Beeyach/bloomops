@@ -1,6 +1,6 @@
 import { withApiErrors } from '@/lib/bloomops/api-handler.mjs';
 import { NextResponse } from 'next/server';
-import { updateClient } from '@/lib/bloomops/clients.mjs';
+import { readClientEdit, saveClientEdit } from '@/lib/bloomops/client-edit.mjs';
 import { domainProblem, pick, readBody, requireClient } from '../_shared.mjs';
 
 export const dynamic = 'force-dynamic';
@@ -15,19 +15,22 @@ export const dynamic = 'force-dynamic';
 // field edit. See lib/bloomops/clients.mjs.
 async function handlePATCH(req, { params }) {
   const { id } = await params;
-  const { access, client, response } = await requireClient(req, id);
+  const { access, response } = await requireClient(req, id);
   if (response) return response;
   const body = await readBody(req);
-  const input = pick(body, ['name', 'company', 'website', 'timezone', 'startDate', 'endDate', 'health', 'ownerMembershipId', 'relationshipStatus']);
-  const result = await updateClient(access.db, {
-    workspaceId: access.workspace.id,
-    client,
-    input,
-    actorMembershipId: access.membership.id,
-    actorUserId: access.user.id,
-  });
+  const input = pick(body, ['name', 'company', 'website', 'timezone', 'startDate', 'endDate', 'health', 'ownerMembershipId', 'relationshipStatus', 'expected', 'editorScope']);
+  const result = await saveClientEdit(access.db, access.actor, id, input);
   if (!result.ok) return domainProblem(result);
-  return NextResponse.json({ ok: true, unchanged: Boolean(result.unchanged), changed: result.changed || null });
+  return NextResponse.json({ scope: {userId: access.user.id, workspaceId: access.workspace.id}, clientId: id, ok: true, unchanged: Boolean(result.unchanged), changed: result.changed || null });
 }
 
 export const PATCH = withApiErrors(handlePATCH);
+
+export const GET = withApiErrors(async (req, {params}) => {
+  const {id} = await params;
+  const {access,response} = await requireClient(req,id);
+  if(response) return response;
+  const snapshot = await readClientEdit(access.db,access.actor,id);
+  if(!snapshot) return NextResponse.json({error:'Not found.'},{status:404});
+  return NextResponse.json({scope:{userId:access.user.id,workspaceId:access.workspace.id},clientId:id,snapshot});
+});

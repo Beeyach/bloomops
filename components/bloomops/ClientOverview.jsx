@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/lib/toast.mjs';
 import { formatDate } from '@/lib/bloomops/format.mjs';
@@ -9,6 +9,9 @@ import Dialog from './Dialog';
 import { Button, Facts, Field, Notice, Section, fieldAria } from './Primitives';
 import { ClientHealth } from './Clients';
 import { mapServerErrors } from './ClientForm';
+import useClientEditDraft from './useClientEditDraft';
+import {clientEditSnapshot} from '@/lib/bloomops/client-edit-values.mjs';
+import {DRAFT_CONTEXT_KEY} from '@/lib/bloomops/draft-context.mjs';
 
 // The Overview tab of one client, for someone who may manage it.
 //
@@ -76,19 +79,14 @@ export function ClientFactsList({ client }) {
   return <Facts items={items} />;
 }
 
-function DetailsForm({ client, owners, onSubmit, onCancel, busy, serverError, fieldErrors }) {
-  const [values, setValues] = useState({
-    name: client.name || '',
-    website: client.website || '',
-    timezone: client.timezone || '',
-    startDate: client.startDate || '',
-    endDate: client.endDate || '',
-    ownerMembershipId: client.owner?.membershipId || '',
-  });
-  const [errors, setErrors] = useState({});
-  const shown = { ...errors, ...fieldErrors };
-  const set = (key) => (e) => setValues((v) => ({ ...v, [key]: e.target.value }));
-
+function DetailsForm({ client, scope, owners, onSaved, onCancel, closeRef }) {
+  const draft = useClientEditDraft({scope,clientId:client.id,onSaved});
+  const {fields:values,errors,busy,checking,pending,ready,message,conflict}=draft.view;
+  useEffect(()=>{closeRef.current=()=>{if(draft.close())onCancel();};return()=>{closeRef.current=null;};});
+  const shown=mapServerErrors(errors);
+  const set=key=>e=>draft.edit(key,e.target.value);
+  if(draft.lost)return <div className="bo-dialog-body"><Notice tone="error">This editor is no longer available. Close it and reopen the Client in your current workspace.</Notice><Button onClick={()=>closeRef.current?.()}>Close</Button></div>;
+  if(!ready)return <div className="bo-dialog-body" aria-live="polite">{checking?'Checking current Client access…':<><Notice tone="error">{message}</Notice><Button onClick={draft.check}>Retry access check</Button></>}</div>;
   // An owner who is no longer active keeps their place in the list while
   // they are still the owner, so saving an unrelated field does not quietly
   // reassign the client to nobody.
@@ -100,21 +98,18 @@ function DetailsForm({ client, owners, onSubmit, onCancel, busy, serverError, fi
     e.preventDefault();
     const next = {};
     if (!values.name.trim()) next.name = 'Enter the client or company name.';
-    setErrors(next);
+    draft.setErrors(next);
     if (Object.keys(next).length > 0) return;
-    onSubmit({
-      name: values.name.trim(),
-      website: values.website.trim(),
-      timezone: values.timezone,
-      startDate: values.startDate,
-      endDate: values.endDate,
-      ownerMembershipId: values.ownerMembershipId,
-    });
+    draft.submit();
   }
 
   return (
     <form onSubmit={submit} noValidate>
       <div className="bo-dialog-body">
+        <p className="bo-small">Unsaved details are kept in this browser for seven days when storage is available. They are only saved to the Client when you choose Save changes.</p>
+        {draft.storageError && <Notice tone="error">{draft.storageError}</Notice>}
+        {draft.copies.length>0 && <details><summary>Recovery copies ({draft.copies.length})</summary><ul className="bo-rows">{draft.copies.map(copy=><li key={copy.key}><span>{new Date(copy.at).toLocaleString()}</span> <Button size="sm" disabled={busy||checking} onClick={()=>draft.recover(copy.key)}>Restore copy</Button> <Button size="sm" disabled={busy||checking} onClick={()=>draft.discard(copy.key)}>Discard copy</Button></li>)}</ul></details>}
+        <fieldset disabled={busy||checking||Boolean(pending)} style={{border:0,padding:0,margin:0,minWidth:0,display:'flex',flexDirection:'column',gap:'var(--bo-s4)'}}>
         <Field id="edit-name" label="Client or company name" error={shown.name}>
           <input {...fieldAria({ id: 'edit-name', error: shown.name })} className="bo-control" type="text" maxLength={LIMITS.name} value={values.name} onChange={set('name')} required />
         </Field>
@@ -154,56 +149,52 @@ function DetailsForm({ client, owners, onSubmit, onCancel, busy, serverError, fi
             ))}
           </select>
         </Field>
-        {serverError && <Notice tone="error">{serverError}</Notice>}
+        </fieldset>
+        {message && <Notice tone={conflict?'error':'info'}>{message}</Notice>}
+        {(conflict||pending) && <p><a className="bo-link" href={`/clients/${client.id}`} target="_blank" rel="noopener noreferrer">Open saved Client to compare</a></p>}
+        {conflict && <Button onClick={draft.reload} disabled={busy||checking}>Reload saved details</Button>}
       </div>
       <div className="bo-dialog-actions">
-        <Button onClick={onCancel} disabled={busy}>
-          Cancel
+        <Button onClick={()=>closeRef.current?.()} disabled={busy}>
+          Close
         </Button>
-        <Button type="submit" variant="primary" loading={busy}>
-          Save changes
+        <Button type="submit" variant="primary" loading={busy} disabled={checking||conflict}>
+          {pending?'Retry same save':'Save changes'}
         </Button>
       </div>
     </form>
   );
 }
 
-export default function ClientOverview({ client, owners, timezones }) {
+export default function ClientOverview({ client, scope, owners, timezones }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
-  const [busy, setBusy] = useState(false);
   const [healthBusy, setHealthBusy] = useState(false);
-  const [serverError, setServerError] = useState('');
-  const [fieldErrors, setFieldErrors] = useState({});
-
-  async function saveDetails(patch) {
-    setBusy(true);
-    setServerError('');
-    setFieldErrors({});
-    try {
-      const data = await send(`/api/bloomops/clients/${client.id}`, { body: patch });
-      setEditing(false);
-      toast(data.unchanged ? 'Nothing had changed.' : 'The client was updated.');
-      router.refresh();
-    } catch (err) {
-      if (err.fields) setFieldErrors(mapServerErrors(err.fields));
-      else setServerError(err.message);
-    } finally {
-      setBusy(false);
-    }
-  }
+  const [ready,setReady]=useState(false);
+  const lifetime=useRef(null),closeRef=useRef(null);
+  useEffect(()=>{
+    const current={active:true};lifetime.current=current;setReady(true);
+    const invalidate=()=>{current.active=false;setReady(false);setEditing(false);};
+    const storage=e=>{if(e.key===DRAFT_CONTEXT_KEY||e.key===null)invalidate();};
+    let channel;try{channel=new BroadcastChannel(DRAFT_CONTEXT_KEY);channel.onmessage=invalidate;}catch{}
+    addEventListener(DRAFT_CONTEXT_KEY,invalidate);addEventListener('storage',storage);
+    return()=>{current.active=false;channel?.close();removeEventListener(DRAFT_CONTEXT_KEY,invalidate);removeEventListener('storage',storage);};
+  },[scope.userId,scope.workspaceId,client.id]);
+  function saved(data){setEditing(false);toast(data.unchanged?'Nothing had changed.':'The client was updated.');router.refresh();}
 
   async function setHealth(health) {
-    if (health === client.health) return;
+    if (health === client.health||!ready||!lifetime.current?.active||healthBusy) return;
+    const current=lifetime.current;
     setHealthBusy(true);
     try {
-      await send(`/api/bloomops/clients/${client.id}`, { body: { health } });
+      await send(`/api/bloomops/clients/${client.id}`, { body: { health, expected:clientEditSnapshot(client),editorScope:scope } });
+      if(!current.active)return;
       toast(`Health is now ${CLIENT_HEALTH_LABELS[health]}.`);
       router.refresh();
     } catch (err) {
-      toast(err.message, { tone: 'error' });
+      if(current.active)toast(err.status===409?'The saved Client changed. Refresh before changing its health.':err.message, { tone: 'error' });
     } finally {
-      setHealthBusy(false);
+      if(current.active)setHealthBusy(false);
     }
   }
 
@@ -213,7 +204,7 @@ export default function ClientOverview({ client, owners, timezones }) {
         id="details"
         title="Details"
         aside={
-          <Button size="sm" onClick={() => { setServerError(''); setFieldErrors({}); setEditing(true); }}>
+          <Button size="sm" disabled={!ready||healthBusy} onClick={() => setEditing(true)}>
             Edit details
           </Button>
         }
@@ -230,7 +221,7 @@ export default function ClientOverview({ client, owners, timezones }) {
               size="sm"
               variant={health === client.health ? 'primary' : 'secondary'}
               aria-pressed={health === client.health}
-              disabled={healthBusy}
+              disabled={!ready||healthBusy||editing}
               onClick={() => setHealth(health)}
             >
               {CLIENT_HEALTH_LABELS[health]}
@@ -239,15 +230,14 @@ export default function ClientOverview({ client, owners, timezones }) {
         </div>
       </Section>
 
-      <Dialog open={editing} onClose={() => { if (!busy) setEditing(false); }} title="Edit client details" initialFocus="#edit-name">
+      <Dialog open={editing} onClose={() => closeRef.current?.()} title="Edit client details" initialFocus="#edit-name">
         <DetailsForm
           client={{ ...client, timezones }}
           owners={owners}
-          onSubmit={saveDetails}
+          scope={scope}
+          closeRef={closeRef}
+          onSaved={saved}
           onCancel={() => setEditing(false)}
-          busy={busy}
-          serverError={serverError}
-          fieldErrors={fieldErrors}
         />
       </Dialog>
     </>
