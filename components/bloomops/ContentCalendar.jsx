@@ -7,7 +7,7 @@ export default function ContentCalendar({result,month,query={},options}) {
   const dates=[...new Set(result.items.map(i=>i.targetPublishDate))];
   return <>
     <PageHeader title="Content calendar" subtitle="A month of planned publication, grouped by date." actions={<Button href="/social/new" variant="primary">Create Content</Button>} />
-    <nav className="bo-form-actions" aria-label="Social views"><Button href="/social">Content list</Button><Button href="/social/calendar" aria-current="page">Calendar</Button></nav>
+    <nav className="bo-view-nav" aria-label="Social views"><Button href="/social">Content list</Button><Button href="/social/calendar" aria-current="page">Calendar</Button></nav>
     <form action="/social/calendar" className="bo-content-filters" aria-label="Filter calendar">
       <Field id="calendar-month" label="Month"><input id="calendar-month" name="month" type="month" min="0100-01" max="9999-12" className="bo-control" defaultValue={month.month} required /></Field>
       <Field id="calendar-client" label="Client"><select id="calendar-client" name="clientId" className="bo-control" defaultValue={query.clientId||''}><option value="">All</option>{query.clientId&&!clients.some(([id])=>id===query.clientId)&&<option value={query.clientId}>Selected Client</option>}{clients.map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></Field>
@@ -25,6 +25,6 @@ export default function ContentCalendar({result,month,query={},options}) {
         <div className="bo-content-summary"><Status label={CONTENT_STAGE_LABELS[item.stage]} /><span>{item.platforms.length?item.platforms.map(p=><span key={p.label}>{p.label}</span>):'No platforms set'}</span>{item.stage==='published'&&item.publishedAt&&<span>Published <time dateTime={item.publishedAt}>{item.publishedAt.replace('T',' ').replace('Z',' UTC')}</time></span>}</div>
       </li>)}</ul>
     </section>)}</div>}
-    <nav className="bo-content-pagination" aria-label="Calendar pages">{result.page>1&&<Button href={href({page:String(result.page-1)})}>Previous page</Button>}<p className="bo-small">Page {result.page}{result.hasMore&&<span className="bo-pagination-note">More dated Content is available.</span>}</p>{result.hasMore&&<Button href={href({page:String(result.page+1)})}>Next page</Button>}</nav>
+    {(result.page > 1 || result.hasMore) && <nav className="bo-content-pagination" aria-label="Calendar pages">{result.page>1&&<Button href={href({page:String(result.page-1)})}>Previous page</Button>}<p className="bo-small">Page {result.page}{result.hasMore&&<span className="bo-pagination-note">More dated Content is available.</span>}</p>{result.hasMore&&<Button href={href({page:String(result.page+1)})}>Next page</Button>}</nav>}
   </>;
 }

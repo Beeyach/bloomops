@@ -69,7 +69,7 @@ export function ActionControls({ action = null, projectId, members = [], milesto
       {action && mayProgress && ACTION_TRANSITIONS[action.status].length > 0 && <Button size="sm" disabled={busy || !ready} onClick={() => open('status')}>Change Action status</Button>}
     </div>
     {dependencies && <Section id="action-dependencies" title="Dependencies" aside={mayManage && <Button size="sm" disabled={busy || !ready || !available.length} onClick={() => open('dependency')}>Add dependency</Button>}>
-      <p className="bo-small">Prerequisite Actions are satisfied when Done. Cancelled work remains unresolved.</p>
+      <p className="bo-small bo-section-description">Prerequisite Actions are satisfied when Done. Cancelled work remains unresolved.</p>
       {dependencies.items.length ? <ul className="bo-action-dependencies" aria-label="Prerequisite Actions">{dependencies.items.map(edge => <li key={edge.id}>
         <div><a className="bo-action-title" href={`/work/actions/${edge.actionId}`}>{edge.title}</a><p className="bo-small"><span>{ACTION_STATUS_LABELS[edge.status]}</span> <span>{edge.satisfied ? 'Satisfied' : 'Unresolved'}</span></p></div>
         {mayManage && <Button size="sm" disabled={busy || !ready} onClick={() => open('remove', edge)} aria-label={`Remove dependency on ${edge.title}`}>Remove dependency</Button>}

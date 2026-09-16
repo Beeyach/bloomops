@@ -1,33 +1,77 @@
 # Bloomsi Build State
 
-## Owner UI cleanup checkpoint — 16 September 2026
+## Owner app-wide QA and correction - 16 September 2026
 
-Current bounded priority: implement [the complete owner brief](bloomsi-ui-cleanup-brief.md)
-on `feat/ui-cleanup-20260916`, based on main `52dacbf`. PR93 Client edit recovery
-remains safely committed at `ebfae0f` in its own unchanged worktree; both jobs in
-run35084403671 passed. It remains unmerged, with staging acceptance pending.
+New roadmap features paused. Base `d2947b2`; owned branch `fix/app-qa-20260916`.
+Previous UI worktree and its uncommitted release checkpoint are preserved.
+This is the one active route/scenario checklist; results below must distinguish
+real staging interaction, local regression checks and missing coverage.
+
+| Route / scenario | Observed defect | Correction | Retest / limitation |
+| --- | --- | --- | --- |
+| Sidebar → Prospecting | Team Member reaches generic not-found despite RSC200; fresh Admin in operations workspace reaches supported chooser | Explicit restricted-role explanation and workspace recovery; data authorization unchanged | Owner/Admin navigation works on d2947b2; restricted sidebar regression reproduced against completed old build, corrected-build check pending |
+| Social / Ads / Systems lists | Windows1920: main1688px vs canvas1120px, empty640px, view/filter gap0px, description/results gap0px | Fluid internal working column, centered full-width empty region, view/section gaps, active view, truthful pagination | Four pre-fix assertions fail; focused48/48 pass; built/live retest pending |
+| Action detail / status / dependencies | Windows detail/action gap0px; dependency help/result gap0px |20px action region and16px help gap | Live reproduction confirmed; retest pending |
+| Shell / workspace / search / notifications | Prior acceptance retained, new sweep pending | None yet | NOT RUN |
+| Prospect records / Skills / supported import | Genuine create/edit/filter/reopen and instruction workflow pending | None yet | NOT RUN |
+| Clients / Services / Onboarding / Work / templates | Supported create/edit/status/dependency sweep pending; PR93 remains separately owned | None yet | NOT RUN |
+| Social content / calendar / stage controls | Saved workflow and empty/filter recovery pending | None yet | NOT RUN |
+| Ads / Systems detail and setup | Only shipped operations in scope; no provider actions | None yet | NOT RUN |
+| Pages editor / subpages / Move / templates / context / discussions / sharing | Full supported interaction sweep pending | None yet | NOT RUN |
+| Team / workload / department / capability controls | Least-privilege and restoration checks pending | None yet | NOT RUN |
+| Finance manual records / filters / summaries | No payments or calculation redesign | None yet | NOT RUN |
+| Reporting drafts / CSV / publication / portal / PDF | Existing synthetic actors and fixtures only | None yet | NOT RUN |
+| Settings / validation / persistence | Restore every temporary setting | None yet | NOT RUN |
+
+
+## Owner UI cleanup release checkpoint - 16 September 2026
+
+The [complete owner brief](bloomsi-ui-cleanup-brief.md) was published verbatim at
+`a117f699a02e25fe429d573c47ea9bfe7533043b` and verified against GitHub before implementation.
+PR94 merged as `d2947b20d39ab45c32b9ff5f9717e8ad63ffce0c`; staging serves `d2947b2`.
+The merged tree equals validated candidate `de5c5ac9123eaff482a688ea8d36638d94e8e483`.
+PR93 Client edit recovery remains separate at `ebfae0f`; its worktree is untouched.
 The finite product-completion list below is retained; this pass adds no product milestone.
 
-Screenshot checklist (implemented; final integration/staging acceptance pending):
+Screenshot checklist:
 - [x] Shared hierarchy, spacing, controls, compact identity and workspace utility.
 - [x] Work/Systems aligned records, truthful status, shortcut hierarchy and tab overflow.
-- [x] Bell panel with current scope/read behavior; Prospecting empty/filter states and measured navigation.
+- [x] Bell panel with current scope/read behavior and truthful Prospecting empty/filter states.
 - [x] Fluid Pages writing area, named tools/Move, preserved editing and recovery.
 - [x] Skills, Social, Ads, Team, Finance and Settings use the same visual system.
-- [ ] Completed-build responsive/keyboard/zoom/Windows checks, full suite, CI and staging comparison.
+- [x] Completed-build responsive/keyboard/native 200% zoom checks and real Windows scrollbar inspection.
+- [x] Full suite, feature CI, staging deployment, disposable remote D1, genuine staging UI smoke.
+- [ ] Demonstrate a live Prospecting speedup under comparable network/edge conditions.
 
-[Implementation and repeatable checks](previews/ui-cleanup/README.md): full7384/7384
-passes at `8e7166c`; remote run35094766037 also passes full7384/7384 on candidateee2985d.
-Its Team browser stopped on stale navigation/copy locators, now corrected without
-removing behavioral assertions. The final stamped build is `a03f3c3`; Team26 and
-Finance27 pass. Remote validation and staging comparison remain pending on PR94.
-Completed rendered checks include five widths, native200% zoom, notification72,
-Page context/template and saved Reporting/PDF workflows.
+[CI35099647051](https://github.com/Bloomwired/bloomops/actions/runs/35099647051)
+passes full7384/7384 (exit0, no skips) and all feature checks, including UI131,
+notifications72/preferences23, reports153, Work23, Page context20/templates23,
+Team26 and Finance27. [Staging35101762038](https://github.com/Bloomwired/bloomops/actions/runs/35101762038)
+and [disposable D135101761927](https://github.com/Bloomwired/bloomops/actions/runs/35101761927)
+pass on the merge. Staging migration application was a no-op; schema remains56.
 
-Baseline Windows staging `52dacbf`: Bricolage and Inter load. Work tab strip is
-43px high with44px scroll content; removing the tab's -1px bottom margin yields
-44/44 without hiding scrollbars. Existing QA workspace names and stored punctuation
-are preserved. Prospecting timing evidence is separate from unresolved overall PERF3.
+Genuine Windows staging checks cover Work at1440/1280/1024/768/390, all pictured
+routes at desktop, Pages at1440/768/390, keyboard Page edit/save/reopen/restore,
+actual Move/Comments/Share disclosures, and a separate recipient's bell/unread/
+mobile-focus/real-destination flow plus preferences save/restore. The synthetic
+Page is retained; original writing, preferences and notification read state are restored.
+No application runtime exceptions were observed. Synthetic favicon DNS failures
+and missing profile-photo404 fallback requests are retained as network observations.
+
+Actual tab-strip cause was a negative tab margin causing43px client/44px scroll
+height. Corrected geometry is52/52 including focus padding, without scrollbar hiding.
+Prospecting's route/JavaScript/API waterfall is reduced through full route prefetch
+and a lightweight loading boundary. Controlled local repeated usable medians:
+empty117.0→113.1ms; populated143.1→123.4ms. Live before/after medians were slower:
+filtered-empty392.0→1302.8ms; populated374.6→993.1ms. Unchanged static assets and
+version requests also slowed, with changing Cloudflare edge locations; extra live
+response latency is not isolated. No live speedup or PERF3 acceptance is claimed.
+
+Compact release evidence and matched screenshots:
+`/home/ary/Developer/bloomops-ui-evidence/RELEASE.md`.
+This post-release status update is retained locally for the next appropriate feature
+commit, avoiding a documentation-only deployment. Next: resume the existing finite
+completion list while respecting PR93/other session ownership; do not duplicate work.
 
 ## Owner execution decision and finite completion list — 15 September 2026
 

@@ -26,7 +26,7 @@ export function SystemsOverview({ projection }) {
     </form>
     {(options.clients.hasMore || options.services.hasMore) && <p className="bo-small">Showing the first 200 filter choices, plus your selection. Choose a Client to narrow Services, or browse the project pages below.</p>}
     <Section id="systems-projects" title="Systems projects">
-      <p className="bo-small">Projects needing attention appear first, then target date. Open a project to continue its work.</p>
+      <p className="bo-small bo-section-description">Projects needing attention appear first, then target date. Open a project to continue its work.</p>
       {!projects.items.length ? <EmptyState title="No Systems projects in this view" actions={<Button href="/work?tab=projects">Open Work projects</Button>}>
         <p>Projects you can access under a Systems service appear here. Try another filter or open Work to manage projects.</p>
       </EmptyState> : <ul className="bo-rows" aria-label="Systems projects">
@@ -48,7 +48,7 @@ export function SystemsOverview({ projection }) {
       </nav>}
     </Section>
     {deliverables.items.length > 0 && <Section id="systems-deliverables" title="Deliverables to move forward">
-      <p className="bo-small">Across the selected projects: review and approved work, plus targets in the next 14 days or already past. Dates follow each Client’s timezone, or UTC when unset.</p>
+      <p className="bo-small bo-section-description">Across the selected projects: review and approved work, plus targets in the next 14 days or already past. Dates follow each Client’s timezone, or UTC when unset.</p>
       <ul className="bo-home-outputs" aria-label="Systems deliverables">{deliverables.items.map(item => <li key={item.id} data-deliverable-id={item.id}>
         <div><a className="bo-link bo-project-name" href={`/work/projects/${item.projectId}#project-deliverables-title`}>{item.title}</a>
           <dl className="bo-record-context"><div><dt>Client</dt><dd>{item.clientName}</dd></div><div><dt>Project</dt><dd>{item.projectName}</dd></div></dl></div>
