@@ -12,8 +12,12 @@ export async function pilotFeedbackChecks({page,ctx,base,check,out}){
  await page.getByLabel('Business name',{exact:true}).fill('Synthetic handoff fern');await page.getByLabel('Public contact email',{exact:false}).fill('fern@example.test');
  await page.getByRole('button',{name:'Create prospect',exact:true}).click();await page.waitForURL(u=>/^\/prospecting\/[a-f0-9-]+$/.test(u.pathname));
  const id=new URL(page.url()).pathname.split('/').pop();
+ await page.getByRole('button',{name:'Edit identity & contact',exact:true}).click();
+ await page.getByText('Source details for public contact email',{exact:true}).click();await page.locator('#prospect-publicEmail-source').fill('https://example.test/synthetic-contact-source');
+ await page.getByRole('button',{name:'Save identity & contact',exact:true}).click();await page.getByRole('button',{name:'Edit identity & contact',exact:true}).waitFor();
  const provenance=page.locator('#provenance');await provenance.locator('summary').click();
- check('Provenance labels have matching icons without invented verification',await provenance.locator('dt').count()>0&&await provenance.locator('dt:not(:has(svg))').count()===0&&await provenance.getByText('Not checked',{exact:true}).count()>0);
+ check('Provenance labels have matching icons without invented verification',await provenance.locator('.bo-prospect-sources dt').count()>0&&await provenance.locator('.bo-prospect-sources dt:not(:has(svg))').count()===0&&await provenance.getByText('Not checked',{exact:true}).count()>0);
+ const typography=await provenance.locator('.bo-prospect-sources li').first().evaluate(e=>({label:parseFloat(getComputedStyle(e.querySelector('dt')).fontSize),weight:Number(getComputedStyle(e.querySelector('dt')).fontWeight),value:parseFloat(getComputedStyle(e.querySelector('dd')).fontSize)}));check('Shared provenance labels are distinct from readable values',typography.label===13&&typography.weight>=600&&typography.value>=14);
  for(const width of [1440,390]){await page.setViewportSize({width,height:1000});check('Profile provenance fits '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:out+'/profile-provenance-'+width+'.png',fullPage:true});}
  await page.setViewportSize({width:1440,height:1000});
  check('Evidence and draft actions preserve real destinations',await page.getByRole('link',{name:'View audit evidence',exact:true}).getAttribute('href')==='#evidence'&&await page.getByRole('link',{name:'View draft',exact:true}).getAttribute('href')==='#draft');
@@ -91,13 +95,17 @@ export async function pilotFeedbackChecks({page,ctx,base,check,out}){
  await page.getByRole('region',{name:'Switch workspace',exact:true}).getByRole('button',{name:'Finance Synthetic QA',exact:true}).click();await page.waitForURL(base+'/');page.off('dialog',accept);
  check('Confirmed switch prompts once before one selection',dialogs.length===1&&dialogs[0]==='beforeunload'&&selections===1);
  check('Supported workspace switch reloads correct scope',await page.getByRole('button',{name:'Switch workspace: Finance Synthetic QA',exact:true}).isVisible());
+ await page.goto(base+'/workspaces',{waitUntil:'networkidle'});const account=page.getByRole('region',{name:'Signed-in account',exact:true});
+ check('Full workspace chooser preserves identity and secondary sign-out',await account.getByText('ellen@example.com',{exact:true}).isVisible()&&await account.getByRole('button',{name:'Sign out',exact:true}).isVisible());
+ for(const width of [1440,390]){await page.setViewportSize({width,height:1000});check('Workspace identity fits '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:out+'/workspace-account-'+width+'.png',fullPage:true});}
+ await page.setViewportSize({width:1440,height:1000});
  for(const path of ['/work','/team','/team/workload','/team/departments']){
   await page.goto(base+path,{waitUntil:'networkidle'});
   const nav=page.locator(path==='/work'?'nav[aria-label="Work sections"]':'nav[aria-label="Team views"]');
   check(path+' uses compact bounded controls',await nav.locator('.bo-btn').count()>=2&&await nav.locator('[aria-current="page"]').count()===1);
  }
  await page.goto(base+'/settings',{waitUntil:'networkidle'});
- const setupGeometry=await page.locator('#ghl-setup').evaluate(section=>{const description=section.querySelector('p').getBoundingClientRect(),button=section.querySelector('a.bo-btn').getBoundingClientRect();return {left:button.left-description.left,gap:button.top-description.bottom};});
+ const setupGeometry=await page.getByRole('region',{name:'Service delivery setup',exact:true}).evaluate(section=>{const description=section.querySelector('p').getBoundingClientRect(),button=section.querySelector('a.bo-btn').getBoundingClientRect();return {left:button.left-description.left,gap:button.top-description.bottom};});
  check('Settings setup actions align with their explanation and have a real gap',Math.abs(setupGeometry.left)<=1&&setupGeometry.gap>=16);
  await page.screenshot({path:out+'/settings-aligned.png',fullPage:true});
  await page.goto(base+'/social',{waitUntil:'networkidle'});const selector=page.getByLabel('Platform',{exact:true});await selector.selectOption('custom');await page.getByLabel('Platform label',{exact:true}).fill('Legacy private channel');await page.getByRole('button',{name:'Apply filters',exact:true}).click();await page.waitForURL(u=>u.searchParams.get('platform')==='Legacy private channel');
