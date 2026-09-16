@@ -21,9 +21,13 @@ export async function clientSetupChecks({page,ctx,base,browser,bucket,check,out}
  await contact.getByText('Source details for public contact email',{exact:true}).click();
  const checkbox=contact.getByRole('checkbox').last();
  check('Nested native checkbox is square',await checkbox.evaluate(e=>{const r=e.getBoundingClientRect();return r.width===20&&r.height===20;}));
+ await checkbox.check();check('Checked handoff control retains square native geometry',await checkbox.isChecked()&&await checkbox.evaluate(e=>{const r=e.getBoundingClientRect();return r.width===20&&r.height===20;}));await checkbox.uncheck();
  await checkbox.focus();check('Source checkbox is keyboard reachable',await checkbox.evaluate(e=>e===document.activeElement));
  await page.screenshot({path:out+'/client-setup-contact-1440.png'});
- await page.getByRole('button',{name:'Save primary contact',exact:true}).click();await page.getByRole('button',{name:'Edit primary contact',exact:true}).waitFor();
+ let releaseContact,contactPending;const pendingContact=new Promise(r=>contactPending=r),contactRelease=new Promise(r=>releaseContact=r);
+ await page.route('**/api/bloomops/prospecting/'+id,async route=>{if(route.request().method()==='PATCH'){contactPending();await contactRelease;}await route.continue();});
+ await page.getByRole('button',{name:'Save primary contact',exact:true}).click();await pendingContact;check('Contact save disables source checkbox without stretching it',await checkbox.isDisabled()&&await checkbox.evaluate(e=>{const r=e.getBoundingClientRect();return r.width===20&&r.height===20;}));releaseContact();await page.getByRole('button',{name:'Edit primary contact',exact:true}).waitFor();await page.unroute('**/api/bloomops/prospecting/'+id);
+
  const choices=page.getByRole('group',{name:'Service choices'});
  for(const slug of ['ads','ghl'])await choices.getByRole('button').filter({has:page.getByText('Service reference: '+slug,{exact:true})}).click();
  const ads=page.getByRole('group',{name:'Ads',exact:true}),ghl=page.getByRole('group',{name:'GHL',exact:true});
