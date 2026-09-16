@@ -88,16 +88,17 @@ try{
  await page.goto(base+'/pages',{waitUntil:'networkidle'});await page.getByRole('button',{name:'New page',exact:true}).click();await page.waitForURL(u=>/^\/pages\/[0-9a-f-]+$/.test(u.pathname));const pagePath=new URL(page.url()).pathname;
  const writingSaved=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/bloomops'+pagePath&&r.request().method()==='PUT'&&r.status()===200&&r.request().postDataJSON()?.body?.includes('Saved writing remains editable'));await page.getByRole('textbox',{name:'Page title',exact:true}).fill('Synthetic UI writing workspace');await page.locator('.ProseMirror').fill('Saved writing remains editable during the UI refinement.');await page.getByRole('textbox',{name:'Page title',exact:true}).focus();await writingSaved;await page.getByText('Saved',{exact:true}).waitFor();await page.reload({waitUntil:'networkidle'});await page.locator('.ProseMirror').waitFor();check('Page writing and title persist through the actual editor',await page.getByRole('textbox',{name:'Page title',exact:true}).inputValue()==='Synthetic UI writing workspace'&&await page.locator('.ProseMirror').innerText()==='Saved writing remains editable during the UI refinement.');
  await page.getByText('Page tools: templates and record context',{exact:true}).focus();await page.keyboard.press('Enter');check('Page tools open with keyboard',await page.getByRole('button',{name:'Edit record context',exact:true}).isVisible());await page.getByText('Page tools: templates and record context',{exact:true}).click();
+ // Measure the actual quiet metadata on the synthetic Client's persisted history.
+ await page.goto(base+'/clients/'+clientId+'?tab=activity',{waitUntil:'networkidle'});
+ const contrast=await page.locator('.bo-activity-meta').first().evaluate(e=>{
+  const color=getComputedStyle(e).color;let node=e,background;
+  while(node){background=getComputedStyle(node).backgroundColor;if(background!=='rgba(0, 0, 0, 0)'&&background!=='transparent')break;node=node.parentElement;}
+  const luminance=s=>s.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;}).reduce((n,v,i)=>n+v*[.2126,.7152,.0722][i],0);
+  const a=luminance(color),b=luminance(background);return {color,background,ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
+ });check('persisted Client history metadata has normal-text contrast',contrast.ratio>=4.5);writeFileSync(out+'/metadata-contrast.json',JSON.stringify(contrast,null,2));
  const layouts=[];
  for(const route of ['/work?tab=projects','/systems','/social','/ads','/team','/finance','/settings',pagePath]){
   await page.goto(base+route,{waitUntil:'networkidle'});
-  if(route==='/finance'){
-   const contrast=await page.locator('input.bo-control').first().evaluate(e=>{
-    const color=getComputedStyle(e,'::placeholder').color,background=getComputedStyle(e).backgroundColor;
-    const luminance=s=>s.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;}).reduce((n,v,i)=>n+v*[.2126,.7152,.0722][i],0);
-    const a=luminance(color),b=luminance(background);return {color,background,ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
-   });check('actual Finance control placeholder has normal-text contrast',contrast.ratio>=4.5);writeFileSync(out+'/control-contrast.json',JSON.stringify(contrast,null,2));
-  }
   for(const width of [1440,1280,1024,768,390]){await page.setViewportSize({width,height:1000});
    const dimensions=await page.evaluate(()=>({documentWidth:document.documentElement.scrollWidth,viewport:innerWidth,tabs:[...document.querySelectorAll('.bo-tab-strip')].map(e=>({height:e.clientHeight,scrollHeight:e.scrollHeight,width:e.clientWidth,scrollWidth:e.scrollWidth})),fonts:[...document.fonts].filter(f=>f.status==='loaded').map(f=>f.family)}));
    check(route+' no page overflow at '+width,dimensions.documentWidth<=width);check(route+' no vertical tab overflow at '+width,dimensions.tabs.every(t=>t.scrollHeight<=t.height));layouts.push({route,width,...dimensions});
