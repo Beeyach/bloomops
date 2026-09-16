@@ -194,7 +194,7 @@ try{
   const original=(await get(owner.ctx,api+'/'+reportId)).data.report;
   await owner.page.bringToFront();await owner.page.goto(base+path+'/'+reportId,{waitUntil:'networkidle'});
   await owner.page.getByRole('link',{name:'Use setup for a new period',exact:true}).click();await owner.page.getByRole('heading',{name:'New report draft',exact:true}).waitFor();
-  check('new period pins template and service '+reportId,await owner.page.getByLabel('Report template',{exact:true}).isDisabled()&&(await owner.page.getByLabel('Purchased service',{exact:true}).inputValue()).includes(original.serviceName));
+  check('new period pins template and service '+reportId,await owner.page.getByRole('combobox',{name:'Report template',exact:true}).isDisabled()&&(await owner.page.getByRole('textbox',{name:'Purchased service',exact:true}).inputValue()).includes(original.serviceName));
   check('new period starts without dates or old observations '+reportId,await owner.page.getByLabel('Period start',{exact:true}).inputValue()===''&&await owner.page.getByLabel('Period end',{exact:true}).inputValue()===''&&await owner.page.locator('input[type="number"]').count()===0&&await owner.page.getByRole('textbox',{name:'Client summary',exact:true}).inputValue()==='');
   await owner.page.getByLabel('Period start',{exact:true}).fill('2026-09-01');await owner.page.getByLabel('Period end',{exact:true}).fill('2026-09-30');
   await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Save draft',exact:true}).click()]);const nextId=owner.page.url().split('/').at(-1);const next=(await get(owner.ctx,api+'/'+nextId)).data.report;
