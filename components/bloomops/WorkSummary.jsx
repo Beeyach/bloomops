@@ -20,7 +20,7 @@ export function WorkSummary({ project, execution = false, structured = false }) 
       {execution && actions.blocked > 0 && <a className="bo-link" href={`${href}#project-actions-title`}>{actions.blocked} blocked by dependencies</a>}
       {['overdue', 'waiting', 'review'].filter(key => actions[key] > 0).map(key => <a key={key} className="bo-link" href={workActionHref({ projectId: project.id, view: key })}>{actions[key]} {key === 'review' ? 'in Review' : key}</a>)}
     </li>}
-    {deliverables?.total > 0 && <li><a className="bo-link" href={`${href}#project-deliverables-title`}><Icon name="files" size={16}/>{plural(deliverables.total, 'Deliverable')}
+    {deliverables?.total > 0 && <li><a className="bo-link" href={`${href}#project-deliverables-title`}><Icon name="pages" size={16}/>{plural(deliverables.total, 'Deliverable')}
       {deliverables.clientReview > 0 && detail(`${deliverables.clientReview} in Client Review`, 'warning')}
       {deliverables.internalReview > 0 && detail(`${deliverables.internalReview} in Internal Review`, 'info')}
       {deliverables.approved > 0 && detail(`${deliverables.approved} approved`, 'success')}

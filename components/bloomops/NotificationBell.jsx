@@ -15,7 +15,7 @@ function ScopedBell({scope}) {
  const alive=useRef(false),lost=useRef(false),generation=useRef(0),mutation=useRef(0),writing=useRef(false),controller=useRef(null);
  const active=()=>alive.current&&!lost.current;
  const same=value=>value?.workspaceId===scope.workspaceId&&value.userId===scope.userId&&value.membershipId===scope.membershipId;
- function dismiss(){generation.current++;controller.current?.abort();setBusy(false);setOpen(false);dialog.current?.close();trigger.current?.focus();}
+ function dismiss(){generation.current++;mutation.current++;writing.current=false;controller.current?.abort();setOpening(false);setBusy(false);setOpen(false);dialog.current?.close();trigger.current?.focus();}
  function revoke(){lost.current=true;generation.current++;mutation.current++;controller.current?.abort();setData(null);setError('Your account or workspace changed. Reload to continue.');setBusy(false);setOpening(false);}
  async function load(){
   if(!active()||writing.current||!scope.membershipId)return;

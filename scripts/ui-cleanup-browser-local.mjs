@@ -1,4 +1,4 @@
-// F3 Finance manual records and access management: completed Worker, isolated resources and build attribution.
+// UI refinement: actual layout, navigation timing and editor checks over an isolated completed Worker.
 // Starts its own built Worker, in-memory D1/R2 and synthetic identities. No .dev.vars.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -14,7 +14,7 @@ import {unstable_getMiniflareWorkerOptions} from 'wrangler';
 import {runBootstrap} from '../lib/bloomops/bootstrap.mjs';
 import {reportBrowserError} from './client-reports-evidence.mjs';
 const root=resolve(fileURLToPath(new URL('../',import.meta.url)));
-const out=resolve(process.env.BLOOMOPS_BROWSER_EVIDENCE_DIR||'/tmp/bloomops-finance-verification/browser');mkdirSync(out,{recursive:true});
+const out=resolve(process.env.BLOOMOPS_BROWSER_EVIDENCE_DIR||'/tmp/bloomops-ui-verification/browser');mkdirSync(out,{recursive:true});
 const port=await new Promise((resolve,reject)=>{const socket=createServer();socket.once('error',reject);socket.listen(0,'127.0.0.1',()=>{const port=socket.address().port;socket.close(()=>resolve(port));});});
 const base=`http://localhost:${port}`;
 const require=createRequire(import.meta.url),wranglerRoot=dirname(require.resolve('wrangler/package.json'));
@@ -73,5 +73,29 @@ try{
   for(const width of [1440,1280,1024,768,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:out+'/prospecting-'+population+'-'+width+'.png',fullPage:true});check('Prospecting '+population+' fits '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}
   await page.setViewportSize({width:1440,height:1000});
  }
+
+ // Distinct empty/filter recovery with real stored rows.
+ await page.goto(base+'/prospecting?q=unmatched-synthetic-name',{waitUntil:'networkidle'});
+ await page.getByRole('heading',{name:'No prospects match these filters',exact:true}).waitFor();
+ check('filtered empty results do not expose an empty selection checkbox',await page.getByRole('checkbox',{name:'Select current page',exact:true}).count()===0);
+ await page.locator('.bo-sheet-empty').getByRole('button',{name:'Clear filters',exact:true}).click();await page.locator('tbody tr').first().waitFor();check('Clear filters restores existing records',await page.locator('tbody tr').count()===25);
+ for(const route of ['/prospecting/skills','/prospecting/skills/audit']){await page.goto(base+route,{waitUntil:'networkidle'});for(const width of [1440,768,390]){await page.setViewportSize({width,height:1000});check(route+' fits '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:out+'/'+route.replaceAll('/','-')+'-'+width+'.png',fullPage:true});}}
+ await post('/api/bloomops/workspaces/select',{workspaceId:'a'});await page.goto(base+'/',{waitUntil:'networkidle'});
+ const client=await post('/api/bloomops/clients',{name:'Synthetic client with a long name for layout review',contactName:'QA contact',contactEmail:'portal@example.test',timezone:'UTC',requestId:randomUUID(),workspaceId:'a',userId:'ellen'});assert.equal(client.status,201);const clientId=client.data.client.id;
+ const serviceType=await binding.prepare("SELECT id FROM service_types WHERE workspace_id='a' AND slug='ghl'").first();const service=await post(`/api/bloomops/clients/${clientId}/services`,{serviceTypeId:serviceType.id,packageName:'QA Systems service'});assert.equal(service.status,201);
+ const project=await post(`/api/bloomops/clients/${clientId}/projects`,{name:'Synthetic delivery project with a long name that must wrap without hiding its metadata',serviceEngagementId:service.data.service.id});assert.equal(project.status,201);
+ await page.goto(base+'/pages',{waitUntil:'networkidle'});await page.getByRole('button',{name:'New page',exact:true}).click();await page.waitForURL(u=>/^\/pages\/[0-9a-f-]+$/.test(u.pathname));const pagePath=new URL(page.url()).pathname;
+ await page.getByRole('textbox',{name:'Page title',exact:true}).fill('Synthetic UI writing workspace');await page.locator('.ProseMirror').fill('Saved writing remains editable during the UI refinement.');await page.getByText('Saved',{exact:true}).waitFor();await page.reload({waitUntil:'networkidle'});await page.locator('.ProseMirror').waitFor();check('Page writing and title persist through the actual editor',await page.getByRole('textbox',{name:'Page title',exact:true}).inputValue()==='Synthetic UI writing workspace'&&await page.locator('.ProseMirror').innerText()==='Saved writing remains editable during the UI refinement.');
+ await page.getByText('Page tools: templates and record context',{exact:true}).focus();await page.keyboard.press('Enter');check('Page tools open with keyboard',await page.getByRole('button',{name:'Edit record context',exact:true}).isVisible());await page.getByText('Page tools: templates and record context',{exact:true}).click();
+ const layouts=[];
+ for(const route of ['/work?tab=projects','/systems','/social','/ads','/team','/finance','/settings',pagePath]){
+  await page.goto(base+route,{waitUntil:'networkidle'});
+  for(const width of [1440,1280,1024,768,390]){await page.setViewportSize({width,height:1000});
+   const dimensions=await page.evaluate(()=>({documentWidth:document.documentElement.scrollWidth,viewport:innerWidth,tabs:[...document.querySelectorAll('.bo-tab-strip')].map(e=>({height:e.clientHeight,scrollHeight:e.scrollHeight,width:e.clientWidth,scrollWidth:e.scrollWidth})),fonts:[...document.fonts].filter(f=>f.status==='loaded').map(f=>f.family)}));
+   check(route+' no page overflow at '+width,dimensions.documentWidth<=width);check(route+' no vertical tab overflow at '+width,dimensions.tabs.every(t=>t.scrollHeight<=t.height));layouts.push({route,width,...dimensions});
+   await page.screenshot({path:out+'/'+(route===pagePath?'page-editor':route.slice(1).replaceAll('?','-').replaceAll('=','-'))+'-'+width+'.png',fullPage:true});
+  }
+ }
+ writeFileSync(out+'/layouts.json',JSON.stringify(layouts,null,2));
  check('no browser runtime errors',errors.length===0);writeFileSync(out+'/results.json',JSON.stringify({checks,errors,timings},null,2));
 }catch(error){console.error(reportBrowserError(error));writeFileSync(out+'/failure.json',JSON.stringify({checks,errors,failure:reportBrowserError(error)},null,2));process.exitCode=1;}finally{identity.finishedAt=new Date().toISOString();identity.artifactsUnchanged=hash(JSON.stringify(buildArtifacts(root)))===identity.artifactDigest;writeFileSync(out+'/artifact-identity.json',JSON.stringify(identity,null,2));if(!identity.artifactsUnchanged)process.exitCode=1;await browser?.close();await mf.dispose();rmSync(tmp,{recursive:true,force:true});}
