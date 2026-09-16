@@ -46,3 +46,34 @@ Focused commands: `node --test tests/bloomops-team-workload.test.mjs`,
 build, `BLOOMOPS_BUILD_IDENTITY=/absolute/build-identity.json node scripts/team-workload-browser-local.mjs`
 with the existing isolated Playwright environment. These join normal non-deploying
 PR validation. No schema inputs changed; existing schema verification is retained.
+
+## F2: Department work — 16 September 2026
+
+Release F and PRODUCT_SPEC Departments/Team require Social, Ads, Systems and
+Operations as organizational views over shared records, never additional grants.
+This task completes a navigable Team department view using the existing canonical
+Project and Action readers. Existing specialist Social/Ads/Systems screens and
+other sessions' Ads work remain unchanged. No new department memberships or engine.
+
+Bounded engineering decisions: select one initial department, Projects or Actions,
+and open/all work. Each page contains at most50 currently readable records. Match
+Work's effective department: Service Type first, Project metadata only when no
+Service Type department exists. Preserve existing names/inactive history, closed
+records through explicit All work, Client-local dates and dependency semantics.
+Project and Action permissions remain separate; an Action-only assignee can use
+Actions without receiving Project access, sibling counts, or directory rights.
+Portal/preview, stale memberships and replaced identities remain denied. Selection
+and pagination are server-validated. Team navigation, real canonical destinations,
+empty/invalid recovery, keyboard and320px layouts complete the workflow. No schema,
+new grants, fake capacity scores, writable department administration or polling.
+
+Acceptance: Service department authority and rejection of conflicting Project metadata; standalone
+Operations Projects; open/all history; pagination after permission filtering;
+Action-only/currently revoked/portal/foreign/preview boundaries; supported real
+Client→Service→Project→Action setup and navigation in a completed Worker and
+synthetic staging. Commands: `node --test tests/bloomops-team-departments.test.mjs`,
+the existing workload/access regressions, `node scripts/team-workload-browser-local.mjs`
+(the shared Team harness now also exercises department flows), full `npm test`,
+`npm run cf:build`, and `git diff --check`. The native Worker browser reads use the
+shipped migrations and real D1. No schema/migration change needs separate upgrade
+verification. Finance and broader all-form recovery remain unfinished.

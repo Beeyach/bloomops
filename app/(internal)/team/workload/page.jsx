@@ -13,7 +13,7 @@ function Counts({row}) {return <Facts items={[
 export default async function TeamWorkloadPage({searchParams}) {
   const {access,actor}=await requireShell('internal');
   const result=await teamActionWorkload(access.db,actor,await searchParams||{});
-  return <><PageHeader title="Action workload" subtitle="Team · Current open Actions by assignee." actions={<Button href="/team">People</Button>}/>
+  return <><PageHeader title="Action workload" subtitle="Team · Current open Actions by assignee." actions={<><Button href="/team">People</Button><Button href="/team/departments">Department work</Button></>}/>
     <p className="bo-body">Only work you can currently read is included. Counts describe Actions, not hours or capacity. Waiting, review and blocked counts can overlap.</p>
     <p className="bo-small">Dates follow each Client’s timezone. Dependency-blocked Actions are excluded from Overdue. Done and cancelled work is excluded.</p>
     {!result.ok?<Notice tone="warning">{result.reason==='invalid'?'These workload filters are invalid.':result.reason==='not_found'?'No readable open Actions remain for that assignee.':'This workload view is unavailable.'} <a className="bo-link" href="/team/workload">Open current workload</a></Notice>:<>

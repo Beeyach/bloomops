@@ -73,7 +73,7 @@ jobs:
           python3 .github/scripts/pr-validation.py run ci-evidence/page-context-native node scripts/page-context-native-local.mjs
           python3 .github/scripts/pr-validation.py run ci-evidence/page-templates-tests node --test tests/bloomops-page-templates*.test.mjs
           python3 .github/scripts/pr-validation.py run ci-evidence/page-templates-native node scripts/page-templates-native-local.mjs
-          python3 .github/scripts/pr-validation.py run ci-evidence/team-workload-tests node --test tests/bloomops-team-workload.test.mjs
+          python3 .github/scripts/pr-validation.py run ci-evidence/team-workload-tests node --test tests/bloomops-team-workload.test.mjs tests/bloomops-team-departments.test.mjs
           python3 .github/scripts/pr-validation.py run ci-evidence/team-workload-native node scripts/team-workload-native-local.mjs
       - name: Disposable local zero-to-current migration
         run: python3 .github/scripts/pr-validation.py run ci-evidence/zero node .github/scripts/verify-zero-remote.mjs --local
