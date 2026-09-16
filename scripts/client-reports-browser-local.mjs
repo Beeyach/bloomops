@@ -245,7 +245,7 @@ try{
   const selection=owner.page.getByRole('combobox',{name:'Compare with previous published report',exact:true});await selection.locator(`option[value="${baseline.id}"]`).waitFor({state:'attached'});await selection.selectOption(baseline.id);
   const report=(await get(owner.ctx,api+'/'+reportId)).data.report,key=report.templateId==='social'?'published':'sent',label=report.templateId==='social'?'Published content':'Sent messages';await metric(owner.page,label,0);await owner.page.getByRole('textbox',{name:'Client summary',exact:true}).fill('Synthetic saved comparison');
   await Promise.all([owner.page.waitForNavigation({waitUntil:'networkidle'}),owner.page.getByRole('button',{name:'Save draft',exact:true}).click()]);
-  const stored=(await get(owner.ctx,api+'/'+reportId)).data.report,expected=report.templateId==='social'?-17:-32;
+  const stored=(await get(owner.ctx,api+'/'+reportId)).data.report,expected=report.templateId==='social'?-18:-32; // Earlier CSV regression deliberately corrected 17 to 18.
   check('comparison persists selected published version '+reportId,stored.comparisonPublicationId===baseline.id&&stored.comparison.metrics.find(m=>m.key===key).difference===expected);
   await owner.page.getByRole('link',{name:'Preview saved draft',exact:true}).click();await owner.page.getByRole('heading',{name:'Period comparison',exact:true}).waitFor();
   const row=owner.page.getByRole('row').filter({has:owner.page.getByRole('rowheader',{name:label,exact:true})});check('saved comparison table distinguishes zero and negative difference '+reportId,(await row.innerText()).includes(String(expected))&&await owner.page.getByRole('figure',{name:label+', count comparison',exact:true}).count()===1);
