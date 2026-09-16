@@ -99,7 +99,7 @@ try{
  check('portal identity cannot read internal report drafts',(await get(portalContext,`/api/bloomops/clients/${otherClient}/reports`)).status===404);
  await portalPage.screenshot({path:out+'/supported-portal-activation.png',fullPage:true});
  const path=`/clients/${clientId}/reports`,api=`/api/bloomops/clients/${clientId}/reports`;
- await owner.page.goto(base+`/clients/${clientId}`,{waitUntil:'networkidle'});await owner.page.getByRole('link',{name:'Reports',exact:true}).click();await owner.page.getByText('No report drafts yet.',{exact:true}).waitFor();check('Client Reports destination and empty state',true);
+ await owner.page.goto(base+`/clients/${clientId}`,{waitUntil:'networkidle'});await owner.page.getByRole('link',{name:'Reports',exact:true}).click();await owner.page.getByRole('heading',{name:'No report drafts yet',exact:true}).waitFor();check('Client Reports destination and empty state',true);
  const metric=async(page,label,value)=>{await page.getByLabel(label+' availability').selectOption('value');await page.getByLabel(label+' count').fill(String(value));};
  const created=[],nextPeriods=[];
  for(const [template,service,channel,title] of [['ghl_campaign',ghl,'email','N3A GHL persisted draft'],['social',social,'instagram','N3A Social persisted draft']]){

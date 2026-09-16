@@ -34,6 +34,8 @@ Final visual inspection also corrected report textarea labels inheriting narrati
 
 Final local UI acceptance: completed build58603e5, 58 fresh-workspace/shared-screen checks and zero runtime errors; artifact hashes unchanged. Earlier broad build sweep completed420 assertions and real200% zoom before exposing the corrected Prospecting geometry. Full7419/7419 atd3cd2de, focused68 plus sheet26, native9. The later delta is sheet presentation and these verification notes; PR99 final CI covers the complete current merge candidate. Staging retest follows that validation. Before/after viewport evidence is outside the worktree at `/home/ary/Developer/bloomops-client-setup-ui-evidence`; no large audit archive.
 
+Completed buildb4a7332 passes59 setup/shared-screen checks and32 existing sheet-save browser checks, with zero runtime errors and unchanged artifacts. CI35160723074 exposed an obsolete reporting-browser exact-text locator (`No report drafts yet.`); the new EmptyState renders the same words as a heading without terminal punctuation. The assertion now targets that exact heading, retaining the real Client navigation and subsequent persistence/publication checks. Its failed run is preserved; the corrected reporting browser is verified against the same completed application artifact before republishing.
+
 
 ## Owner pilot usability feedback 01 - 16 September 2026
 
