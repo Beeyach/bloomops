@@ -96,6 +96,10 @@ try{
    check(route+' no page overflow at '+width,dimensions.documentWidth<=width);check(route+' no vertical tab overflow at '+width,dimensions.tabs.every(t=>t.scrollHeight<=t.height));layouts.push({route,width,...dimensions});
    await page.screenshot({path:out+'/'+(route===pagePath?'page-editor':route.slice(1).replaceAll('?','-').replaceAll('=','-'))+'-'+width+'.png',fullPage:true});
   }
+  await page.setViewportSize({width:1440,height:1000});await page.evaluate(()=>document.documentElement.style.zoom='2');
+  check(route+' 200% page zoom retains bounded document',await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  await page.keyboard.press('Tab');check(route+' zoomed keyboard target is visible',await page.evaluate(()=>{const e=document.activeElement,r=e.getBoundingClientRect();return e!==document.body&&r.width>0&&r.height>0;}));
+  await page.screenshot({path:out+'/'+(route===pagePath?'page-editor':route.slice(1).replaceAll('?','-').replaceAll('=','-'))+'-zoom200.png',fullPage:true});await page.evaluate(()=>document.documentElement.style.zoom='');
  }
  writeFileSync(out+'/layouts.json',JSON.stringify(layouts,null,2));
  check('no browser runtime errors',errors.length===0);writeFileSync(out+'/results.json',JSON.stringify({checks,errors,timings},null,2));

@@ -43,7 +43,15 @@ function ScopedBell({scope}) {
   if(matchMedia('(max-width:767px)').matches)node.showModal();else node.show();
   node.querySelector('button')?.focus();
   const outside=e=>{if(!node.contains(e.target)&&!trigger.current?.contains(e.target))dismiss();};
-  const escape=e=>{if(e.key==='Escape'){e.preventDefault();dismiss();}};
+  const escape=e=>{
+   if(e.key==='Escape'){e.preventDefault();dismiss();return;}
+   if(e.key==='Tab'&&node.matches(':modal')){
+    const targets=[...node.querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]')].filter(e=>e.getClientRects().length);
+    const first=targets[0],last=targets.at(-1);
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}
+   }
+  };
   document.addEventListener('pointerdown',outside);document.addEventListener('keydown',escape);
   return()=>{node.close();document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',escape);};
  },[open]);
