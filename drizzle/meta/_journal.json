@@ -400,6 +400,20 @@
       "when": 1789587078759,
       "tag": "0056_solid_gladiator",
       "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "6",
+      "when": 1789661082726,
+      "tag": "0057_neat_ricochet",
+      "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "6",
+      "when": 1789664789893,
+      "tag": "0058_tricky_bromley",
+      "breakpoints": true
     }
   ]
 }

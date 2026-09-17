@@ -17,6 +17,7 @@ const PATHS = {
   'at-sign': <><circle cx="12" cy="12" r="4"/><path d="M16 8v7c0 3 6 3 6-3a10 10 0 1 0-5 8"/></>,
   message: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
   overview: <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><path d="M14 15h7M14 20h5"/></>,
+  results: <><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></>,
   history: <><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 6v6l4 2"/></>,
   skills: <><path d="M12 5c-3-2-7-2-10-1v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1zM12 5v15"/></>,
   copy: <><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V3H3v13h5"/></>,

@@ -3,8 +3,8 @@ import {deliveryFixture} from './_prospect-delivery-fixture.mjs';
 import {one} from './_bloomops-db.mjs';
 import {sendProspectIntroduction} from '../lib/bloomops/prospect-delivery.mjs';
 import {getProspectReplies,checkProspectReplies,stopProspectOutreach} from '../lib/bloomops/prospect-replies.mjs';
-export async function repliesFixture(context){
- const t=await deliveryFixture(context);await t.ready();
+export async function repliesFixture(context,fieldOverrides={}){
+ const t=await deliveryFixture(context,fieldOverrides);await t.ready();
  assert.ok((await sendProspectIntroduction(t.db,t.actor,t.env,t.session,{...t.input,reviewed:true},{fetcher:async()=>Response.json({id:'sent-message',threadId:'sent-thread'})})).processed);
  t.env.BLOOMOPS_GOOGLE_REPLY_CHECK_ENABLED='true';t.env.BLOOMOPS_GOOGLE_REPLY_DELIVERY_ID=t.input.deliveryId;
  t.row=()=>one(t.raw,'SELECT * FROM prospect_reply_states');

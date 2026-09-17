@@ -2,6 +2,7 @@ import {json,notFound} from '@/lib/bloomops/access.mjs';
 import {withApiErrors} from '@/lib/bloomops/api-handler.mjs';
 import {readStructuredBody} from '@/lib/bloomops/structured-body.mjs';
 import {getProspectDelivery,prepareProspectDelivery,cancelProspectDelivery,sendProspectIntroduction,reconcileProspectDelivery} from '@/lib/bloomops/prospect-delivery.mjs';
+import {activateProspectFollowups,runProspectFollowup,reconcileProspectFollowup} from '@/lib/bloomops/prospect-followups.mjs';
 import {prospectAccess} from '../_shared.mjs';
 export const dynamic='force-dynamic';
 export const GET=withApiErrors(async req=>{
@@ -17,6 +18,9 @@ export const POST=withApiErrors(async req=>{
  else if(action==='cancel')result=await cancelProspectDelivery(access.db,access.actor,input);
  else if(action==='send')result=await sendProspectIntroduction(access.db,access.actor,access.env,access.session.id,input);
  else if(action==='reconcile')result=await reconcileProspectDelivery(access.db,access.actor,access.env,access.session.id,input);
+ else if(action==='activate-followups')result=await activateProspectFollowups(access.db,access.actor,access.session.id,input);
+ else if(action==='run-followup')result=await runProspectFollowup(access.db,access.actor,access.env,access.session.id,input);
+ else if(action==='reconcile-followup')result=await reconcileProspectFollowup(access.db,access.actor,access.env,access.session.id,input);
  else return json({error:'Choose a delivery action.'},400);
  return result===null?notFound():json(result,result.unavailable?503:result.conflict?409:200);
 });

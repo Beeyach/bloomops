@@ -142,8 +142,8 @@ test('a provider message already bound to another prospect cannot move or partia
  assert.equal((await t.check()).status,'unresolved');assert.equal(t.row().hold_state,'held');assert.equal(rows(t).length,1);assert.equal(rows(t)[0].prospect_id,'other-prospect');assert.equal(count(t,'PROSPECT_REPLY_OBSERVED'),0);
 });
 test('Overview projects saved conversation state without provider access and denies other roles/tenants',async c=>{
- const t=await repliesFixture(c);let data=await prospectReplyOverview(t.db,t.actor);assert.equal(data.rows[0].holdState,null);
- await t.check();data=await prospectReplyOverview(t.db,t.actor);assert.equal(data.rows[0].holdState,'held');
- await t.stop();run(t.raw,'UPDATE prospect_google_connections SET active=0');data=await prospectReplyOverview(t.db,t.actor);assert.equal(data.rows[0].holdState,'stopped');
+ const t=await repliesFixture(c);let data=await prospectReplyOverview(t.db,t.actor);assert.deepEqual(data.rows,[]);assert.equal(data.total,0);
+ await t.check();data=await prospectReplyOverview(t.db,t.actor);assert.equal(data.rows[0].holdState,'held');assert.deepEqual(data.groups.map(x=>[x.holdState,x.checkStatus,x.count]),[['held','checked',1]]);
+ await t.stop();run(t.raw,'UPDATE prospect_google_connections SET active=0');data=await prospectReplyOverview(t.db,t.actor);assert.equal(data.rows[0].holdState,'stopped');assert.equal(data.rows[0].stopReason,'opt_out');assert.equal(data.rows[0].stopNote,'Owner reviewed the recipient request.');
  assert.equal(await prospectReplyOverview(t.db,{...t.actor,role:'client'}),null);assert.deepEqual((await prospectReplyOverview(t.db,{...t.actor,workspaceId:'foreign',membershipId:'other'})).rows,[]);
 });

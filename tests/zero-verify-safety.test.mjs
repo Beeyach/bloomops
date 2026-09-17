@@ -27,7 +27,7 @@ test('missing staging identity metadata fails closed', () => {
 });
 test('the disposable deletion guard accepts only the exact id created by this run', () => {
   assert.doesNotThrow(() => assertDisposableIdentity(disposable, disposable.uuid, disposable.name));
-  for (const info of [staging, { ...disposable, uuid: 'replacement-id' }, {}, null]) {
+  for (const info of [staging, { ...disposable, uuid: 'replacement-id' }, {...disposable,name:'renamed'}, {}, null]) {
     assert.throws(() => assertDisposableIdentity(info, disposable.uuid, disposable.name), /leaving it alone/);
   }
   assert.throws(() => assertDisposableIdentity({}, '', disposable.name), /leaving it alone/);
@@ -64,7 +64,7 @@ test('the command guard permits only the actual scoped migration/query commands 
     ['d1', 'migrations', 'list', 'DB', ...scoped],
     ['d1', 'list', '--json'], ['d1', 'info', staging.name, '--json'],
     ['d1', 'info', disposable.name, '--json'], ['d1', 'create', disposable.name],
-    ['d1', 'delete', disposable.name, '--skip-confirmation'],
+    ['d1', 'delete', 'DB', '--config', context.configPath, '--skip-confirmation'],
   ];
   for (const args of accepted) assert.doesNotThrow(() => guardWranglerCommand(args, context));
   assert.doesNotThrow(() => guardWranglerCommand(['d1', 'execute', 'DB', '--config', context.configPath, '--local', '--command', 'SELECT 1'], { ...context, mode: '--local' }));
@@ -89,6 +89,8 @@ test('an alternate, repeated, missing, or environment-overridden config cannot b
     [...query, ...scoped, '--command', 'SELECT 1', '--file', 'schema.sql'],
     [...query, ...scoped, '--command'],
     ['d1', 'delete', disposable.name, '--config', context.configPath],
+    ['d1', 'delete', disposable.name, '--skip-confirmation'],
+    ['d1', 'delete', 'DB', '--config', 'wrangler.jsonc', '--skip-confirmation'],
     ['d1', 'export', 'DB', ...scoped],
     ['d1', 'list', staging.name], ['d1', 'info', 'production-id'],
     ['deploy', ...scoped],
@@ -105,5 +107,9 @@ test('every main push triggers the disposable verifier while preserving manual d
   assert.ok(workflow.on.push.branches.includes('main'));
   assert.equal(Object.hasOwn(workflow.on.push,'paths'), false);
   assert.deepEqual(workflow.concurrency,{group:'bloomops-a2-zero-verify','cancel-in-progress':false});
-  assert.equal(workflow.jobs['zero-to-current'].steps.at(-1).run,'node .github/scripts/verify-zero-remote.mjs');
+  assert.equal(workflow.on.workflow_dispatch.inputs.diagnose_bytecode.default,false);
+  const step=workflow.jobs['zero-to-current'].steps.find(s=>s.env?.ZERO_VERIFY_DIAGNOSTIC);
+  assert.match(step.env.ZERO_VERIFY_DIAGNOSTIC,/github.event_name == 'workflow_dispatch' && inputs.diagnose_bytecode/);
+  assert.match(step.run,/if \[ "\$ZERO_VERIFY_DIAGNOSTIC" = true \]; then\s+node .* --diagnose-bytecode\s+else\s+node .github\/scripts\/verify-zero-remote.mjs\s+fi/);
+  assert.equal(workflow.jobs['zero-to-current'].steps.at(-1).if,'always()');
 });

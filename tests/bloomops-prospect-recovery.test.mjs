@@ -19,6 +19,7 @@ async function fixture(c,options){
 test('recovery saves assigned/unassigned evidence and catch-up without resetting discovery progress',async c=>{
  const t=await fixture(c);await t.mailcheck();assert.equal((await t.recover({clock:later()})).status,'unresolved');
  const saved=records(t)[0];assert.equal(saved.start_history_id,'100');assert.equal(saved.catchup_history_id,'102');assert.equal(saved.catchup_status,'complete');assert.equal(saved.matched_count,1);assert.equal(saved.unassigned_count,1);assert.equal(messages(t).length,2);assert.equal(observations(t).length,1);assert.equal(t.mailstate().history_id,'9');assert.equal(t.mailstate().baseline_history_id,'9');assert.equal(t.mailstate().coverage_status,'gap');assert.equal(t.row().hold_state,'held');
+ const scope=one(t.raw,'SELECT * FROM prospect_recovery_scopes');assert.equal(scope.listing_pages,1);assert.equal(scope.listed_count,2);assert.equal(scope.metadata_processed_count,2);assert.equal(scope.enumeration_complete,1);assert.equal(scope.include_spam_trash,1);
  assert.equal(one(t.raw,"SELECT kind FROM prospect_discovery_runs WHERE reason='recovery_collected'").kind,'recovery');
  const dto=await getProspectRecovery(t.db,t.actor,'hello@example.test');assert.equal(dto.catchupStatus,'complete');assert.equal(dto.matchedCount,1);assert.equal(dto.coverage,'unverified');assert.ok(!JSON.stringify(dto).match(/synthetic|provider|HistoryId|checkId|identity|accountEmail/));
 });

@@ -29,6 +29,8 @@ test('every unauthenticated path is pinned to one path and, where it matters, on
   assert.match(middleware, /pathname === '\/api\/health'/);
   assert.match(middleware, /pathname === '\/api\/cron\/drain'/);
   assert.match(middleware, /x-cron-secret/);
+  assert.match(middleware, /pathname === '\/api\/cron\/prospect-followups'/);
+  assert.match(middleware, /x-followup-secret/);
   assert.match(middleware, /pathname === '\/api\/gmail\/push'/);
   assert.match(middleware, /startsWith\('Bearer '\)/);
   assert.match(middleware, /pathname === '\/api\/public\/video-view'/);
@@ -101,6 +103,23 @@ test('the signed-out screens, Better Auth, and the probes are reachable without 
   ]) {
     const r = await run(req(path, { method }));
     assert.ok(r.status === 307 || r.status === 401, `${method} ${path} -> ${r.status}`);
+  }
+});
+
+test('the dormant follow-up scheduler only reaches its route on an exact authenticated shape', async () => {
+  const allowed = await run(req('/api/cron/prospect-followups', {
+    method: 'POST',
+    headers: { 'x-followup-secret': 'synthetic-secret' },
+  }));
+  assert.equal(allowed.status, 200);
+
+  for (const request of [
+    req('/api/cron/prospect-followups', { method: 'POST' }),
+    req('/api/cron/prospect-followups', { method: 'GET', headers: { 'x-followup-secret': 'synthetic-secret' } }),
+    req('/api/cron/prospect-followups/extra', { method: 'POST', headers: { 'x-followup-secret': 'synthetic-secret' } }),
+    req('/api/cron/prospect-followup', { method: 'POST', headers: { 'x-followup-secret': 'synthetic-secret' } }),
+  ]) {
+    assert.equal((await run(request)).status, 401);
   }
 });
 

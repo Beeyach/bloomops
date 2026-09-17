@@ -95,6 +95,19 @@ export async function middleware(req) {
     return NextResponse.next();
   }
 
+  // Prospect follow-ups use a separate, dormant scheduler and secret. Like
+  // the queue drain there is no browser session, but the exemption only lets
+  // an exact POST carrying the dedicated header reach the route. The route
+  // still requires its server-side enable flag and verifies the secret before
+  // constructing D1 or touching a provider.
+  if (
+    pathname === '/api/cron/prospect-followups' &&
+    req.method === 'POST' &&
+    req.headers.get('x-followup-secret')
+  ) {
+    return NextResponse.next();
+  }
+
   // Gmail's push notifications. Same reasoning as the cron drain: there is no
   // person here and therefore no session. Pub/Sub signs every push with an
   // OIDC token, and the route verifies it properly before doing anything at

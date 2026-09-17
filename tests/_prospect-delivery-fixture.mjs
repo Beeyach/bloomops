@@ -5,9 +5,9 @@ import {createProspect,updateProspect} from '../lib/bloomops/prospects.mjs';
 import {saveProspectSender,saveProspectOutreach,approveProspectOutreach} from '../lib/bloomops/prospect-outreach.mjs';
 import {prepareProspectDelivery} from '../lib/bloomops/prospect-delivery.mjs';
 import {sealGoogle,googleConfiguration,GOOGLE_SCOPES} from '../lib/bloomops/prospect-google-provider.mjs';
-export async function deliveryFixture(context){
+export async function deliveryFixture(context,fieldOverrides={}){
  const t=await sourceFixture(context);
- t.fields={recipient:'inbox@example.test',timeZone:'America/Los_Angeles',subject:'Bloomsi controlled delivery check',intro:'This is a controlled test of Bloomsi email delivery. No reply or action is needed.',followUp2:'Unused test follow-up.',followUp3:'Unused test follow-up.'};
+ t.fields={recipient:'inbox@example.test',timeZone:'America/Los_Angeles',subject:'Bloomsi controlled delivery check',intro:'This is a controlled test of Bloomsi email delivery. No reply or action is needed.',followUp2:'Unused test follow-up.',followUp3:'Unused test follow-up.',...fieldOverrides};
  const created=await createProspect(t.db,{actor:t.actor,input:{workspaceId:'fresh',requestId:crypto.randomUUID(),fields:{businessName:'Garden test inbox',publicEmail:t.fields.recipient,timeZone:t.fields.timeZone,fit:'strong',observedFacts:'Synthetic controlled inbox.',evidenceDate:'2026-09-13',evidenceTarget:'https://example.test',proposedWork:'Test the approved introduction.'}}});t.id=created.prospectId;
  await updateProspect(t.db,{actor:t.actor,id:t.id,input:{workspaceId:'fresh',expectedRevision:1,fields:{publicEmail:t.fields.recipient},sources:{publicEmail:{url:'https://example.test/contact',checked:true}}}});
  await saveProspectSender(t.db,t.actor,{workspaceId:'fresh',expectedRevision:0,fields:{provider:'google_workspace',email:'hello@example.test',displayName:'Ary, Bloomwired'}});
