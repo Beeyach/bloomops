@@ -1,0 +1,49 @@
+name: Agent context budget
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'AGENTS.md'
+      - 'CLAUDE.md'
+      - 'AI_WORKING_AGREEMENTS.md'
+      - 'docs/BUILD_STATE.md'
+      - 'docs/INDEX.md'
+      - 'docs/history/**'
+      - '.codex/config.toml'
+      - '.claude/settings.json'
+      - '.rgignore'
+      - 'tools/agent_context.py'
+      - 'tools/tests/test_agent_context.py'
+      - '.github/workflows/agent-context.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-context-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  context:
+    name: Startup budgets and history preservation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Validate current context and exact archives
+        run: python3 tools/agent_context.py check
+      - name: Install search tool if absent on this runner
+        run: |
+          if ! command -v rg >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends ripgrep
+          fi
+      - name: Test search boundaries and budget failures
+        run: |
+          command -v rg
+          python3 -m unittest discover -s tools/tests -p 'test_agent_context.py' -v
+      - name: Report sizes without loading report contents
+        run: python3 tools/agent_context.py metrics
