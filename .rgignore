@@ -1,0 +1,16 @@
+# Search noise only. Nothing here changes Git tracking, builds or file access.
+/docs/history/
+/docs/previews/
+/docs/evidence/
+/docs/reference-code/
+/docs/superpowers/
+/*-REPORT.md
+/*-REPORT-*.md
+/FORENSIC-PROSPECTING-*.md
+/LTB-*.md
+/AU-VIDEO-*.md
+/D1-BURN-*.md
+/HANDOFF*.md
+/UX-BRANCHES-MERGE-AND-PRODUCTION-ACCEPTANCE.md
+# Active contracts under docs/, source, tests, skills and root policy maps stay visible.
+# Opt in with --no-ignore on ONE named history file, never the whole repository.

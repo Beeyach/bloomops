@@ -1,3 +1,4 @@
-# Repository defaults; an explicit session model/effort choice takes precedence.
-model = "gpt-6-astra"
+# Repository default. Explicit session overrides still take precedence.
+# Increase Sol effort for a specific difficult task, not routine UI or docs.
+model = "gpt-5.6-sol"
 model_reasoning_effort = "medium"
