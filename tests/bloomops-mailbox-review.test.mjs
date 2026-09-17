@@ -19,10 +19,10 @@ test('disabled, connection, missing-identity and revoked roles are explicit',asy
  run(t.raw,"UPDATE prospect_google_connections SET check_status='temporary'");assert.equal((await getProspectMailboxReview(t.db,t.actor,t.env)).reason,'connection');
  run(t.raw,"UPDATE workspace_memberships SET status='suspended' WHERE id='dest'");assert.equal(await getProspectMailboxReview(t.db,t.actor,t.env),null);
 });
-test('saved summaries include actual collection/catch-up and keep coverage unverified',async c=>{
+test('saved summaries expose a recorded catch-up gap without claiming historical verification',async c=>{
  const t=await mailboxFixture(c);t.env.BLOOMOPS_GOOGLE_RECOVERY_ENABLED='true';
  await recoverProspectMailbox(t.db,t.actor,t.env,t.session,await t.mailcommand(),{fetcher:async url=>{if(url.includes('/profile?'))return Response.json({emailAddress:'hello@example.test',historyId:'100'});if(url.includes('/messages?'))return Response.json({});return new Response(null,{status:404});}});
- const r=await getProspectMailboxReview(t.db,t.actor,t.env);assert.equal(r.latest.catchupStatus,'unresolved');assert.equal(r.latest.matchedCount,0);assert.equal(r.coverage,'unverified');assert.equal(r.history.length,1);assert.equal(r.reason,'cooldown');assert.equal(r.canRecover,false);assert.ok(!JSON.stringify(r).match(/startHistoryId|catchupHistoryId|providerMessageId/));
+ const r=await getProspectMailboxReview(t.db,t.actor,t.env);assert.equal(r.latest.catchupStatus,'unresolved');assert.equal(r.latest.matchedCount,0);assert.equal(r.coverage,'gap');assert.equal(r.historical.status,'unverified');assert.equal(r.history.length,1);assert.equal(r.reason,'cooldown');assert.equal(r.canRecover,false);assert.ok(!JSON.stringify(r).match(/startHistoryId|catchupHistoryId|providerMessageId/));
 });
 test('read model reports current busy claim and follows account disconnect',async c=>{
  const t=await mailboxFixture(c);t.env.BLOOMOPS_GOOGLE_RECOVERY_ENABLED='true';
