@@ -13,7 +13,9 @@ const reasonText={
  cooldown:'Wait briefly, then reload status before checking again.',
 };
 const checkpointReasons={collection:'Complete a mailbox collection first.',incomplete:'Check available mail again to finish the recent changes.',unassigned:'Review the unassigned messages before choosing a starting point.',connection:'Check the Google connection in Sender setup first.',expired:'This collection is over five minutes old. Check available mail again.',changed:'The account or conversations changed. Check available mail again.',disabled:'Saving a starting point is not available yet.',used:'This collection has already been used.'};
+const historicalReasons={checkpoint:'Save a supported future-check starting point first.',evidence:'The saved collection predates complete scope evidence and cannot verify an interval.',incomplete:'The saved catch-up is incomplete.',unassigned:'Unassigned messages must be resolved before this interval can be verified.',connection:'Check the authenticated Google account in Sender setup first.',changed:'The account, evidence or accepted conversations changed. Collect and checkpoint again.',disabled:'Historical coverage verification is not available yet.'};
 const date=value=>value?new Date(value).toLocaleString('en-US',{timeZone:'UTC',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+' UTC':'Not checked';
+const intervalDate=value=>value?new Date(value).toLocaleString('en-US',{timeZone:'UTC',year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+' UTC':'Unknown';
 function Results({data}){
  return <dl className="bo-mailbox-facts">
   <div><dt>Matched messages</dt><dd>{data.matchedCount}</dd></div><div><dt>Unassigned messages</dt><dd>{data.unassignedCount}</dd></div>
@@ -21,30 +23,32 @@ function Results({data}){
  </dl>;
 }
 export default function ProspectMailboxReview({initial}){
- const [data,setData]=useState(initial),[ready,setReady]=useState(false),[busy,setBusy]=useState(false),[checking,setChecking]=useState(false),[reviewed,setReviewed]=useState(false),[notice,setNotice]=useState(''),[error,setError]=useState(false),[checkpointAck,setCheckpointAck]=useState(false),[saving,setSaving]=useState(false);
- const pending=useRef(false),message=useRef(null);
+ const [data,setData]=useState(initial),[ready,setReady]=useState(false),[busy,setBusy]=useState(false),[checking,setChecking]=useState(false),[reviewed,setReviewed]=useState(false),[notice,setNotice]=useState(''),[error,setError]=useState(false),[checkpointAck,setCheckpointAck]=useState(false),[saving,setSaving]=useState(false),[coverageAck,setCoverageAck]=useState(false),[verifying,setVerifying]=useState(false);
+ const pending=useRef(false),coverageRequest=useRef(null),message=useRef(null);
  useEffect(()=>setReady(true),[]);useEffect(()=>{if(notice)message.current?.focus();},[notice]);
  async function refresh(){
   const response=await fetch('/api/bloomops/prospecting/mailbox',{cache:'no-store'});if(!response.ok)throw Error('Status could not reload. Try again.');
-  const next=await response.json();setData(next);setReviewed(false);setCheckpointAck(false);return next;
+  const next=await response.json();setData(next);setReviewed(false);setCheckpointAck(false);setCoverageAck(false);return next;
  }
- async function act(check=false,save=false){
-  if(!ready||pending.current||check&&(!data.canRecover||!reviewed)||save&&(!data.checkpoint?.canSave||!checkpointAck))return;
-  pending.current=true;setBusy(true);setChecking(check);setSaving(save);setNotice('');setError(false);
+ async function act(check=false,save=false,verify=false){
+  if(!ready||pending.current||check&&(!data.canRecover||!reviewed)||save&&(!data.checkpoint?.canSave||!checkpointAck)||verify&&(!data.historical?.canVerify||!coverageAck))return;
+  pending.current=true;setBusy(true);setChecking(check);setSaving(save);setVerifying(verify);setNotice('');setError(false);
   try{
    let response,result;
-   if(check||save){response=await fetch(save?'/api/bloomops/prospecting/mailbox/checkpoint':'/api/bloomops/prospecting/mailbox',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({workspaceId:data.workspaceId,...(save?{selection:data.checkpoint.selection}:{accountEmail:data.accountEmail}),expectedRevision:data.expectedRevision,connectionRevision:data.connectionRevision,senderRevision:data.senderRevision,reviewed:true})});result=await response.json();}
+   if(check||save||verify){if(verify)coverageRequest.current??=crypto.randomUUID();response=await fetch(verify?'/api/bloomops/prospecting/mailbox/coverage':save?'/api/bloomops/prospecting/mailbox/checkpoint':'/api/bloomops/prospecting/mailbox',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({workspaceId:data.workspaceId,...(verify?{selection:data.historical.selection,requestId:coverageRequest.current}:save?{selection:data.checkpoint.selection}:{accountEmail:data.accountEmail}),expectedRevision:data.expectedRevision,connectionRevision:data.connectionRevision,senderRevision:data.senderRevision,reviewed:true})});result=await response.json();}
    const next=await refresh();
-   if((check||save)&&!response.ok)throw Error(result.error||'Review could not complete. Check the status and try again.');
-   setNotice(save?'Starting point saved. Older mail remains unverified and outreach stays held.':check?(next.latest?.from?'Collection saved. Outreach holds remain in place.':'No collection was saved. Check the status before trying again.'):'Status updated.');
+   if((check||save||verify)&&!response.ok)throw Error(result.error||'Review could not complete. Check the status and try again.');
+   if(verify)coverageRequest.current=null;
+   setNotice(verify?'Historical interval verified. Outreach remains held and monitoring remains inactive.':save?'Starting point saved. Older mail remains unverified and outreach stays held.':check?(next.latest?.from?'Collection saved. Outreach holds remain in place.':'No collection was saved. Check the status before trying again.'):'Status updated.');
    setError(Boolean(check&&!next.latest?.from));
-  }catch(e){setError(true);setNotice(e instanceof TypeError?'Check your connection, then reload status.':e.message);}finally{pending.current=false;setBusy(false);}
+  }catch(e){setError(true);setNotice(e instanceof TypeError?'Check your connection, then reload status.':e.message);}finally{pending.current=false;setBusy(false);setVerifying(false);}
  }
- const checkpoint=data.checkpoint;
+ const checkpoint=data.checkpoint,historical=data.historical;
  const latest=data.latest,saved=Boolean(latest?.from);
  return <div className="bo-mailbox-review">
   <section className="bo-mailbox-account"><span className="bo-outreach-mark"><Icon name="mail" size={20}/></span><div><h2>{data.accountEmail||'Google mailbox'}</h2><p>{data.total} accepted {data.total===1?'conversation':'conversations'}</p></div><Button href="/prospecting/sender" variant="ghost">Sender setup</Button></section>
-  <div className="bo-mailbox-coverage"><Status tone="warning" glyph="dash" label="Older mail unverified"/><p>Completing a check does not release outreach holds.</p></div>
+  <div className="bo-mailbox-coverage"><Status tone={historical?.status==='verified'?'success':'warning'} glyph={historical?.status==='verified'?'check':'dash'} label={historical?.status==='verified'?'Historical interval verified':'Older mail unverified'}/><p>{historical?.status==='verified'?`Verified for ${intervalDate(historical.from)} through ${intervalDate(historical.through)}. This does not verify earlier mail or current monitoring.`:'Completing a collection or saving a checkpoint alone does not verify historical coverage or release outreach holds.'}</p></div>
+  {historical&&<section className="bo-mailbox-checkpoint" aria-labelledby="historical-coverage-title"><div className="bo-mailbox-heading"><h2 id="historical-coverage-title">Historical coverage</h2>{historical.status==='verified'&&<Status tone="success" label="Verified interval"/>}</div><dl className="bo-mailbox-facts"><div><dt>Interval begins</dt><dd>{intervalDate(historical.from)}</dd></div><div><dt>Verified through</dt><dd>{intervalDate(historical.through)}</dd></div></dl><p>This decision is limited to the recorded account and interval. It does not clear conversation protections, start monitoring or enable sending.</p>{historical.status!=='verified'&&<><label className="bo-mailbox-ack"><input type="checkbox" checked={coverageAck} onChange={e=>setCoverageAck(e.target.checked)} disabled={!ready||busy||!historical.canVerify}/><span>Verify only this recorded interval from its complete saved evidence.</span></label>{historical.reason&&<p className="bo-hint">{historicalReasons[historical.reason]}</p>}<Button icon="check" onClick={()=>act(false,false,true)} disabled={!ready||busy||!historical.canVerify||!coverageAck} loading={busy&&verifying}>Verify historical interval</Button></>}</section>}
   <section className="bo-mailbox-result"><div className="bo-mailbox-heading"><h2>Latest review</h2>{latest&&<time dateTime={latest.finishedAt||latest.startedAt}>{date(latest.finishedAt||latest.startedAt)}</time>}</div>
    {saved?<><Results data={latest}/>{latest.catchupStatus!=='complete'&&<p className="bo-mailbox-warning">Recent changes could not be fully checked. The available-message collection is saved.</p>}{latest.unassignedCount>0&&<p className="bo-hint">Unassigned messages are saved for review without linking them to a prospect.</p>}</>:<div className="bo-mailbox-empty"><Icon name="history" size={24}/><h3>{latest?.status==='checking'?'Review in progress':latest?'No collection saved':'No mailbox review yet'}</h3><p>{latest?'Reload status before starting another check.':'A check collects message headers and links replies where the evidence matches.'}</p></div>}
   </section>
@@ -60,7 +64,7 @@ export default function ProspectMailboxReview({initial}){
    <label className="bo-mailbox-ack"><input type="checkbox" checked={reviewed} onChange={e=>setReviewed(e.target.checked)} disabled={!ready||busy||!data.canRecover}/><span>Collect message headers from this account. No email will be sent.</span></label>
    {data.reason&&<p className="bo-hint">{reasonText[data.reason]}</p>}
    {data.reason==='thread_checks'&&<Button href="/prospecting/overview" variant="ghost" icon="history">Review conversations</Button>}
-   <div className="bo-mailbox-actions"><Button icon="mail" disabled={!ready||busy||!data.canRecover||!reviewed} loading={busy&&checking} onClick={()=>act(true)}>Check available mail</Button><Button icon="refresh" variant="ghost" disabled={!ready||busy} loading={busy&&!checking&&!saving} onClick={()=>act(false)}>Reload status</Button></div>
+   <div className="bo-mailbox-actions"><Button icon="mail" disabled={!ready||busy||!data.canRecover||!reviewed} loading={busy&&checking} onClick={()=>act(true)}>Check available mail</Button><Button icon="refresh" variant="ghost" disabled={!ready||busy} loading={busy&&!checking&&!saving&&!verifying} onClick={()=>act(false)}>Reload status</Button></div>
    {notice&&<p ref={message} tabIndex={-1} role={error?'alert':'status'} className="bo-skill-notice">{notice}</p>}
   </section>
   {data.history.length>0&&<details className="bo-mailbox-history"><summary>Saved collections</summary><ul>{data.history.map((row,i)=><li key={row.checkedAt+'-'+i}><time dateTime={row.checkedAt}>{date(row.checkedAt)}</time><span>{row.matchedCount} matched</span><span>{row.unassignedCount} unassigned</span><Status tone={row.catchupStatus==='complete'?'neutral':'warning'} label={row.catchupStatus==='complete'?'Recent changes checked':'Recent changes incomplete'}/></li>)}</ul></details>}
