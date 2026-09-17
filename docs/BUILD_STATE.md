@@ -6,7 +6,7 @@ Local CLI correction: inline project profiles removed. Use explicit model and ef
 
 ## Current phase
 
-Prospecting completion resumed by owner direction. This bounded session closes the event-backed P3 Results view and the existing Overview exception/inactive-automation slice; Ellen's new client-success portal, paid auditing, video and broader email/provider work remain deferred.
+Prospecting completion resumed by owner direction. The event-backed P3 Results view, Overview exception/inactive-automation slice and one held-conversation recovery correction are complete locally; Ellen's new client-success portal, paid auditing, video and broader email/provider work remain deferred.
 
 ## Current bounded task
 
@@ -15,6 +15,7 @@ Prospecting completion on `fix/prospecting-completion-20260917`, from the owner-
 - [x] Save the locally verified event-backed Results view as commit `84bc1e8` without absorbing unrelated work.
 - [x] Present only recorded conversation exceptions, their reasons and supported review routes; group repeated exceptions with exact counts and keep drafts non-urgent.
 - [x] Show unconfigured/inactive automation and unknown/unverified/gap mailbox coverage truthfully; verify the isolated desktop/mobile read path with zero provider egress.
+- [x] Let a reviewer record the existing durable `Reply handled` fact, remove only that current decision from active exceptions, retain the outreach hold, and reopen review when newer evidence is saved.
 
 ## Open blockers and unresolved gates
 
@@ -23,6 +24,7 @@ Prospecting completion on `fix/prospecting-completion-20260917`, from the owner-
 - PERF3 overall live performance acceptance remains open.
 - PR #93, Client-detail edit recovery, remains separate and unmerged in the supplied checkpoint. Preserve its branch and any local work. Other remaining form-recovery work is still governed by `docs/phases/N1.md`; this documentation task does not close it.
 - Downstream onboarding request destinations must still be configured where required. Template setup and portal invitation acceptance do not prove every agreement/access step is complete.
+- Verified historical mailbox coverage remains an external evidence gate. The accepted bounded catch-up and monitoring checkpoint do not prove older unavailable mail was covered; no live mailbox read or coverage promotion was authorized here.
 - Source-only maintenance is not permission to convert or contact real prospects, resume paused video or paid auditing, change providers, or restart the broad roadmap.
 
 ## Most recent verification checkpoint
@@ -33,4 +35,6 @@ Maintenance run `35201052091` passed TOML parsing, repository-wide filename-refe
 
 The Prospecting Results tree is locally verified on `fix/prospecting-completion-20260917`, based on `76176a6`: 30/30 focused tests, final OpenNext Worker build, and 15/15 built-Worker browser checks pass. Browser evidence uses an isolated synthetic D1/R2 fixture and includes a visible interest-event save, Results refresh/reload, desktop/390/320 layouts, signed-out denial, no runtime errors and zero provider egress. One Sol Medium review found a reporting-basis ambiguity and focused coverage gaps; both were fixed and the single re-review reports no remaining material findings. This is local evidence only; no push, PR, deployment, remote database operation or real outreach occurred.
 
-The Overview slice is locally verified after `84bc1e8`: 27/27 focused Overview/reply tests, the final OpenNext Worker build and 23/23 built-Worker browser checks pass. Synthetic browser evidence covers connected-but-inactive and empty/unconfigured states, repeated held exceptions with exact counts, a recorded stop reason, a recorded mailbox gap, supported navigation, reload persistence, 1440/1024/768/390/320 layouts, signed-out denial, no runtime errors and zero provider egress. The diff changes no authorization rule, schema, external contract or automation, and all checks passed, so no independent-review trigger applied. Release/staging acceptance is not claimed. Next is the existing P3 historical-coverage and held-conversation resolution gap; provider activation, follow-up sending and broader mailbox work remain paused pending separate owner direction.
+The Overview slice is locally verified after `84bc1e8`: 27/27 focused Overview/reply tests, the final OpenNext Worker build and 23/23 built-Worker browser checks pass. Synthetic browser evidence covers connected-but-inactive and empty/unconfigured states, repeated held exceptions with exact counts, a recorded stop reason, a recorded mailbox gap, supported navigation, reload persistence, 1440/1024/768/390/320 layouts, signed-out denial, no runtime errors and zero provider egress. The diff changes no authorization rule, schema, external contract or automation, and all checks passed, so no independent-review trigger applied. Release/staging acceptance is not claimed.
+
+Held-conversation recovery is locally verified after `edab89a`: 50/50 focused hold/reply/Overview/sheet tests, the final OpenNext Worker build and 21/21 built-Worker browser checks pass. The synthetic browser path records a real visible `Reply handled` fact, reloads it, keeps the relational hold, excludes only the handled decision from active exceptions, retains the coverage gap/inactive automation, and shows desktop plus 390/320 layouts with no runtime errors, provider egress or new delivery events. Current workspace/role denial remains covered by the focused domain suite. The change reuses the existing authorization rule and event ledger, with no schema, external contract or automation change, so no independent-review trigger applied. Release/staging acceptance is not claimed. Next is the P3 verified-historical-coverage evidence/acceptance gate; provider activation, follow-up sending and broader mailbox work remain paused pending separate owner direction.

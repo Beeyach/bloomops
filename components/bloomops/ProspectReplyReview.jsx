@@ -26,11 +26,12 @@ export default function ProspectReplyReview({initial}){
   }catch(e){setError(true);setNotice(e.message||'Connection interrupted. Reload this review before trying again.');}
   finally{pending.current=false;setBusy(false);}
  }
- const stopped=data.state?.holdState==='stopped',held=data.state?.holdState==='held';
+ const stopped=data.state?.holdState==='stopped',held=data.state?.holdState==='held',handled=held&&data.resolution?.current;
  return <div className="bo-reply-review">
   {notice&&<p ref={focus} tabIndex={-1} role={error?'alert':'status'} className={error?'bo-field-error':'bo-hint'}>{notice}</p>}
   <section className="bo-reply-context" aria-label="Conversation"><Icon name="mail"/><div><h2>{data.subject}</h2><dl className="bo-delivery-addresses"><div><dt>From</dt><dd>{data.sender}</dd></div><div><dt>To</dt><dd>{data.recipient}</dd></div></dl></div></section>
-  <div className="bo-reply-status"><Status tone={stopped?'error':held?'warning':'neutral'} glyph={stopped?'cross':held?'dash':'clock'} label={stopped?'Outreach stopped':held?'Outreach held':'No outreach running'}/><p>{stopped?'This stop decision is saved.':held?'A response or unresolved check needs review.':'No follow-up sequence is active.'}</p></div>
+  <div className="bo-reply-status"><Status tone={stopped?'error':held?'warning':'neutral'} glyph={stopped?'cross':held?'dash':'clock'} label={stopped?'Outreach stopped':held?'Outreach held':'No outreach running'}/><p>{stopped?'This stop decision is saved.':handled?'The human decision is recorded. Protection remains in place.':held?'A response or unresolved check needs review.':'No follow-up sequence is active.'}</p></div>
+  {handled&&<section className="bo-reply-resolution" aria-label="Handled decision"><Status tone="success" glyph="check" label="Reply handled"/><div><p>{data.resolution.note}</p><p className="bo-hint">Recorded <time dateTime={data.resolution.at}>{date(data.resolution.at)}</time>. This does not resume outreach.</p></div></section>}
   <div className="bo-reply-columns">
    <section className="bo-reply-history" aria-labelledby="reply-history-title"><h2 id="reply-history-title"><Icon name="history"/>Conversation checks</h2>
     <p className="bo-hint">Last completed check: <time dateTime={data.state?.checkedAt||undefined}>{date(data.state?.checkedAt)}</time></p>
@@ -45,6 +46,7 @@ export default function ProspectReplyReview({initial}){
     </div>}
     {data.observations.length?<ul className="bo-reply-observations">{data.observations.map(item=><li key={item.id}><span className="bo-reply-observation-icon"><Icon name={kinds[item.kind][1]}/></span><div><h3>{kinds[item.kind][0]}</h3><time dateTime={item.receivedAt}>{date(item.receivedAt)}</time><p>{item.match==='reply_chain'?'Linked to this conversation.':'Conversation link needs review.'}</p></div></li>)}</ul>:<p className="bo-reply-empty">{data.state?.checkStatus==='checked'?'No incoming messages were found in this checked thread.':'No reply observations saved yet.'}</p>}
     {data.moreObservations&&<p className="bo-hint">Showing the 100 most recently saved observations.</p>}
+    {held&&!handled&&<div className="bo-reply-resolution-action"><p>{data.resolution?'Newer evidence was saved after the last handled decision. Record the current decision without clearing protection.':'After reviewing the evidence, record that the reply was handled without clearing this hold.'}</p><Button href={'/prospecting/'+data.prospectId+'?contactEvent=resolved#conversation-records'} icon="check">Record reply handled</Button></div>}
     <details className="bo-reply-details"><summary>What this check covers</summary><p>Only this original sent thread is checked. Message bodies and attachments stay in Gmail. Automatic responses and delivery reports need review; they are not counted as human replies or confirmed bounces. An empty check never clears an earlier hold or stop.</p></details>
    </section>
    <section className="bo-reply-stop" aria-labelledby="reply-stop-title"><h2 id="reply-stop-title"><Icon name="shield-check"/>{stopped?'Saved stop decision':'Stop outreach'}</h2>
