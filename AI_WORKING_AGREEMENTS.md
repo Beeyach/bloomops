@@ -9,6 +9,7 @@ Before changing anything, read this guide, [docs/BUILD_STATE.md](docs/BUILD_STAT
 - **“Continue”** means identify the current phase and complete the first unfinished task within the requested scope. Check the current checkout against the tracker before acting. Historical authorization is not permission to bypass a newer restriction or a later phase gate.
 - **“What’s next?”** means report the current phase, completed items, blockers, and recommended next task. It does not authorize implementation or external actions.
 - [docs/BUILD_STATE.md](docs/BUILD_STATE.md) is the existing status source. Update it after meaningful work, recording evidence, blockers, and the next bounded task. Do not create another roadmap or `PROJECT_STATUS.md`.
+- Session startup reads only the current `docs/BUILD_STATE.md` checkpoint. Read `docs/history/BUILD_STATE_ARCHIVE.md` only when a specific past decision is in question, never at session start. Retrieve the relevant section, not the whole archive. Default task searches exclude `docs/history/` and `docs/archive/`; include them only for a named historical question. Archived relative references retain their original document context.
 - [docs/INDEX.md](docs/INDEX.md) routes supporting reading; [docs/ROADMAP.md](docs/ROADMAP.md) owns release sequencing; `docs/RELEASE_A.md` through `docs/RELEASE_D.md` and `docs/phases/` own scope and acceptance. Read only relevant supporting documents. `docs/PROSPECTING_ROADMAP.md` owns the approved Prospecting/Pages phase order. Root `PRODUCT-ROADMAP.md`, other inherited prospecting reports, and `docs/superpowers/` remain historical references.
 - Never mark a phase complete while required acceptance checks fail or remain unverified. Distinguish implemented, locally verified, independently reviewed, merged, and deployed. An external gate awaiting approval stays pending; finish all authorized local work first.
 
@@ -86,42 +87,45 @@ Deployment is an external action, not a verification shortcut. `npm run deploy:s
 
 ## Owner communication and model routing
 
-Use plain language and short sections; omit large logs unless requested. Resolve technical implementation details from evidence without asking the owner to choose. For a real product decision, offer two or three choices, recommended first, with the visible effect of each. Ask only when the answer matters and continue independent authorized work.
+Use plain language and short sections. Return one combined report; do not make the owner transfer reviewer reports between sessions. Ask only about a genuine product decision or missing authorization. Resolve implementation details from relevant source evidence. Do not repeatedly poll and narrate an unchanged running check.
 
-Every meaningful progress update uses:
+Progress updates use **NOW** with the current phase, bounded task, status and any specific input needed. Final reports use **DONE**, **VERIFIED**, **PROBLEM**, **NEXT**. Include actual results and limitations, not large logs. A requested report format takes precedence.
 
-```text
-NOW
-- Phase: current phase
-- Task: current bounded task
-- Status: plain-language progress or blocker
-- Needs you: Nothing, or the specific input needed
-```
+The project configuration in `.codex/config.toml` defines these choices. An explicit session model or effort choice takes precedence; do not claim to change the running session yourself.
 
-Every final response uses **DONE**, **VERIFIED**, **PROBLEM**, **NEXT**; add **NEEDS YOUR DECISION** only when applicable. Say “None” under PROBLEM when appropriate. Include changes/decisions, migrations (or none), actual checks/results, commits if created, intentional omissions/risks, and the next bounded task, scaled to the work. Return one combined report, not separate implementer/reviewer handoffs. A specifically requested report format takes precedence.
+| Work | Profile | Model | Reasoning |
+| --- | --- | --- | --- |
+| Default daily work and routine fixes | Default | `gpt-5.6-terra` | Medium |
+| Documentation, configuration text and copy | `docs` | `gpt-5.6-luna` | Medium |
+| Multi-file features, `lib/bloomops` changes and migrations | `feature` | `gpt-5.6-sol` | Medium |
+| A specific problem Sol Medium already failed to resolve | `hard` | `gpt-6-astra` | Medium |
 
-Default daily work is **GPT-6 Astra Medium**, including normal features, UI, tests, refactoring and routine fixes. `.codex/config.toml` supplies that repository default for new Codex sessions; an explicit session choice wins. Recommend **Astra High** for auth, database, security, architecture, difficult performance work or recurring bugs. Do not claim to change the main session's effort yourself. If High is needed and not already selected, display:
+Use the lowest applicable profile. Complexity, importance or a review trigger alone does not authorize the hard profile. Record the failed Sol Medium attempt and the unresolved problem before escalating. Do not switch to Astra automatically because a task involves authorization or a migration; start with the feature profile.
+
+When the current profile is insufficient for the task, show:
 
 ```text
 MODEL CHANGE NEEDED
-Recommended: GPT-6 Astra High
-Reason: one plain-language sentence
-Action: Switch the main session to High, then say “continue.”
+Recommended: feature profile (GPT-5.6 Sol, Medium)
+Reason: one sentence identifying the multi-file feature, domain change or migration.
+Action: Select the feature profile, then continue.
 ```
 
-Request Extra High only after High was tried and a specific unresolved difficulty remains. Independent reviews use **GPT-5.6 Sol High**. Never silently substitute another model if unavailable; report the limitation and leave the review gate pending. Claude Code follows the shared workflow, but a Codex custom-agent file does not configure Claude's model/runtime; disclose an unavailable Sol review there. When giving an actual prompt/task to run, include a compact **Model / Reasoning / Surface** block; omit it for discussion alone.
+Independent reviews use `gpt-5.6-sol` at Medium as configured in `.codex/agents/reviewer.toml`. Accept supplied test results as evidence; re-execute only with a specific stated reason to doubt them, and state what was not independently verified. Do not silently substitute an unavailable model. A Codex profile does not configure Claude Code; disclose that distinction rather than claim its settings changed.
+
+For a task the owner must run, include a compact Model / Reasoning / Surface block. Omit it for discussion-only responses. Read only the task section and files needed for the current change. Do not reload the project history after compaction when the active checkpoint is sufficient.
 
 ## Selective internal review and definition of done
 
-Optimize for low usage without sacrificing verification on high-risk work. Use exactly one **GPT-5.6 Sol High read-only reviewer** only when one or more of these triggers apply:
+Optimize for low usage without sacrificing verification on high-risk work. Use exactly one **GPT-5.6 Sol Medium read-only reviewer** only when one or more of these triggers apply:
 
-- Authentication, authorization, permissions or security.
+- Authentication or security changes, or changes that modify an authorization/permission rule. Merely passing through an existing authorization check is not a review trigger.
 - Database schemas, migrations or production data.
 - Payments, email sending, background jobs or external automations.
 - Deployment, infrastructure, credentials or environment configuration.
 - Performance work with measured acceptance targets.
 - Recurring bugs that survived a previous fix.
-- Changes spanning several connected systems.
+- Changes that alter a contract between connected systems. Touching several systems without changing their contract is not a review trigger.
 - Failed or inconclusive tests.
 - An explicit owner request for an independent audit.
 
@@ -133,7 +137,7 @@ For work that meets a review trigger:
 2. Inspect or reproduce current behavior along the real execution path.
 3. Implement the smallest complete change.
 4. Run focused checks, recording commands and actual results.
-5. Spawn one fresh **read-only reviewer** using `.codex/agents/reviewer.toml` (Sol High), without forking the implementation conversation. Use one reviewer maximum.
+5. Spawn one fresh **read-only reviewer** using `.codex/agents/reviewer.toml` (Sol Medium), without forking the implementation conversation. Use one reviewer maximum.
 6. Give it only the original request (including relevant owner clarifications), acceptance criteria, relevant final diff including new files, focused test results/limitations, and minimum repository context needed for the change. Do not provide the entire conversation, private reasoning, broad repository dumps or unrelated phase documents. The reviewer may inspect the relevant execution path and tests as needed.
 7. If there are no material findings, stop reviewing and proceed to status/reporting. Otherwise assess and fix valid findings; explain evidence for rejected findings. Do not ask the owner to shuttle the review between chats.
 8. If reviewer findings caused code changes, run affected tests and allow one focused re-review by the same reviewer, limited to those findings, the resulting diff and updated test results. No additional reviewer or repeated review loop. Report unresolved blockers honestly; the review limit does not turn failed acceptance into success.

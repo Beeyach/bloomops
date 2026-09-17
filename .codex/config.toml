@@ -1,3 +1,15 @@
 # Repository defaults; an explicit session model/effort choice takes precedence.
+model = "gpt-5.6-terra"
+model_reasoning_effort = "medium"
+
+[profiles.docs]
+model = "gpt-5.6-luna"
+model_reasoning_effort = "medium"
+
+[profiles.feature]
+model = "gpt-5.6-sol"
+model_reasoning_effort = "medium"
+
+[profiles.hard]
 model = "gpt-6-astra"
 model_reasoning_effort = "medium"
