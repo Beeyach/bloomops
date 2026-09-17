@@ -6,13 +6,15 @@ Local CLI correction: inline project profiles removed. Use explicit model and ef
 
 ## Current phase
 
-Documentation and configuration maintenance completed. The owner's current six-part token/context reduction task supersedes product implementation for this session. No application changes, product tests, build, deployment, migration, database work or provider change is authorized.
+Prospecting completion resumed by owner direction. This bounded session closes the missing event-backed P3 Results view; Ellen's new client-success portal, paid auditing, video and broader email/provider work remain deferred.
 
 ## Current bounded task
 
-Completed the requested Terra Medium default, docs/feature/hard profiles, Sol Medium reviewer and supplied-evidence policy; narrowed the two specified review triggers; replaced the startup ledger with this checkpoint; archived only individually verified orphaned Markdown without deleting content.
+Prospecting completion on `fix/prospecting-completion-20260917`, from the owner-confirmed clean checkpoint `76176a6`. Ellen's new client-success portal is deferred.
 
-All changes are verified on `docs/token-context-cleanup-20260917`. Do not merge this branch or open a pull request as a shortcut: existing pull-request workflows build/test the app, while a main push can deploy and run remote database verification. Integration must respect the owner's no-build/no-deploy/no-database scope.
+- [x] Reuse accepted sheet/import/manual-audit and P5C onboarding evidence; do not rebuild those paths from stale checklist text.
+- [x] Add the missing event-backed Prospecting Results destination, with counts that distinguish people, messages, human replies, recorded interest and durable conversions.
+- [x] Verify focused invariants plus synthetic desktop/mobile save-and-reload browser behavior; keep release/deployment gates separate.
 
 ## Open blockers and unresolved gates
 
@@ -28,3 +30,5 @@ All changes are verified on `docs/token-context-cleanup-20260917`. Do not merge 
 Product evidence carried forward, not rerun: PR #99 release notes report staging `7d8166c`, final PR run `35163655840` passing 7,419/7,419 plus feature checks, and staging run `35165342432` passing. Remote-D1 run `35165342330` failed as noted above. These are recorded product results, not verification performed by this documentation job.
 
 Maintenance run `35201052091` passed TOML parsing, repository-wide filename-reference checks, content preservation, allowed-path scope and Git diff whitespace checks. Its exact results, complete move list and retained-file reasons are in the maintenance run's report artifact. No application suite, build or database command was run.
+
+The Prospecting Results tree is locally verified on `fix/prospecting-completion-20260917`, based on `76176a6`: 30/30 focused tests, final OpenNext Worker build, and 15/15 built-Worker browser checks pass. Browser evidence uses an isolated synthetic D1/R2 fixture and includes a visible interest-event save, Results refresh/reload, desktop/390/320 layouts, signed-out denial, no runtime errors and zero provider egress. One Sol Medium review found a reporting-basis ambiguity and focused coverage gaps; both were fixed and the single re-review reports no remaining material findings. This is local evidence only; no push, PR, deployment, remote database operation or real outreach occurred.
