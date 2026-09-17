@@ -4,13 +4,13 @@ Historical checkpoints: [BUILD_STATE_ARCHIVE.md](history/BUILD_STATE_ARCHIVE.md)
 
 ## Current phase
 
-Documentation and configuration maintenance. The owner's current six-part token/context reduction task supersedes product implementation for this session. No application changes, product tests, build, deployment, migration, database work or provider change is authorized.
+Documentation and configuration maintenance completed. The owner's current six-part token/context reduction task supersedes product implementation for this session. No application changes, product tests, build, deployment, migration, database work or provider change is authorized.
 
 ## Current bounded task
 
-Apply the requested Terra Medium default, docs/feature/hard profiles, Sol Medium reviewer and supplied-evidence policy; narrow the two specified review triggers; replace the startup ledger with this checkpoint; archive only individually verified orphaned Markdown without deleting content.
+Completed the requested Terra Medium default, docs/feature/hard profiles, Sol Medium reviewer and supplied-evidence policy; narrowed the two specified review triggers; replaced the startup ledger with this checkpoint; archived only individually verified orphaned Markdown without deleting content.
 
-Changes are prepared on `docs/token-context-cleanup-20260917`. Do not merge this branch or open a pull request as a shortcut: existing pull-request workflows build/test the app, while a main push can deploy and run remote database verification. Integration must respect the owner's no-build/no-deploy/no-database scope.
+All changes are verified on `docs/token-context-cleanup-20260917`. Do not merge this branch or open a pull request as a shortcut: existing pull-request workflows build/test the app, while a main push can deploy and run remote database verification. Integration must respect the owner's no-build/no-deploy/no-database scope.
 
 ## Open blockers and unresolved gates
 
@@ -25,4 +25,4 @@ Changes are prepared on `docs/token-context-cleanup-20260917`. Do not merge this
 
 Product evidence carried forward, not rerun: PR #99 release notes report staging `7d8166c`, final PR run `35163655840` passing 7,419/7,419 plus feature checks, and staging run `35165342432` passing. Remote-D1 run `35165342330` failed as noted above. These are recorded product results, not verification performed by this documentation job.
 
-This maintenance job validates TOML, individual repository-wide filename references, content preservation, allowed-path scope and Git diff whitespace only. Its exact results, complete move list and retained-file reasons are in the maintenance run's report artifact. No application suite, build or database command was run.
+Maintenance run `35201052091` passed TOML parsing, repository-wide filename-reference checks, content preservation, allowed-path scope and Git diff whitespace checks. Its exact results, complete move list and retained-file reasons are in the maintenance run's report artifact. No application suite, build or database command was run.
