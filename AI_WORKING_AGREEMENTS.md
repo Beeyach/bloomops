@@ -129,7 +129,7 @@ Optimize for low usage without sacrificing verification on high-risk work. Use e
 - Failed or inconclusive tests.
 - An explicit owner request for an independent audit.
 
-Otherwise, do not spawn a reviewer for explanations, planning, text/copy, styling/spacing, typo fixes, one-file low-risk fixes, routine refactoring with unchanged behavior, or routine changes covered by focused passing tests. The main Astra agent inspects its own diff and runs focused checks. Passing tests do not waive a listed review trigger.
+Otherwise, do not spawn a reviewer for explanations, planning, text/copy, styling/spacing, typo fixes, one-file low-risk fixes, routine refactoring with unchanged behavior, or routine changes covered by focused passing tests. The implementing agent inspects its own diff and runs focused checks. Passing tests do not waive a listed review trigger.
 
 For work that meets a review trigger:
 
@@ -162,4 +162,4 @@ For Prospecting profile edits, inspect [the committed visual reference and owner
 
 After the active Prospecting sheet work, follow [docs/NEXT_PHASES.md](docs/NEXT_PHASES.md) for save/recovery, search, client overview/preview, structured reporting and reusable work. [docs/CLIENT_REPORTING.md](docs/CLIENT_REPORTING.md) defines client reports with manual entry/import, charts, immutable publication snapshots and portal/PDF output. Pages supply narrative and authorized links, not the metric database. These are future phases, not permission to interrupt or expand the active task.
 
-N2 includes profile pictures, record-linked comments and basic in-app mentions/replies/assignment notifications, following [docs/COLLABORATION_NOTIFICATIONS.md](docs/COLLABORATION_NOTIFICATIONS.md). Resend remains the existing provider; @bloomsi.app is the owner's intended sender domain. Collaboration email and inbound processing remain later work after domain verification, visibility checks and user preferences. This documentation does not authorize DNS changes or email sending.
+N2 includes profile pictures, record-linked comments with explicit internal/client visibility, and basic in-app mention/reply/assignment notifications, following [docs/COLLABORATION_NOTIFICATIONS.md](docs/COLLABORATION_NOTIFICATIONS.md). Resend remains the existing provider; @bloomsi.app is the owner's intended sender domain. Collaboration email and inbound processing remain later work after domain verification, visibility checks and user preferences. This documentation does not authorize DNS changes or email sending.
