@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import {repliesFixture} from './_prospect-replies-fixture.mjs';
 import {one} from './_bloomops-db.mjs';
 import {getProspectDiscoveryState,checkProspectMailbox} from '../lib/bloomops/prospect-mailbox.mjs';
-export async function mailboxFixture(c,{registered=true}={}){
- const t=await repliesFixture(c);if(registered)assert.ok((await t.check({fetcher:async()=>Response.json(t.thread([]))})).checked);
+export async function mailboxFixture(c,{registered=true,fieldOverrides={}}={}){
+ const t=await repliesFixture(c,fieldOverrides);if(registered)assert.ok((await t.check({fetcher:async()=>Response.json(t.thread([]))})).checked);
  Object.assign(t.env,{BLOOMOPS_GOOGLE_DISCOVERY_ENABLED:'true',BLOOMOPS_GOOGLE_DISCOVERY_WORKSPACE_ID:t.actor.workspaceId,BLOOMOPS_GOOGLE_DISCOVERY_ACCOUNT_EMAIL:'hello@example.test'});
  t.mailstate=()=>one(t.raw,'SELECT * FROM prospect_discovery_states');
  t.mailget=()=>getProspectDiscoveryState(t.db,t.actor,'hello@example.test');

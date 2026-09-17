@@ -37,17 +37,17 @@ export default function ProspectOutreachForm({initial}){
  <fieldset disabled={!ready||busy} className="bo-outreach-fields">
  <section className="bo-outreach-address"><h2>Recipient</h2><div className="bo-outreach-field-pair">{input('recipient')}{input('timeZone')}</div><p className="bo-hint">Use an IANA timezone, such as Australia/Melbourne.</p></section>
  <section className="bo-outreach-message"><div className="bo-outreach-message-heading"><span aria-hidden="true">1</span><h2>Introduction</h2></div>{input('subject')}{input('intro',9)}</section>
- <section className="bo-outreach-message"><div className="bo-outreach-message-heading"><span aria-hidden="true">2</span><h2>First follow-up</h2></div>{input('followUp2',6)}</section>
- <section className="bo-outreach-message"><div className="bo-outreach-message-heading"><span aria-hidden="true">3</span><h2>Second follow-up</h2></div>{input('followUp3',6)}</section>
+ <section className="bo-outreach-message"><div className="bo-outreach-message-heading"><span aria-hidden="true">2</span><h2>First follow-up <small>(optional)</small></h2></div>{input('followUp2',6)}</section>
+ <section className="bo-outreach-message"><div className="bo-outreach-message-heading"><span aria-hidden="true">3</span><h2>Second follow-up <small>(optional)</small></h2></div>{input('followUp3',6)}</section>
  <Button type="submit" variant="primary" icon="check" loading={busy} disabled={!dirty&&!stale}>Save draft</Button>
  </fieldset></form>
  <aside className="bo-outreach-review" aria-label="Content review"><h2>Before approval</h2>
  <dl><div><dt>Sender</dt><dd>{data.sender?.displayName&&<strong>{data.sender.displayName}</strong>}{data.sender?.email||'Not set up'}</dd></div></dl><Button href="/prospecting/sender" variant="ghost" icon="settings">Sender setup</Button>
  <details><summary>Evidence and offer</summary><dl>{[['Observed',data.profile.observedFacts],['Evidence date',data.profile.evidenceDate],['Proposed work',data.profile.proposedWork],['Unknowns',data.profile.unknowns]].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value||'Not recorded'}</dd></div>)}</dl></details>
  <Button href={'/prospecting/'+data.profile.id} variant="ghost" icon="eye">Review profile</Button>
- {data.blockers.length>0?<ul className="bo-outreach-blockers">{data.blockers.map(b=><li key={b}>{b}</li>)}</ul>:<p className="bo-hint">Required profile checks are recorded. Review all three messages before approving.</p>}
+ {data.blockers.length>0?<ul className="bo-outreach-blockers">{data.blockers.map(b=><li key={b}>{b}</li>)}</ul>:<p className="bo-hint">Required profile checks are recorded. Review every message included in this sequence.</p>}
  {(dirty||stale)&&<p className="bo-hint">Save the draft before approving.</p>}
- <label className="bo-prospect-check"><input type="checkbox" checked={reviewed} disabled={!ready||busy||dirty||stale||!!data.blockers.length||approved} onChange={e=>setReviewed(e.target.checked)}/><span>I reviewed the recipient, all three messages, evidence and offer.</span></label>
+ <label className="bo-prospect-check"><input type="checkbox" checked={reviewed} disabled={!ready||busy||dirty||stale||!!data.blockers.length||approved} onChange={e=>setReviewed(e.target.checked)}/><span>I reviewed the recipient, every included message, evidence and offer.</span></label>
  <Button variant="primary" icon="shield-check" disabled={!ready||busy||!reviewed||dirty||stale||!!data.blockers.length||approved} loading={busy} onClick={()=>submit(true)}>Approve content</Button>
  <p className="bo-hint">Approval records your review. It does not send or schedule email.</p>
  </aside></div><ProspectSchedulePreview data={data} dirty={dirty||!!stale}/>
