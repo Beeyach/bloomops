@@ -1,5 +1,44 @@
 # Bloomsi Build State
 
+## Owner Client setup UX and UI foundations - 16 September 2026
+
+Task: `docs/tasks/client-setup-ux-and-ui-foundations.md` at `896fcd79cab4cc1708e8124845d4ab5645094c26`, read in full through GitHub. Owned branch `fix/client-setup-ui-20260916`, base `d361177`. Other worktrees and PR93 remain untouched. The two pinned design skills are installed under `.agents/skills` with source revisions in `SOURCES.md`. They are read directly in this session. Existing product completion list is retained.
+
+Design direction: existing Cloud #F8FAFF, Snow #FFFFFF, Lilac #EEEAFB, Ink #18152B and Ink Soft #5D5873; existing fonts. Left-aligned Client/contact → purchased services → explicit review, with compact actions and supporting research secondary. This follows Attio's record hierarchy and Linear's focused creation/recovery patterns without importing their branding. Native square choices have generous label targets. Compact Social navigation is retained.
+
+| Item | Scenario / correction | Verification / remaining |
+| --- | --- | --- |
+| U01 | Per-service scope errors, first-invalid focus and retained purchases | FIXED AND RETESTED on completed build58603e5, including delayed contact save and post-commit focus |
+| U02 | Typed controls exclude checkbox/radio | FIXED AND RETESTED:20×20 handoff checkbox checked/unchecked/focused/busy; no stretched text-input padding |
+| U03 | Focused primary contact before services; research secondary | FIXED AND RETESTED: missing-contact repair, failure/retry/cancel and real persistence |
+| U04 | Left-aligned workspace identity, trailing chevron and scope guards | FIXED AND RETESTED: desktop/tablet/mobile geometry; cancel/confirm switching preserved |
+| U05 | Systems fields and right-aligned desktop actions | FIXED AND RETESTED:1440/1920 alignment and768/390 responsive fit |
+| U06 | Calendar month, explanation and result spacing | FIXED AND RETESTED: human month and measured gaps at four widths; dates unchanged |
+| U07 | Work templates Back/status/first-create | FIXED AND RETESTED: genuine destination and current-status controls; authorization retained |
+| U08 | Reports Client header, primary action, status and truthful empty copy | FIXED AND RETESTED: real list and New report navigation; publication semantics unchanged |
+| U09 | Metric legends, explanations and aligned value/provenance fields | FIXED AND RETESTED: narrative-only textarea margins no longer shift grid labels; calculations/PDF unchanged |
+| U10 | Wrong-workspace recovery with explicit chooser | FIXED AND RETESTED: supported operations-workspace refusal, real action gap and explicit restore |
+| U11 | Key contact/details before bounded operational requests | FIXED AND RETESTED locally: normal viewport screenshots inspected; mobile utilities wrap; View all retains full work |
+| U12 | Read-only readiness, template recovery and explicit activation | FIXED AND RETESTED locally: fresh UI workspace, two services, no premature mail, immutable template revision/publication, stale-editor conflict, actual separate portal login and denial; native9 covers inactive/rollback/revocation |
+| U13 | Prospect view/count/search alignment and keyboard controls | FIXED AND RETESTED: removed empty save-line count offset; reserved feedback footer and usable view height; no save behavior change |
+
+Live baseline fixture created through normal UI: workspace `Bloomsi QA Client setup UX`, prospect `1b3e1006-aac8-4335-99dc-c8d9b939c626` (QA Client Setup Studio), no contact or conversion yet. No real pilot records changed. Before screenshot: `/home/ary/Developer/bloomops-client-setup-ui-evidence/before-contact-1440.png`. Staging baseline reports d361177. Windows C has108GiB free; Linux860GiB, inodes available, rw and flushed write/read/delete probe passed before dependency setup.
+
+No migration is planned. Existing remote-D1 quick_check SQLITE_NOMEM limitation and overall PERF3 remain open; not reclassified by this UX pass. PR98 release is merged/deployed atd361177 despite older S01 table prose below; historical evidence retained.
+
+
+Verification checkpoint: full7417/7417 exit0 at11a2f8e; focused68/68 after review fixes; native9 checks pass. Completed build6d01065 exit0; focused browser91 checks pass with zero runtime errors and unchanged artifact hashes. Broader sweep passed responsive setup geometry before a new exact-label locator failed on the report template select; corrected to the existing reporting harness locator, not treated as a product failure. One same-session Sol review and focused re-review resolved stale editor review-token reuse and existing-open-onboarding readiness; no material finding remains in that reviewed scope. Normal screenshots were viewed, producing small final Client utility/report header polish. Final build/full/remote/staging checks are still pending. No real pilot records changed.
+
+Final visual inspection also corrected report textarea labels inheriting narrative margins, a post-render error-focus race, and the empty save-status line shifting the Prospecting count by10px (independently measured in Windows staging). Save feedback retains a reserved toolbar footer so actual record positions do not jump. These changes remain under PR99; final verification is recorded in that PR and the compact local release evidence.
+
+
+Final local UI acceptance: completed build58603e5, 58 fresh-workspace/shared-screen checks and zero runtime errors; artifact hashes unchanged. Earlier broad build sweep completed420 assertions and real200% zoom before exposing the corrected Prospecting geometry. Full7419/7419 atd3cd2de, focused68 plus sheet26, native9. The later delta is sheet presentation and these verification notes; PR99 final CI covers the complete current merge candidate. Staging retest follows that validation. Before/after viewport evidence is outside the worktree at `/home/ary/Developer/bloomops-client-setup-ui-evidence`; no large audit archive.
+
+Completed buildb4a7332 passes59 setup/shared-screen checks and32 existing sheet-save browser checks, with zero runtime errors and unchanged artifacts. CI35160723074 exposed an obsolete reporting-browser exact-text locator (`No report drafts yet.`); the new EmptyState renders the same words as a heading without terminal punctuation. The assertion now targets that exact heading, retaining the real Client navigation and subsequent persistence/publication checks. Its failed run is preserved; the corrected reporting browser is verified against the same completed application artifact before republishing.
+
+The same application artifact also passes the complete429-check UI sweep and159 reporting checks. CI35162215677 then exposed the Work-template harness's old empty-state paragraph. It now verifies the actual heading and supported New setup destination; the create/edit/concurrency/retirement assertions remain intact. Both failed CI runs remain evidence rather than waived success. Remaining shared browser harnesses are checked locally before the next push.
+
+
 ## Owner pilot usability feedback 01 - 16 September 2026
 
 Owner task: `docs/tasks/pilot-usability-feedback-01.md` at `5de7e0b28f5eb9bd5751d0d8347df8efd20bf0a8`, read directly from GitHub. Base `af71130`; branch `fix/pilot-feedback-01-20260916`. This is the single S01-S19 register. Existing completion list and PR93 are preserved. Real pilot prospects are read-only and excluded from tests. All mutations use synthetic QA/local records.

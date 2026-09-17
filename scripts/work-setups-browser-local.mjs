@@ -59,7 +59,7 @@ try{
  const made=await post(owner.ctx,'/api/bloomops/clients',{name:'Reusable Work Synthetic Client',contactName:'Synthetic portal contact',contactEmail:'contact@example.test',timezone:'Australia/Sydney',requestId:randomUUID(),userId:'ellen',workspaceId:'a'});assert.equal(made.status,201);const clientId=made.data.client.id;
  const serviceType=await binding.prepare("SELECT id FROM service_types WHERE workspace_id='a' AND slug='ghl'").first();const service=await post(owner.ctx,`/api/bloomops/clients/${clientId}/services`,{serviceTypeId:serviceType.id,packageName:'Synthetic Work QA'});assert.equal(service.status,201);const serviceId=service.data.service.id;
  check('supported Client and purchased Service writers create isolated fixture',!!clientId&&!!serviceId);
- const page=owner.page;await page.goto(base+'/work/setups',{waitUntil:'networkidle'});await page.getByText('No saved setups yet. A template author can create the first one.',{exact:true}).waitFor();check('saved setup empty state',true);
+ const page=owner.page;await page.goto(base+'/work/setups',{waitUntil:'networkidle'});await page.getByRole('heading',{name:'Create your first Work template',exact:true}).waitFor();check('saved setup empty state',await page.getByRole('link',{name:'New setup',exact:true}).first().getAttribute('href')==='/work/setups/new');
  // Hold application scripts while the server-rendered form is visible. Early
  // input must be disabled until React has installed the input handlers.
  let releaseScripts;const scriptGate=new Promise(resolve=>{releaseScripts=resolve;});const holdScripts=async route=>{if(new URL(route.request().url()).pathname.endsWith('.js'))await scriptGate;await route.continue();};

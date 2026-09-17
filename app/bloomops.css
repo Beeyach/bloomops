@@ -1781,6 +1781,17 @@ select.bo-control {
   }
 }
 
+/* Client setup: one clear action region, native choices, compact route links. */
+.bo-check { display:flex; align-items:center; gap:12px; min-height:44px; line-height:1.5; }
+.bo-check input[type=checkbox],.bo-check input[type=radio] { flex:0 0 20px; width:20px; height:20px; min-height:20px; padding:0; margin:0; accent-color:var(--bo-ink); }
+.bo-client-tools { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; margin-block:16px; }
+.bo-client-tools .bo-btn { flex:0 1 auto; }
+.bo-client-readiness { display:grid; gap:16px; justify-items:start; padding:24px; margin-block:24px; border:1px solid var(--bo-border); border-radius:12px; background:var(--bo-lilac); }
+.bo-client-readiness h2 { font-size:20px; margin:0; }.bo-client-readiness p { margin:0; max-width:72ch; line-height:1.6; }
+.bo-activation-actions,.bo-readiness-recovery { display:grid; gap:16px; justify-items:start; max-width:100%; }
+.bo-tabs.bo-client-sections { background:transparent; border:0; }.bo-client-sections .bo-client-tab[aria-current=page] { background:var(--bo-lilac); border-color:var(--bo-ink-soft); }.bo-client-sections .bo-client-tab { border:1px solid var(--bo-border); background:var(--bo-surface); }.bo-client-sections ul { justify-content:flex-start; gap:8px; }.bo-client-sections li { flex:0 0 auto; }.bo-client-sections .bo-client-tab { min-height:40px; padding:8px 14px; border-radius:8px; }
+.bo-template-review,.bo-template-editor,.bo-template-editor fieldset { display:grid; gap:16px; min-width:0; }.bo-template-review { margin-block:16px; justify-items:start; }.bo-template-review details { width:100%; }.bo-template-review summary { min-height:44px; padding-block:12px; cursor:pointer; }.bo-template-editor fieldset { padding:16px; border:1px solid var(--bo-border); border-radius:8px; }.bo-template-editor legend { padding-inline:8px; font-weight:600; }.bo-setup-return { display:grid; justify-items:start; gap:16px; margin-block:24px; }
+.bo-setup-categories { display:grid; gap:24px; }.bo-setup-categories>section { padding-block:24px; border-top:1px solid var(--bo-border); }.bo-setup-categories h2 { font-size:20px; margin-bottom:12px; }.bo-setup-categories p { margin-block:12px; }.bo-setup-categories details { margin-top:16px; }.bo-setup-categories li { margin-bottom:16px; }
 /* Client detail header: back, name, and the two independent state facts. */
 .bo-client-head {
   display: flex;
@@ -2172,9 +2183,13 @@ select.bo-control {
 .bo-action-filter-panel > summary { min-height: 44px; padding: 12px 0; cursor: pointer; font-size: 14px; font-weight: 600; }
 .bo-action-filter-panel[open] > summary { margin-bottom: 12px; }
 .bo-action-filters { padding: 12px 16px; background: var(--bo-surface); border:1px solid var(--bo-border); border-radius: var(--bo-r-md); display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 240px)); gap: 12px; align-items: end; margin-bottom: 24px; }
+.bo-systems .bo-action-filters { grid-template-columns:repeat(3,minmax(0,1fr)) auto; gap:16px; }
+@media(max-width:1199px){.bo-systems .bo-action-filters{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:600px){.bo-systems .bo-action-filters{grid-template-columns:minmax(0,1fr);}}
 .bo-action-filters .bo-field { min-width: 0; margin: 0; }
 .bo-action-filter-buttons, .bo-action-buttons, .bo-action-pagination { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .bo-action-filter-buttons { grid-column: 1 / -1; }
+@media(min-width:1200px){.bo-systems .bo-action-filter-buttons{grid-column:auto;justify-content:flex-end;}}
 .bo-actions, .bo-action-dependencies { list-style: none; padding: 0; margin: 0; }
 .bo-action-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(130px, 160px) minmax(130px, 170px); gap: 12px 24px; align-items: start; padding: 20px 0; border-bottom: 1px solid var(--bo-border); }
 .bo-action-main, .bo-action-state, .bo-action-meta { min-width: 0; overflow-wrap: anywhere; }
@@ -2244,7 +2259,8 @@ select.bo-control {
 .bo-content-list > li { border-top: 1px solid var(--bo-border); padding: 24px 0; display: grid; gap: 12px; overflow-wrap: anywhere; }
 .bo-content-title { display: inline-block; font-size: 1.15rem; padding: 10px 0; text-underline-offset: 4px; }
 .bo-content-summary { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; font-size: .875rem; }
-.bo-content-pagination { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 24px; }
+.bo-content-pagination + .bo-hint { margin-bottom:16px; }
+.bo-content-pagination { margin-bottom:16px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 24px; }
 .bo-content-copy { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; }
 .bo-content-detail .bo-display, .bo-content-detail .bo-lede { overflow-wrap: anywhere; }
 @media (max-width: 480px) { .bo-content-parent-search { align-items: stretch; flex-direction: column; } .bo-content-filters .bo-field { flex-basis: 100%; } }
@@ -2398,8 +2414,8 @@ select.bo-control {
 .bo-work-phase { flex-basis:100%; }
 .bo-view-tools { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:20px; }
 .bo-internal-utilities { display:flex; align-items:center; justify-content:flex-end; gap:8px; padding:12px 32px 0; }
-.bo-workspace-control { display:flex; align-items:center; gap:8px; max-width:320px; min-width:0; min-height:44px; padding:8px 12px; border-radius:10px; background:var(--bo-lilac); color:var(--bo-ink); text-decoration:none; font-size:13px; }
-.bo-workspace-control>span { min-width:0; } .bo-workspace-control strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500; }
+.bo-workspace-control { text-align:left; justify-content:flex-start; display:flex; align-items:center; gap:8px; max-width:320px; min-width:0; min-height:44px; padding:8px 12px; border-radius:10px; background:var(--bo-lilac); color:var(--bo-ink); text-decoration:none; font-size:13px; }
+.bo-workspace-control>span { min-width:0; flex:1; } .bo-workspace-control>svg { flex:none; } .bo-workspace-control strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500; }
 .bo-workspace-control small { display:block; font-size:12px; color:var(--bo-ink-soft); }
 .bo-internal-utilities .bo-brand-logo { margin-right:auto; display:none; }
 @media(max-width:767px) { .bo-internal-utilities { padding:12px 16px; flex-wrap:wrap; } .bo-internal-utilities .bo-brand-logo { display:block; } .bo-workspace-control { order:5; flex:1 1 100%; max-width:none; } }

@@ -134,7 +134,7 @@ export function isClientTab(key, hasProjects = false) {
 export function ClientTabs({ clientId, active, hasProjects = false }) {
   const tabs = hasProjects ? [...CLIENT_TABS.slice(0, 3), ['projects', 'Projects'], ...CLIENT_TABS.slice(3)] : CLIENT_TABS;
   return (
-    <nav className="bo-tabs" aria-label="Client sections">
+    <nav className="bo-tabs bo-client-sections" aria-label="Client sections">
       <ul className="bo-tab-strip">
         <li><a className="bo-client-tab" href={`/clients/${clientId}/reports`}>Reports</a></li>
         {tabs.map(([key, label]) => (

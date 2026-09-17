@@ -777,3 +777,30 @@ test('invited contacts cannot be removed through the address-book API and activi
   assert.equal(count(t, 'client_contacts'), 1);
   assert.equal(count(t, 'activity_events'), before);
 });
+
+test('readiness shares activation prerequisites without writes or mail and binds confirmation to the recipient',async()=>{
+ const {activationReadiness}=await import('../lib/bloomops/client-activation.mjs');const t=await setup();
+ try{
+  const before=core(t),ready=await activationReadiness(t.db,t.actor,'client');assert.ok(ready.ok&&ready.ready);assert.equal(ready.recipient,'james@example.com');assert.equal(ready.serviceCount,2);assert.deepEqual(core(t),before);assert.equal(t.mailer.sent.length,0);
+  run(t.raw,"UPDATE client_contacts SET email='changed@example.com' WHERE id='contact'");const changed=await t.activate({expectedReadinessHash:ready.reviewHash});assert.equal(changed.reason,'activation_conflict');assert.deepEqual(core(t),before);assert.equal(t.mailer.sent.length,0);
+  const fresh=await activationReadiness(t.db,t.actor,'client');assert.notEqual(fresh.reviewHash,ready.reviewHash);assert.ok((await t.activate({expectedReadinessHash:fresh.reviewHash})).ok);assert.equal(t.mailer.sent.length,1);
+ }finally{t.raw.close();}
+});
+test('readiness reports missing templates and denies revoked or foreign access',async()=>{
+ const {activationReadiness}=await import('../lib/bloomops/client-activation.mjs');const t=await setup();try{
+  run(t.raw,"UPDATE templates SET active=0 WHERE workspace_id=? AND slug='common'",t.ws.id);
+  const r=await activationReadiness(t.db,t.actor,'client');assert.ok(r.ok);assert.equal(r.ready,false);assert.equal(r.reason,'missing_published_template');assert.equal(r.canManageTemplates,true);assert.equal(t.mailer.sent.length,0);
+  assert.equal((await activationReadiness(t.db,{...t.actor,workspaceId:t.foreign.id},'client')).ok,false);
+  run(t.raw,"UPDATE workspace_memberships SET status='suspended' WHERE id=?",t.actor.membershipId);assert.equal((await activationReadiness(t.db,t.actor,'client')).ok,false);
+ }finally{t.raw.close();}
+});
+
+test('readiness reports a separately generated open instance without creating activation or mail',async()=>{
+ const {activationReadiness}=await import('../lib/bloomops/client-activation.mjs');
+ const {prepareOnboardingPlan,persistOnboardingPlan}=await import('../lib/bloomops/onboarding-generation.mjs');
+ const t=await setup();try{
+  const prepared=await prepareOnboardingPlan(t.db,{workspaceId:t.ws.id,clientId:'client',serviceEngagementIds:['social-media-management','ads']});assert.ok(prepared.ok);
+  assert.ok((await persistOnboardingPlan(t.db,{workspaceId:t.ws.id,clientId:'client',plan:prepared.plan})).ok);
+  const before=core(t),ready=await activationReadiness(t.db,t.actor,'client');assert.equal(ready.ready,false);assert.equal(ready.reason,'existing_open_instance');assert.deepEqual(core(t),before);assert.equal(t.mailer.sent.length,0);assert.equal((await t.activate()).reason,'existing_open_instance');assert.deepEqual(core(t),before);
+ }finally{t.raw.close();}
+});

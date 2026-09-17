@@ -24,3 +24,9 @@ test('Empty icon is supplementary and preserves recovery text/action',()=>{
 
 const {default:ClientProspectPicker}=await import('../components/bloomops/ClientProspectPicker.jsx');
 test('prospect entry distinguishes reviewed sale handoff from independent manual creation',()=>{const html=render(ClientProspectPicker,{workspaceId:'synthetic',userId:'owner'});assert.match(html,/Find a prospect/);assert.match(html,/Strong fit only/);assert.match(html,/Searching and choosing save nothing and stop no outreach/);assert.match(html,/Manual entry below stays separate/);assert.doesNotMatch(html,/selected prospect|Confirm sale/i);});
+
+test('invalid stored template instructions remain reviewable without rendering untrusted objects',async()=>{
+ const {default:Review}=await import('../components/bloomops/OnboardingTemplateReview.jsx');
+ const html=render(Review,{item:{name:'Common',slug:'common',templateId:'t',reviewToken:'old',state:'published',definition:{items:[]},versions:[{id:'v',number:1,status:'published',valid:false,definition:{items:[null,{title:{bad:true},instructions:{bad:true},visibility:{bad:true}}]}}]},busy:false,onAction:()=>{}});
+ assert.match(html,/This version is invalid and cannot be published/);assert.match(html,/Create a revised Common draft/);assert.doesNotMatch(html,/Publish Common version/);
+});

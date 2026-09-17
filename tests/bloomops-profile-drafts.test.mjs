@@ -44,3 +44,11 @@ test('checking a manually entered field without a source URL keeps a valid copy'
  const s=storage(),a=createProfileDraftStore(s,scope,'tab',()=>clock),value=draft();value.fields={...value.before};value.sources.businessName={checked:true,touched:true};a.write(value);
  assert.deepEqual(a.snapshot(a.own).value.sources.businessName,{url:'',checked:true,touched:true});assert.equal(profileDraftDirty(a.snapshot(a.own).value),true);
 });
+
+test('focused contact recovery retains only its explicit fields and provenance within existing scope guards',()=>{
+ const s=storage(),store=createProfileDraftStore(s,scope,'contact-tab',()=>clock);
+ const input={section:'identity',fieldSet:'primary_contact',revision:7,before:{personName:null,publicEmail:'qa@example.test'},fields:{personName:'QA contact',publicEmail:'qa@example.test'},sources:{publicEmail:{url:'https://example.test',checked:false,touched:false}},sourceBefore:{publicEmail:{url:'https://example.test',verification:'checked',checkedAt:null,updatedAt:null}}};
+ store.write(input);const saved=store.snapshot(store.own).value;assert.deepEqual(Object.keys(saved.fields),['personName','publicEmail']);assert.deepEqual(chosenProfileSources(saved),{});assert.equal(saved.sourceBefore.publicEmail.verification,'checked');
+ assert.throws(()=>store.write({...input,fields:{...input.fields,businessName:'Hidden change'}}));assert.throws(()=>store.write({...input,fieldSet:'invented'}));assert.throws(()=>store.write({...input,fieldSet:undefined}));
+ s.setItem(DRAFT_CONTEXT_KEY,'different');assert.equal(store.valid(),false);assert.equal(store.snapshot(store.own),null);
+});

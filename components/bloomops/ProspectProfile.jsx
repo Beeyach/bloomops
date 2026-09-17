@@ -16,12 +16,13 @@ const time=value=>value?new Date(value).toLocaleString('en-US',{timeZone:'UTC',m
 const tone=fit=>fit==='strong'?'success':fit==='hold'?'warning':'neutral';
 function useReady(){const [ready,setReady]=useState(false);useEffect(()=>setReady(true),[]);return ready;}
 function useUnsaved(active){const enabled=useRef(active);enabled.current=active;useEffect(()=>{if(!active)return;const leave=e=>{if(!enabled.current)return;e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',leave);return()=>window.removeEventListener('beforeunload',leave);},[active]);return()=>{enabled.current=false;};}
-function EditFields({section,values,setValues,sources,setSources,errors={},withSources=false}){
- return <div className={`bo-prospect-fields bo-prospect-fields-${section}`}>{entries(section).map(([key,spec])=>{
+function EditFields({section,values,setValues,sources,setSources,errors={},withSources=false,fieldKeys=null}){
+ return <div className={`bo-prospect-fields bo-prospect-fields-${section}`}>{entries(section).filter(([key])=>!fieldKeys||fieldKeys.includes(key)).map(([key,spec])=>{
+  const contactField=!!fieldKeys&&['personName','publicEmail'].includes(key),label=contactField?(key==='personName'?'Contact name':'Contact email'):spec.label;
   const id=`prospect-${key}`,aria=fieldAria({id,hint:spec.hint,error:errors[key]}),value=values[key]??(key==='fit'?'unknown':'');
   const change=e=>setValues(v=>({...v,[key]:e.target.value}));
-  return <div key={key} className={spec.type==='textarea'?'bo-prospect-field-wide':undefined}><Field id={id} label={spec.label} hint={spec.hint} error={errors[key]} optional={!spec.required&&key!=='fit'}>
-   {spec.type==='fit'?<select {...aria} className="bo-control" value={value} onChange={change}>{Object.entries(PROSPECT_FIT).map(([k,label])=><option key={k} value={k}>{label}</option>)}</select>:spec.type==='textarea'?<textarea {...aria} className="bo-control" rows={key==='draftBody'?10:4} maxLength={spec.max} value={value} onChange={change}/>:<input {...aria} className="bo-control" type={spec.type||'text'} required={spec.required} maxLength={spec.max} value={value} onChange={change} autoComplete="off"/>}
+  return <div key={key} className={spec.type==='textarea'?'bo-prospect-field-wide':undefined}><Field id={id} label={label} hint={spec.hint} error={errors[key]} optional={!contactField&&!spec.required&&key!=='fit'}>
+   {spec.type==='fit'?<select {...aria} className="bo-control" value={value} onChange={change}>{Object.entries(PROSPECT_FIT).map(([k,label])=><option key={k} value={k}>{label}</option>)}</select>:spec.type==='textarea'?<textarea {...aria} className="bo-control" rows={key==='draftBody'?10:4} maxLength={spec.max} value={value} onChange={change}/>:<input {...aria} className="bo-control" type={spec.type||'text'} required={contactField||spec.required} maxLength={spec.max} value={value} onChange={change} autoComplete="off"/>}
   </Field>
   {withSources&&key!=='platform'&&<details className="bo-prospect-field-source"><summary>Source details for {spec.label.toLowerCase()}</summary>
    <Field id={id+'-source'} label="Source URL"><input id={id+'-source'} className="bo-control" type="url" maxLength={2048} value={sources[key]?.url||''} onChange={e=>setSources(v=>({...v,[key]:{...v[key],url:e.target.value,checked:false,touched:true}}))}/></Field>
@@ -32,18 +33,18 @@ function EditFields({section,values,setValues,sources,setSources,errors={},withS
  })}</div>;
 }
 export function ReadFields({section,profile}){if(section==='identity')return <ProspectIdentity profile={profile}/>;if(section==='assessment')return <ProspectAssessment profile={profile}/>;return <dl className={`bo-prospect-facts bo-prospect-facts-${section}`}>{entries(section).map(([key,spec])=><div key={key} className={spec.type==='textarea'?'bo-prospect-field-wide':undefined}><dt>{spec.label}</dt><dd>{key==='fit'?<Status tone={tone(profile.fit)} label={PROSPECT_FIT[profile.fit]}/>:key==='website'&&safeProspectUrl(profile.website)?<a href={safeProspectUrl(profile.website)} target="_blank" rel="noreferrer">{profile.website}</a>:profile[key]||<span className="bo-prospect-unknown">{key==='draftBody'||key==='draftSubject'?'No draft yet':'Not recorded'}</span>}</dd></div>)}</dl>;}
-export function EditableSection({section,title,displayTitle=title,icon,data,userId,onSave,onCurrent,onLost,onEdit,onEditingChange,disabled=false,children,footer}){
+export function EditableSection({section,title,displayTitle=title,icon,data,userId,onSave,onCurrent,onLost,onEdit,onEditingChange,disabled=false,children,footer,fieldKeys=null}){
  const ready=useReady(),[editing,setEditing]=useState(false),[values,setValues]=useState({}),[sources,setSources]=useState({}),[baseline,setBaseline]=useState(null),[busy,setBusy]=useState(false),[errors,setErrors]=useState({}),[message,setMessage]=useState(''),[saved,setSaved]=useState(false),[latest,setLatest]=useState(null);
  const editButton=useRef(null),form=useRef(null);
  const draft=useMemo(()=>editing&&baseline?{...baseline,fields:values,sources}:null,[editing,baseline,values,sources]);
- const recovery=useProfileDraft({userId,workspaceId:data.profile.workspaceId,prospectId:data.profile.id,section,draft,onLost,onRecover:(copy,current)=>{setValues(copy.fields);setSources(copy.sources);setBaseline(copy);setErrors({});setMessage('Review your recovered fields before saving.');setLatest(current.profile.revision!==copy.revision?current:null);setSaved(false);setEditing(true);}});
+ const recovery=useProfileDraft({userId,workspaceId:data.profile.workspaceId,prospectId:data.profile.id,section,draft,fieldKeys,onLost,onRecover:(copy,current)=>{setValues(copy.fields);setSources(copy.sources);setBaseline(copy);setErrors({});setMessage('Review your recovered fields before saving.');setLatest(current.profile.revision!==copy.revision?current:null);setSaved(false);setEditing(true);}});
  useUnsaved(!!draft&&profileDraftDirty(draft));
  useEffect(()=>{onEditingChange?.(editing);},[editing,onEditingChange]);
  useEffect(()=>{if(editing)form.current?.querySelector('input,select,textarea')?.focus();},[editing]);
  function begin(){
   if(disabled)return;onEdit?.();
-  const fields=Object.fromEntries(entries(section).map(([k])=>[k,data.profile[k]])),original=Object.fromEntries(data.sources.filter(s=>Object.hasOwn(fields,s.fieldKey)).map(s=>[s.fieldKey,{url:s.sourceUrl||'',verification:s.verification,checkedAt:s.checkedAt||null,updatedAt:s.updatedAt||null}]));
-  setValues(fields);setSources(Object.fromEntries(Object.entries(original).map(([k,s])=>[k,{url:s.url,checked:false,touched:false}])));setBaseline({section,revision:data.profile.revision,before:fields,sourceBefore:original});setErrors({});setMessage('');setLatest(null);setSaved(false);setEditing(true);
+  const fields=Object.fromEntries(entries(section).filter(([k])=>!fieldKeys||fieldKeys.includes(k)).map(([k])=>[k,data.profile[k]])),original=Object.fromEntries(data.sources.filter(s=>Object.hasOwn(fields,s.fieldKey)).map(s=>[s.fieldKey,{url:s.sourceUrl||'',verification:s.verification,checkedAt:s.checkedAt||null,updatedAt:s.updatedAt||null}]));
+  setValues(fields);setSources(Object.fromEntries(Object.entries(original).map(([k,s])=>[k,{url:s.url,checked:false,touched:false}])));setBaseline({section,...(fieldKeys?{fieldSet:'primary_contact'}:{}),revision:data.profile.revision,before:fields,sourceBefore:original});setErrors({});setMessage('');setLatest(null);setSaved(false);setEditing(true);
  }
  function close(){recovery.retire();setEditing(false);setBaseline(null);setLatest(null);requestAnimationFrame(()=>editButton.current?.focus());}
  async function save(e){e.preventDefault();if(disabled||busy||!ready||!recovery.valid())return;setBusy(true);setErrors({});setMessage('');try{
@@ -62,9 +63,9 @@ export function EditableSection({section,title,displayTitle=title,icon,data,user
   {recovery.recovering&&<p role="status">Checking current profile access…</p>}{recovery.error&&<p role="alert">{recovery.error}</p>}
   {editing?<form ref={form} onSubmit={save} aria-label={`Edit ${title.toLowerCase()}`}><fieldset disabled={disabled||busy}>
    {message&&<div className="bo-prospect-notice" role="alert"><p>{message}</p>{latest&&<><h3>Latest saved values</h3><ReadFields section={section} profile={latest.profile}/><div className="bo-prospect-form-actions"><Button onClick={downloadDraft}>Download my draft</Button><Button onClick={()=>{if(confirm('Replace your unsaved edits with the latest saved values? Download your draft first to keep a separate copy.')){onCurrent(latest);close();}}}>Use saved values</Button><Button variant="ghost" onClick={()=>setLatest(null)}>Keep my draft</Button></div></>}</div>}
-   <EditFields section={section} values={values} setValues={setValues} sources={sources} setSources={setSources} errors={errors} withSources/>
+   <EditFields section={section} values={values} setValues={setValues} sources={sources} setSources={setSources} errors={errors} withSources fieldKeys={fieldKeys}/>
    <div className="bo-prospect-form-actions"><Button type="submit" variant="primary" loading={busy}>Save {title.toLowerCase()}</Button><Button disabled={busy} onClick={()=>{if(!profileDraftDirty(draft)||confirm('Discard these unsaved edits?'))close();}}>Cancel</Button>{busy&&<span role="status">Saving…</span>}</div>
-  </fieldset></form>:<ReadFields section={section} profile={data.profile}/>}
+  </fieldset></form>:fieldKeys?<dl className="bo-prospect-facts">{fieldKeys.map(key=><div key={key}><dt>{PROSPECT_FIELDS[key].label}</dt><dd>{data.profile[key]||"Not recorded"}</dd></div>)}</dl>:<ReadFields section={section} profile={data.profile}/>}
   {footer}
  </section>;
 }
