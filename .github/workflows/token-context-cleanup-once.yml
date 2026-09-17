@@ -1,0 +1,381 @@
+name: One-time documentation context maintenance
+
+on:
+  push:
+    branches: [docs/token-context-cleanup-20260917]
+    paths: [.github/workflows/token-context-cleanup-once.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  documentation-only:
+    if: github.repository == 'Beeyach/bloomops'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Apply and verify the six documentation/configuration changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64
+          import hashlib
+          import json
+          import os
+          import re
+          import subprocess
+          import tomllib
+          from pathlib import Path
+          from urllib.parse import unquote, urlsplit, quote
+
+          BASE = '7d8166cc317335c01d18fb8596908bcf4562b62d'
+          BRANCH = 'docs/token-context-cleanup-20260917'
+          HELPER = '.github/workflows/token-context-cleanup-once.yml'
+          ROOT = Path.cwd()
+          OUT = Path(os.environ['RUNNER_TEMP']) / 'token-context-evidence'
+          OUT.mkdir(parents=True, exist_ok=True)
+
+          def git(*args, check=True, text=True, env=None):
+              r = subprocess.run(['git', *args], capture_output=True, text=text, env=env)
+              if check and r.returncode:
+                  raise RuntimeError('git ' + ' '.join(args[:5]) + ': ' + (r.stderr if text else r.stderr.decode(errors='replace'))[:2000])
+              return r
+
+          def blob(ref, path):
+              return git('show', ref + ':' + path, text=False).stdout
+
+          def write(path, data):
+              p = ROOT / path
+              p.parent.mkdir(parents=True, exist_ok=True)
+              p.write_bytes(data.encode() if isinstance(data, str) else data)
+
+          assert os.environ['GITHUB_REPOSITORY'].lower() == 'beeyach/bloomops'
+          assert os.environ['GITHUB_REF'] == 'refs/heads/' + BRANCH
+          START = git('rev-parse', 'HEAD').stdout.strip()
+          assert START == os.environ['GITHUB_SHA']
+          assert git('rev-parse', 'HEAD^').stdout.strip() == BASE
+          assert git('diff', '--name-only', BASE, START).stdout.splitlines() == [HELPER]
+          assert not git('status', '--porcelain').stdout
+          paths = git('ls-tree', '-rz', '--name-only', BASE).stdout.split('\0')
+          paths = [p for p in paths if p]
+          tracked = {p: blob(BASE, p) for p in paths}
+          agreements = tracked['AI_WORKING_AGREEMENTS.md'].decode()
+          assert tracked['AGENTS.md'] == tracked['CLAUDE.md']
+          assert 'Owner communication and model routing' in agreements
+          assert 'Selective internal review and definition of done' in agreements
+          original_state = tracked['docs/BUILD_STATE.md']
+          before_words = len(original_state.decode().split())
+          before_wc = int(subprocess.run(['wc','-w'], input=original_state, capture_output=True, check=True).stdout.strip())
+          for p in paths:
+              if p.startswith('.github/workflows/'):
+                  assert BRANCH not in tracked[p].decode()
+
+          # 1. Requested configuration, preserving the session-precedence comment.
+          comment = tracked['.codex/config.toml'].decode().splitlines()[0]
+          assert comment.startswith('#') and 'session' in comment and 'precedence' in comment
+          config = comment + '''
+          model = "gpt-5.6-terra"
+          model_reasoning_effort = "medium"
+
+          [profiles.docs]
+          model = "gpt-5.6-luna"
+          model_reasoning_effort = "medium"
+
+          [profiles.feature]
+          model = "gpt-5.6-sol"
+          model_reasoning_effort = "medium"
+
+          [profiles.hard]
+          model = "gpt-6-astra"
+          model_reasoning_effort = "medium"
+          '''
+          write('.codex/config.toml', config)
+
+          # 2. Reviewer model, effort and supplied-evidence policy.
+          reviewer = tracked['.codex/agents/reviewer.toml'].decode()
+          reviewer, n = re.subn(r'^model = "[^"]+"$', 'model = "gpt-5.6-sol"', reviewer, flags=re.M)
+          assert n == 1
+          reviewer, n = re.subn(r'^model_reasoning_effort = "[^"]+"$', 'model_reasoning_effort = "medium"', reviewer, flags=re.M)
+          assert n == 1
+          paragraph = ('Accept supplied test results as evidence. Do not re-execute a suite whose results were handed to you unless you have a specific stated reason to doubt a recorded result. Say what you did not independently verify.')
+          end = reviewer.rfind('"""')
+          assert end >= 0 and 'developer_instructions = """' in reviewer
+          reviewer = reviewer[:end].rstrip() + '\n\n' + paragraph + '\n' + reviewer[end:]
+          write('.codex/agents/reviewer.toml', reviewer)
+
+          # 3. Replace the named communication/routing section only.
+          start = agreements.index('## Owner communication and model routing')
+          end = agreements.index('## Selective internal review and definition of done', start)
+          routing = '''## Owner communication and model routing
+
+          Use plain language and short sections. Return one combined report; do not make the owner transfer reviewer reports between sessions. Ask only about a genuine product decision or missing authorization. Resolve implementation details from relevant source evidence. Do not repeatedly poll and narrate an unchanged running check.
+
+          Progress updates use **NOW** with the current phase, bounded task, status and any specific input needed. Final reports use **DONE**, **VERIFIED**, **PROBLEM**, **NEXT**. Include actual results and limitations, not large logs. A requested report format takes precedence.
+
+          The project configuration in `.codex/config.toml` defines these choices. An explicit session model or effort choice takes precedence; do not claim to change the running session yourself.
+
+          | Work | Profile | Model | Reasoning |
+          | --- | --- | --- | --- |
+          | Default daily work and routine fixes | Default | `gpt-5.6-terra` | Medium |
+          | Documentation, configuration text and copy | `docs` | `gpt-5.6-luna` | Medium |
+          | Multi-file features, `lib/bloomops` changes and migrations | `feature` | `gpt-5.6-sol` | Medium |
+          | A specific problem Sol Medium already failed to resolve | `hard` | `gpt-6-astra` | Medium |
+
+          Use the lowest applicable profile. Complexity, importance or a review trigger alone does not authorize the hard profile. Record the failed Sol Medium attempt and the unresolved problem before escalating. Do not switch to Astra automatically because a task involves authorization or a migration; start with the feature profile.
+
+          When the current profile is insufficient for the task, show:
+
+          ```text
+          MODEL CHANGE NEEDED
+          Recommended: feature profile (GPT-5.6 Sol, Medium)
+          Reason: one sentence identifying the multi-file feature, domain change or migration.
+          Action: Select the feature profile, then continue.
+          ```
+
+          Independent reviews use `gpt-5.6-sol` at Medium as configured in `.codex/agents/reviewer.toml`. Accept supplied test results as evidence; re-execute only with a specific stated reason to doubt them, and state what was not independently verified. Do not silently substitute an unavailable model. A Codex profile does not configure Claude Code; disclose that distinction rather than claim its settings changed.
+
+          For a task the owner must run, include a compact Model / Reasoning / Surface block. Omit it for discussion-only responses. Read only the task section and files needed for the current change. Do not reload the project history after compaction when the active checkpoint is sufficient.
+
+          '''
+          agreements = agreements[:start] + routing + agreements[end:]
+
+          # 4. Narrow only the requested review triggers.
+          old_auth = '- Authentication, authorization, permissions or security.'
+          new_auth = '- Authentication or security changes, or changes that modify an authorization/permission rule. Merely passing through an existing authorization check is not a review trigger.'
+          old_systems = '- Changes spanning several connected systems.'
+          new_systems = '- Changes that alter a contract between connected systems. Touching several systems without changing their contract is not a review trigger.'
+          assert agreements.count(old_auth) == agreements.count(old_systems) == 1
+          agreements = agreements.replace(old_auth, new_auth).replace(old_systems, new_systems)
+          agreements = agreements.replace('GPT-5.6 Sol High', 'GPT-5.6 Sol Medium').replace('Sol High', 'Sol Medium')
+          archive_rule = ('- Session startup reads only the current `docs/BUILD_STATE.md` checkpoint. Read `docs/history/BUILD_STATE_ARCHIVE.md` only when a specific past decision is in question, never at session start. Retrieve the relevant section, not the whole archive. Default task searches exclude `docs/history/` and `docs/archive/`; include them only for a named historical question. Archived relative references retain their original document context.\n')
+          needle = '- [docs/BUILD_STATE.md](docs/BUILD_STATE.md) is the existing status source.'
+          pos = agreements.index(needle)
+          insert = agreements.index('\n', pos) + 1
+          agreements = agreements[:insert] + archive_rule + agreements[insert:]
+          write('AI_WORKING_AGREEMENTS.md', agreements)
+
+          # 5. All historical sections remain in their exact original byte order.
+          archive = 'docs/history/BUILD_STATE_ARCHIVE.md'
+          assert archive not in tracked and not (ROOT / archive).exists()
+          (ROOT / archive).parent.mkdir(parents=True, exist_ok=True)
+          git('mv', '--', 'docs/BUILD_STATE.md', archive)
+          assert (ROOT / archive).read_bytes() == original_state
+          state = '''Historical checkpoints: [BUILD_STATE_ARCHIVE.md](history/BUILD_STATE_ARCHIVE.md). Read only for a specific past decision, never at session start.
+
+          # Bloomsi Build State
+
+          ## Current phase
+
+          Documentation and configuration maintenance. The owner's current six-part token/context reduction task supersedes product implementation for this session. No application changes, product tests, build, deployment, migration, database work or provider change is authorized.
+
+          ## Current bounded task
+
+          Apply the requested Terra Medium default, docs/feature/hard profiles, Sol Medium reviewer and supplied-evidence policy; narrow the two specified review triggers; replace the startup ledger with this checkpoint; archive only individually verified orphaned Markdown without deleting content.
+
+          Changes are prepared on `docs/token-context-cleanup-20260917`. Do not merge this branch or open a pull request as a shortcut: existing pull-request workflows build/test the app, while a main push can deploy and run remote database verification. Integration must respect the owner's no-build/no-deploy/no-database scope.
+
+          ## Open blockers and unresolved gates
+
+          - Product source baseline is `7d8166cc317335c01d18fb8596908bcf4562b62d` (Client setup UX, PR #99). This task does not roll it back or modify it.
+          - Disposable remote-D1 integrity verification remains unresolved at `PRAGMA quick_check` / `SQLITE_NOMEM`. No new attempt is part of this maintenance task.
+          - PERF3 overall live performance acceptance remains open.
+          - PR #93, Client-detail edit recovery, remains separate and unmerged in the supplied checkpoint. Preserve its branch and any local work. Other remaining form-recovery work is still governed by `docs/phases/N1.md`; this documentation task does not close it.
+          - Downstream onboarding request destinations must still be configured where required. Template setup and portal invitation acceptance do not prove every agreement/access step is complete.
+          - Source-only maintenance is not permission to convert or contact real prospects, resume paused video or paid auditing, change providers, or restart the broad roadmap.
+
+          ## Most recent verification checkpoint
+
+          Product evidence carried forward, not rerun: PR #99 release notes report staging `7d8166c`, final PR run `35163655840` passing 7,419/7,419 plus feature checks, and staging run `35165342432` passing. Remote-D1 run `35165342330` failed as noted above. These are recorded product results, not verification performed by this documentation job.
+
+          This maintenance job validates TOML, individual repository-wide filename references, content preservation, allowed-path scope and Git diff whitespace only. Its exact results, complete move list and retained-file reasons are in the maintenance run's report artifact. No application suite, build or database command was run.
+          '''
+          assert len(state.split()) < 3000
+          write('docs/BUILD_STATE.md', state)
+
+          # 6. Inspect each Markdown filename across ALL original tracked files.
+          protected_names = {'ai_working_agreements.md', 'agents.md', 'claude.md'}
+          md_paths = [p for p in paths if Path(p).suffix.lower() in {'.md', '.markdown'}]
+          decisions = []
+          moves = []
+          link_re = re.compile(r'!?\[[^\]\n]*\]\(([^)\n]+)\)|^\[[^\]\n]+\]:\s*(\S+)|(?:href|src)=[\"\x27]([^\"\x27]+)', re.M)
+
+          def relocation_dependency(path, data, destination):
+              text = data.decode('utf-8', errors='replace')
+              for match in link_re.finditer(text):
+                  target = next(x for x in match.groups() if x is not None).strip().strip('<>')
+                  target = target.split()[0] if target else ''
+                  try:
+                      u = urlsplit(target)
+                  except ValueError:
+                      return 'unresolved relative/link syntax; retained without rewriting'
+                  if not target or u.scheme or u.netloc or target.startswith(('#', '/')):
+                      continue
+                  relative = unquote(u.path)
+                  if not relative:
+                      continue
+                  old = Path(os.path.normpath(str(Path(path).parent / relative))).as_posix()
+                  new = Path(os.path.normpath(str(Path(destination).parent / relative))).as_posix()
+                  if old != new:
+                      return 'relative link needs relocation repair: ' + target
+              return None
+
+          for path in md_paths:
+              name = Path(path).name
+              low = name.lower()
+              d = {'path': path}
+              if low in protected_names or low.startswith('readme') or low.startswith(('license', 'licence')) or path.startswith('.agents/'):
+                  d.update(action='kept', reason='explicitly protected by owner')
+              elif path == 'docs/BUILD_STATE.md':
+                  d.update(action='split', reason='active checkpoint retained; complete original preserved in history archive')
+              elif low in {'contributing.md','security.md','code_of_conduct.md','support.md'}:
+                  d.update(action='kept', reason='GitHub convention-discovered repository guidance')
+              elif path.startswith(('docs/archive/', 'docs/history/')):
+                  d.update(action='kept', reason='already in an archive/history location')
+              else:
+                  command = ['grep', '-a', '-i', '-F', '-l', '-z', '-e', name, BASE, '--', '.', ':(exclude)' + path]
+                  found = git(*command, check=False)
+                  if found.returncode not in (0, 1):
+                      raise RuntimeError('reference search failed: ' + path + ': ' + found.stderr)
+                  refs = [r.split(':', 1)[1] for r in found.stdout.split('\0') if r]
+                  encoded = quote(name, safe='')
+                  if encoded != name:
+                      extra = git('grep','-a','-i','-F','-l','-z','-e',encoded,BASE,'--','.',':(exclude)'+path,check=False)
+                      assert extra.returncode in (0,1)
+                      refs = sorted(set(refs + [r.split(':',1)[1] for r in extra.stdout.split('\0') if r]))
+                  d['references'] = refs
+                  d['search'] = 'git ' + ' '.join(command)
+                  if refs:
+                      workflows = [r for r in refs if r.startswith('.github/workflows/')]
+                      d.update(action='kept', reason=('workflow reference' if workflows else 'referenced by another tracked file'))
+                  elif path.startswith(('skills/', '.claude/', '.codex/', '.github/', 'public/')):
+                      d.update(action='kept', reason='convention-discovered skill/agent/public asset; filename absence does not prove safe relocation')
+                  else:
+                      dest = 'docs/archive/' + path
+                      if dest in tracked or (ROOT / dest).exists():
+                          d.update(action='kept', reason='destination already exists; no overwrite permitted')
+                      elif reason := relocation_dependency(path, tracked[path], dest):
+                          d.update(action='kept', reason=reason)
+                      else:
+                          (ROOT / dest).parent.mkdir(parents=True, exist_ok=True)
+                          git('mv','--',path,dest)
+                          assert (ROOT / dest).read_bytes() == tracked[path]
+                          d.update(action='moved', destination=dest, sha256=hashlib.sha256(tracked[path]).hexdigest())
+                          moves.append(d)
+              decisions.append(d)
+
+          # Remove only this task's own execution helper from its final tree.
+          # It never existed on main. No pre-existing repository content is deleted.
+          git('rm','--',HELPER)
+          git('add','--','.codex/config.toml','.codex/agents/reviewer.toml','AI_WORKING_AGREEMENTS.md','docs/BUILD_STATE.md')
+          expected_cfg = {'model':'gpt-5.6-terra','model_reasoning_effort':'medium','profiles':{
+              'docs':{'model':'gpt-5.6-luna','model_reasoning_effort':'medium'},
+              'feature':{'model':'gpt-5.6-sol','model_reasoning_effort':'medium'},
+              'hard':{'model':'gpt-6-astra','model_reasoning_effort':'medium'}}}
+          assert tomllib.loads(config) == expected_cfg
+          r = tomllib.loads(reviewer)
+          old_r = tomllib.loads(tracked['.codex/agents/reviewer.toml'].decode())
+          assert r['model'] == 'gpt-5.6-sol' and r['model_reasoning_effort'] == 'medium'
+          assert r['developer_instructions'].count(paragraph) == 1
+          for k in old_r:
+              if k not in {'model','model_reasoning_effort','developer_instructions'}:
+                  assert r[k] == old_r[k]
+          parsed = []
+          for path in git('ls-files','-z','.codex').stdout.split('\0'):
+              if path.endswith('.toml'):
+                  tomllib.loads((ROOT/path).read_text()); parsed.append(path)
+          assert (ROOT/'AGENTS.md').read_bytes() == tracked['AGENTS.md']
+          assert (ROOT/'CLAUDE.md').read_bytes() == tracked['CLAUDE.md']
+          assert (ROOT/archive).read_bytes() == original_state
+          modified = {'.codex/config.toml','.codex/agents/reviewer.toml','AI_WORKING_AGREEMENTS.md','docs/BUILD_STATE.md'}
+          mapping = {m['path']:m['destination'] for m in moves}
+          for path, data in tracked.items():
+              if path not in modified:
+                  target = mapping.get(path,path)
+                  actual = os.readlink(ROOT/target).encode() if (ROOT/target).is_symlink() else (ROOT/target).read_bytes()
+                  assert actual == data, 'Unexpected content change: ' + path
+              if path in mapping:
+                  assert not (ROOT/path).exists()
+          assert not (ROOT/HELPER).exists()
+          for move in moves:
+              result = git('grep','--cached','-a','-i','-F','-l','-e',Path(move['path']).name,'--','.',':(exclude)'+move['destination'],check=False)
+              if result.returncode != 1:
+                  raise RuntimeError('Reference appeared after moving '+move['path']+': '+result.stdout)
+              source_text = tracked[move['path']].decode(errors='replace')
+              move['self_mentions'] = source_text.lower().count(Path(move['path']).name.lower())
+          before_triggers = re.search(r'only when one or more of these triggers apply:\n\n(.*?)(?=\n\nOtherwise)', tracked['AI_WORKING_AGREEMENTS.md'].decode(), re.S).group(1)
+          after_triggers = re.search(r'only when one or more of these triggers apply:\n\n(.*?)(?=\n\nOtherwise)', agreements, re.S).group(1)
+          assert after_triggers == before_triggers.replace(old_auth,new_auth).replace(old_systems,new_systems)
+          assert 'Sol High' not in agreements
+          assert 'hard' in agreements and 'already failed' in agreements
+          assert len(state.split()) < 3000
+          check = git('diff','--cached','--check',BASE,check=False)
+          if check.returncode:
+              (OUT/'diff-check.txt').write_text(check.stdout + check.stderr)
+              raise RuntimeError('Combined git diff --check failed; preserved archive not reformatted. See artifact.')
+          assert git('diff','--check').returncode == 0
+          assert git('diff','--name-only').stdout == ''
+          after_wc = int(subprocess.run(['wc','-w'], input=state.encode(), capture_output=True, check=True).stdout.strip())
+          report = {
+              'base':BASE,'bootstrap_commit':START,'branch':BRANCH,
+              'build_state':{'before_bytes':len(original_state),'before_words':before_wc,'python_before_words':before_words,
+                             'after_words':after_wc,'after_bytes':len(state.encode()),'archive_sha256':hashlib.sha256(original_state).hexdigest()},
+              'markdown_candidates':len(md_paths),'moved_count':len(moves),
+              'moves':moves,'decisions':decisions,'toml_parsed':parsed,
+              'checks':{'git_diff_check':'PASS','all_old_sections_byte_identical':'PASS',
+                        'old_path_other_file_references':'NONE','all_other_original_content_unchanged':'PASS',
+                        'other_review_triggers_unchanged':'PASS','application_tests':'NOT RUN','build':'NOT RUN',
+                        'database':'NOT RUN','deploy':'NOT RUN','main_changed':False},
+          }
+          (OUT/'report.json').write_text(json.dumps(report,indent=2)+'\n')
+          (OUT/'changes.patch').write_bytes(git('diff','--cached','--binary',BASE,text=False).stdout)
+          (OUT/'rename-summary.txt').write_text(git('diff','--cached','--summary','-B','-M100%',BASE).stdout)
+          git('-c','user.name=github-actions[bot]','-c','user.email=41898282+github-actions[bot]@users.noreply.github.com',
+              'commit','-m','docs: reduce startup context and align model profiles [skip ci]')
+          COMMIT = git('rev-parse','HEAD').stdout.strip()
+          assert not git('status','--porcelain').stdout
+          TOKEN = os.environ['GH_TOKEN']
+          auth = base64.b64encode(('x-access-token:'+TOKEN).encode()).decode()
+          env = dict(os.environ, GIT_CONFIG_COUNT='1',GIT_CONFIG_KEY_0='http.https://github.com/.extraheader',GIT_CONFIG_VALUE_0='AUTHORIZATION: basic '+auth)
+          remote = git('ls-remote','origin','refs/heads/'+BRANCH,env=env).stdout.split()[0]
+          assert remote == START, 'Branch changed while task ran; refusing to overwrite'
+          git('push','origin','HEAD:refs/heads/'+BRANCH,env=env)
+          assert git('ls-remote','origin','refs/heads/'+BRANCH,env=env).stdout.split()[0] == COMMIT
+          assert git('ls-remote','origin','refs/heads/main',env=env).stdout.split()[0] == BASE
+          report['commit'] = COMMIT
+          (OUT/'report.json').write_text(json.dumps(report,indent=2)+'\n')
+          lines = ['# Token/context maintenance','',f'Commit: {COMMIT}',f'Branch: {BRANCH}',
+                   f'BUILD_STATE: {before_wc:,} -> {after_wc:,} words.',
+                   f'Original history preserved: {len(original_state):,} bytes, SHA-256 {hashlib.sha256(original_state).hexdigest()}.',
+                   '','## Moved files','', 'The complete original BUILD_STATE.md was moved unchanged to docs/history/BUILD_STATE_ARCHIVE.md; a short current checkpoint replaces it.','']
+          lines += [m['path']+' -> '+m['destination'] for m in moves]
+          lines += ['', '## Not moved', '']
+          for d in decisions:
+              if d['action']=='kept':
+                  refs = d.get('references',[])
+                  lines.append(d['path']+' | '+d['reason']+(' | '+', '.join(refs[:3])+(' (additional references in report.json)' if len(refs)>3 else '') if refs else ''))
+          lines += ['', '## Verification', '', 'git diff --check: PASS. All .codex TOML files parse. No other tracked file refers to a moved filename. All move contents and the complete historical ledger are byte-identical. All original application files and existing workflow files are unchanged.', 'No application tests, build, deployment, database commands or main update. No PR opened because its workflow would build/test the application.']
+          summary='\n'.join(lines)+'\n'
+          (OUT/'REPORT.md').write_text(summary)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(summary)
+          print('RESULT_COMMIT='+COMMIT)
+          print('BUILD_STATE_WORDS='+str(before_wc)+' -> '+str(after_wc))
+          print('ORPHAN_MOVES='+str(len(moves)))
+          print('REPORT_BEGIN')
+          print(summary)
+          print('REPORT_END')
+          PY
+      - name: Keep documentation-only verification receipts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: token-context-maintenance-${{ github.run_id }}
+          path: ${{ runner.temp }}/token-context-evidence/
+          retention-days: 14
+          if-no-files-found: warn
