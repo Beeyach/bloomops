@@ -17,6 +17,11 @@ name: Verify zero-to-current migration
 
 on:
   workflow_dispatch:
+    inputs:
+      diagnose_bytecode:
+        description: 'Explicitly authorized one-run bytecode diagnostic on the disposable database'
+        type: boolean
+        default: false
   push:
     branches:
       - main
@@ -50,7 +55,7 @@ jobs:
         run: npm ci
 
       - name: Test disposable verifier safety and concurrent staging cleanup
-        run: node --test tests/zero-verify-safety.test.mjs
+        run: node --test tests/zero-verify-safety.test.mjs tests/zero-verifier.test.mjs tests/zero-local-integrity.test.mjs
 
       - name: Confirm the Cloudflare identity this run acts as
         run: |
@@ -61,4 +66,21 @@ jobs:
           npx wrangler whoami
 
       - name: Create, migrate from zero, migrate again, verify, delete
-        run: node .github/scripts/verify-zero-remote.mjs
+        env:
+          ZERO_VERIFY_SUMMARY_PATH: ${{ runner.temp }}/zero-verify-summary.json
+          ZERO_VERIFY_DIAGNOSTIC: ${{ github.event_name == 'workflow_dispatch' && inputs.diagnose_bytecode && 'true' || 'false' }}
+        run: |
+          if [ "$ZERO_VERIFY_DIAGNOSTIC" = true ]; then
+            node .github/scripts/verify-zero-remote.mjs --diagnose-bytecode
+          else
+            node .github/scripts/verify-zero-remote.mjs
+          fi
+
+      - name: Preserve compact disposable verification outcome
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: zero-verify-${{ github.run_id }}
+          path: ${{ runner.temp }}/zero-verify-summary.json
+          if-no-files-found: warn
+          retention-days: 14

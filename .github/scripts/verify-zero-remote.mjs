@@ -17,14 +17,21 @@ import { execFileSync } from 'node:child_process';
 import { appendFileSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { getTableName } from 'drizzle-orm';
 import { BLOOMOPS_TABLES } from '../../lib/bloomops/schema.mjs';
 import { assertDisposableName, assertDisposableIdentity, guardWranglerCommand, protectedIdsAreDistinct, sameDatabaseInventory, stagingIdentityUnchanged } from './zero-verify-safety.mjs';
 
+export async function verifyZero({execute = execFileSync, local = false, diagnostic = false,
+  summaryPath = process.env.ZERO_VERIFY_SUMMARY_PATH, logger = globalThis.console} = {}) {
+const console = logger;
 const DB_NAME = 'bloomops-a2-zero-verify';
-const LOCAL = process.argv.includes('--local');
+const LOCAL = local;
 const MODE = LOCAL ? '--local' : '--remote';
 const REPO = process.cwd();
+const outcome = {revision:process.env.GITHUB_SHA || null, mode:MODE, databaseName:DB_NAME,
+  databaseId:null, firstPass:'not_run', integrity:'not_run', repeatPass:'not_run', cleanup:'not_needed', diagnostics:[]};
+function persist() { if (summaryPath) writeFileSync(summaryPath, JSON.stringify(outcome,null,2)+'\n'); }
 
 // Names this script must never address, from the products and environments
 // that own real data. The disposable name is checked against them too.
@@ -57,9 +64,9 @@ const stripAnsi = (s) => String(s).replace(/\x1b\[[0-9;]*m/g, '');
 function guard(args) {
   guardWranglerCommand(args, { configPath, mode: MODE, databaseName: DB_NAME, stagingName });
 }
-function run(args, { quiet = false } = {}) {
+function run(args, { quiet = true } = {}) {
   guard(args);
-  const out = execFileSync('npx', ['--no-install', 'wrangler', ...args], {
+  const out = execute('npx', ['--no-install', 'wrangler', ...args], {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
     maxBuffer: 64 * 1024 * 1024,
@@ -87,7 +94,8 @@ const target = () => {
 };
 function query(sql) {
   const parsed = runJson(['d1', 'execute', 'DB', ...target(), '--command', sql]);
-  return parsed?.[0]?.results || [];
+  if (!Array.isArray(parsed) || parsed.length !== 1 || parsed[0]?.success !== true || !Array.isArray(parsed[0].results)) throw Error('Invalid query response');
+  return parsed[0].results;
 }
 function execFile(file) {
   const parsed = runJson(['d1', 'execute', 'DB', ...target(), '--file', file]);
@@ -96,8 +104,7 @@ function execFile(file) {
   return statements.length;
 }
 function node(args) {
-  const out = execFileSync('node', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 });
-  console.log(stripAnsi(out).trim());
+  const out = execute('node', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 });
   return stripAnsi(out);
 }
 
@@ -160,7 +167,7 @@ function migrateAll(label) {
   const noop = /No migrations to apply/i.test(apply);
   const appliedNow = domainFiles.filter((f) => apply.includes(f));
   record(`${label}: BloomOps domain migrations (wrangler d1 migrations apply)`, noop || appliedNow.length === domainFiles.length,
-    noop ? 'No migrations to apply' : `applied ${appliedNow.join(', ')}`);
+    noop ? 'No migrations to apply' : `applied ${appliedNow.length} domain migrations`);
   const list = run(['d1', 'migrations', 'list', 'DB', ...target()], { quiet: true });
   record(`${label}: no domain migration left pending`, /No migrations to apply/i.test(list));
   return { schemaStatements, inherited, domainApplied: noop ? [] : appliedNow };
@@ -173,6 +180,20 @@ let before = [];
 let stagingBefore = null;
 let tmp = '';
 let exitCode = 0;
+function errorDetail(err) { return stripAnsi(err.stderr || err.stdout || err.message).slice(0,2000); }
+function diagnose(label, operation) {
+  try { const value=operation();outcome.diagnostics.push({label,status:'completed',value}); }
+  catch(err) { outcome.diagnostics.push({label,status:'error',error:errorDetail(err)}); }
+}
+function configureTarget() {
+  tmp = mkdtempSync(join(tmpdir(), 'bloomops-zero-verify-'));
+  configPath = join(tmp, 'wrangler.zero-verify.jsonc');
+  writeFileSync(configPath, JSON.stringify({
+    name: DB_NAME,
+    compatibility_date: committed.compatibility_date || '2025-05-01',
+    d1_databases: [{ binding: 'DB', database_name: DB_NAME, database_id: createdId, migrations_dir: resolve(REPO, 'drizzle') }],
+  }, null, 2));
+}
 try {
   if (!LOCAL) {
     record('committed staging id and production id are known and distinct', protectedIdsAreDistinct(stagingId, productionId));
@@ -184,25 +205,26 @@ try {
       console.log(`${stagingName} before: ${stagingBefore.num_tables} tables`);
     }
 
-    run(['d1', 'create', DB_NAME]);
+    outcome.cleanup='creation_unconfirmed';persist();
+    const creation = run(['d1', 'create', DB_NAME]);
     created = true;
+    // Pin the id returned by CREATE itself before any further account call.
+    // An inventory lookup alone cannot prove ownership of a replacement.
+    createdId = creation.match(/"database_id"\s*:\s*"([a-f0-9-]{36})"/i)?.[1] || '';
+    outcome.databaseId=createdId;outcome.cleanup='pending';persist();
+    record(`${DB_NAME} CREATE returned a new identity`, Boolean(createdId) && !before.some(d=>d.uuid===createdId), `id ${createdId}`);
+    record('the new id is not the staging or production id', createdId !== stagingId && createdId !== productionId);
+    configureTarget();
+    summary('Disposable identity');results.length=0;
     const now = inventory();
     const mine = now.find((d) => d.name === DB_NAME);
-    createdId = mine?.uuid || '';
-    record(`${DB_NAME} was newly created`, Boolean(createdId) && !before.some((d) => d.uuid === createdId), `id ${createdId}`);
-    record('the new id is not the staging or production id', createdId !== stagingId && createdId !== productionId);
-    record('nothing else on the account changed when it was created', namesOf(now.filter((d) => d.uuid !== createdId)) === namesOf(before));
+    assertDisposableIdentity(mine,createdId,DB_NAME);
+    record('nothing else on the account changed when it was created', sameDatabaseInventory(now.filter((d) => d.uuid !== createdId),before));
   } else {
     createdId = `${DB_NAME}-local`;
+    configureTarget();
   }
 
-  tmp = mkdtempSync(join(tmpdir(), 'bloomops-zero-verify-'));
-  configPath = join(tmp, 'wrangler.zero-verify.jsonc');
-  writeFileSync(configPath, JSON.stringify({
-    name: DB_NAME,
-    compatibility_date: committed.compatibility_date || '2025-05-01',
-    d1_databases: [{ binding: 'DB', database_name: DB_NAME, database_id: createdId, migrations_dir: resolve(REPO, 'drizzle') }],
-  }, null, 2));
   record('temporary wrangler config binds DB to the disposable database only', true, `${configPath}, ${LOCAL ? 'local' : 'remote'}`);
 
   const initial = query("SELECT type, name FROM sqlite_master ORDER BY name");
@@ -210,14 +232,15 @@ try {
   record('the database begins empty', own.length === 0,
     `sqlite_master holds ${initial.length} internal object(s): ${initial.map((r) => `${r.type} ${r.name}`).join(', ') || 'none'}; no user objects`);
 
+  outcome.firstPass='running';
   const first = migrateAll('first run');
-  record('first run applied every domain migration', first.domainApplied.length === domainFiles.length, first.domainApplied.join(', '));
+  record('first run applied every domain migration', first.domainApplied.length === domainFiles.length, `${first.domainApplied.length} migrations`);
 
   const inheritedLedger = query('SELECT name FROM _migrations ORDER BY name').map((r) => r.name);
   record('inherited ledger is complete', JSON.stringify(inheritedLedger) === JSON.stringify(inheritedFiles),
     `${inheritedLedger.length} of ${inheritedFiles.length} migration files recorded`);
   const domainLedger = query('SELECT name FROM d1_migrations ORDER BY id').map((r) => r.name);
-  record('Drizzle ledger holds every domain migration in committed order', JSON.stringify(domainLedger) === JSON.stringify(domainFiles), domainLedger.join(', '));
+  record('Drizzle ledger holds every domain migration in committed order', JSON.stringify(domainLedger) === JSON.stringify(domainFiles), `${domainLedger.length} migrations`);
 
   const tables = names('table');
   record('only migration-defined tables and ledgers exist', JSON.stringify(tables) === JSON.stringify([...expectedTables].sort()), `${tables.length} expected tables`);
@@ -226,31 +249,57 @@ try {
     `${domainTables.length} domain tables present, ${tables.length} tables in total (including _migrations and d1_migrations)`);
   const triggers = names('trigger');
   const missingTriggers = triggerNames.filter((t) => !triggers.includes(t));
-  record('every migration-defined immutability trigger exists', missingTriggers.length === 0 && triggerNames.length > 0, `${triggers.join(', ')}`);
+  record('every migration-defined immutability trigger exists', missingTriggers.length === 0 && triggerNames.length > 0, `${triggers.length} triggers`);
   const indexes = names('index');
   const missingIndexes = indexNames.filter((i) => !indexes.includes(i));
   record('every index the migrations create exists', missingIndexes.length === 0 && indexNames.length > 0,
     missingIndexes.length === 0 ? `${indexNames.length} indexes, including the partial unique ones` : `missing: ${missingIndexes.join(', ')}`);
 
   record('fresh database has no foreign-key violations', query('PRAGMA foreign_key_check').length === 0);
-  if (LOCAL) {
+  outcome.firstPass='passed';persist();
+  if (diagnostic && !LOCAL) {
+    diagnose('SQLite runtime',()=>query('SELECT sqlite_version() AS version'));
+    diagnose('small statement compilation control',()=>({opcodes:query('EXPLAIN SELECT 1').length}));
+    diagnose('whole-schema quick_check compilation (EXPLAIN only)',()=>({opcodes:query('EXPLAIN PRAGMA quick_check').length}));
+  }
+  try {
+   if (LOCAL) {
     const { localD1Integrity } = await import('./zero-local-integrity.mjs');
     const integrity = localD1Integrity(tmp);
     record('fresh database passes whole-database SQLite integrity check', integrity.result === 'ok', `exact disposable D1 file, query-only SQLite ${integrity.version}; no partial-table substitution`);
-  } else {
+    if (diagnostic) {
+      const {localBytecodeDiagnostic}=await import('./zero-local-integrity.mjs');
+      diagnose('local statement-bytecode limit experiment',()=>localBytecodeDiagnostic(tmp));
+    }
+   } else {
     const integrity = query('PRAGMA quick_check');
+    outcome.integrity='finding';
     record('fresh database passes SQLite integrity check', integrity.length === 1 && Object.values(integrity[0])[0] === 'ok');
+   }
+   outcome.integrity='passed';
+  } catch(err) {
+    if(outcome.integrity!=='finding')outcome.integrity='uncompleted';
+    outcome.integrityError=errorDetail(err);exitCode=1;persist();
+    console.error(`::error::integrity ${outcome.integrity}: ${outcome.integrityError}`);
+    // Only the diagnosed compilation/resource error permits independent
+    // repeat-pass evidence. It never replaces or passes the integrity gate.
+    if(!diagnostic || outcome.integrity==='finding' || !outcome.integrityError.includes('SQLITE_NOMEM'))throw err;
   }
   const snapA = snapshot();
+  outcome.repeatPass='running';
   const second = migrateAll('second run');
   record('second run changed nothing in the inherited ledger', second.inherited.applied === 0 && second.inherited.satisfied === 0 && second.inherited.skipped === inheritedFiles.length);
   record('second run applied no domain migration', second.domainApplied.length === 0);
   record('schema and both ledgers are identical after the second run', snapshot() === snapA);
+  outcome.repeatPass='passed';
 
   summary(`Zero-to-current migration of ${DB_NAME} (${LOCAL ? 'local' : 'remote'})`);
-  console.log('::notice::zero-to-current verification passed');
+  if(!exitCode)console.log('::notice::zero-to-current verification passed');
 } catch (err) {
   exitCode = 1;
+  if(outcome.firstPass==='running')outcome.firstPass='failed';
+  if(outcome.repeatPass==='running')outcome.repeatPass='failed';
+  outcome.error=errorDetail(err);
   console.error(`::error::${err.message}`);
   if (err.stdout || err.stderr) console.error(stripAnsi(err.stderr || err.stdout).slice(0, 2000));
   summary(`Zero-to-current migration of ${DB_NAME} (${LOCAL ? 'local' : 'remote'}) FAILED`);
@@ -260,9 +309,13 @@ try {
     if (created) {
       const info = account(['d1', 'info', DB_NAME]);
       assertDisposableIdentity(info, createdId, DB_NAME);
-      run(['d1', 'delete', DB_NAME, '--skip-confirmation']);
+      // Resolve the immutable UUID via the isolated binding, not a second
+      // name lookup that could target a replacement created during cleanup.
+      run(['d1', 'delete', 'DB', '--config', configPath, '--skip-confirmation']);
       const after = inventory();
       record(`${DB_NAME} deleted`, !after.some((d) => d.name === DB_NAME || d.uuid === createdId));
+      outcome.cleanup='absent';
+      outcome.inventoryBefore=before;outcome.inventoryAfter=after;
       record('the account holds exactly the databases it held before', sameDatabaseInventory(before, after),
         `${after.length} databases: ${namesOf(after)}`);
       if (stagingBefore) {
@@ -274,9 +327,20 @@ try {
     }
   } catch (err) {
     exitCode = 1;
+    outcome.cleanupError=errorDetail(err);if(outcome.cleanup!=='absent')outcome.cleanup='unconfirmed';
     console.error(`::error::cleanup: ${err.message}`);
   }
-  if (tmp) rmSync(tmp, { recursive: true, force: true });
-  if (results.length) summary('Cleanup');
-  process.exit(exitCode);
+  try { if (tmp) rmSync(tmp, { recursive: true, force: true }); }
+  catch(err) { exitCode=1;outcome.localCleanupError=errorDetail(err); }
+  outcome.exitCode=exitCode;
+  console.log('ZERO_VERIFY_SUMMARY '+JSON.stringify(outcome));
+  summary('Cleanup');
+  if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,`\nFinal outcome\n\n\`\`\`json\n${JSON.stringify(outcome,null,2)}\n\`\`\`\n`);
+  persist();
+}
+return outcome;
+}
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const outcome=await verifyZero({local:process.argv.includes('--local'),diagnostic:process.argv.includes('--diagnose-bytecode')});
+  process.exitCode=outcome.exitCode; // Let pending stdout/stderr drain naturally.
 }

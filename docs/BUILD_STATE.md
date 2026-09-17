@@ -12,13 +12,13 @@ BloomOps 1.0 release-candidate completion on `fix/prospecting-completion-2026091
 
 - **Complete locally:** workspace-safe prospect creation/import/edit/search; manual skill export and conflict-aware result application; reviewed drafts, reply/stop evidence, exception-led Overview, event-backed Results; bounded historical-coverage decision (`84bc1e8`, `edab89a`, `e773b41`, `4662068`); duplicate-safe conversion/service/onboarding handoff; dormant approval-bound follow-up scheduling/execution/recovery; accepted Pages and core BloomOps operational baseline. Existing focused review and test evidence is retained below.
 - **Actual missing agreed behavior:** none reproduced in the authorized local 1.0 scope. Follow-up execution is implemented but deliberately inactive unless every local-only server gate is explicitly configured; that is a release/configuration state, not inferred live readiness.
-- **Configuration/live/release blockers:** bounded live historical acceptance for `hello@bloomwired.io`; controlled follow-up provider/configuration acceptance; PERF3; disposable remote-D1 integrity; downstream onboarding destinations; integrated staging/release acceptance. Push/PR/main integration, remote migrations and deployment require separate approval.
+- **Configuration/live/release blockers:** bounded live historical acceptance for `hello@bloomwired.io`; controlled follow-up provider/configuration acceptance; PERF3; disposable remote-D1 integrity; downstream onboarding destinations; integrated staging/release acceptance. PR102 is open; scoped branch updates and disposable diagnostics are authorized. Main integration and deployment remain unapproved.
 - **Owner-deferred:** Ellen's new client-success portal, paid audits, video/voice, anonymous/external Pages expansion and other speculative roadmap work.
 
 ## Open blockers and unresolved gates
 
 - Product source baseline is `7d8166cc317335c01d18fb8596908bcf4562b62d` (Client setup UX, PR #99). This task does not roll it back or modify it.
-- Disposable remote-D1 integrity verification remains unresolved at `PRAGMA quick_check` / `SQLITE_NOMEM`. No new attempt is part of this maintenance task.
+- Disposable remote-D1 integrity remains unresolved at `PRAGMA quick_check` / `SQLITE_NOMEM`. Run `35260660559` targeted `821300d`; old disposable UUID `cfe63dd5-52d4-4f00-a2ff-cc6cbc36d4de` is currently absent (17 September inventory check), with the same eight prior database names. This does not establish deletion time or actor. One new diagnostic run is owner-authorized after focused verifier validation.
 - PERF3 overall live performance acceptance remains open.
 - PR #93, Client-detail edit recovery, remains separate and unmerged in the supplied checkpoint. Preserve its branch and any local work. Other remaining form-recovery work is still governed by `docs/phases/N1.md`; this documentation task does not close it.
 - Downstream onboarding request destinations must still be configured where required. Template setup and portal invitation acceptance do not prove every agreement/access step is complete.
@@ -26,6 +26,10 @@ BloomOps 1.0 release-candidate completion on `fix/prospecting-completion-2026091
 - Source-only maintenance is not permission to convert or contact real prospects, resume paused video or paid auditing, change providers, or restart the broad roadmap.
 
 ## Most recent verification checkpoint
+
+PR102 candidate `821300d3acae8f993dc894805e3f9dd6fda882b5`: CI `35258836661` passed 7,452/7,452 and feature migration/build/browser gates. Two stale assertions were corrected to distinguish recorded coverage gaps from unverified history; application behavior is unchanged. Verifier-only correction now preserves drained output, a durable compact summary, exact CREATE identity and UUID-bound deletion. Local exact-D1 diagnosis applied 60 inherited / 59 domain migrations (138 tables), passed whole-file integrity and repeat pass. Python SQLite 3.46.1 compiled 22,833 quick-check instructions at the default limit, returned NOMEM with VDBE allocation limit 25,000, then compiled and returned `ok` after restoring the limit. Local compilation-limit cause is confirmed; remote cause remains a hypothesis until diagnostic evidence. No weaker integrity proof is substituted. Prospecting evidence is reused; no local application suite repeated.
+
+Verifier focused checks: `node --test tests/zero-verify-safety.test.mjs tests/zero-verifier.test.mjs tests/zero-local-integrity.test.mjs` passed 42/42; syntax and diff checks passed. Scoped Sol Medium review found the diagnostic flag would recur on main pushes; corrected to explicit manual input, default false. Review reports no remaining material findings; remote result is pending.
 
 Product evidence carried forward, not rerun: PR #99 release notes report staging `7d8166c`, final PR run `35163655840` passing 7,419/7,419 plus feature checks, and staging run `35165342432` passing. Remote-D1 run `35165342330` failed as noted above. These are recorded product results, not verification performed by this documentation job.
 

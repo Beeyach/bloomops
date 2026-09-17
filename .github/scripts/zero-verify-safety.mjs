@@ -18,7 +18,7 @@ export function stagingIdentityUnchanged(before, after) {
 }
 
 export function assertDisposableIdentity(info, createdId, databaseName) {
-  if (!createdId || info?.uuid !== createdId) {
+  if (!createdId || info?.uuid !== createdId || info?.name !== databaseName) {
     throw new Error(`${databaseName} resolves to ${info?.uuid}, not the id created here (${createdId}); leaving it alone`);
   }
 }
@@ -35,6 +35,10 @@ export function guardWranglerCommand(args, { configPath, mode, databaseName, sta
   const refuse = () => { throw new Error('refusing a Wrangler command outside the disposable verifier allowlist'); };
   if (args[0] !== 'd1') refuse();
   const command = args[1];
+  if (command === 'delete') {
+    if (!configPath || mode !== '--remote' || JSON.stringify(args) !== JSON.stringify(['d1','delete','DB','--config',configPath,'--skip-confirmation'])) refuse();
+    return;
+  }
   if (command === 'execute' || command === 'migrations') {
     // Config alone is not sufficient: a named database can bypass the DB
     // binding. Accept only the operations used by this verifier, on DB.
@@ -60,7 +64,7 @@ export function guardWranglerCommand(args, { configPath, mode, databaseName, sta
     if (inputs !== (command === 'execute' ? 1 : 0)) refuse();
     return;
   }
-  if (!['list', 'info', 'create', 'delete'].includes(command)) refuse();
+  if (!['list', 'info', 'create'].includes(command)) refuse();
   const named = command === 'list' ? null : args[2];
   const allowed = command === 'info' ? [databaseName, stagingName].filter(Boolean) : [databaseName];
   if (command !== 'list' && !allowed.includes(named)) refuse();
