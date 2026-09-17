@@ -328,8 +328,30 @@
 .bo-outreach-drafts>li {display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:24px;padding:24px 0;border-bottom:1px solid var(--bo-border);}
 .bo-outreach-drafts .bo-outreach-prospect {margin:0;}
 .bo-outreach-drafts h3 {font-size:18px;margin:0;overflow-wrap:anywhere;}
+.bo-overview-automation {display:flex;align-items:flex-start;gap:20px;padding:24px;border:1px solid var(--bo-border);border-left:4px solid var(--bo-warning,#e5a94c);border-radius:10px;background:var(--bo-snow);margin:24px 0 40px;}
+.bo-overview-automation-inactive {border-left-color:var(--bo-ink-soft,#5d5873);}
+.bo-overview-automation-copy {flex:1;min-width:0;}
+.bo-overview-heading,.bo-overview-section-heading {display:flex;align-items:flex-start;justify-content:space-between;gap:20px;}
+.bo-overview-heading h2,.bo-overview-section-heading h2,.bo-overview-coverage h2 {font-size:24px;line-height:1.25;margin:0;}
+.bo-overview-automation p,.bo-overview-section-heading p,.bo-overview-coverage p {max-width:72ch;line-height:1.65;margin:12px 0 0;}
+.bo-overview-decisions,.bo-overview-prepared {padding:32px 0;border-top:1px solid var(--bo-border);}
+.bo-overview-groups {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 32px;list-style:none;padding:0;margin:28px 0 12px;}
+.bo-overview-groups li {display:flex;justify-content:space-between;gap:20px;padding:14px 0;border-bottom:1px solid var(--bo-border);line-height:1.5;}
+.bo-overview-groups strong {font-variant-numeric:tabular-nums;}
+.bo-overview-clear {display:flex;align-items:flex-start;gap:12px;margin:28px 0 8px;color:var(--bo-text-soft);}
+.bo-overview-clear p {margin:0;line-height:1.65;}
+.bo-overview-exceptions {list-style:none;padding:0;margin:28px 0 0;}
+.bo-overview-exceptions>li {display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:24px;padding:24px 0;border-bottom:1px solid var(--bo-border);}
+.bo-overview-exceptions .bo-outreach-prospect {margin:0;align-items:flex-start;}
+.bo-overview-exceptions h3 {font-size:18px;margin:0 0 8px;overflow-wrap:anywhere;}
+.bo-overview-reason {margin:0;color:var(--bo-text-soft);line-height:1.6;overflow-wrap:anywhere;}
+.bo-overview-reason strong {color:var(--bo-ink);font-weight:600;}
+.bo-overview-coverage {display:flex;align-items:flex-start;justify-content:space-between;gap:32px;padding:24px 0 40px;}
+.bo-overview-coverage>div {min-width:0;}
+.bo-overview-prepared .bo-overview-section-heading {margin-bottom:8px;}
 @media(max-width:1023px){.bo-outreach-layout {grid-template-columns:1fr;gap:32px;}.bo-outreach-review {max-width:680px;}.bo-outreach-drafts>li {grid-template-columns:minmax(0,1fr) auto;}.bo-outreach-drafts .bo-outreach-prospect {grid-column:1/-1;}}
-@media(max-width:599px){.bo-outreach-sender {flex-wrap:wrap;padding:20px;gap:16px;}.bo-outreach-sender>.bo-btn {width:100%;}.bo-outreach-field-pair {grid-template-columns:1fr;gap:4px;}.bo-outreach-review {padding:20px;}.bo-outreach-prospect h2 {font-size:22px;}.bo-outreach-fields .bo-control {font-size:16px;}.bo-outreach-drafts>li {grid-template-columns:1fr;gap:16px;}.bo-outreach-drafts>li>.bo-status,.bo-outreach-drafts>li>.bo-btn {justify-self:start;}}
+@media(max-width:1023px){.bo-overview-exceptions>li {grid-template-columns:minmax(0,1fr) auto;}.bo-overview-exceptions .bo-outreach-prospect {grid-column:1/-1;}}
+@media(max-width:599px){.bo-outreach-sender,.bo-overview-automation {flex-wrap:wrap;padding:20px;gap:16px;}.bo-outreach-sender>.bo-btn,.bo-overview-automation>.bo-btn,.bo-overview-coverage>.bo-btn {width:100%;}.bo-outreach-field-pair {grid-template-columns:1fr;gap:4px;}.bo-outreach-review {padding:20px;}.bo-outreach-prospect h2 {font-size:22px;}.bo-outreach-fields .bo-control {font-size:16px;}.bo-outreach-drafts>li,.bo-overview-exceptions>li {grid-template-columns:1fr;gap:16px;}.bo-outreach-drafts>li>.bo-status,.bo-outreach-drafts>li>.bo-btn,.bo-overview-exceptions>li>.bo-status,.bo-overview-exceptions>li>.bo-btn {justify-self:start;}.bo-overview-heading,.bo-overview-section-heading,.bo-overview-coverage {flex-direction:column;gap:16px;}.bo-overview-groups {grid-template-columns:1fr;}.bo-overview-coverage {padding-bottom:32px;}}
 
 .bo-prospect-page .bo-sender-form .bo-outreach-fields {margin-top:24px;}
 

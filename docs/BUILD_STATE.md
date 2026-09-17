@@ -6,15 +6,15 @@ Local CLI correction: inline project profiles removed. Use explicit model and ef
 
 ## Current phase
 
-Prospecting completion resumed by owner direction. This bounded session closes the missing event-backed P3 Results view; Ellen's new client-success portal, paid auditing, video and broader email/provider work remain deferred.
+Prospecting completion resumed by owner direction. This bounded session closes the event-backed P3 Results view and the existing Overview exception/inactive-automation slice; Ellen's new client-success portal, paid auditing, video and broader email/provider work remain deferred.
 
 ## Current bounded task
 
 Prospecting completion on `fix/prospecting-completion-20260917`, from the owner-confirmed clean checkpoint `76176a6`. Ellen's new client-success portal is deferred.
 
-- [x] Reuse accepted sheet/import/manual-audit and P5C onboarding evidence; do not rebuild those paths from stale checklist text.
-- [x] Add the missing event-backed Prospecting Results destination, with counts that distinguish people, messages, human replies, recorded interest and durable conversions.
-- [x] Verify focused invariants plus synthetic desktop/mobile save-and-reload browser behavior; keep release/deployment gates separate.
+- [x] Save the locally verified event-backed Results view as commit `84bc1e8` without absorbing unrelated work.
+- [x] Present only recorded conversation exceptions, their reasons and supported review routes; group repeated exceptions with exact counts and keep drafts non-urgent.
+- [x] Show unconfigured/inactive automation and unknown/unverified/gap mailbox coverage truthfully; verify the isolated desktop/mobile read path with zero provider egress.
 
 ## Open blockers and unresolved gates
 
@@ -32,3 +32,5 @@ Product evidence carried forward, not rerun: PR #99 release notes report staging
 Maintenance run `35201052091` passed TOML parsing, repository-wide filename-reference checks, content preservation, allowed-path scope and Git diff whitespace checks. Its exact results, complete move list and retained-file reasons are in the maintenance run's report artifact. No application suite, build or database command was run.
 
 The Prospecting Results tree is locally verified on `fix/prospecting-completion-20260917`, based on `76176a6`: 30/30 focused tests, final OpenNext Worker build, and 15/15 built-Worker browser checks pass. Browser evidence uses an isolated synthetic D1/R2 fixture and includes a visible interest-event save, Results refresh/reload, desktop/390/320 layouts, signed-out denial, no runtime errors and zero provider egress. One Sol Medium review found a reporting-basis ambiguity and focused coverage gaps; both were fixed and the single re-review reports no remaining material findings. This is local evidence only; no push, PR, deployment, remote database operation or real outreach occurred.
+
+The Overview slice is locally verified after `84bc1e8`: 27/27 focused Overview/reply tests, the final OpenNext Worker build and 23/23 built-Worker browser checks pass. Synthetic browser evidence covers connected-but-inactive and empty/unconfigured states, repeated held exceptions with exact counts, a recorded stop reason, a recorded mailbox gap, supported navigation, reload persistence, 1440/1024/768/390/320 layouts, signed-out denial, no runtime errors and zero provider egress. The diff changes no authorization rule, schema, external contract or automation, and all checks passed, so no independent-review trigger applied. Release/staging acceptance is not claimed. Next is the existing P3 historical-coverage and held-conversation resolution gap; provider activation, follow-up sending and broader mailbox work remain paused pending separate owner direction.
