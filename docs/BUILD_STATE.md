@@ -6,17 +6,14 @@ Local CLI correction: inline project profiles removed. Use explicit model and ef
 
 ## Current phase
 
-Prospecting completion resumed by owner direction. The event-backed P3 Results view, Overview exception/inactive-automation slice, held-conversation recovery and historical-coverage evidence decision are complete locally; Ellen's new client-success portal, paid auditing, video and broader email/provider work remain deferred.
+BloomOps 1.0 release-candidate completion on `fix/prospecting-completion-20260917`, from owner-confirmed checkpoint `76176a6`. Prospecting is the active dependency; Ellen's new portal is outside 1.0.
 
-## Current bounded task
+## Capability checklist
 
-Prospecting completion on `fix/prospecting-completion-20260917`, from the owner-confirmed clean checkpoint `76176a6`. Ellen's new client-success portal is deferred.
-
-- [x] Save the locally verified event-backed Results view as commit `84bc1e8` without absorbing unrelated work.
-- [x] Present only recorded conversation exceptions, their reasons and supported review routes; group repeated exceptions with exact counts and keep drafts non-urgent.
-- [x] Show unconfigured/inactive automation and unknown/unverified/gap mailbox coverage truthfully; verify the isolated desktop/mobile read path with zero provider egress.
-- [x] Let a reviewer record the existing durable `Reply handled` fact, remove only that current decision from active exceptions, retain the outreach hold, and reopen review when newer evidence is saved.
-- [x] Bind historical coverage to complete immutable collection scope plus an exact checkpoint, reject partial/stale/cross-account evidence, and keep holds and automation unchanged.
+- **Complete locally:** workspace-safe prospect creation/import/edit/search; manual skill export and conflict-aware result application; reviewed drafts, reply/stop evidence, exception-led Overview, event-backed Results; bounded historical-coverage decision (`84bc1e8`, `edab89a`, `e773b41`, `4662068`); duplicate-safe conversion/service/onboarding handoff; accepted Pages and core BloomOps operational baseline. Existing focused review and test evidence is retained below.
+- **Actual missing agreed behavior:** P3 approved three-message follow-up execution is still preview-only. It needs explicit separate activation, original-thread delivery, recipient-local timing, idempotent retries, immediate reply/stop guards and truthful running/held/stopped/failed state. The prior pause on scheduled Gmail reads/sends conflicts with this requirement and needs an explicit operating-policy decision; provider activation and real sending stay off.
+- **Configuration/live/release blockers:** bounded live historical acceptance for `hello@bloomwired.io`; PERF3; disposable remote-D1 integrity; downstream onboarding destinations; integrated staging/release acceptance. Push/PR/main integration, remote migrations and deployment require separate approval.
+- **Owner-deferred:** Ellen's new client-success portal, paid audits, video/voice, anonymous/external Pages expansion and other speculative roadmap work.
 
 ## Open blockers and unresolved gates
 
