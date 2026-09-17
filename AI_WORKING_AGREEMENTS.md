@@ -91,7 +91,7 @@ Use plain language and short sections. Return one combined report; do not make t
 
 Progress updates use **NOW** with the current phase, bounded task, status and any specific input needed. Final reports use **DONE**, **VERIFIED**, **PROBLEM**, **NEXT**. Include actual results and limitations, not large logs. A requested report format takes precedence.
 
-The project configuration in `.codex/config.toml` defines these choices. An explicit session model or effort choice takes precedence; do not claim to change the running session yourself.
+The project config sets the default only. The table names below are routing labels, not installed CLI profiles. Use explicit launch flags: `codex -m MODEL_ID -c 'model_reasoning_effort="medium"'`. Do not use `--profile` for these choices. An explicit session model or effort choice takes precedence; do not claim to change the running session yourself.
 
 | Work | Profile | Model | Reasoning |
 | --- | --- | --- | --- |
@@ -108,7 +108,7 @@ When the current profile is insufficient for the task, show:
 MODEL CHANGE NEEDED
 Recommended: feature profile (GPT-5.6 Sol, Medium)
 Reason: one sentence identifying the multi-file feature, domain change or migration.
-Action: Select the feature profile, then continue.
+Action: Start Codex with -m gpt-5.6-sol and Medium effort, then continue.
 ```
 
 Independent reviews use `gpt-5.6-sol` at Medium as configured in `.codex/agents/reviewer.toml`. Accept supplied test results as evidence; re-execute only with a specific stated reason to doubt them, and state what was not independently verified. Do not silently substitute an unavailable model. A Codex profile does not configure Claude Code; disclose that distinction rather than claim its settings changed.

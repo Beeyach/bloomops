@@ -2,6 +2,8 @@ Historical checkpoints: [BUILD_STATE_ARCHIVE.md](history/BUILD_STATE_ARCHIVE.md)
 
 # Bloomsi Build State
 
+Local CLI correction: inline project profiles removed. Use explicit model and effort flags instead. Owner-supplied CLI /status confirms Terra Medium in this worktree. Main integration remains pending. Existing product gates below remain open.
+
 ## Current phase
 
 Documentation and configuration maintenance completed. The owner's current six-part token/context reduction task supersedes product implementation for this session. No application changes, product tests, build, deployment, migration, database work or provider change is authorized.
